@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>שקד לילוז · שאלון הזמנה</title>
+<title>Shaked Liloz • Privet Chef</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Heebo:wght@300;400;500;700&family=Karantina:wght@300;400;700&display=swap" rel="stylesheet">
@@ -652,6 +652,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .chips.shape-picker > .chip::before,.chips.shape-picker > .chip::after{display:none}
 .chips.shape-picker > .chip svg{width:64%;height:64%;stroke:var(--muted);fill:none;
   stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s ease,transform .35s var(--ease)}
+/* פרטי הפנים של האייקון — דקים יותר מהמתאר כדי שהצורה תישאר קריאה בקטן */
+.chips.shape-picker > .chip svg .in{stroke-width:1;opacity:.5}
+.chips.shape-picker > .chip svg ellipse{fill:none}
 .chips.shape-picker > .chip:hover svg{stroke:var(--oyster)}
 .chips.shape-picker > .chip.on{background:var(--on-tint);border-color:var(--on-edge);
   box-shadow:var(--g-rim-sm),var(--on-glow)}
@@ -2327,14 +2330,31 @@ function applyConcept(){
 }
 
 /* ---- צורות פסטה · אייקוני קו ---- */
+/* ערכה ג׳ · תלת־רבע. כל צורה מצוירת בזווית עם הפתח או החלל נראים.
+   הקווים בעלי class="in" הם פרטי פנים — דקים ובאטימות נמוכה יותר. */
 const PASTA_SHAPES = [
-  ['פנה','<path d="M9.6 23.4 20.4 6.4l5 3.2L14.6 26.6Z"/><path d="M12.3 25.1 23.1 8.1" opacity=".5"/>'],
-  ['פרפלה','<path d="M16 16 6.2 8.6c-2 4.9-2 9.9 0 14.8L16 16l9.8 7.4c2-4.9 2-9.9 0-14.8L16 16Z"/><path d="M14.3 13.6c1.1 1.6 1.1 3.2 0 4.8M17.7 13.6c-1.1 1.6-1.1 3.2 0 4.8" opacity=".6"/>'],
-  ['קונקיליה','<path d="M16 26.4c-6.4-2.6-9.4-7.6-9.4-12.6C6.6 9.4 10.8 6 16 6s9.4 3.4 9.4 7.8c0 5-3 10-9.4 12.6Z"/><path d="M16 26.4V7M16 26.4c-3.2-4.6-4.6-9.6-4.6-17M16 26.4c3.2-4.6 4.6-9.6 4.6-17" opacity=".5"/>'],
-  ['ספגטי','<path d="M11 4.5c-1.9 7.7-1.9 15.4 0 23M16 4.5c-1.9 7.7-1.9 15.4 0 23M21 4.5c-1.9 7.7-1.9 15.4 0 23"/>'],
-  ['פטוצ׳יני','<path d="M8.5 4.5c-1.7 7.7-1.7 15.4 0 23h5.5c-1.7-7.6-1.7-15.3 0-23Z"/><path d="M19 4.5c-1.7 7.7-1.7 15.4 0 23h5.5c-1.7-7.6-1.7-15.3 0-23Z"/>'],
-  ['פפרדלה','<path d="M8.5 4.5c-2.3 7.7-2.3 15.4 0 23h15c-2.3-7.6-2.3-15.3 0-23Z"/><path d="M16 4.5c-2.3 7.7-2.3 15.4 0 23" opacity=".45"/>'],
-  ['פוזילי','<path d="M21 6c0 2.4-4.7 4.2-10.5 4.2M10.5 10.2c0 2.4 4.7 4.2 10.5 4.2M21 14.4c0 2.4-4.7 4.2-10.5 4.2M10.5 18.6c0 2.4 4.7 4.2 10.5 4.2M21 22.8c0 2.3-4.1 3.6-8.5 4"/>']
+  ['פנה','<path d="M12.4 26.9 8.6 24.4 19.4 7.2l5.7 3.4-9.9 15.7Z"/>'+
+    '<ellipse cx="22.2" cy="8.9" rx="3.3" ry="1.9" transform="rotate(-32 22.2 8.9)"/>'+
+    '<path class="in" d="M21.2 9.6 11.3 25.3"/>'],
+  ['פרפלה','<path d="M15.4 15.9 6.6 7.9c-2.4 4.7-2.6 9.6-.6 14.6l9.4-6.6Z"/>'+
+    '<path d="M16.6 16.1l8.2 8.4c2.7-4.5 3.2-9.4 1.5-14.5l-9.7 6.1Z"/>'+
+    '<path class="in" d="M15.4 15.9c.5.9 1.2 1 1.2.2M13.6 12.6c1 2.2 1 4.6 0 6.8"/>'],
+  ['קונקיליה','<path d="M16.2 26.6C9.5 24.3 6 19.2 6 14 6 9.3 10.4 6 16.2 6c5.5 0 9.4 3 9.4 7.2 0 1.9-1 3.5-2.8 4.3"/>'+
+    '<path d="M22.8 17.5c-2.6 1.1-4.5 3.4-5.2 6.4l-1.4 2.7"/>'+
+    '<path class="in" d="M10.4 11c3.7-1.6 8-1.7 11.8-.3M12.6 16.9c2.4-1.2 5.1-1.5 7.7-.9"/>'],
+  ['ספגטי','<path d="M9.4 27.5c-1.8-6.2-.4-11.9 4.2-16.4"/>'+
+    '<path d="M14.5 27.5c-1.5-6 .1-11.3 4.6-15.4"/>'+
+    '<path d="M19.6 27.5c-1.2-5.7.5-10.7 4.8-14.5"/>'+
+    '<path class="in" d="M11.6 6.4c4.2-2 8.2-1.5 11.6 1.6M10.2 9.2c4.5-2.1 8.8-1.5 12.4 1.8"/>'],
+  ['פטוצ׳יני','<path d="M8.6 27.2c-1.6-7.5-1.4-14.5.6-21l5.4 1.6c-2 6.4-2.2 13.3-.6 20.6Z"/>'+
+    '<path d="M19.4 27.2c-1.4-6.9-1-13.4.9-19.4l5.1 2.2c-1.9 5.8-2.2 11.9-.9 18.3Z"/>'+
+    '<path class="in" d="M9.2 7.9 14.6 9.5M20.3 10 25.4 12.2"/>'],
+  ['פפרדלה','<path d="M8 26.9c-1.8-7.4-1.5-14.5.8-21.3l15.4 3.1c-2.3 6.3-2.6 13-.9 19.9Z"/>'+
+    '<path class="in" d="M8.8 8.7 24.2 11.8"/>'+
+    '<path class="in" d="M14 6.4c-2.1 6.7-2.3 13.6-.6 20.6"/>'],
+  ['פוזילי','<path d="M19.9 6.6c1.9 1.6.6 3.9-3 5.2-4.3 1.6-6.4 3.5-4.7 5.1 1.9 1.7 6.2.4 8.5-1.7"/>'+
+    '<path d="M19.9 15.2c1.9 1.6.6 3.9-3 5.2-4.3 1.6-6.4 3.5-4.7 5.1 1.5 1.4 4.6.8 7-.7"/>'+
+    '<path class="in" d="M12.4 8.6c2.4-1.9 5.6-2.6 7.5-2M12.2 17.2c2.4-1.9 5.6-2.6 7.5-2"/>']
 ];
 /* ===================== הפסטות =====================
    כל פסטה היא {shape, sauce, up}. שתיים כלולות, כל אחת נוספת 25 ₪ לסועד,
