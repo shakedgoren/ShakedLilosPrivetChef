@@ -733,11 +733,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sect{border-top:1px solid var(--line-soft);padding-top:20px;margin-top:20px}
 .sect:first-child{border-top:0;padding-top:0;margin-top:0}
 .sect h4{font-family:'Suez One',serif;font-weight:400;font-size:clamp(18px,4.8vw,22px);margin-bottom:6px}
-/* תת־בחירה שנפתחת מתחת לתוספת מסומנת (חציל / מטבוחה בשישניצל) */
-.sch-sub{margin-top:10px;padding-inline-start:12px;
-  border-inline-start:1px solid var(--line-soft)}
-.sch-sub-lbl{display:block;font-size:12.5px;color:var(--dim);margin-bottom:6px}
-.sch-sub .chips{margin:0}
+/* הסוג שנבחר מוצג על הצ׳יפ עצמו — "מטבוחה · חריפה" */
+.sch-kind{color:var(--brass-lit);font-size:.86em;white-space:nowrap}
+.chip.on .sch-kind{opacity:.95}
+
+/* חלונית סוג המטבוחה / החציל · רקע אטום, backdrop-filter לא עובד כאן */
+.sch-pop{background-color:#101B29;border:1px solid var(--g-edge);
+  border-radius:var(--r-lg);box-shadow:var(--g-lift);overflow:hidden}
+:root[data-theme="light"] .sch-pop{background-color:#FAFBFD}
+.sch-pop-body{padding:16px 16px 14px}
+.sch-pop-body .chips{margin:0 0 4px}
+.sch-remove{display:block;width:100%;margin-top:12px;padding:10px;border:0;
+  background:none;color:var(--dim);font-family:'Heebo',sans-serif;font-size:13px;
+  cursor:pointer;border-top:1px solid var(--line-soft)}
+.sch-remove:hover{color:var(--warn)}
 .sect .note{color:var(--dim);font-size:clamp(14px,3.4vw,16px);line-height:1.6;margin-bottom:14px}
 
 /* ==========================================================================
@@ -1190,6 +1199,18 @@ body.pick-open .pick-scrim{opacity:1;pointer-events:auto}
     <div class="list chips" id="pop_ups"></div>
   </div>
   <button type="button" class="pop-done" onclick="closePastaPop()">אישור</button>
+</div>
+
+<!-- חלונית תת־בחירה בשישניצל · סוג המטבוחה או החציל -->
+<div class="pickpop sch-pop" id="sch_pop">
+  <div class="pop-head">
+    <b id="sch_pop_title"></b>
+    <button type="button" class="pop-x" onclick="closeSchPop()" aria-label="סגירה">✕</button>
+  </div>
+  <div class="sch-pop-body">
+    <div class="chips one" id="sch_pop_opts"></div>
+    <button type="button" class="sch-remove" data-sch-remove>להסיר את התוספת</button>
+  </div>
 </div>
 
 <!-- סמן העכבר · סכין ומזלג מהלוגו. נדלק רק במכשיר עם עכבר אמיתי -->
@@ -2684,8 +2705,8 @@ const SCHNITZEL_FORMS = ['4 חלות אישיות','חלה משפחתית'];
 const SCH_PERSONAL = 50, SCH_FAMILY = 160;
 const SCH_PACK_NOTE = 'המארז מגיע ארוז — כל דבר בנפרד.';
 /* תוספות שיש להן תת־בחירה, ורק כשהן מסומנות */
-const SCH_SUB = { 'חציל מצופה':{key:'eggplant', label:'חציל', opts:['טמפורה','קמח']},
-                  'מטבוחה':    {key:'matbucha', label:'מטבוחה', opts:['מתוקה','חריפה']} };
+const SCH_SUB = { 'חציל מצופה':{key:'eggplant', label:'חציל',   q:'איזה חציל?',   opts:['טמפורה','קמח']},
+                  'מטבוחה':    {key:'matbucha', label:'מטבוחה', q:'איזו מטבוחה?', opts:['מתוקה','חריפה']} };
 const EGGPLANT_KIND = ['טמפורה','קמח'];
 const MATBUCHA_KIND = ['מתוקה','חריפה'];
 const PACK_SIZE = ['ק״ג','2 ק״ג'];
@@ -2884,23 +2905,61 @@ function schSlot(i){
   if(!H.schFill[i]) H.schFill[i] = {tops:[], eggplant:'', matbucha:''};
   return H.schFill[i];
 }
-/* רשימת התוספות + תת־הבחירות שנפתחות רק כשהתוספת מסומנת.
+/* רשימת התוספות. לתוספת עם תת־בחירה (מטבוחה, חציל) נפתחת חלונית
+   מיד עם הסימון, והסוג שנבחר מוצג על הצ׳יפ עצמו.
    scope מזהה לאיזה מילוי הצ׳יפ שייך: מספר החלה, או 'box' למארז המשפחתי. */
 function schTops(fill, scope){
-  let h = '<div class="chips" data-sch="top" data-sch-i="'+scope+'">'+
-    SCHNITZEL_TOPS.map(t=>'<button type="button" class="chip'+
-      (fill.tops.indexOf(t)>=0?' on':'')+'" data-sch-v="'+esc(t)+'">'+t+'</button>').join('')+
-    '</div>';
-  SCHNITZEL_TOPS.forEach(t=>{
-    const sub = SCH_SUB[t];
-    if(!sub || fill.tops.indexOf(t)<0) return;
-    h += '<div class="sch-sub"><span class="sch-sub-lbl">'+sub.label+'</span>'+
-         '<div class="chips one" data-sch="'+sub.key+'" data-sch-i="'+scope+'">'+
-         sub.opts.map(o=>'<button type="button" class="chip'+(fill[sub.key]===o?' on':'')+
-           '" data-sch-v="'+o+'">'+o+'</button>').join('')+'</div></div>';
-  });
-  return h;
+  return '<div class="chips" data-sch="top" data-sch-i="'+scope+'">'+
+    SCHNITZEL_TOPS.map(t=>{
+      const on = fill.tops.indexOf(t)>=0, sub = SCH_SUB[t];
+      const kind = on && sub && fill[sub.key] ? ' <span class="sch-kind">· '+fill[sub.key]+'</span>' : '';
+      return '<button type="button" class="chip'+(on?' on':'')+'" data-sch-v="'+esc(t)+'">'+t+kind+'</button>';
+    }).join('')+'</div>';
 }
+
+/* ---- חלונית סוג המטבוחה / החציל ---- */
+let schCtx = null;                     /* {scope, top} של התוספת שנערכת */
+function schFillOf(scope){ return scope==='box' ? H.schBox : schSlot(+scope); }
+function openSchPop(scope, top){
+  const sub = SCH_SUB[top]; if(!sub) return;
+  schCtx = {scope:scope, top:top};
+  const fill = schFillOf(scope);
+  $('sch_pop_title').textContent = sub.q;
+  $('sch_pop_opts').innerHTML = sub.opts.map(o=>
+    '<button type="button" class="chip'+(fill[sub.key]===o?' on':'')+
+    '" data-sv="'+o+'">'+o+'</button>').join('');
+  closeAllPicks();
+  $('sch_pop').classList.add('open');
+  document.body.classList.add('pick-open');
+}
+function closeSchPop(){
+  $('sch_pop').classList.remove('open');
+  document.body.classList.remove('pick-open');
+  schCtx = null;
+  paintSchnitzel();
+}
+function setupSchPop(){
+  const pop = $('sch_pop'); if(!pop || pop.dataset.ready) return;
+  pop.dataset.ready = '1';
+  /* .step.sheet כולא z-index — מוציאים את החלונית החוצה */
+  (document.querySelector('.wrap') || document.body).appendChild(pop);
+  pop.addEventListener('click', e=>{
+    e.stopPropagation();
+    if(!schCtx) return;
+    const opt = e.target.closest('[data-sv]');
+    if(opt){
+      schFillOf(schCtx.scope)[SCH_SUB[schCtx.top].key] = opt.dataset.sv;
+      closeSchPop(); return;
+    }
+    if(e.target.closest('[data-sch-remove]')){
+      const fill = schFillOf(schCtx.scope), at = fill.tops.indexOf(schCtx.top);
+      if(at>=0) fill.tops.splice(at,1);
+      fill[SCH_SUB[schCtx.top].key] = '';
+      closeSchPop();
+    }
+  });
+}
+setupSchPop();
 function paintSchnitzel(){
   const wrap = $('sch_body'); if(!wrap) return;
   let h = '';
@@ -3073,11 +3132,19 @@ $('h2_body').addEventListener('click', function(e){
     if(kind==='mode'){ H.schMode = v; }
     else if(kind==='form'){ H.schForm = v; }
     else if(kind==='top'){
-      const at = fill.tops.indexOf(v);
-      if(at>=0){ fill.tops.splice(at,1); if(SCH_SUB[v]) fill[SCH_SUB[v].key]=''; }
-      else fill.tops.push(v);
+      const at = fill.tops.indexOf(v), sub = SCH_SUB[v];
+      if(sub){
+        /* תוספת עם סוג — הסימון פותח חלונית, ולחיצה נוספת פותחת לשינוי.
+           ההסרה עצמה נעשית מתוך החלונית. */
+        e.stopPropagation();          /* אחרת document סוגר את החלונית מיד */
+        if(at<0) fill.tops.push(v);
+        paintSchnitzel();
+        openSchPop(scope, v);
+        $('w_h2').textContent='';
+        return;
+      }
+      if(at>=0) fill.tops.splice(at,1); else fill.tops.push(v);
     }
-    else if(kind==='eggplant' || kind==='matbucha'){ fill[kind] = v; }
     paintSchnitzel(); $('w_h2').textContent='';
     if(kind==='mode') renderBox();     /* מצב חדש — הסעיף כולו נבנה מחדש */
     return;
