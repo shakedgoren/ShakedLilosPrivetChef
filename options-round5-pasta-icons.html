@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>סבב אייקוני הפסטה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500&family=Suez+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B111C; --ink-2:#0F1826;
+  --brass:#D08A5E; --brass-lit:#EBAB7D; --brass-deep:#A9663F;
+  --oyster:#EEF2F8; --muted:#94A2B5; --dim:#7C8A9C;
+  --line-soft:rgba(238,242,248,.10);
+  --g-tint:linear-gradient(158deg,rgba(255,255,255,.105) 0%,rgba(255,255,255,.022) 46%,rgba(255,255,255,.062) 100%);
+  --g-tint-2:linear-gradient(158deg,rgba(255,255,255,.072) 0%,rgba(255,255,255,.014) 50%,rgba(255,255,255,.042) 100%);
+  --g-blur:blur(24px) saturate(175%);
+  --g-blur-sm:blur(13px) saturate(150%);
+  --g-edge:rgba(255,255,255,.115);
+  --g-rim:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 1px rgba(0,0,0,.34);
+  --g-rim-sm:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 1px rgba(0,0,0,.26);
+  --on-tint:linear-gradient(158deg,rgba(208,138,94,.32) 0%,rgba(208,138,94,.10) 55%,rgba(208,138,94,.22) 100%);
+  --on-edge:rgba(235,171,125,.62);
+  --on-glow:0 0 0 1px rgba(235,171,125,.26),0 16px 36px -20px rgba(208,138,94,.8);
+  --fill-brass:rgba(208,138,94,.22);
+  --r-lg:26px; --r-md:18px;
+  --ease:cubic-bezier(.22,.85,.28,1);
+}
+:root[data-theme="light"]{
+  --ink:#F7F9FC; --ink-2:#EEF2F8;
+  --brass:#C07A4A; --brass-lit:#9A5C33; --brass-deep:#7E4826;
+  --oyster:#553A26; --muted:#7A675C; --dim:#8B7A6E;
+  --line-soft:rgba(58,42,32,.10);
+  --g-tint:linear-gradient(158deg,rgba(255,255,255,.74) 0%,rgba(255,255,255,.52) 45%,rgba(255,255,255,.66) 100%);
+  --g-tint-2:linear-gradient(158deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.58) 50%,rgba(255,255,255,.76) 100%);
+  --g-blur:blur(30px) saturate(200%);
+  --g-blur-sm:blur(16px) saturate(175%);
+  --g-edge:rgba(255,255,255,.92);
+  --g-rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 2px rgba(154,92,51,.14),0 0 0 1px rgba(11,17,28,.05);
+  --g-rim-sm:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(154,92,51,.12),0 0 0 1px rgba(11,17,28,.04);
+  --on-tint:linear-gradient(158deg,rgba(235,171,125,.55) 0%,rgba(208,138,94,.26) 50%,rgba(235,171,125,.42) 100%);
+  --on-edge:rgba(255,255,255,.95);
+  --on-glow:0 0 0 1px rgba(154,92,51,.22),0 12px 26px -14px rgba(184,110,64,.65);
+  --fill-brass:rgba(192,122,74,.20);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ink);color:var(--oyster);font-family:'Heebo',system-ui,sans-serif;
+  font-weight:300;min-height:100vh;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-10%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(22% 15% at 26% 12%,rgba(208,138,94,.30),transparent 70%),
+    radial-gradient(18% 13% at 84% 26%,rgba(60,90,130,.30),transparent 72%),
+    radial-gradient(26% 17% at 66% 82%,rgba(208,138,94,.24),transparent 70%);
+  filter:blur(10px)}
+:root[data-theme="light"] body::before{
+  background:
+    radial-gradient(22% 15% at 26% 12%,rgba(235,150,95,.95),transparent 70%),
+    radial-gradient(18% 13% at 84% 26%,rgba(120,170,220,.85),transparent 72%),
+    radial-gradient(26% 17% at 66% 82%,rgba(208,138,94,.90),transparent 70%);
+  filter:blur(8px);opacity:.85}
+
+.page{max-width:900px;margin:0 auto;padding:26px 18px 90px}
+h1{font-family:'Suez One',serif;font-weight:400;font-size:clamp(21px,4.6vw,30px);margin:0 0 6px;line-height:1.3}
+.lede{color:var(--muted);font-size:15px;line-height:1.75;margin:0 0 28px;max-width:60ch}
+.eyebrow{font-size:11.5px;font-weight:500;letter-spacing:.3em;color:var(--brass);margin-bottom:10px}
+:root[data-theme="light"] .eyebrow{color:var(--brass-lit)}
+
+.set{border-radius:var(--r-lg);padding:22px 18px 24px;margin-bottom:18px;position:relative;
+  background:var(--g-tint);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+  border:1px solid var(--g-edge);box-shadow:var(--g-rim)}
+.set h3{font-family:'Suez One',serif;font-weight:400;font-size:19px;margin:0 0 6px}
+.set .d{color:var(--muted);font-size:13.5px;line-height:1.7;margin:0 0 18px}
+.tag{position:absolute;inset-inline-start:16px;top:-11px;font-size:11px;letter-spacing:.16em;
+  padding:3px 11px;border-radius:999px;background:var(--ink-2);color:var(--brass);
+  border:1px solid var(--line-soft);font-weight:500}
+:root[data-theme="light"] .tag{color:var(--brass-lit);background:#fff}
+
+/* --- שורת האייקונים, זהה לזו שבאתר --- */
+.shape-picker{display:flex;flex-wrap:nowrap;justify-content:center;gap:clamp(2px,1.2vw,8px)}
+.shape-picker > .chip{
+  flex:0 0 auto;min-width:0;width:clamp(38px,11.2vw,52px);height:clamp(38px,11.2vw,52px);
+  padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  background:none;border:1px solid transparent;overflow:visible}
+.shape-picker > .chip svg{width:64%;height:64%;stroke:var(--muted);fill:none;
+  stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
+  transition:stroke .3s ease,transform .35s var(--ease)}
+.shape-picker > .chip:hover svg{stroke:var(--oyster)}
+.shape-picker > .chip.on{background:var(--on-tint);border-color:var(--on-edge);
+  box-shadow:var(--g-rim-sm),var(--on-glow)}
+.shape-picker > .chip.on svg{stroke:var(--brass-lit);transform:scale(1.06)}
+/* קווי הפנים — דקים יותר מהמתאר */
+.shape-picker > .chip svg .in{stroke-width:1;opacity:.5}
+/* מילוי נחושת · ערכה ב׳ */
+.shape-picker > .chip svg .fill{fill:var(--fill-brass);stroke:none}
+.shape-picker > .chip.on svg .fill{fill:rgba(235,171,125,.34)}
+:root[data-theme="light"] .shape-picker > .chip.on svg .fill{fill:rgba(154,92,51,.26)}
+
+.names{display:flex;flex-wrap:nowrap;justify-content:center;gap:clamp(2px,1.2vw,8px);margin-top:8px}
+.names span{flex:0 0 auto;width:clamp(38px,11.2vw,52px);text-align:center;
+  font-size:10.5px;color:var(--dim);line-height:1.3}
+
+.big{margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft);
+  display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+.big div{text-align:center}
+.big svg{width:64px;height:64px;stroke:var(--brass-lit);fill:none;
+  stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.big svg .in{stroke-width:1;opacity:.5}
+.big svg .fill{fill:var(--fill-brass);stroke:none}
+.big b{display:block;font-weight:400;font-size:11px;color:var(--dim);margin-top:2px}
+
+.themex{position:fixed;z-index:60;top:14px;inset-inline-end:14px;
+  width:38px;height:38px;display:grid;place-items:center;border-radius:12px;cursor:pointer;
+  background:var(--g-tint-2);-webkit-backdrop-filter:var(--g-blur-sm);backdrop-filter:var(--g-blur-sm);
+  border:1px solid var(--g-edge);box-shadow:var(--g-rim-sm)}
+.themex svg{width:17px;height:17px;stroke:var(--brass-lit);fill:none;stroke-width:1.7;stroke-linecap:round}
+.themex .ic-moon{display:none}
+:root[data-theme="light"] .themex .ic-sun{display:none}
+:root[data-theme="light"] .themex .ic-moon{display:block}
+.foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line-soft);
+  color:var(--dim);font-size:13px;line-height:1.8}
+.foot b{color:var(--muted);font-weight:400}
+</style>
+</head>
+<body>
+
+<button type="button" class="themex" onclick="tog()" aria-label="החלפת תצוגה">
+  <svg class="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+  <svg class="ic-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+</button>
+
+<div class="page">
+  <div class="eyebrow">סבב אייקונים</div>
+  <h1>שלוש ערכות לצורות הפסטה</h1>
+  <p class="lede">
+    כל ערכה מוצגת בדיוק בגודל ובמיקום שבהם היא תופיע באתר. לחצי על אייקון
+    כדי לראות אותו במצב נבחר, ובדקי גם במצב הבהיר (המתג בפינה).
+    למטה בכל ערכה יש תצוגה מוגדלת של שלוש צורות.
+  </p>
+
+  <div id="sets"></div>
+
+  <div class="foot">
+    <b>למה זה משנה:</b> האייקונים האלה הם הדבר היחיד שמבדיל בין שבע האפשרויות —
+    אין להן טקסט עד שבוחרים. ככל שהצורה קריאה יותר במבט חטוף, כך פחות לקוחות
+    ילחצו על משהו שלא התכוונו אליו.
+  </div>
+</div>
+
+<script>
+function tog(){
+  const cur = document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', cur);
+}
+if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+  document.documentElement.setAttribute('data-theme','light');
+
+const NAMES = ['פנה','פרפלה','קונקיליה','ספגטי','פטוצ׳יני','פפרדלה','פוזילי'];
+
+/* ===== ערכה א׳ · קו כפול · רכסים ופרטי פנים ===== */
+const SET_A = [
+  '<path d="M9.4 23.3 20.2 6.1l4.9 3.1L14.3 26.4Z"/>'+
+  '<path class="in" d="M11.3 24.5 22.1 7.3M13.2 25.7 24 8.5"/>'+
+  '<path class="in" d="M20.2 6.1 25.1 9.2"/>',
+
+  '<path d="M16 16 6.3 8.7c-2 4.9-2 9.8 0 14.6L16 16l9.7 7.3c2-4.8 2-9.7 0-14.6L16 16Z"/>'+
+  '<path class="in" d="M13.9 12.6c1.3 2.2 1.3 4.6 0 6.8M18.1 12.6c-1.3 2.2-1.3 4.6 0 6.8"/>'+
+  '<path class="in" d="M14.9 15.1h2.2M14.9 16.9h2.2"/>',
+
+  '<path d="M16 26.5c-6.4-2.7-9.5-7.7-9.5-12.8C6.5 9.2 10.8 5.8 16 5.8s9.5 3.4 9.5 7.9c0 5.1-3.1 10.1-9.5 12.8Z"/>'+
+  '<path class="in" d="M16 26.5V6.2M16 26.5c-3.2-4.6-4.6-9.6-4.6-16.8M16 26.5c3.2-4.6 4.6-9.6 4.6-16.8"/>'+
+  '<path class="in" d="M7.4 11.6c5.6-2 11.6-2 17.2 0"/>',
+
+  '<path d="M10.4 4.2c-2 7.9-2 15.7 0 23.6M16 4.2c-2 7.9-2 15.7 0 23.6M21.6 4.2c-2 7.9-2 15.7 0 23.6"/>'+
+  '<path class="in" d="M7.9 14.4c5.6 1.7 10.6 1.7 16.2 0M8.4 21.2c5.4 1.6 10.2 1.6 15.6 0"/>',
+
+  '<path d="M8.2 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>'+
+  '<path d="M18.3 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>'+
+  '<path class="in" d="M11 4.4c-1.8 7.8-1.8 15.4 0 23.2M21.1 4.4c-1.8 7.8-1.8 15.4 0 23.2"/>',
+
+  '<path d="M7.8 4.4c-2.4 7.8-2.4 15.4 0 23.2h16.4c-2.4-7.6-2.4-15.2 0-23.2Z"/>'+
+  '<path class="in" d="M13.2 4.4c-2.4 7.8-2.4 15.4 0 23.2M18.6 4.4c-2.4 7.8-2.4 15.4 0 23.2"/>',
+
+  '<path d="M20.9 6.1c0 2.4-4.6 4.2-10.4 4.2M10.5 10.3c0 2.4 4.6 4.2 10.4 4.2M20.9 14.5c0 2.4-4.6 4.2-10.4 4.2M10.5 18.7c0 2.4 4.6 4.2 10.4 4.2M20.9 22.9c0 2.3-4 3.6-8.4 4"/>'+
+  '<path class="in" d="M15.7 5.6v21.2"/>'
+];
+
+/* ===== ערכה ב׳ · גוף נחושת מלא ===== */
+const SET_B = [
+  '<path class="fill" d="M9.4 23.3 20.2 6.1l4.9 3.1L14.3 26.4Z"/>'+
+  '<path d="M9.4 23.3 20.2 6.1l4.9 3.1L14.3 26.4Z"/><path class="in" d="M11.9 24.9 22.7 7.7"/>',
+
+  '<path class="fill" d="M16 16 6.3 8.7c-2 4.9-2 9.8 0 14.6L16 16l9.7 7.3c2-4.8 2-9.7 0-14.6L16 16Z"/>'+
+  '<path d="M16 16 6.3 8.7c-2 4.9-2 9.8 0 14.6L16 16l9.7 7.3c2-4.8 2-9.7 0-14.6L16 16Z"/>'+
+  '<path class="in" d="M14.9 14.6h2.2M14.9 17.4h2.2"/>',
+
+  '<path class="fill" d="M16 26.5c-6.4-2.7-9.5-7.7-9.5-12.8C6.5 9.2 10.8 5.8 16 5.8s9.5 3.4 9.5 7.9c0 5.1-3.1 10.1-9.5 12.8Z"/>'+
+  '<path d="M16 26.5c-6.4-2.7-9.5-7.7-9.5-12.8C6.5 9.2 10.8 5.8 16 5.8s9.5 3.4 9.5 7.9c0 5.1-3.1 10.1-9.5 12.8Z"/>'+
+  '<path class="in" d="M16 26.5V6.2M11.4 9.7c0 7.2 1.4 12.2 4.6 16.8M20.6 9.7c0 7.2-1.4 12.2-4.6 16.8"/>',
+
+  '<path class="fill" d="M8.4 4.2h15.2c1.6 7.9 1.6 15.7 0 23.6H8.4c-1.6-7.9-1.6-15.7 0-23.6Z" opacity=".55"/>'+
+  '<path d="M10.4 4.2c-2 7.9-2 15.7 0 23.6M16 4.2c-2 7.9-2 15.7 0 23.6M21.6 4.2c-2 7.9-2 15.7 0 23.6"/>',
+
+  '<path class="fill" d="M8.2 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>'+
+  '<path class="fill" d="M18.3 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>'+
+  '<path d="M8.2 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>'+
+  '<path d="M18.3 4.4c-1.8 7.8-1.8 15.4 0 23.2h5.5c-1.8-7.6-1.8-15.2 0-23.2Z"/>',
+
+  '<path class="fill" d="M7.8 4.4c-2.4 7.8-2.4 15.4 0 23.2h16.4c-2.4-7.6-2.4-15.2 0-23.2Z"/>'+
+  '<path d="M7.8 4.4c-2.4 7.8-2.4 15.4 0 23.2h16.4c-2.4-7.6-2.4-15.2 0-23.2Z"/>'+
+  '<path class="in" d="M16 4.4c-2.4 7.8-2.4 15.4 0 23.2"/>',
+
+  '<path class="fill" d="M10.5 6.1c0 2.4 4.6 4.2 10.4 4.2v4.2c-5.8 0-10.4 1.8-10.4 4.2v4.2c0-2.4 4.6-4.2 10.4-4.2v-4.2c-5.8 0-10.4-1.8-10.4-4.2Z" opacity=".6"/>'+
+  '<path d="M20.9 6.1c0 2.4-4.6 4.2-10.4 4.2M10.5 10.3c0 2.4 4.6 4.2 10.4 4.2M20.9 14.5c0 2.4-4.6 4.2-10.4 4.2M10.5 18.7c0 2.4 4.6 4.2 10.4 4.2M20.9 22.9c0 2.3-4 3.6-8.4 4"/>'
+];
+
+/* ===== ערכה ג׳ · תלת־רבע · פתח וחלל נראים ===== */
+const SET_C = [
+  '<path d="M12.4 26.9 8.6 24.4 19.4 7.2l5.7 3.4-9.9 15.7Z"/>'+
+  '<ellipse cx="22.2" cy="8.9" rx="3.3" ry="1.9" transform="rotate(-32 22.2 8.9)"/>'+
+  '<path class="in" d="M21.2 9.6 11.3 25.3"/>',
+
+  '<path d="M15.4 15.9 6.6 7.9c-2.4 4.7-2.6 9.6-.6 14.6l9.4-6.6Z"/>'+
+  '<path d="M16.6 16.1l8.2 8.4c2.7-4.5 3.2-9.4 1.5-14.5l-9.7 6.1Z"/>'+
+  '<path class="in" d="M15.4 15.9c.5.9 1.2 1 1.2.2M13.6 12.6c1 2.2 1 4.6 0 6.8"/>',
+
+  '<path d="M16.2 26.6C9.5 24.3 6 19.2 6 14 6 9.3 10.4 6 16.2 6c5.5 0 9.4 3 9.4 7.2 0 1.9-1 3.5-2.8 4.3"/>'+
+  '<path d="M22.8 17.5c-2.6 1.1-4.5 3.4-5.2 6.4l-1.4 2.7"/>'+
+  '<path class="in" d="M10.4 11c3.7-1.6 8-1.7 11.8-.3M12.6 16.9c2.4-1.2 5.1-1.5 7.7-.9"/>',
+
+  '<path d="M9.4 27.5c-1.8-6.2-.4-11.9 4.2-16.4"/>'+
+  '<path d="M14.5 27.5c-1.5-6 .1-11.3 4.6-15.4"/>'+
+  '<path d="M19.6 27.5c-1.2-5.7.5-10.7 4.8-14.5"/>'+
+  '<path class="in" d="M11.6 6.4c4.2-2 8.2-1.5 11.6 1.6M10.2 9.2c4.5-2.1 8.8-1.5 12.4 1.8"/>',
+
+  '<path d="M8.6 27.2c-1.6-7.5-1.4-14.5.6-21l5.4 1.6c-2 6.4-2.2 13.3-.6 20.6Z"/>'+
+  '<path d="M19.4 27.2c-1.4-6.9-1-13.4.9-19.4l5.1 2.2c-1.9 5.8-2.2 11.9-.9 18.3Z"/>'+
+  '<path class="in" d="M9.2 7.9 14.6 9.5M20.3 10 25.4 12.2"/>',
+
+  '<path d="M8 26.9c-1.8-7.4-1.5-14.5.8-21.3l15.4 3.1c-2.3 6.3-2.6 13-.9 19.9Z"/>'+
+  '<path class="in" d="M8.8 8.7 24.2 11.8"/>'+
+  '<path class="in" d="M14 6.4c-2.1 6.7-2.3 13.6-.6 20.6"/>',
+
+  '<path d="M19.9 6.6c1.9 1.6.6 3.9-3 5.2-4.3 1.6-6.4 3.5-4.7 5.1 1.9 1.7 6.2.4 8.5-1.7"/>'+
+  '<path d="M19.9 15.2c1.9 1.6.6 3.9-3 5.2-4.3 1.6-6.4 3.5-4.7 5.1 1.5 1.4 4.6.8 7-.7"/>'+
+  '<path class="in" d="M12.4 8.6c2.4-1.9 5.6-2.6 7.5-2M12.2 17.2c2.4-1.9 5.6-2.6 7.5-2"/>'
+];
+
+const SETS = [
+  { tag:'ערכה א׳', name:'קו כפול · רכסים',
+    d:'אותה שפה של היום, אבל עם קו פנימי דק שמסמן את הרכסים והקפלים. הכי קרוב למה שקיים, פשוט עם עומק. הכי בטוח ומשתלב בלי לצרום.',
+    icons:SET_A },
+  { tag:'ערכה ב׳', name:'גוף נחושת מלא',
+    d:'לצורה יש משקל — מילוי נחושת שקוף מתחת למתאר. נקרא מהר מאוד גם בקטן, ומרגיש יותר "אוכל" ופחות דיאגרמה. הכי בולט מהשלוש.',
+    icons:SET_B },
+  { tag:'ערכה ג׳', name:'תלת־רבע · פתח נראה',
+    d:'כל צורה מצוירת בזווית, עם הפתח או החלל נראים — כמו צילום מנה ולא סמל. הכי מיוחד, ודורש הכי הרבה תשומת לב בקטן.',
+    icons:SET_C }
+];
+
+const BIG_PICK = [0,2,6];   /* פנה · קונקיליה · פוזילי */
+
+document.getElementById('sets').innerHTML = SETS.map((s,si)=>
+  '<div class="set"><span class="tag">'+s.tag+'</span>'+
+    '<h3>'+s.name+'</h3><p class="d">'+s.d+'</p>'+
+    '<div class="shape-picker" data-set="'+si+'">'+
+      s.icons.map((ic,i)=>'<button type="button" class="chip'+(i===0?' on':'')+
+        '" aria-label="'+NAMES[i]+'"><svg viewBox="0 0 32 32" aria-hidden="true">'+ic+'</svg></button>').join('')+
+    '</div>'+
+    '<div class="names">'+NAMES.map(n=>'<span>'+n+'</span>').join('')+'</div>'+
+    '<div class="big">'+BIG_PICK.map(i=>
+      '<div><svg viewBox="0 0 32 32" aria-hidden="true">'+s.icons[i]+'</svg><b>'+NAMES[i]+'</b></div>').join('')+
+    '</div>'+
+  '</div>').join('');
+
+document.querySelectorAll('.shape-picker').forEach(row=>{
+  row.addEventListener('click', e=>{
+    const c = e.target.closest('.chip'); if(!c) return;
+    row.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>
