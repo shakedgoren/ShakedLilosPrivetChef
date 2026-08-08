@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שקד לילוז · מדריך עריכת טקסטים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Heebo:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B111C;--brass:#D08A5E;--brass-lit:#EBAB7D;--oyster:#EEF2F8;--muted:#94A2B5;--dim:#7C8A9C;
+ --edge:rgba(255,255,255,.115);--tint:linear-gradient(158deg,rgba(255,255,255,.08),rgba(255,255,255,.02) 50%,rgba(255,255,255,.05))}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--oyster);font-family:'Heebo',system-ui,sans-serif;font-weight:300;
+ line-height:1.75;font-size:17px;padding:32px 18px 80px}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;
+ background:radial-gradient(38% 32% at 20% 14%,rgba(208,138,94,.22),transparent 64%),
+ radial-gradient(36% 32% at 86% 22%,rgba(58,112,164,.26),transparent 65%);filter:blur(30px)}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-family:'Suez One',serif;font-weight:400;font-size:clamp(26px,6vw,38px);line-height:1.25;margin-bottom:12px;color:#fff}
+h2{font-family:'Suez One',serif;font-weight:400;font-size:clamp(20px,4.6vw,26px);margin:38px 0 10px;color:#fff}
+h2::after{content:"";display:block;height:2px;width:100%;margin-top:12px;border-radius:2px;
+ background:linear-gradient(90deg,var(--brass),transparent)}
+h3{font-family:'Suez One',serif;font-weight:400;font-size:19px;color:var(--brass-lit);margin-bottom:4px}
+.lead{color:var(--muted);margin-bottom:14px}
+.tiny{color:var(--dim);font-size:14px}
+ol,ul{padding-inline-start:22px;color:var(--muted)}
+ol li,ul li{margin-bottom:8px}
+b,strong{font-weight:500;color:var(--oyster)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.86em;background:rgba(208,138,94,.14);
+ border:1px solid rgba(208,138,94,.24);border-radius:6px;padding:1px 6px;color:var(--brass-lit);
+ direction:ltr;display:inline-block}
+pre{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.6;direction:ltr;text-align:left;
+ background:rgba(0,0,0,.34);border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin-top:10px;
+ overflow-x:auto;color:#C9D3E0;white-space:pre}
+.warn{background:linear-gradient(158deg,rgba(208,138,94,.16),rgba(208,138,94,.05));
+ border:1px solid rgba(208,138,94,.3);border-radius:14px;padding:14px 16px;margin:16px 0;color:var(--muted)}
+.warn ul{margin-top:8px}
+.card{background:var(--tint);border:1px solid var(--edge);border-radius:16px;padding:16px 18px;margin-bottom:12px}
+.note{color:var(--muted);font-size:15px}
+.meta{font-size:13.5px;color:var(--dim);margin-top:8px}
+.meta b{color:var(--brass-lit)}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+th{text-align:right;font-weight:500;font-size:12.5px;letter-spacing:.14em;color:var(--brass);
+ padding:8px 10px;border-bottom:1px solid rgba(208,138,94,.3)}
+td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:top;color:var(--muted)}
+td.scr{color:var(--oyster);white-space:nowrap}
+td.scr i{display:block;font-style:normal;font-size:12px;color:var(--dim);direction:ltr;text-align:right}
+td.ln{font-family:ui-monospace,Menlo,monospace;color:var(--brass-lit);width:64px}
+td.txt b{display:block;font-size:12px;letter-spacing:.2em;color:var(--brass);font-weight:400}
+td.txt strong{display:block;color:#fff;font-size:16px;margin:2px 0}
+td.txt span{display:block;font-size:14px;color:var(--dim)}
+@media(max-width:520px){td,th{padding:9px 6px}table{font-size:14px}}
+</style></head><body><div class="wrap"><h1>עריכת הטקסטים באתר</h1>
+<p class="lead">כל הטקסטים יושבים בקובץ אחד — <code>chef-questionnaire.html</code>. אין צורך בידע טכני: פותחים, מחפשים את המשפט שרואים באתר, ומחליפים אותו.</p>
+
+<div class="warn"><b>לפני שמתחילים:</b> שמרי עותק גיבוי. Finder → לחיצה ימנית על הקובץ → Duplicate. אם משהו יישבר, פשוט חוזרים לעותק.</div>
+
+<h2>איך פותחים את הקובץ לעריכה</h2>
+<ol>
+<li>פותחים את היישום <b>TextEdit</b> (הוא מותקן בכל מק).</li>
+<li>בתפריט העליון: <b>TextEdit → Settings</b> (או Preferences) → לשונית <b>Open and Save</b> → מסמנים <b>Display HTML files as HTML code instead of formatted text</b>.<br>
+<span class="tiny">בלי הסימון הזה TextEdit יציג את האתר במקום את הקוד.</span></li>
+<li>עכשיו: <b>File → Open</b> → בוחרים את <code>chef-questionnaire.html</code>.</li>
+</ol>
+<p class="tiny">אם מעדיפים כלי נוח יותר — <b>VS Code</b> חינמי ומצוין למטרה הזו.</p>
+
+<h2>השיטה — עובדת כמעט תמיד</h2>
+<ol>
+<li>מעתיקים את המשפט שרוצים לשנות <b>בדיוק כמו שהוא מופיע באתר</b>.</li>
+<li>בקובץ: <b>Cmd + F</b> ומדביקים אותו.</li>
+<li>מחליפים <b>רק את הטקסט שבין הגרשיים</b>.</li>
+<li><b>Cmd + S</b> לשמירה, ורענון הדף בדפדפן.</li>
+</ol>
+
+<div class="warn"><b>שלושה כללים:</b>
+<ul>
+<li>לא למחוק גרשיים <code>'</code> או פסיקים <code>,</code> — רק את הטקסט שביניהם.</li>
+<li>לירידת שורה בתוך טקסט כותבים <code>&lt;br&gt;</code>.</li>
+<li>אם יש גרש בתוך הטקסט עצמו (למשל בוצ׳ר) — להשתמש ב־<code>׳</code> ולא ב־<code>'</code>.</li>
+</ul></div>
+
+<h2>הטקסטים שקשה למצוא</h2>
+<p class="lead">אלה לא יושבים ב־HTML אלא ברשימות בתחתית הקובץ — לכן חיפוש רגיל לפעמים לא מוביל למקום הנכון.</p>
+<div class="card"><h3>ארבעת הכרטיסים במסך הפתיחה</h3><p class="note">name = שם הכרטיס · desc = הטקסט שמתחתיו. לירידת שורה בתוך התיאור: &amp;lt;br&amp;gt;</p><div class="meta">שורה <b>1342</b> · חפשי: <code>const COVER_ITEMS = [</code></div><pre>const COVER_ITEMS = [
+  {flow:&#x27;friday&#x27;,  n:&#x27;1&#x27;, name:&#x27;מסודרים לשישי&#x27;,
+   desc:&#x27;שישי בלי בישולים&lt;br&gt;סלטים לפי משקל, חלות טריות, קוסקוס וטבחה&lt;br&gt;ועוגות למתוק שאחרי.&lt;br&gt;אופציות לבחירה אישית או מארזים מפנקים!&#x27;},
+  {flow:&#x27;holiday&#x27;, n:&#x27;2&#x27;, name:&#x27;מסודרים לחג&#x27;,
+   desc:&#x27;מארזי חג ארוזים בארגז עץ עם פרחי גיבסניות&lt;br&gt;חלות, סלטים בצנצנות, עוגות, יין והקדשה אישית.&lt;br&gt;אתם מגיעים לשולחן החג, וכל השאר כבר מסודר.&lt;br&gt;המתנה המושלמת לעצמכם או לאהובים שלכם!&#x27;},
+  {flow:&#x27;chef&#x27;,    n:&#x27;3&#x27;, name:&#x27;ארוחת שף&#x27;,
+   desc:&#x27;חוויה קולינרית שמוגשת בשלבים למרכז השולחן,&lt;br&gt;מנה אחר מנה, כל טעם מקבל את הרגע שלו&lt;br&gt;התפריט נבנה אישית עבורכם על פי ההעדפות שלכם&lt;br&gt;ונשאר בהפתעה עד לרגע ההגשה&#x27;},
+  {flow:&#x27;taboon&#x27;,  n:&#x27;4&#x27;, name:&#x27;עמדת טאבון&#x27;,
+   desc:&#x27;שעה וחצי של פינוקים ללא הגבלה.&lt;br&gt;פיצות נפוליטנות שנאפות במקום לעיני האורחים,&lt;br&gt;בופה על שולחן בוצ׳ר מעוצב&lt;br&gt;התאמה אישית ומלאה לתפריט שתרצו&#x27;}
+];</pre></div><div class="card"><h3>כותרות עמוד המארזים</h3><p class="note">שורה אחת ל־holiday (חג) ואחת ל־friday (שישי). eyebrow = הכיתוב הקטן, title = הכותרת, sub = המשפט מתחת.</p><div class="meta">שורה <b>1734</b> · חפשי: <code>const CAT_COPY = {</code></div><pre>const CAT_COPY = {
+  holiday:{eyebrow:&#x27;מסודרים לחג&#x27;, title:&#x27;בחרו את המארז&#x27;, sub:&#x27;כל המארזים מגיעים ארוזים בארגז עץ עם פרחי גיבסניות.&#x27;},
+  friday: {eyebrow:&#x27;מסודרים לשישי&#x27;, title:&#x27;בחרו את המארז&#x27;, sub:&#x27;מאכלים ביתיים שיעשו לכם טעים בנשמה&#x27;}
+};</pre></div><div class="card"><h3>כל המארזים — שמות, תיאורים ומחירים</h3><p class="note">name = שם המארז · desc = הטקסט בכרטיס · price = המחיר · sub = הכיתוב בשלב ההתאמה.</p><div class="meta">שורה <b>1685</b> · חפשי: <code>const BOXES = {</code></div><pre>const BOXES = {
+  /* ===== מסודרים לחג ===== */
+  pamper:{cat:&#x27;holiday&#x27;, name:&#x27;פינוק משפחתי&#x27;, price:380,
+          desc:&#x27;חלה משפחתית, בקבוק יין, עוגה זוגית, צנצנת דבש ומארז הדלקת נרות.&#x27;,
+          sub:&#x27;חלה משפחתית, בקבוק יין, עוגה זוגית, צנצנת דבש ומארז הדלקת נרות.&#x27;,
+          challah:1, wine:1, cake:1, dedication:true},
+  famA:  {cat:&#x27;holiday&#x27;, name:&#x27;מארחים בסטייל&#x27;, price:120,
+          desc:&#x27;חלת דבש + פס עוגה&#x27;,
+          sub:&#x27;חלת דבש + פס עוגה&#x27;,
+          fixedChallah:&#x27;חלת דבש עם פרוסות שקדים&#x27;, cake:1},
+  famB:  {cat:&#x27;holiday&#x27;, name:&#x27;חגיגה בשולחן I&#x27;, price:220,
+          desc:&#x27;2 חלות משפחתיות + 5 צנצנות סלטים 250 מ״ל&#x27;,
+          sub:&#x27;2 חלות משפחתיות + 5 צנצנות סלטים 250 מ״ל&#x27;, challah:2, salads:5, saladUnit:&#x27;צנצנות&#x27;},
+  famC:  {cat:&#x27;holiday&#x27;, name:&#x27;חגיגה בשולחן II&#x27;, price:260,</pre></div><div class="card"><h3>רשימת הסלטים (חג ושישי)</h3><p class="note">כל שורה היא [שם, תיאור]. אפשר להוסיף או למחוק שורות שלמות.</p><div class="meta">שורה <b>1664</b> · חפשי: <code>const SALADS = [</code></div><pre>const SALADS = [
+  [&#x27;מטבוחה&#x27;,&#x27;עגבניות ופלפלים קלויים לאט עם שום ופפריקה&#x27;],
+  [&#x27;ביצים&#x27;,&#x27;ביצים קשות, בצל ירוק ומיונז ביתי&#x27;],
+  [&#x27;חציל במיונז&#x27;,&#x27;חציל קלוי, מיונז ושום&#x27;],
+  [&#x27;חציל מרוקאי&#x27;,&#x27;חציל מטוגן בשום, כוסברה ופפריקה&#x27;],
+  [&#x27;מיונז&#x27;,&#x27;תפוחי אדמה, גזר וביצה במיונז ביתי&#x27;],
+  [&#x27;גזר חריף&#x27;,&#x27;גזר מגורד בשום, לימון וצ׳ילי&#x27;],
+  [&#x27;מאשוויה&#x27;,&#x27;פלפלים ועגבניות קלויים בשמן זית ושום&#x27;],
+  [&#x27;כרוב לבן&#x27;,&#x27;כרוב פרוס דק בלימון ושמן זית&#x27;],
+  [&#x27;כרוב במיונז&#x27;,&#x27;כרוב לבן, גזר ומיונז&#x27;],
+  [&#x27;כרוב סיני&#x27;,&#x27;כרוב סיני ברוטב סויה ושומשום&#x27;],
+  [&#x27;סלק&#x27;,&#x27;סלק מבושל בלימון, שום וכמון&#x27;],
+  [&#x27;טאבולה&#x27;,&#x27;פטרוזיליה, בורגול, עגבניות ולימון&#x27;],
+  [&#x27;סלט ירוק&#x27;,&#x27;ירקות טריים קצוצים דק בוויניגרט לימוני&#x27;],</pre></div><div class="card"><h3>סוגי חלה</h3><p class="note">רשימה פשוטה של אפשרויות.</p><div class="meta">שורה <b>1681</b> · חפשי: <code>const CHALLAHS =</code></div><pre>const CHALLAHS = [&#x27;עם שומשום&#x27;,&#x27;עם קמח&#x27;,&#x27;בלי כלום&#x27;];</pre></div><div class="card"><h3>סוגי יין</h3><p class="note">רשימה פשוטה של אפשרויות.</p><div class="meta">שורה <b>1682</b> · חפשי: <code>const WINES</code></div><pre>const WINES    = [&#x27;לבן&#x27;,&#x27;אדום&#x27;,&#x27;רוזה&#x27;,&#x27;שמפנייה&#x27;];</pre></div><div class="card"><h3>טעמי עוגה</h3><p class="note">רשימה פשוטה של אפשרויות.</p><div class="meta">שורה <b>1683</b> · חפשי: <code>const CAKES</code></div><pre>const CAKES    = [&#x27;דבש&#x27;,&#x27;שוקולד&#x27;,&#x27;ברד פודינג&#x27;,&#x27;ביסקוויטים&#x27;,&#x27;מייפל אגוזים&#x27;];</pre></div><div class="card"><h3>התוספת הבשרית</h3><p class="note">רשימה פשוטה של אפשרויות.</p><div class="meta">שורה <b>1727</b> · חפשי: <code>const PROTEINS =</code></div><pre>const PROTEINS = [&#x27;ירך עוף מתוק&#x27;,&#x27;קציצות בשר מטוגנות&#x27;];</pre></div>
+
+<h2>כותרות כל שלב</h2>
+<p class="lead">אלה כן יושבים ישירות ב־HTML. מספר השורה מדויק לגרסה הנוכחית של הקובץ.</p>
+<table><thead><tr><th>מסך</th><th>שורה</th><th>הטקסטים בו</th></tr></thead><tbody>
+<tr><td class="scr">שף · מי ומתי<i>#c1</i></td><td class="ln">774</td><td class="txt"><b>הזמנה</b><strong>בואו נכיר את סוג האירוח; מי ומתי</strong><span>כדי שאדע לכמה אנשים אני מבשלת, ומתי להדליק את התנור.</span></td></tr>
+<tr><td class="scr">שף · קונספט<i>#c2</i></td><td class="ln">801</td><td class="txt"><b>קונספט</b><strong>על איזה ציר הולכים</strong><span>זו ההחלטה שקובעת את אופי כל הערב. בוחרים אחד.</span></td></tr>
+<tr><td class="scr">שף · מסלול<i>#c3</i></td><td class="ln">814</td><td class="txt"><b>מסלול</b><strong>איך המסלול שלנו הולך להראות</strong><span>כל מסלול הוא רצף מנות שמגיע לשולחן בשלבים, כל המנות הן מנות שרינג המחיר לסועד נקבע לפי מספר הסועדים; יותר סועדים המחיר יורד בהתאם. המחיר כולל את כל חומרי הגלם ואת כלי ההגשה המעוצבים לא כולל כלי אוכל אישיים ועיצוב שולחן — ניתן לשדרג בתוספת מחיר</span></td></tr>
+<tr><td class="scr">שף · טעמים<i>#c4</i></td><td class="ln">841</td><td class="txt"><b>טעמים</b><strong>איך אתם אוהבים את האוכל שלכם</strong><span>כאן אני מבינה עד כמה להעז.</span></td></tr>
+<tr><td class="scr">שף · גבולות<i>#c5</i></td><td class="ln">897</td><td class="txt"><b>גבולות</b><strong>מה לא ייכנס לתפריט</strong><span>החלק הכי חשוב בשאלון. עדיף לפרט יותר מדי מאשר פחות.</span></td></tr>
+<tr><td class="scr">שף · השלמות<i>#c6</i></td><td class="ln">945</td><td class="txt"><b>השלמות</b><strong>2 דברים שמשלימים את הערב</strong><span>אופציונלי לגמרי — אבל שווה לדעת שזה קיים.</span></td></tr>
+<tr><td class="scr">טאבון · מי ומתי<i>#t1</i></td><td class="ln">978</td><td class="txt"><b>הזמנה</b><strong>בואו נכיר את סוג האירוח; מי ומתי</strong><span>עמדת הטאבון מגיעה לאירועים של 10 עד 25 סועדים.</span></td></tr>
+<tr><td class="scr">טאבון · העמדה<i>#t2</i></td><td class="ln">1005</td><td class="txt"><b>העמדה</b><strong>מה מגיע אליכם</strong><span>שעה וחצי של אוכל ללא הגבלה, בסגנון בופה על שולחן בוצ׳ר מעוצב הפיצות נאפות במקום, לעיני האורחים, ולפי הטעם האישי של כל אורח המחיר כולל את כל חומרי הגלם ואת כלי ההגשה; הגשה בקונספט בופה לא כולל כלי אוכל אישיים ועיצוב שולחן; ניתן לשדרג בתוספת מחיר</span></td></tr>
+<tr><td class="scr">טאבון · סלטים<i>#t3</i></td><td class="ln">1021</td><td class="txt"><b>בחירה</b><strong>3 סלטים 0/3</strong><span>בוחרים בדיוק שלושה. כולם מגיעים בקערות הגשה גדולות לשולחן.</span></td></tr>
+<tr><td class="scr">טאבון · פסטות<i>#t4</i></td><td class="ln">1037</td><td class="txt"><b>בחירה</b><strong>2 פסטות 0/2</strong></td></tr>
+<tr><td class="scr">טאבון · קינוחים<i>#t5</i></td><td class="ln">1059</td><td class="txt"><b>בחירה</b><strong>2 קינוחים 0/2</strong><span>הדובדבן שבקצפת</span></td></tr>
+<tr><td class="scr">טאבון · שדרוגים<i>#t6</i></td><td class="ln">1074</td><td class="txt"><b>שדרוגים</b><strong>אפשר גם להעלות הילוך</strong><span>הכל אופציונלי. המחיר למעלה מתעדכן תוך כדי.</span></td></tr>
+<tr><td class="scr">טאבון · גבולות<i>#t7</i></td><td class="ln">1138</td><td class="txt"><b>גבולות</b><strong>אלרגיות ומה לא נכנס</strong><span>גם כשאתם בוחרים את התפריט; חשוב לי לדעת מה לא יכול להתקרב לצלחת</span></td></tr>
+<tr><td class="scr">מארזים · בחירה<i>#h1</i></td><td class="ln">1187</td><td class="txt"><b>מסודרים לחג</b><strong>בחרו את המארז</strong></td></tr>
+<tr><td class="scr">מארזים · התאמה<i>#h2</i></td><td class="ln">1197</td><td class="txt"><b>התאמה</b><strong>המארז שלכם</strong></td></tr>
+<tr><td class="scr">מארזים · איסוף ומשלוח<i>#h3</i></td><td class="ln">1205</td><td class="txt"><b>איסוף ומשלוח</b><strong>לאן זה מגיע</strong><span>נשאר רק לדעת מתי ואיך.</span></td></tr>
+<tr><td class="scr">בקשה אישית<i>#last</i></td><td class="ln">1233</td><td class="txt"><b>בקשה אישית</b><strong>משהו שחשוב לכם שיהיה</strong><span>מנה שחלמתם עליה, מרכיב שאתם אוהבים, או פשוט הסיפור מאחורי הערב.</span></td></tr>
+<tr><td class="scr">מסך סיום<i>#done</i></td><td class="ln">1254</td><td class="txt"><strong>זהו. מכאן אני לוקחת.</strong><span>שולחים לי את הסיכום, ואני חוזרת אליכם עם הצעת מחיר מדויקת ואישור הזמנה.</span></td></tr>
+</tbody></table>
+
+<h2>מחירים ומספר טלפון</h2>
+<table><thead><tr><th>מה</th><th>שורה</th><th>חפשי</th></tr></thead><tbody>
+<tr><td>מספר הוואטסאפ שאליו נשלח הסיכום</td><td class="ln">1298</td><td><code>const CHEF_PHONE</code></td></tr>
+<tr><td>מחירי עמדת הטאבון לפי מספר סועדים</td><td class="ln">1299</td><td><code>const TABOON_TIERS</code></td></tr>
+<tr><td>מחירי ארוחת השף</td><td class="ln">1302</td><td><code>const CHEF_PRICES</code></td></tr>
+</tbody></table>
+
+<h2>מה עדיף לא לגעת</h2>
+<p class="lead">כל מה שנמצא בין <code>&lt;style&gt;</code> ל־<code>&lt;/style&gt;</code> (בערך שורות 10–760) הוא העיצוב. שינוי שם ישבר את המראה. הטקסטים תמיד נמצאים אחרי שורה 760.</p>
+</div></body></html>

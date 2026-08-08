@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ערכות בהירות · סבב בחירה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Heebo:wght@300;400;500;700&family=Karantina:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+button{font-family:inherit;color:inherit;cursor:pointer}
+body{font-family:'Heebo',sans-serif;font-weight:300;background:#0B111C;color:#EEF2F8;
+  padding:28px 16px 80px;-webkit-font-smoothing:antialiased}
+.num{font-family:'Karantina',cursive;font-weight:400;font-size:1.2em;letter-spacing:.03em;line-height:1}
+.cur{font-family:'Heebo',sans-serif}
+
+.page-head{max-width:1180px;margin:0 auto 30px;text-align:center}
+.page-head h1{font-family:'Suez One',serif;font-weight:400;font-size:clamp(26px,5vw,38px);margin-bottom:10px}
+.page-head p{color:#94A2B5;font-size:15px;line-height:1.7;max-width:640px;margin:0 auto}
+
+.deck{max-width:1180px;margin:0 auto;display:grid;gap:26px;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+
+/* ---------- כל אפשרות היא עולם צבע עצמאי ---------- */
+.opt{border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 22px 44px -26px rgba(0,0,0,.9)}
+.opt-tag{padding:13px 18px;background:#131C2B;border-bottom:1px solid rgba(255,255,255,.09);
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.opt-tag b{font-family:'Suez One',serif;font-weight:400;font-size:19px;color:#EEF2F8}
+.opt-tag span{font-size:12.5px;color:#7C8A9C;letter-spacing:.04em}
+
+/* המסך עצמו — כל המשתנים מוגדרים מחדש לכל ערכה */
+.screen{padding:24px 18px 0;background:var(--bg);color:var(--fg);min-height:560px;
+  display:flex;flex-direction:column}
+
+.sheet{background:var(--panel);border:1px solid var(--edge);border-radius:24px;
+  box-shadow:var(--rim),var(--lift);padding:22px 18px;flex:1}
+
+.eyebrow{font-size:11.5px;letter-spacing:.34em;color:var(--accent-deep);text-align:center;margin-bottom:9px}
+h2{font-family:'Suez One',serif;font-weight:400;font-size:25px;line-height:1.3;
+  text-align:center;color:var(--fg);margin-bottom:13px}
+.rule{height:1px;margin:0 auto 20px;max-width:230px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+
+label{display:block;font-size:11.5px;letter-spacing:.17em;color:var(--muted);
+  margin-bottom:9px;text-align:center}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px}
+.chip{flex:0 0 calc((100% - 16px)/3);min-height:62px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:14px;padding:10px 6px;color:var(--muted);
+  background:var(--tile);border:1px solid var(--edge);box-shadow:var(--rim-sm)}
+.chip.on{background:var(--on-tile);border-color:var(--on-edge);color:var(--accent-deep);
+  box-shadow:var(--rim-sm),var(--on-glow);font-weight:400}
+
+.field{margin-bottom:20px}
+input{width:100%;min-height:48px;border-radius:16px;text-align:center;
+  background:var(--tile);border:1px solid var(--edge);box-shadow:var(--rim-sm);
+  font-family:'Heebo',sans-serif;font-size:16px;font-weight:300;color:var(--fg);padding:12px 14px}
+input::placeholder{color:var(--ph)}
+
+.tier{border-radius:20px;padding:16px 14px;text-align:center;
+  background:var(--on-tile);border:1px solid var(--on-edge);
+  box-shadow:var(--rim-sm),var(--on-glow);margin-bottom:18px}
+.tier .g{font-size:12.5px;color:var(--muted);margin-bottom:5px}
+.tier .c{font-family:'Suez One',serif;font-size:19px;color:var(--fg);margin-bottom:6px}
+.tier .p{font-family:'Suez One',serif;font-size:27px;color:var(--accent-deep)}
+.tier .p small{font-family:'Heebo',sans-serif;font-size:13px;color:var(--muted);margin-right:5px}
+
+.dock{margin:0 -18px;padding:12px 18px calc(16px);
+  background:var(--dock);border-top:1px solid var(--edge);
+  display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.total{display:flex;justify-content:center;align-items:baseline;gap:9px;font-size:13px;color:var(--muted)}
+.total b{font-family:'Suez One',serif;font-weight:400;font-size:20px;color:var(--accent-deep)}
+.btn{min-height:50px;border-radius:16px;border:0;background:var(--btn-bg);color:var(--btn-fg);
+  font-size:17px;font-weight:500;box-shadow:var(--btn-glow)}
+
+.swatches{display:flex;gap:0;height:34px}
+.swatches i{flex:1}
+
+/* ==================================================================
+   0 · המקור הכהה — לעוגן השוואה
+   ================================================================== */
+.dark{
+  --bg:linear-gradient(168deg,#0B111C 0%,#0F1826 55%,#0B111C 100%);
+  --fg:#EEF2F8; --muted:#94A2B5; --ph:#5B6A7D;
+  --accent:#D08A5E; --accent-deep:#EBAB7D;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.105),rgba(255,255,255,.022) 46%,rgba(255,255,255,.062));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.072),rgba(255,255,255,.014) 50%,rgba(255,255,255,.042));
+  --edge:rgba(255,255,255,.115);
+  --rim:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 1px rgba(0,0,0,.34);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 1px rgba(0,0,0,.26);
+  --lift:0 24px 46px -26px rgba(0,0,0,.92);
+  --on-tile:linear-gradient(158deg,rgba(208,138,94,.32),rgba(208,138,94,.10) 55%,rgba(208,138,94,.22));
+  --on-edge:rgba(235,171,125,.62);
+  --on-glow:0 0 0 1px rgba(235,171,125,.26),0 16px 36px -20px rgba(208,138,94,.8);
+  --dock:rgba(11,17,28,.92);
+  --btn-bg:linear-gradient(180deg,#EBAB7D,#D08A5E); --btn-fg:#0B111C;
+  --btn-glow:0 12px 26px -14px rgba(208,138,94,.75);
+}
+
+/* ==================================================================
+   5 · היפוך המקור — אותם חמישה צבעים, תפקידים הפוכים
+   האויסטר (#EEF2F8) עולה לרקע, הדיו (#0B111C) יורד לטקסט,
+   והנחושת נשארת בדיוק היכן שהיא. אפס גוונים חדשים.
+   ================================================================== */
+.invert{
+  --bg:linear-gradient(168deg,#F7F9FC 0%,#EEF2F8 55%,#F7F9FC 100%);
+  --fg:#0B111C; --muted:#636B77; --ph:#96A0AE;
+  --accent:#D08A5E; --accent-deep:#A9663F;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.96),rgba(255,255,255,.72) 50%,rgba(255,255,255,.90));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.90),rgba(255,255,255,.58) 50%,rgba(255,255,255,.82));
+  --edge:rgba(11,17,28,.13);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(11,17,28,.08);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -1px 1px rgba(11,17,28,.06);
+  --lift:0 20px 42px -28px rgba(11,17,28,.32);
+  --on-tile:linear-gradient(158deg,rgba(235,171,125,.42),rgba(235,171,125,.14) 55%,rgba(208,138,94,.28));
+  --on-edge:rgba(169,102,63,.55);
+  --on-glow:0 0 0 1px rgba(169,102,63,.16),0 14px 30px -20px rgba(208,138,94,.6);
+  --dock:rgba(247,249,252,.95);
+  --btn-bg:linear-gradient(180deg,#EBAB7D,#D08A5E); --btn-fg:#0B111C;
+  --btn-glow:0 12px 26px -14px rgba(208,138,94,.6);
+}
+
+/* ==================================================================
+   1 · שמנת ונחושת — התרגום הישיר של הזהות הקיימת
+   ================================================================== */
+.cream{
+  --bg:linear-gradient(168deg,#FBF7F1 0%,#F4EDE3 55%,#FBF7F1 100%);
+  --fg:#2A1E16; --muted:#7A6656; --ph:#A89685;
+  --accent:#C07A4A; --accent-deep:#9A5C33;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.92),rgba(255,255,255,.66) 50%,rgba(255,255,255,.86));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.86),rgba(255,255,255,.52) 50%,rgba(255,255,255,.78));
+  --edge:rgba(154,92,51,.20);
+  --rim:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 1px rgba(122,102,86,.10);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.85),inset 0 -1px 1px rgba(122,102,86,.08);
+  --lift:0 20px 40px -26px rgba(90,60,36,.34);
+  --on-tile:linear-gradient(158deg,rgba(192,122,74,.20),rgba(192,122,74,.07) 55%,rgba(192,122,74,.15));
+  --on-edge:rgba(154,92,51,.55);
+  --on-glow:0 0 0 1px rgba(154,92,51,.16),0 14px 30px -20px rgba(154,92,51,.55);
+  --dock:rgba(251,247,241,.94);
+  --btn-bg:linear-gradient(180deg,#C07A4A,#9A5C33); --btn-fg:#FFF8F1;
+  --btn-glow:0 12px 26px -14px rgba(154,92,51,.5);
+}
+
+/* ==================================================================
+   2 · פורצלן — קריר, נקי, גלריה
+   ================================================================== */
+.porcelain{
+  --bg:linear-gradient(168deg,#FAFBFD 0%,#F0F3F7 55%,#FAFBFD 100%);
+  --fg:#18212E; --muted:#69788C; --ph:#9BA8B8;
+  --accent:#C08350; --accent-deep:#9C6134;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.95),rgba(255,255,255,.70) 50%,rgba(255,255,255,.90));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.90),rgba(255,255,255,.55) 50%,rgba(255,255,255,.82));
+  --edge:rgba(24,33,46,.13);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(24,33,46,.07);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(24,33,46,.06);
+  --lift:0 20px 42px -28px rgba(24,33,46,.30);
+  --on-tile:linear-gradient(158deg,rgba(192,131,80,.18),rgba(192,131,80,.06) 55%,rgba(192,131,80,.13));
+  --on-edge:rgba(156,97,52,.50);
+  --on-glow:0 0 0 1px rgba(156,97,52,.14),0 14px 30px -20px rgba(156,97,52,.45);
+  --dock:rgba(250,251,253,.95);
+  --btn-bg:linear-gradient(180deg,#1F2B3B,#141C27); --btn-fg:#F6F8FB;
+  --btn-glow:0 12px 26px -14px rgba(20,28,39,.55);
+}
+
+/* ==================================================================
+   3 · פשתן וטרהקוטה — אדמתי, טאבון, לחם
+   ================================================================== */
+.linen{
+  --bg:linear-gradient(168deg,#F6F1E8 0%,#EDE4D6 55%,#F6F1E8 100%);
+  --fg:#33291F; --muted:#7D7060; --ph:#A99C8B;
+  --accent:#B5643C; --accent-deep:#8F4A28;
+  --panel:linear-gradient(158deg,rgba(255,253,249,.94),rgba(255,253,249,.64) 50%,rgba(255,253,249,.86));
+  --tile:linear-gradient(158deg,rgba(255,253,249,.88),rgba(255,253,249,.50) 50%,rgba(255,253,249,.78));
+  --edge:rgba(143,74,40,.22);
+  --rim:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(90,72,52,.12);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 1px rgba(90,72,52,.10);
+  --lift:0 20px 40px -26px rgba(80,58,36,.38);
+  --on-tile:linear-gradient(158deg,rgba(181,100,60,.22),rgba(181,100,60,.08) 55%,rgba(181,100,60,.16));
+  --on-edge:rgba(143,74,40,.58);
+  --on-glow:0 0 0 1px rgba(143,74,40,.18),0 14px 30px -20px rgba(143,74,40,.55);
+  --dock:rgba(246,241,232,.95);
+  --btn-bg:linear-gradient(180deg,#B5643C,#8F4A28); --btn-fg:#FFF7EF;
+  --btn-glow:0 12px 26px -14px rgba(143,74,40,.5);
+}
+
+/* ==================================================================
+   4 · שיש וזהב — אירועי, פורמלי, ניגודיות גבוהה
+   ================================================================== */
+.marble{
+  --bg:linear-gradient(168deg,#F7F6F3 0%,#EFEDE7 55%,#F7F6F3 100%);
+  --fg:#15171B; --muted:#6E6E68; --ph:#A3A39C;
+  --accent:#B08442; --accent-deep:#8A6428;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.96),rgba(255,255,255,.70) 50%,rgba(255,255,255,.90));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.90),rgba(255,255,255,.56) 50%,rgba(255,255,255,.82));
+  --edge:rgba(21,23,27,.14);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(21,23,27,.08);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -1px 1px rgba(21,23,27,.06);
+  --lift:0 20px 42px -28px rgba(21,23,27,.32);
+  --on-tile:linear-gradient(158deg,rgba(176,132,66,.20),rgba(176,132,66,.07) 55%,rgba(176,132,66,.15));
+  --on-edge:rgba(138,100,40,.55);
+  --on-glow:0 0 0 1px rgba(138,100,40,.16),0 14px 30px -20px rgba(138,100,40,.5);
+  --dock:rgba(247,246,243,.95);
+  --btn-bg:linear-gradient(180deg,#15171B,#0C0D10); --btn-fg:#F7F6F3;
+  --btn-glow:0 12px 26px -14px rgba(21,23,27,.5);
+}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>ערכות בהירות · סבב בחירה</h1>
+  <p>אותו מסך בדיוק בחמש ערכות. הראשונה היא המקור הכהה, לעוגן השוואה.
+     כל ערכה היא סט משתני CSS — הבחירה שלך היא בסך הכול איזה סט נכנס לקובץ.</p>
+</div>
+
+<div class="deck" id="deck"></div>
+
+<script>
+const OPTIONS = [
+  {cls:'dark',      name:'המקור',            note:'חצות ונחושת · מה שיש היום',
+   sw:['#0B111C','#0F1826','#D08A5E','#EBAB7D','#EEF2F8']},
+  {cls:'cream',     name:'שמנת ונחושת',      note:'התרגום הישיר של הזהות · חמים ורך',
+   sw:['#FBF7F1','#F4EDE3','#C07A4A','#9A5C33','#2A1E16']},
+  {cls:'porcelain', name:'פורצלן',           note:'קריר ונקי · תחושת צלחת מסעדה',
+   sw:['#FAFBFD','#F0F3F7','#C08350','#9C6134','#18212E']},
+  {cls:'linen',     name:'פשתן וטרהקוטה',    note:'אדמתי · טאבון, לחם, מפית פשתן',
+   sw:['#F6F1E8','#EDE4D6','#B5643C','#8F4A28','#33291F']},
+  {cls:'marble',    name:'שיש וזהב',         note:'פורמלי ואירועי · ניגודיות גבוהה',
+   sw:['#F7F6F3','#EFEDE7','#B08442','#8A6428','#15171B']},
+  {cls:'invert',    name:'היפוך המקור',      note:'אותם 5 צבעים · האויסטר לרקע, הדיו לטקסט, הנחושת נשארת',
+   sw:['#EEF2F8','#EBAB7D','#D08A5E','#A9663F','#0B111C']}
+];
+
+document.getElementById('deck').innerHTML = OPTIONS.map((o,i)=>`
+  <div class="opt">
+    <div class="opt-tag"><b>${i}. ${o.name}</b><span>${o.note}</span></div>
+    <div class="swatches">${o.sw.map(c=>`<i style="background:${c}"></i>`).join('')}</div>
+    <div class="screen ${o.cls}">
+      <div class="sheet">
+        <div class="eyebrow">מסלול</div>
+        <h2>איך המסלול שלנו הולך להראות</h2>
+        <div class="rule"></div>
+
+        <div class="tier">
+          <div class="g"><span class="num">8</span> סועדים</div>
+          <div class="c"><span class="num">10</span> סוגי מנות</div>
+          <div class="p"><span class="num">550</span> <small><span class="cur">₪</span> לסועד</small></div>
+        </div>
+
+        <div class="field">
+          <label>סוג האירוע</label>
+          <div class="chips">
+            <button class="chip">ערב זוגי</button>
+            <button class="chip on">יום הולדת</button>
+            <button class="chip">אירוע עסקי</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>שם מלא</label>
+          <input placeholder="שם ושם משפחה">
+        </div>
+      </div>
+      <div class="dock">
+        <div class="total">סה״כ <b><span class="num">4,400</span> <span class="cur">₪</span></b></div>
+        <button class="btn">המשך</button>
+      </div>
+    </div>
+  </div>`).join('');
+</script>
+
+</body>
+</html>

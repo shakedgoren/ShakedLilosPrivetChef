@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>סבב 2 · תצוגת העכבר</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500&family=Suez+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B111C; --ink-2:#0F1826;
+  --brass:#D08A5E; --brass-lit:#EBAB7D; --brass-deep:#A9663F;
+  --oyster:#EEF2F8; --muted:#94A2B5; --dim:#7C8A9C;
+  --line-soft:rgba(238,242,248,.10);
+  --g-tint:linear-gradient(158deg,rgba(255,255,255,.105) 0%,rgba(255,255,255,.022) 46%,rgba(255,255,255,.062) 100%);
+  --g-tint-2:linear-gradient(158deg,rgba(255,255,255,.072) 0%,rgba(255,255,255,.014) 50%,rgba(255,255,255,.042) 100%);
+  --g-blur:blur(24px) saturate(175%);
+  --g-blur-sm:blur(13px) saturate(150%);
+  --g-edge:rgba(255,255,255,.115);
+  --g-rim:inset 0 1px 0 rgba(255,255,255,.26),inset 0 -1px 1px rgba(0,0,0,.34);
+  --g-rim-sm:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 1px rgba(0,0,0,.26);
+  --on-tint:linear-gradient(158deg,rgba(208,138,94,.32) 0%,rgba(208,138,94,.10) 55%,rgba(208,138,94,.22) 100%);
+  --on-edge:rgba(235,171,125,.62);
+  --on-glow:0 0 0 1px rgba(235,171,125,.26),0 16px 36px -20px rgba(208,138,94,.8);
+  --r-lg:26px; --r-md:18px;
+  --ease:cubic-bezier(.22,.85,.28,1);
+}
+:root[data-theme="light"]{
+  --ink:#F7F9FC; --ink-2:#EEF2F8;
+  --brass:#C07A4A; --brass-lit:#9A5C33; --brass-deep:#7E4826;
+  --oyster:#553A26; --muted:#7A675C; --dim:#8B7A6E;
+  --line-soft:rgba(58,42,32,.10);
+  --g-tint:linear-gradient(158deg,rgba(255,255,255,.74) 0%,rgba(255,255,255,.52) 45%,rgba(255,255,255,.66) 100%);
+  --g-tint-2:linear-gradient(158deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.58) 50%,rgba(255,255,255,.76) 100%);
+  --g-blur:blur(30px) saturate(200%);
+  --g-blur-sm:blur(16px) saturate(175%);
+  --g-edge:rgba(255,255,255,.92);
+  --g-rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 2px rgba(154,92,51,.14),0 0 0 1px rgba(11,17,28,.05);
+  --g-rim-sm:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(154,92,51,.12),0 0 0 1px rgba(11,17,28,.04);
+  --on-tint:linear-gradient(158deg,rgba(235,171,125,.55) 0%,rgba(208,138,94,.26) 50%,rgba(235,171,125,.42) 100%);
+  --on-edge:rgba(255,255,255,.95);
+  --on-glow:0 0 0 1px rgba(154,92,51,.22),0 12px 26px -14px rgba(184,110,64,.65);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ink);color:var(--oyster);font-family:'Heebo',system-ui,sans-serif;
+  font-weight:300;min-height:100vh;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-10%;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(22% 15% at 26% 12%,rgba(208,138,94,.30),transparent 70%),
+    radial-gradient(18% 13% at 84% 26%,rgba(60,90,130,.30),transparent 72%),
+    radial-gradient(26% 17% at 66% 82%,rgba(208,138,94,.24),transparent 70%);
+  filter:blur(10px)}
+:root[data-theme="light"] body::before{
+  background:
+    radial-gradient(22% 15% at 26% 12%,rgba(235,150,95,.95),transparent 70%),
+    radial-gradient(18% 13% at 84% 26%,rgba(120,170,220,.85),transparent 72%),
+    radial-gradient(26% 17% at 66% 82%,rgba(208,138,94,.90),transparent 70%);
+  filter:blur(8px);opacity:.85}
+
+.page{max-width:1120px;margin:0 auto;padding:26px 18px 90px}
+h1{font-family:'Suez One',serif;font-weight:400;font-size:clamp(21px,4.6vw,30px);margin:0 0 6px;line-height:1.3}
+.lede{color:var(--muted);font-size:15px;line-height:1.75;margin:0 0 12px;max-width:62ch}
+.eyebrow{font-size:11.5px;font-weight:500;letter-spacing:.3em;color:var(--brass);margin-bottom:10px}
+:root[data-theme="light"] .eyebrow{color:var(--brass-lit)}
+.callout{margin:0 0 30px;padding:13px 16px;border-radius:var(--r-md);
+  border:1px solid var(--line-soft);background:var(--g-tint-2);
+  color:var(--dim);font-size:13.5px;line-height:1.7;max-width:62ch}
+.callout b{color:var(--muted);font-weight:400}
+
+.opts{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.opt{border-radius:var(--r-lg);padding:20px 18px 22px;position:relative;
+  background:var(--g-tint);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+  border:1px solid var(--g-edge);box-shadow:var(--g-rim)}
+.opt h3{font-family:'Suez One',serif;font-weight:400;font-size:18px;margin:0 0 6px}
+.opt .d{color:var(--muted);font-size:13.5px;line-height:1.7;margin:0 0 16px;min-height:5.1em}
+.tag{position:absolute;inset-inline-start:16px;top:-11px;font-size:11px;letter-spacing:.16em;
+  padding:3px 11px;border-radius:999px;background:var(--ink-2);color:var(--brass);
+  border:1px solid var(--line-soft);font-weight:500}
+:root[data-theme="light"] .tag{color:var(--brass-lit);background:#fff}
+.stage{border-radius:var(--r-md);border:1px dashed var(--line-soft);
+  min-height:190px;display:grid;place-items:center;padding:16px;position:relative;overflow:hidden}
+.zone{width:100%;height:100%;min-height:158px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:13px;text-align:center;
+  color:var(--dim);font-size:12.5px;position:relative}
+.zone.nocur,.zone.nocur *{cursor:none}
+.zone b{font-weight:400;color:var(--muted)}
+.demo-btn{padding:11px 24px;border-radius:999px;border:1px solid var(--on-edge);
+  background:var(--on-tint);color:var(--oyster);font-family:inherit;font-size:14px;
+  transition:box-shadow .3s var(--ease)}
+.demo-card{width:112px;height:74px;border-radius:16px;display:grid;place-items:center;
+  border:1px solid var(--g-edge);background:var(--g-tint-2);color:var(--muted);font-size:12px}
+.row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+
+/* ---------- מתג תצוגה ---------- */
+.themex{position:fixed;z-index:60;top:14px;inset-inline-end:14px;
+  width:38px;height:38px;display:grid;place-items:center;border-radius:12px;cursor:pointer;
+  background:var(--g-tint-2);-webkit-backdrop-filter:var(--g-blur-sm);backdrop-filter:var(--g-blur-sm);
+  border:1px solid var(--g-edge);box-shadow:var(--g-rim-sm)}
+.themex svg{width:17px;height:17px;stroke:var(--brass-lit);fill:none;stroke-width:1.7;stroke-linecap:round}
+.themex .ic-moon{display:none}
+:root[data-theme="light"] .themex .ic-sun{display:none}
+:root[data-theme="light"] .themex .ic-moon{display:block}
+
+/* ============ סמנים ============ */
+.cur{position:fixed;top:0;left:0;pointer-events:none;z-index:80;opacity:0;
+  transition:opacity .18s ease}
+
+/* 4 · סכו״ם מוצלב */
+#cCut{width:30px;height:30px;margin:-15px 0 0 -15px}
+#cCut svg{width:100%;height:100%;overflow:visible}
+#cCut path,#cCut line{stroke:var(--brass-lit);fill:none;stroke-width:1.5;stroke-linecap:round}
+#cCut .fk,#cCut .kn{transition:transform .34s var(--ease);transform-origin:50% 82%}
+#cCut .fk{transform:rotate(-20deg)}
+#cCut .kn{transform:rotate(20deg)}
+#cCut.open .fk{transform:rotate(-42deg)}
+#cCut.open .kn{transform:rotate(42deg)}
+
+/* 5 · טבעת שנמלאת */
+#cFill{width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
+  border:1.4px solid var(--brass);overflow:hidden;
+  transition:opacity .18s ease,width .3s var(--ease),height .3s var(--ease),margin .3s var(--ease)}
+#cFill i{position:absolute;left:0;right:0;bottom:0;height:0;display:block;
+  background:linear-gradient(180deg,var(--brass-lit),var(--brass));
+  transition:height .34s var(--ease)}
+#cFill.open{width:38px;height:38px;margin:-19px 0 0 -19px}
+#cFill.open i{height:100%}
+
+/* 6 · הד לחיצה (בלי סמן מותאם) */
+.echo{position:fixed;pointer-events:none;z-index:80;border-radius:50%;
+  border:1.5px solid var(--brass-lit);width:14px;height:14px;margin:-7px 0 0 -7px;
+  animation:echo .62s var(--ease) both}
+@keyframes echo{
+  0%{transform:scale(.3);opacity:.95}
+  100%{transform:scale(4.6);opacity:0}}
+
+/* 7 · מסגרת מגנטית */
+#cMag{position:fixed;top:0;left:0;pointer-events:none;z-index:80;opacity:0;
+  border:1.4px solid var(--brass);border-radius:999px;
+  transition:opacity .22s ease,width .3s var(--ease),height .3s var(--ease),border-radius .3s var(--ease)}
+
+.foot{margin-top:46px;padding-top:22px;border-top:1px solid var(--line-soft);
+  color:var(--dim);font-size:13px;line-height:1.8}
+.foot b{color:var(--muted);font-weight:400}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<button type="button" class="themex" onclick="tog()" aria-label="החלפת תצוגה">
+  <svg class="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+  <svg class="ic-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+</button>
+
+<div class="page">
+  <div class="eyebrow">סבב שני</div>
+  <h1>ארבע אופציות חדשות לעכבר</h1>
+  <p class="lede">
+    כיוונים אחרים לגמרי מהסבב הקודם. רחפי בתוך כל מסגרת מקווקוות, וגם לחצי —
+    חלק מהאופציות מגיבות ללחיצה ולא רק לתנועה.
+  </p>
+  <p class="callout">
+    <b>שווה לזכור:</b> סמן עכבר קיים רק במחשב. רוב הלקוחות שלך יגיעו מהטלפון,
+    ושם אף אחת מהאופציות האלה לא תיראה. לכן זו החלטה שמשפיעה על מיעוט מהמבקרים —
+    ואופציה 6 היא תשובה לגיטימית לגמרי.
+  </p>
+
+  <div class="opts">
+
+    <div class="opt"><span class="tag">עכבר 4</span>
+      <h3>סכו״ם מוצלב</h3>
+      <p class="d">הסמן הוא סכין ומזלג מוצלבים — בדיוק הסימן שבלוגו שלך. מעל משהו לחיץ הם נפתחים לצדדים, כמו מי שמתיישב לאכול. הכי קשור למותג.</p>
+      <div class="stage"><div class="zone nocur" data-cur="cut">
+        <b>העבירי כאן את העכבר</b>
+        <div class="row"><button class="demo-btn">כפתור</button><div class="demo-card">כרטיס</div></div>
+      </div></div>
+    </div>
+
+    <div class="opt"><span class="tag">עכבר 5</span>
+      <h3>טבעת שנמלאת</h3>
+      <p class="d">טבעת דקה וריקה שנעה עם הסמן. מעל משהו לחיץ היא גדלה ומתמלאת בנחושת מלמטה למעלה, כמו כוס שנמזגת. שקט ומדויק.</p>
+      <div class="stage"><div class="zone nocur" data-cur="fill">
+        <b>העבירי כאן את העכבר</b>
+        <div class="row"><button class="demo-btn">כפתור</button><div class="demo-card">כרטיס</div></div>
+      </div></div>
+    </div>
+
+    <div class="opt"><span class="tag">עכבר 6</span>
+      <h3>בלי סמן מיוחד · הד לחיצה</h3>
+      <p class="d">הסמן הרגיל של המחשב נשאר בדיוק כמו שהוא. הדבר היחיד שנוסף: טבעת נחושת שמתפשטת מנקודת הלחיצה. לא מפריע לאף אחד, ועדיין יש תגובה.</p>
+      <div class="stage"><div class="zone" data-cur="echo">
+        <b>לחצי כאן בכל מקום</b>
+        <div class="row"><button class="demo-btn">כפתור</button><div class="demo-card">כרטיס</div></div>
+      </div></div>
+    </div>
+
+    <div class="opt"><span class="tag">עכבר 7</span>
+      <h3>מסגרת מגנטית</h3>
+      <p class="d">אין סמן חדש בכלל בזמן תנועה רגילה. כשמתקרבים לכפתור, מסגרת נחושת נדלקת ונצמדת בדיוק לצורה שלו. מרגיש כאילו האתר עונה לך.</p>
+      <div class="stage"><div class="zone" data-cur="mag">
+        <b>התקרבי לכפתור או לכרטיס</b>
+        <div class="row"><button class="demo-btn">כפתור</button><div class="demo-card">כרטיס</div></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <b>אם אף אחת מהארבע לא מדברת אלייך</b> — תגידי לי מה הפריע בקודמות
+    (יותר מדי תנועה? מסיח? לא מתאים לאופי?) ואביא כיוון חדש לפי זה.
+  </div>
+</div>
+
+<!-- סמנים -->
+<div class="cur" id="cCut">
+  <svg viewBox="0 0 24 24">
+    <g class="fk"><line x1="8" y1="21" x2="8" y2="12"/><path d="M5.5 3v6a2.5 2.5 0 0 0 5 0V3"/><line x1="8" y1="3" x2="8" y2="9"/></g>
+    <g class="kn"><line x1="16" y1="21" x2="16" y2="13"/><path d="M16 13V3c2.6 1.8 2.6 8.2 0 10z"/></g>
+  </svg>
+</div>
+<div class="cur" id="cFill"><i></i></div>
+<div class="cur" id="cMag"></div>
+
+<script>
+function tog(){
+  const cur = document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', cur);
+}
+if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)
+  document.documentElement.setAttribute('data-theme','light');
+
+const cut = document.getElementById('cCut'),
+      fill = document.getElementById('cFill'),
+      mag  = document.getElementById('cMag');
+const HITS = '.demo-btn,.demo-card';
+
+document.querySelectorAll('.zone').forEach(zone=>{
+  const kind = zone.dataset.cur;
+
+  /* --- 4 ו-5 · סמן שנע עם העכבר --- */
+  if(kind==='cut' || kind==='fill'){
+    const el = kind==='cut' ? cut : fill;
+    zone.addEventListener('mouseenter', ()=>{ el.style.opacity = 1; });
+    zone.addEventListener('mouseleave', ()=>{ el.style.opacity = 0; el.classList.remove('open'); });
+    zone.addEventListener('mousemove', e=>{
+      el.style.transform = 'translate('+e.clientX+'px,'+e.clientY+'px)';
+      el.classList.toggle('open', !!e.target.closest(HITS));
+    });
+  }
+
+  /* --- 6 · הד לחיצה, בלי לגעת בסמן --- */
+  if(kind==='echo'){
+    zone.addEventListener('click', e=>{
+      const d = document.createElement('div');
+      d.className = 'echo';
+      d.style.left = e.clientX+'px';
+      d.style.top  = e.clientY+'px';
+      document.body.appendChild(d);
+      setTimeout(()=>d.remove(), 700);
+    });
+  }
+
+  /* --- 7 · מסגרת שנצמדת לצורת האלמנט --- */
+  if(kind==='mag'){
+    const NEAR = 70;                       /* מרחק שבו המגנט מתחיל לפעול */
+    zone.addEventListener('mousemove', e=>{
+      let best = null, bestD = Infinity;
+      zone.querySelectorAll(HITS).forEach(t=>{
+        const r = t.getBoundingClientRect();
+        const cx = Math.max(r.left, Math.min(e.clientX, r.right));
+        const cy = Math.max(r.top,  Math.min(e.clientY, r.bottom));
+        const d = Math.hypot(e.clientX-cx, e.clientY-cy);
+        if(d < bestD){ bestD = d; best = { el:t, r:r }; }
+      });
+      if(best && bestD < NEAR){
+        const r = best.r, pad = 7;
+        mag.style.opacity = 1;
+        mag.style.width  = (r.width + pad*2)+'px';
+        mag.style.height = (r.height + pad*2)+'px';
+        mag.style.borderRadius = getComputedStyle(best.el).borderRadius;
+        mag.style.transform = 'translate('+(r.left-pad)+'px,'+(r.top-pad)+'px)';
+      } else {
+        mag.style.opacity = 0;
+      }
+    });
+    zone.addEventListener('mouseleave', ()=>{ mag.style.opacity = 0; });
+  }
+});
+</script>
+</body>
+</html>

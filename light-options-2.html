@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>סבב 2 · פלטות ColorHunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Heebo:wght@300;400;500;700&family=Karantina:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+button{font-family:inherit;color:inherit;cursor:pointer}
+body{font-family:'Heebo',sans-serif;font-weight:300;background:#0B111C;color:#EEF2F8;
+  padding:24px 14px 70px;-webkit-font-smoothing:antialiased}
+.num{font-family:'Karantina',cursive;font-weight:400;font-size:1.2em;letter-spacing:.03em;line-height:1}
+.cur{font-family:'Heebo',sans-serif}
+
+.page-head{max-width:1180px;margin:0 auto 24px;text-align:center}
+.page-head h1{font-family:'Suez One',serif;font-weight:400;font-size:clamp(24px,4.4vw,34px);margin-bottom:9px}
+.page-head p{color:#94A2B5;font-size:14.5px;line-height:1.7;max-width:700px;margin:0 auto}
+
+.deck{max-width:1180px;margin:0 auto;display:grid;gap:22px;
+  grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+
+.opt{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 22px 44px -26px rgba(0,0,0,.9)}
+.opt-tag{padding:12px 16px;background:#131C2B;border-bottom:1px solid rgba(255,255,255,.09)}
+.opt-tag b{font-family:'Suez One',serif;font-weight:400;font-size:18px;color:#EEF2F8;display:block;margin-bottom:3px}
+.opt-tag span{font-size:12px;color:#7C8A9C;letter-spacing:.03em}
+.src{display:flex;height:26px}
+.src i{flex:1}
+.src-lbl{font-size:10px;color:#5B6A7D;padding:5px 16px 0;letter-spacing:.06em;background:#131C2B}
+
+.screen{padding:22px 16px 0;background:var(--bg);color:var(--fg);min-height:520px;
+  display:flex;flex-direction:column}
+.sheet{background:var(--panel);border:1px solid var(--edge);border-radius:22px;
+  box-shadow:var(--rim),var(--lift);padding:20px 16px;flex:1}
+.eyebrow{font-size:11px;letter-spacing:.34em;color:var(--accent-deep);text-align:center;margin-bottom:8px}
+h2{font-family:'Suez One',serif;font-weight:400;font-size:23px;line-height:1.3;
+  text-align:center;color:var(--fg);margin-bottom:12px}
+.rule{height:1px;margin:0 auto 18px;max-width:210px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+label{display:block;font-size:11px;letter-spacing:.17em;color:var(--muted);margin-bottom:8px;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.chip{flex:0 0 calc((100% - 16px)/3);min-height:58px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:13.5px;padding:9px 5px;color:var(--muted);
+  background:var(--tile);border:1px solid var(--edge);box-shadow:var(--rim-sm)}
+.chip.on{background:var(--on-tile);border-color:var(--on-edge);color:var(--accent-deep);
+  box-shadow:var(--rim-sm),var(--on-glow);font-weight:400}
+.field{margin-bottom:18px}
+input{width:100%;min-height:46px;border-radius:15px;text-align:center;
+  background:var(--tile);border:1px solid var(--edge);box-shadow:var(--rim-sm);
+  font-family:'Heebo',sans-serif;font-size:15.5px;font-weight:300;color:var(--fg);padding:11px 13px}
+input::placeholder{color:var(--ph)}
+.tier{border-radius:18px;padding:14px 12px;text-align:center;
+  background:var(--on-tile);border:1px solid var(--on-edge);
+  box-shadow:var(--rim-sm),var(--on-glow);margin-bottom:16px}
+.tier .g{font-size:12px;color:var(--muted);margin-bottom:4px}
+.tier .c{font-family:'Suez One',serif;font-size:18px;color:var(--fg);margin-bottom:5px}
+.tier .p{font-family:'Suez One',serif;font-size:25px;color:var(--accent-deep)}
+.tier .p small{font-family:'Heebo',sans-serif;font-size:12.5px;color:var(--muted);margin-right:5px}
+.dock{margin:0 -16px;padding:11px 16px 15px;background:var(--dock);border-top:1px solid var(--edge);
+  display:flex;flex-direction:column;gap:9px}
+.total{display:flex;justify-content:center;align-items:baseline;gap:8px;font-size:12.5px;color:var(--muted)}
+.total b{font-family:'Suez One',serif;font-weight:400;font-size:19px;color:var(--accent-deep)}
+.btn{min-height:48px;border-radius:15px;border:0;background:var(--btn-bg);color:var(--btn-fg);
+  font-size:16.5px;font-weight:500;box-shadow:var(--btn-glow)}
+
+/* ============ 1 · שמיים ולימונדה ============ */
+.p1{
+  --bg:linear-gradient(168deg,#FFFDF0 0%,#FFF9D2 55%,#FFFDF0 100%);
+  --fg:#1E3A4F; --muted:#557087; --ph:#93A6B4;
+  --accent:#8CC0EB; --accent-deep:#1F6EA6;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.94),rgba(255,255,255,.68) 50%,rgba(255,255,255,.88));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.88),rgba(255,255,255,.54) 50%,rgba(255,255,255,.80));
+  --edge:rgba(31,110,166,.20);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(31,110,166,.09);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(31,110,166,.07);
+  --lift:0 20px 40px -26px rgba(31,80,120,.34);
+  --on-tile:linear-gradient(158deg,rgba(140,192,235,.42),rgba(191,221,240,.18) 55%,rgba(140,192,235,.30));
+  --on-edge:rgba(31,110,166,.52);
+  --on-glow:0 0 0 1px rgba(31,110,166,.15),0 14px 30px -20px rgba(31,110,166,.5);
+  --dock:rgba(255,253,240,.95);
+  --btn-bg:linear-gradient(180deg,#3E93CE,#1F6EA6); --btn-fg:#F6FBFE;
+  --btn-glow:0 12px 26px -14px rgba(31,110,166,.5);
+}
+/* ============ 2 · לבנדר וקרם ============ */
+.p2{
+  --bg:linear-gradient(168deg,#FFF8EE 0%,#FFF2E0 55%,#FFF8EE 100%);
+  --fg:#2B2748; --muted:#66628C; --ph:#9E9BBB;
+  --accent:#A2AADB; --accent-deep:#54559A;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.94),rgba(255,255,255,.66) 50%,rgba(255,255,255,.88));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.88),rgba(255,255,255,.52) 50%,rgba(255,255,255,.80));
+  --edge:rgba(84,85,154,.20);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(84,85,154,.09);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(84,85,154,.07);
+  --lift:0 20px 40px -26px rgba(70,66,120,.34);
+  --on-tile:linear-gradient(158deg,rgba(162,170,219,.42),rgba(192,201,238,.18) 55%,rgba(162,170,219,.30));
+  --on-edge:rgba(84,85,154,.52);
+  --on-glow:0 0 0 1px rgba(84,85,154,.15),0 14px 30px -20px rgba(84,85,154,.5);
+  --dock:rgba(255,248,238,.95);
+  --btn-bg:linear-gradient(180deg,#7B7CB8,#54559A); --btn-fg:#FBFAFF;
+  --btn-glow:0 12px 26px -14px rgba(84,85,154,.5);
+}
+/* ============ 3 · אפרסק ורוד ============ */
+.p3{
+  --bg:linear-gradient(168deg,#FFF7F2 0%,#FFF2EB 55%,#FFF7F2 100%);
+  --fg:#4A3128; --muted:#8A6355; --ph:#B99B8C;
+  --accent:#FFD6BA; --accent-deep:#B25F35;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.95),rgba(255,255,255,.70) 50%,rgba(255,255,255,.90));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.90),rgba(255,255,255,.56) 50%,rgba(255,255,255,.82));
+  --edge:rgba(178,95,53,.20);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(178,95,53,.09);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(178,95,53,.07);
+  --lift:0 20px 40px -26px rgba(150,90,60,.32);
+  --on-tile:linear-gradient(158deg,rgba(255,214,186,.62),rgba(255,220,220,.30) 55%,rgba(255,232,205,.50));
+  --on-edge:rgba(178,95,53,.50);
+  --on-glow:0 0 0 1px rgba(178,95,53,.14),0 14px 30px -20px rgba(178,95,53,.45);
+  --dock:rgba(255,247,242,.95);
+  --btn-bg:linear-gradient(180deg,#D07C4E,#B25F35); --btn-fg:#FFF8F3;
+  --btn-glow:0 12px 26px -14px rgba(178,95,53,.5);
+}
+/* ============ 4 · מרווה ורוז ============ */
+.p4{
+  --bg:linear-gradient(168deg,#F4F1E8 0%,#EDE8DC 55%,#F4F1E8 100%);
+  --fg:#2F3527; --muted:#68715A; --ph:#9AA38C;
+  --accent:#A5B68D; --accent-deep:#566A3E;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.92),rgba(255,255,255,.64) 50%,rgba(255,255,255,.86));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.86),rgba(255,255,255,.50) 50%,rgba(255,255,255,.78));
+  --edge:rgba(86,106,62,.22);
+  --rim:inset 0 1px 0 rgba(255,255,255,.96),inset 0 -1px 1px rgba(86,106,62,.10);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 1px rgba(86,106,62,.08);
+  --lift:0 20px 40px -26px rgba(70,80,50,.36);
+  --on-tile:linear-gradient(158deg,rgba(165,182,141,.46),rgba(193,207,161,.20) 55%,rgba(231,204,204,.30));
+  --on-edge:rgba(86,106,62,.52);
+  --on-glow:0 0 0 1px rgba(86,106,62,.15),0 14px 30px -20px rgba(86,106,62,.5);
+  --dock:rgba(244,241,232,.95);
+  --btn-bg:linear-gradient(180deg,#75885A,#566A3E); --btn-fg:#F8FAF3;
+  --btn-glow:0 12px 26px -14px rgba(86,106,62,.5);
+}
+/* ============ 5 · חרסית ושמנת ============ */
+.p5{
+  --bg:linear-gradient(168deg,#FEFCF3 0%,#F5EBE0 55%,#FEFCF3 100%);
+  --fg:#3B2C28; --muted:#7C6058; --ph:#B09A93;
+  --accent:#DBA39A; --accent-deep:#9E5346;
+  --panel:linear-gradient(158deg,rgba(255,255,255,.94),rgba(255,255,255,.66) 50%,rgba(255,255,255,.88));
+  --tile:linear-gradient(158deg,rgba(255,255,255,.88),rgba(255,255,255,.52) 50%,rgba(255,255,255,.80));
+  --edge:rgba(158,83,70,.20);
+  --rim:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 1px rgba(158,83,70,.09);
+  --rim-sm:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 1px rgba(158,83,70,.07);
+  --lift:0 20px 40px -26px rgba(130,85,72,.34);
+  --on-tile:linear-gradient(158deg,rgba(219,163,154,.44),rgba(240,219,219,.22) 55%,rgba(219,163,154,.32));
+  --on-edge:rgba(158,83,70,.52);
+  --on-glow:0 0 0 1px rgba(158,83,70,.15),0 14px 30px -20px rgba(158,83,70,.5);
+  --dock:rgba(254,252,243,.95);
+  --btn-bg:linear-gradient(180deg,#C0705F,#9E5346); --btn-fg:#FFF8F4;
+  --btn-glow:0 12px 26px -14px rgba(158,83,70,.5);
+}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>סבב 2 · חמש פלטות ColorHunt</h1>
+  <p>הפס העליון בכל כרטיס הוא ארבעת הצבעים המקוריים של הפלטה.
+     אף פלטה לא כללה גוון כהה לטקסט, ולכן לכל אחת נגזר גוון כהה <b>מתוך הפלטה עצמה</b> — הוא מופיע בטקסט, במבטא ובכפתור.</p>
+</div>
+
+<div class="deck" id="deck"></div>
+
+<script>
+const OPTIONS = [
+  {cls:'p1', name:'שמיים ולימונדה', note:'קרם־לימון עם תכלת · רענן, קליל, קייצי',
+   src:['#FFF9D2','#FFEBCC','#BFDDF0','#8CC0EB'], derived:'#1F6EA6'},
+  {cls:'p2', name:'לבנדר וקרם',      note:'קרם חמים עם לבנדר · רך ונשי',
+   src:['#FFF2E0','#C0C9EE','#A2AADB','#898AC4'], derived:'#54559A'},
+  {cls:'p3', name:'אפרסק ורוד',      note:'כולו גווני עור־אפרסק · הכי חמים והכי עדין',
+   src:['#FFDCDC','#FFF2EB','#FFE8CD','#FFD6BA'], derived:'#B25F35'},
+  {cls:'p4', name:'מרווה ורוז',      note:'ירוק מרווה עם רוז עתיק · אורגני, שדה, עשבי תיבול',
+   src:['#E7CCCC','#EDE8DC','#A5B68D','#C1CFA1'], derived:'#566A3E'},
+  {cls:'p5', name:'חרסית ושמנת',     note:'שמנת עם חרסית ורודה · שקט ומינימלי',
+   src:['#FEFCF3','#F5EBE0','#F0DBDB','#DBA39A'], derived:'#9E5346'}
+];
+
+document.getElementById('deck').innerHTML = OPTIONS.map((o,i)=>`
+  <div class="opt">
+    <div class="opt-tag"><b>${i+1}. ${o.name}</b><span>${o.note}</span></div>
+    <div class="src-lbl">הפלטה המקורית + הגוון הכהה שנגזר ←</div>
+    <div class="src">${o.src.map(c=>`<i style="background:${c}"></i>`).join('')}<i style="background:${o.derived}"></i></div>
+    <div class="screen ${o.cls}">
+      <div class="sheet">
+        <div class="eyebrow">מסלול</div>
+        <h2>איך המסלול שלנו הולך להראות</h2>
+        <div class="rule"></div>
+        <div class="tier">
+          <div class="g"><span class="num">8</span> סועדים</div>
+          <div class="c"><span class="num">10</span> סוגי מנות</div>
+          <div class="p"><span class="num">550</span> <small><span class="cur">₪</span> לסועד</small></div>
+        </div>
+        <div class="field">
+          <label>סוג האירוע</label>
+          <div class="chips">
+            <button class="chip">ערב זוגי</button>
+            <button class="chip on">יום הולדת</button>
+            <button class="chip">אירוע עסקי</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>שם מלא</label>
+          <input placeholder="שם ושם משפחה">
+        </div>
+      </div>
+      <div class="dock">
+        <div class="total">סה״כ <b><span class="num">4,400</span> <span class="cur">₪</span></b></div>
+        <button class="btn">המשך</button>
+      </div>
+    </div>
+  </div>`).join('');
+</script>
+
+</body>
+</html>
