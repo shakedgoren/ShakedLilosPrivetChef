@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Shaked Liloz • Privet Chef</title>
+<title>Shaked Liloz • Private Chef</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Suez+One&family=Heebo:wght@300;400;500;700&family=Karantina:wght@300;400;700&display=swap" rel="stylesheet">
@@ -425,34 +425,6 @@ h2{font-family:'Suez One',serif;font-weight:400;font-size:clamp(25px,6.4vw,37px)
   .cover.swap-in .slab,.cover.swap-in .tray{animation:none}
 }
 
-/* ===== סמן העכבר · סכין ומזלג מהלוגו =====
-   נדלק רק כש-JS הוסיף body.has-cursor, וזה קורה רק במכשיר עם עכבר אמיתי.
-   בלי JS או בנייד — הסמן הרגיל של המערכת נשאר בדיוק כמו שהוא. */
-.curx{position:fixed;top:0;left:0;z-index:200;pointer-events:none;
-  width:30px;height:30px;margin:-15px 0 0 -15px;opacity:0;
-  transition:opacity .18s ease}
-.curx svg{width:100%;height:100%;overflow:visible;
-  transition:transform .16s var(--ease);
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.28))}
-:root[data-theme="light"] .curx svg{filter:drop-shadow(0 1px 2px rgba(90,58,36,.22))}
-.curx path,.curx line{stroke:var(--brass-lit);fill:none;stroke-width:1.5;
-  stroke-linecap:round;stroke-linejoin:round}
-.curx .fk,.curx .kn{transition:transform .34s var(--ease);transform-origin:50% 82%}
-.curx .fk{transform:rotate(-20deg)}
-.curx .kn{transform:rotate(20deg)}
-/* מעל משהו לחיץ — הסכו״ם נפתח לצדדים */
-.curx.open .fk{transform:rotate(-42deg)}
-.curx.open .kn{transform:rotate(42deg)}
-.curx.down svg{transform:scale(.84)}
-body.has-cursor.cur-on .curx{opacity:1}
-body.has-cursor,body.has-cursor *{cursor:none}
-/* בשדות טקסט חייבים לראות איפה הקו — שם מחזירים את הסמן הרגיל */
-body.has-cursor input,body.has-cursor textarea,body.has-cursor select{cursor:auto}
-body.has-cursor.cur-text .curx{opacity:0}
-@media (prefers-reduced-motion:reduce){
-  .curx .fk,.curx .kn,.curx svg{transition:none}
-}
-
 /* ===== מעבר א׳ · המכסה נסגר ונפתח · מהמסך הראשי בלבד ===== */
 .xlid{position:fixed;inset:0;z-index:90;pointer-events:none;opacity:0;
   display:grid;place-items:center}
@@ -643,22 +615,35 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .pasta-shapes{display:flex;flex-direction:column;gap:22px}
 .pasta-block{display:flex;flex-direction:column;gap:10px}
 .pasta-block > label{margin-bottom:0}
-.chips.shape-picker{display:flex;flex-wrap:nowrap;justify-content:center;gap:clamp(2px,1.2vw,8px)}
+/* הצ׳יפים חולקים את רוחב השורה שווה בשווה — כך הם גדולים ככל האפשר
+   ולעולם לא גולשים, בלי תלות ברוחב המסך */
+/* align-items:center הכרחי — בלעדיו הצ׳יפים נמתחים לגובה השורה
+   ו-aspect-ratio לא מצליח לשמור אותם ריבועיים */
+.chips.shape-picker{display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;
+  gap:clamp(1px,.5vw,4px)}
 .chips.shape-picker > .chip{
-  flex:0 0 auto;min-width:0;width:clamp(38px,11.2vw,52px);height:clamp(38px,11.2vw,52px);
-  padding:0;border-radius:50%;display:grid;place-items:center;
+  /* min-height:58px של כלל הצ׳יפ הבסיסי גובר על aspect-ratio — חייב איפוס */
+  flex:1 1 0;min-width:0;width:auto;height:auto;min-height:0;aspect-ratio:1;max-width:64px;
+  /* grid-template של 1fr נותן מסלול בגודל מוגדר, ולכן אחוזי ה-SVG
+     מתפרשים מולו ויוצאים ריבועיים. בלי זה המסלול מתכווץ לתוכן
+     והרוחב והגובה מתפרשים זה מול זה. */
+  padding:0;border-radius:50%;display:grid;grid-template:1fr / 1fr;place-items:center;
   background:none;border:1px solid transparent;box-shadow:none;
   -webkit-backdrop-filter:none;backdrop-filter:none;overflow:visible}
 .chips.shape-picker > .chip::before,.chips.shape-picker > .chip::after{display:none}
-.chips.shape-picker > .chip svg{width:64%;height:64%;stroke:var(--muted);fill:none;
+.chips.shape-picker > .chip svg{width:84%;height:84%;stroke:var(--brass);fill:none;
   stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s ease,transform .35s var(--ease)}
 /* פרטי הפנים של האייקון — דקים יותר מהמתאר כדי שהצורה תישאר קריאה בקטן */
-.chips.shape-picker > .chip svg .in{stroke-width:1;opacity:.5}
+.chips.shape-picker > .chip svg .in{stroke-width:1;opacity:.55}
 .chips.shape-picker > .chip svg ellipse{fill:none}
-.chips.shape-picker > .chip:hover svg{stroke:var(--oyster)}
+.chips.shape-picker > .chip:hover svg{stroke:var(--brass-lit)}
 .chips.shape-picker > .chip.on{background:var(--on-tint);border-color:var(--on-edge);
   box-shadow:var(--g-rim-sm),var(--on-glow)}
 .chips.shape-picker > .chip.on svg{stroke:var(--brass-lit);transform:scale(1.06)}
+/* בבהיר הנחושת הבינונית יורדת ל-3.25:1 מול הרקע — כמעט על הסף.
+   שם משתמשים בגוונים הכהים יותר. */
+:root[data-theme="light"] .chips.shape-picker > .chip svg{stroke:var(--brass-lit)}
+:root[data-theme="light"] .chips.shape-picker > .chip.on svg{stroke:var(--brass-deep)}
 /* min-height שומר את המקום לשם הצורה — כך אין קפיצה כשהוא מופיע */
 .shape-name{font-size:13.5px;letter-spacing:.06em;color:var(--brass-lit);min-height:20px;text-align:center}
 /* ---------- בלוק פסטה · הוספה, הסרה ורמז ---------- */
@@ -1213,13 +1198,7 @@ body.pick-open .pick-scrim{opacity:1;pointer-events:auto}
   </div>
 </div>
 
-<!-- סמן העכבר · סכין ומזלג מהלוגו. נדלק רק במכשיר עם עכבר אמיתי -->
-<div class="curx" id="curx" aria-hidden="true">
-  <svg viewBox="0 0 24 24">
-    <g class="fk"><line x1="8" y1="21" x2="8" y2="12"/><path d="M5.5 3v6a2.5 2.5 0 0 0 5 0V3"/><line x1="8" y1="3" x2="8" y2="9"/></g>
-    <g class="kn"><line x1="16" y1="21" x2="16" y2="13"/><path d="M16 13V3c2.6 1.8 2.6 8.2 0 10z"/></g>
-  </svg>
-</div>
+
 
 <!-- מכסה המעבר · יורד וסוגר את המסך במעבר מהמסך הראשי -->
 <div class="xlid" id="xlid" aria-hidden="true">
@@ -2048,30 +2027,6 @@ function settleCover(){
   [0,60,160,320,700].forEach(t=>setTimeout(()=>{
     if(!coverTouched && (view==='hub' || view==='sub')) coverHome();
   },t));
-}
-
-/* ===== סמן העכבר · סכין ומזלג =====
-   רק במכשיר עם עכבר אמיתי. בטלפון הפונקציה יוצאת מיד ולא נוגעת בכלום. */
-const CUR_HIT  = 'button,a,summary,[role="button"],.slab,.card,.chip,.sqb,'+
-                 '.cal-day.avail,.time-chip,.box-card,.wt-item,.sq-item';
-const CUR_TEXT = 'input,textarea,select';
-function initCursor(){
-  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
-  const el = $('curx'); if(!el) return;
-  const body = document.body;
-  body.classList.add('has-cursor');
-  addEventListener('mousemove', e=>{
-    el.style.transform = 'translate('+e.clientX+'px,'+e.clientY+'px)';
-    if(!body.classList.contains('cur-on')) body.classList.add('cur-on');
-    const t = e.target;
-    el.classList.toggle('open', !!(t.closest && t.closest(CUR_HIT)));
-    body.classList.toggle('cur-text', !!(t.closest && t.closest(CUR_TEXT)));
-  }, {passive:true});
-  addEventListener('mousedown', ()=>el.classList.add('down'), {passive:true});
-  addEventListener('mouseup',   ()=>el.classList.remove('down'), {passive:true});
-  /* יצא מהחלון — מכבים, אחרת הסכו״ם נתקע בקצה */
-  addEventListener('mouseout', e=>{ if(!e.relatedTarget) body.classList.remove('cur-on'); }, {passive:true});
-  addEventListener('blur', ()=>body.classList.remove('cur-on'));
 }
 
 function initCover(){
@@ -3806,7 +3761,6 @@ dressSteps();
 buildH1Head();
 setupPickers();
 initCover();
-initCursor();
 paint();
 /* הגופנים נטענים אחרי הציור הראשון, משנים גיאומטריה ומזיזים את ה-snap.
    ממרכזים שוב אחרי שהם מוכנים — אבל רק אם עדיין עומדים על מסך בחירה. */
