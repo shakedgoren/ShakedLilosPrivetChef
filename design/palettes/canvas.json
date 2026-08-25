@@ -1,0 +1,26 @@
+{
+  "pages": [
+    { "id": "page-pastel", "name": "פסטל" },
+    { "id": "page-first", "name": "הסבב הראשון" }
+  ],
+  "artboards": [
+    { "file": "Q1_Pistachio.dc.html", "page": "page-pastel", "x": 0, "y": 0, "w": 390, "h": 640, "title": "1 · פיסטוק ושמנת" },
+    { "file": "Q2_Peach.dc.html", "page": "page-pastel", "x": 440, "y": 0, "w": 390, "h": 640, "title": "2 · אפרסק ואבקת סוכר" },
+    { "file": "Q3_Sky.dc.html", "page": "page-pastel", "x": 880, "y": 0, "w": 390, "h": 640, "title": "3 · תכלת ולילך" },
+    { "file": "Q4_Butter.dc.html", "page": "page-pastel", "x": 1320, "y": 0, "w": 390, "h": 640, "title": "4 · חמאה ולבנדר" },
+    { "file": "Q5_Rose.dc.html", "page": "page-pastel", "x": 1760, "y": 0, "w": 390, "h": 640, "title": "5 · מלח ורוד וסלביה" },
+
+    { "file": "Main.dc.html", "page": "page-first", "x": -520, "y": 0, "w": 420, "h": 640, "title": "הערכות" },
+    { "file": "P1_Ice.dc.html", "page": "page-first", "x": 0, "y": 0, "w": 390, "h": 640, "title": "קרח ונענע" },
+    { "file": "P2_Sunset.dc.html", "page": "page-first", "x": 440, "y": 0, "w": 390, "h": 640, "title": "שקיעה" },
+    { "file": "P3_Olive.dc.html", "page": "page-first", "x": 880, "y": 0, "w": 390, "h": 640, "title": "זית ואבן" },
+    { "file": "P4_Lavender.dc.html", "page": "page-first", "x": 1320, "y": 0, "w": 390, "h": 640, "title": "לבנדר וגרפיט" },
+    { "file": "P5_Ink.dc.html", "page": "page-first", "x": 1760, "y": 0, "w": 390, "h": 640, "title": "דיו וזהב" }
+  ],
+  "annotations": [
+    { "id": "note-pastel", "page": "page-pastel", "x": 0, "y": -200, "w": 440, "text": "חמש ערכות פסטל · אותו מסך בדיוק בכולן.\n\nהמלכודת שנפתרה כאן: פסטל מתחת לטשטוש כבד נמחק ונהיה לבן. לכן השדה מאחור מעט יותר רווי ממה שנראה על פני השטח — הזכוכית שומרת על העומק." },
+    { "id": "note-action", "page": "page-pastel", "x": 1320, "y": -200, "w": 440, "text": "צבע הפעולה יורד עמוק יותר מהפסטל.\n\nכפתור בפסטל טהור לא יכול לשאת טקסט לבן קריא — הניגודיות נופלת מתחת לתקן. הכפתור לוקח את אותה משפחת גוון, רק כמה דרגות פנימה." },
+    { "id": "note-first", "page": "page-first", "x": 0, "y": -170, "w": 430, "text": "הסבב הראשון — נשמר להשוואה.\nאם משהו מכאן עדיין מדבר אלייך, אפשר לערבב אותו עם הפסטל." }
+  ],
+  "launch": { "view": "canvas", "page": "page-pastel" }
+}
