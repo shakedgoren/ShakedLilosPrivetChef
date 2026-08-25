@@ -24,6 +24,41 @@
 
 
 
+
+  <sc-if value="{{ returning }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 96px; right: 18px; left: 18px; height: 46px; box-sizing: border-box; border-radius: 16px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6);"><div style="width: 7px; height: 7px; border-radius: 50%; background: #437C59; flex-shrink: 0;"></div><div style="font-size: 12.5px; font-weight: 600; flex-shrink: 0;">שלישי הקרוב · 26.8</div><div style="flex-grow: 1;"></div><div style="font-size: 12px; font-weight: 400; color: #7D7488;">נותרו 32 מנות</div></div></sc-if>
+
+  <sc-if value="{{ newCustomer }}" hint-placeholder-val="{{ true }}"><div onClick="{{ noop }}" style="position: absolute; top: 96px; right: 18px; left: 18px; height: 46px; box-sizing: border-box; border-radius: 16px; padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); border: 1px solid rgba(255,255,255,0.5); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 14px 28px -22px rgba(96,80,132,0.9);"><div style="font-size: 13.5px; font-weight: 600; color: #43307A;">15% הנחה על ההזמנה הראשונה</div><div style="flex-grow: 1;"></div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></div></sc-if>
+
+  <sc-if value="{{ returning }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 590px; right: 18px; left: 18px; height: 74px; box-sizing: border-box; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; gap: 10px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6);"><div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;"><div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">ההזמנה האחרונה שלך</div><div style="font-size: 14px; font-weight: 600;">3 מנות קוסקוס · 12.8</div></div><div onClick="{{ noop }}" style="flex-shrink: 0; height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 5px; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 8px 18px -14px rgba(96,80,132,0.9);"><div style="font-size: 12.5px; font-weight: 600; color: #43307A; white-space: nowrap;">הזמיני שוב</div><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></div></div></sc-if>
+
+  <sc-if value="{{ newCustomer }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 590px; right: 18px; left: 18px; height: 74px; box-sizing: border-box; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; gap: 10px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6);"><div style="width: 7px; height: 7px; border-radius: 50%; background: #437C59; flex-shrink: 0;"></div><div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;"><div style="font-size: 14px; font-weight: 600;">שלישי הקרוב · 26.8</div><div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">פתוח להזמנות · נותרו 32 מנות</div></div></div></sc-if>
+
+  <div style="position: absolute; top: 670px; right: 18px; font-size: 12.5px; font-weight: 600; color: #6E6478;">מבצעי השבוע</div>
+
+  <div style="position: absolute; top: 688px; right: 18px; left: 18px; height: 74px; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;">
+    <div style="flex-shrink: 0; width: 138px; box-sizing: border-box; border-radius: 16px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(185,83,73,0.13) 100%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -20px rgba(96,80,132,0.7);">
+      <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">מארז 5 חלות שישניצל</div>
+      <div style="display: flex; align-items: baseline; gap: 6px;">
+        <div style="font-size: 15px; font-weight: 600; color: #B95349; font-variant-numeric: tabular-nums;">180 ₪</div>
+        <div style="font-size: 11px; font-weight: 300; color: #A79FB2; text-decoration-line: line-through;">200 ₪</div>
+      </div>
+    </div>
+    <div style="flex-shrink: 0; width: 138px; box-sizing: border-box; border-radius: 16px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(67,124,89,0.13) 100%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -20px rgba(96,80,132,0.7);">
+      <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">מגש פירות בינוני</div>
+      <div style="display: flex; align-items: baseline; gap: 6px;">
+        <div style="font-size: 15px; font-weight: 600; color: #437C59; font-variant-numeric: tabular-nums;">270 ₪</div>
+        <div style="font-size: 11px; font-weight: 300; color: #A79FB2; text-decoration-line: line-through;">300 ₪</div>
+      </div>
+    </div>
+    <div style="flex-shrink: 0; width: 138px; box-sizing: border-box; border-radius: 16px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(123,92,188,0.13) 100%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -20px rgba(96,80,132,0.7);">
+      <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">מארז ספיישל לזוג</div>
+      <div style="display: flex; align-items: baseline; gap: 6px;">
+        <div style="font-size: 15px; font-weight: 600; color: #7B5CBC; font-variant-numeric: tabular-nums;">240 ₪</div>
+        <div style="font-size: 11px; font-weight: 300; color: #A79FB2; text-decoration-line: line-through;">280 ₪</div>
+      </div>
+    </div>
+  </div>
+
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 50px; border-radius: 999px; background: linear-gradient(150deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.38) 100%); backdrop-filter: blur(30px) saturate(170%); -webkit-backdrop-filter: blur(30px) saturate(170%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 16px 30px -22px rgba(96,80,132,0.45); display: flex; align-items: center; justify-content: space-around; padding: 0 10px">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 55px; height: 40px; border-radius: 999px; transition: background 560ms ease; background: {{ navPill }}; width: 30px">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke="{{ navInk }}" style="transition: stroke 560ms ease;"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
@@ -61,7 +96,7 @@
 
     
 
-    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 354px; height: 698px; padding-top: 40px; margin-left: -18px; margin-right: -18px; margin-top: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none;">
+    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 354px; height: 698px; padding-top: 30px; margin-left: -18px; margin-right: -18px; margin-top: 50px; touch-action: pan-y; user-select: none; -webkit-user-select: none;">
       <div data-track="1" style="display: flex; gap: 12px; transition: {{ trackEase }}; transform: {{ trackShift }}; width: 298px; height: 265px">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5">
           <div style="position: static; width: 303px; height: 308px; flex-shrink: 0; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; border-color: #FFFFFF; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
@@ -135,7 +170,7 @@
 
   </div></div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+<script data-dc-script data-props='{"newCustomer":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* rgb — הגוון של כל נושא כשלושה מספרים, כדי לגזור ממנו את כל השקיפויות */
 const ITEMS = [
   { key: 'cous',  num: '01', title: 'קוסקוס', sub: 'שלישי של קוסקוס', short: 'קוסקוס', tag: 'כל שלישי',
@@ -230,6 +265,10 @@ class Component extends DCLogic {
       dragMove: (e) => this.dragMove(e),
       dragEnd: () => this.dragEnd(),
       cta: cur.cta,
+      /* לקוחה שטרם הזמינה רואה את הטבת ההצטרפות במקום פס המצב */
+      newCustomer: !!this.props.newCustomer,
+      returning: !this.props.newCustomer,
+      noop: () => {},
       hue: cur.hue,
 
       /* כל המסך מקבל נגיעה קלה בגוון הנושא */
