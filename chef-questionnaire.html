@@ -718,20 +718,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sect{border-top:1px solid var(--line-soft);padding-top:20px;margin-top:20px}
 .sect:first-child{border-top:0;padding-top:0;margin-top:0}
 .sect h4{font-family:'Suez One',serif;font-weight:400;font-size:clamp(18px,4.8vw,22px);margin-bottom:6px}
-/* הסוג שנבחר מוצג על הצ׳יפ עצמו — "מטבוחה · חריפה" */
-.sch-kind{color:var(--brass-lit);font-size:.86em;white-space:nowrap}
-.chip.on .sch-kind{opacity:.95}
-
-/* חלונית סוג המטבוחה / החציל · רקע אטום, backdrop-filter לא עובד כאן */
-.sch-pop{background-color:#101B29;border:1px solid var(--g-edge);
-  border-radius:var(--r-lg);box-shadow:var(--g-lift);overflow:hidden}
-:root[data-theme="light"] .sch-pop{background-color:#FAFBFD}
-.sch-pop-body{padding:16px 16px 14px}
-.sch-pop-body .chips{margin:0 0 4px}
-.sch-remove{display:block;width:100%;margin-top:12px;padding:10px;border:0;
-  background:none;color:var(--dim);font-family:'Heebo',sans-serif;font-size:13px;
-  cursor:pointer;border-top:1px solid var(--line-soft)}
-.sch-remove:hover{color:var(--warn)}
 .sect .note{color:var(--dim);font-size:clamp(14px,3.4vw,16px);line-height:1.6;margin-bottom:14px}
 
 /* ==========================================================================
@@ -1185,20 +1171,6 @@ body.pick-open .pick-scrim{opacity:1;pointer-events:auto}
   </div>
   <button type="button" class="pop-done" onclick="closePastaPop()">אישור</button>
 </div>
-
-<!-- חלונית תת־בחירה בשישניצל · סוג המטבוחה או החציל -->
-<div class="pickpop sch-pop" id="sch_pop">
-  <div class="pop-head">
-    <b id="sch_pop_title"></b>
-    <button type="button" class="pop-x" onclick="closeSchPop()" aria-label="סגירה">✕</button>
-  </div>
-  <div class="sch-pop-body">
-    <div class="chips one" id="sch_pop_opts"></div>
-    <button type="button" class="sch-remove" data-sch-remove>להסיר את התוספת</button>
-  </div>
-</div>
-
-
 
 <!-- מכסה המעבר · יורד וסוגר את המסך במעבר מהמסך הראשי -->
 <div class="xlid" id="xlid" aria-hidden="true">
@@ -2623,19 +2595,24 @@ const PROTEINS = ['ירכי עוף ברוטב מתוק','קציצות בשר מ�
 /* ===== שישניצל =====
    שני מסלולים: אישי — כמה חלות, לכל אחת מילוי משלה, 50 ₪ לחלה.
    מארז משפחתי — 160 ₪, תוספות נבחרות פעם אחת לכל המארז. */
-const SCHNITZEL_MODES = ['אישי','מארז משפחתי'];
-const SCHNITZEL_TOPS  = ['מטבוחה','טחינה','חציל מצופה','כרוב סגול במיונז','פלפל חריף מטוגן'];
+const SCHNITZEL_MODES = ['לפי יחידה','מארז'];
 const SCHNITZEL_FORMS = ['4 חלות אישיות','חלה משפחתית'];
+/* שני סוגי שניצל · לכל אחד רשימת תוספות משלו. בחירת סוג מאפסת את התוספות
+   שנבחרו, כי הרשימות לא חופפות. */
+const SCH_TYPES = [
+  {name:'שניצל דק בציפוי פירורי לחם',
+   tops:['מטבוחה','טחינה','חציל בטמפורה','כרוב סגול','פלפל חריף']},
+  {name:'פילה בציפוי טמפורה',
+   tops:['איולי עמבה','איולי עשבי תיבול','עלי רוקט','מלפפון חמוץ']}
+];
+const schTypeDef = n => SCH_TYPES.filter(t=>t.name===n)[0];
+/* קוקוט רוטב · כמות חופשית להזמנה */
+const SCH_COCOTTE = ['איולי עמבה','איולי כוסברה'];
+const COCOTTE_PRICE = 3;
 const SCH_PERSONAL = 50, SCH_FAMILY = 160;
 const SCH_PACK_NOTE = 'המארז מגיע ארוז — כל דבר בנפרד.';
 /* ציפוי השניצל · נבחר לכל חלה בנפרד במסלול האישי, ופעם אחת במארז */
-const SCHNITZEL_COATS = ['טמפורה','פירורי לחם'];
-const SCH_WINGS_NOTE  = 'מוגש לצד כנפי עוף ברוטב משתנה בכל שבוע.';
-/* תוספות שיש להן תת־בחירה, ורק כשהן מסומנות */
-const SCH_SUB = { 'חציל מצופה':{key:'eggplant', label:'חציל',   q:'איזה חציל?',   opts:['טמפורה','קמח']},
-                  'מטבוחה':    {key:'matbucha', label:'מטבוחה', q:'איזו מטבוחה?', opts:['מתוקה','חריפה']} };
-const EGGPLANT_KIND = ['טמפורה','קמח'];
-const MATBUCHA_KIND = ['מתוקה','חריפה'];
+const SCH_WINGS_NOTE  = 'כנפי עוף מגיעות במתנה לצד כל הזמנה, ברוטב מפתיע שמתחלף כל שבוע.';
 const PACK_SIZE = ['ק״ג','2 ק״ג'];
 const SALAD_HALF_KG = 40, SALAD_STEP_G = 250, CHALLAH_UNIT = 22, CAKE_UNIT = 60, SALAD_EXTRA_UNIT = 25;
 
@@ -2663,7 +2640,7 @@ const H = { box:'', units:25, challahs:[], cakes:[], wine:'', cake:'', saladQty:
             protein:'', saladW:{}, nChallah:1, nCake:1, ship:'', shipCost:0, meals:{},
             eggplant:'', matbucha:'', couscousPack:'', tabboulehPack:'',
             /* שישניצל · schFill = מילוי לכל חלה במסלול האישי */
-            schMode:'', schCount:1, schFill:[], schForm:'', schBox:{tops:[],eggplant:'',matbucha:'',coat:''},
+            schMode:'', schCount:1, schFill:[], schForm:'', schBox:{type:'',tops:[]}, schCocotte:{},
             date:'', dateLabel:'', time:'' };
 
 const THUMB_SVG = '<div class="box-thumb"><svg viewBox="0 0 24 24"><path d="M3 8h18v12H3zM3 8l2-4h14l2 4M12 4v16"/></svg>תמונה בקרוב</div>';
@@ -2716,7 +2693,7 @@ $('boxes').addEventListener('click', function(e){
     H.challahs=[]; H.cakes=[]; H.wine=''; H.cake=''; H.saladQty={}; H.branding=''; H.dedication=''; H.protein='';
     H.units=BOXES[H.box].min||1; H.saladW={}; H.nChallah=1; H.nCake=1;
     H.eggplant=''; H.matbucha=''; H.couscousPack=''; H.tabboulehPack='';
-    H.schMode=''; H.schCount=1; H.schFill=[]; H.schForm=''; H.schBox={tops:[],eggplant:'',matbucha:'',coat:''};
+    H.schMode=''; H.schCount=1; H.schFill=[]; H.schForm=''; H.schBox={type:'',tops:[]}; H.schCocotte={};
     H.date=''; H.dateLabel=''; H.time='';
   }
   $('w_h1').textContent='';
@@ -2829,73 +2806,40 @@ function renderBox(){
 /* ===================== שישניצל ===================== */
 /* מוודא שיש רשומת מילוי לכל חלה, בלי לדרוס את מה שכבר נבחר */
 function schSlot(i){
-  if(!H.schFill[i]) H.schFill[i] = {tops:[], eggplant:'', matbucha:'', coat:''};
+  if(!H.schFill[i]) H.schFill[i] = {type:'', tops:[]};
   return H.schFill[i];
 }
-/* רשימת התוספות. לתוספת עם תת־בחירה (מטבוחה, חציל) נפתחת חלונית
-   מיד עם הסימון, והסוג שנבחר מוצג על הצ׳יפ עצמו.
-   scope מזהה לאיזה מילוי הצ׳יפ שייך: מספר החלה, או 'box' למארז המשפחתי. */
-function schCoat(fill, scope){
-  return '<div class="chips one" data-sch="coat" data-sch-i="'+scope+'">'+
-    SCHNITZEL_COATS.map(c=>'<button type="button" class="chip'+(fill.coat===c?' on':'')+
-      '" data-sch-v="'+esc(c)+'">'+c+'</button>').join('')+'</div>';
+/* scope מזהה לאיזה מילוי הצ׳יפ שייך: מספר החלה, או 'box' למארז. */
+function schTypeRow(fill, scope){
+  return '<div class="chips one" data-sch="type" data-sch-i="'+scope+'">'+
+    SCH_TYPES.map(t=>'<button type="button" class="chip'+(fill.type===t.name?' on':'')+
+      '" data-sch-v="'+esc(t.name)+'">'+t.name+'</button>').join('')+'</div>';
 }
+/* התוספות נגזרות מסוג השניצל — בלי סוג אין מה להציג */
 function schTops(fill, scope){
-  return '<div class="chips" data-sch="top" data-sch-i="'+scope+'">'+
-    SCHNITZEL_TOPS.map(t=>{
-      const on = fill.tops.indexOf(t)>=0, sub = SCH_SUB[t];
-      const kind = on && sub && fill[sub.key] ? ' <span class="sch-kind">· '+fill[sub.key]+'</span>' : '';
-      return '<button type="button" class="chip'+(on?' on':'')+'" data-sch-v="'+esc(t)+'">'+t+kind+'</button>';
-    }).join('')+'</div>';
+  const def = schTypeDef(fill.type); if(!def) return '';
+  return '<div class="note" style="margin-top:14px">מה ייכנס פנימה</div>'+
+    '<div class="chips" data-sch="top" data-sch-i="'+scope+'">'+
+    def.tops.map(t=>'<button type="button" class="chip'+(fill.tops.indexOf(t)>=0?' on':'')+
+      '" data-sch-v="'+esc(t)+'">'+t+'</button>').join('')+'</div>';
+}
+function cocotteCount(){ let n=0; Object.keys(H.schCocotte).forEach(k=>n+=H.schCocotte[k]); return n; }
+function schCocotteRow(){
+  return '<div class="sect"><h4>קוקוט רוטב</h4>'+
+    '<div class="note">'+COCOTTE_PRICE+' ₪ ליחידה · אפשר כמה שרוצים</div>'+
+    '<div class="sq-grid">'+
+    SCH_COCOTTE.map(c=>'<div class="sq-item" data-v="'+esc(c)+'">'+
+      '<button type="button" class="sqb" data-act="cc+" data-v="'+esc(c)+'">+</button>'+
+      '<div class="mid"><div class="nm">'+c+'</div><div class="ds numflow">'+COCOTTE_PRICE+' ₪</div></div>'+
+      '<div class="qty numflow"><button type="button" class="sqb" data-act="cc-" data-v="'+esc(c)+'">−</button>'+
+      '<b>'+(H.schCocotte[c]||0)+'</b></div></div>').join('')+
+    '</div></div>';
 }
 
-/* ---- חלונית סוג המטבוחה / החציל ---- */
-let schCtx = null;                     /* {scope, top} של התוספת שנערכת */
-function schFillOf(scope){ return scope==='box' ? H.schBox : schSlot(+scope); }
-function openSchPop(scope, top){
-  const sub = SCH_SUB[top]; if(!sub) return;
-  schCtx = {scope:scope, top:top};
-  const fill = schFillOf(scope);
-  $('sch_pop_title').textContent = sub.q;
-  $('sch_pop_opts').innerHTML = sub.opts.map(o=>
-    '<button type="button" class="chip'+(fill[sub.key]===o?' on':'')+
-    '" data-sv="'+o+'">'+o+'</button>').join('');
-  closeAllPicks();
-  $('sch_pop').classList.add('open');
-  document.body.classList.add('pick-open');
-}
-function closeSchPop(){
-  $('sch_pop').classList.remove('open');
-  document.body.classList.remove('pick-open');
-  schCtx = null;
-  paintSchnitzel();
-}
-function setupSchPop(){
-  const pop = $('sch_pop'); if(!pop || pop.dataset.ready) return;
-  pop.dataset.ready = '1';
-  /* .step.sheet כולא z-index — מוציאים את החלונית החוצה */
-  (document.querySelector('.wrap') || document.body).appendChild(pop);
-  pop.addEventListener('click', e=>{
-    e.stopPropagation();
-    if(!schCtx) return;
-    const opt = e.target.closest('[data-sv]');
-    if(opt){
-      schFillOf(schCtx.scope)[SCH_SUB[schCtx.top].key] = opt.dataset.sv;
-      closeSchPop(); return;
-    }
-    if(e.target.closest('[data-sch-remove]')){
-      const fill = schFillOf(schCtx.scope), at = fill.tops.indexOf(schCtx.top);
-      if(at>=0) fill.tops.splice(at,1);
-      fill[SCH_SUB[schCtx.top].key] = '';
-      closeSchPop();
-    }
-  });
-}
-setupSchPop();
 function paintSchnitzel(){
   const wrap = $('sch_body'); if(!wrap) return;
   let h = '';
-  if(H.schMode === 'אישי'){
+  if(H.schMode === 'לפי יחידה'){
     h += '<div class="sect"><h4>כמה חלות?</h4>'+
          '<div class="note">'+SCH_PERSONAL+' ₪ לחלה · אפשר להרכיב כל חלה אחרת</div>'+
          '<div class="stepper"><button type="button" data-act="sc-">−</button>'+
@@ -2905,10 +2849,11 @@ function paintSchnitzel(){
          nf(H.schCount*SCH_PERSONAL)+' ₪</div></div>';
     for(let i=0;i<H.schCount;i++){
       h += '<div class="sect"><h4>'+(H.schCount>1 ? 'חלה '+(i+1) : 'החלה שלכם')+'</h4>'+
-           '<div class="note">איזה שניצל</div>'+schCoat(schSlot(i), i)+
-           '<div class="note" style="margin-top:14px">מה ייכנס פנימה</div>'+schTops(schSlot(i), i)+'</div>';
+           '<div class="note">איזה שניצל</div>'+schTypeRow(schSlot(i), i)+
+           schTops(schSlot(i), i)+'</div>';
     }
-  } else if(H.schMode === 'מארז משפחתי'){
+    h += schCocotteRow();
+  } else if(H.schMode === 'מארז'){
     h += '<div class="sect"><h4>מבנה המארז</h4>'+
          '<div class="note">'+SCH_FAMILY+' ₪</div>'+
          '<div class="chips one" data-sch="form">'+
@@ -2916,11 +2861,10 @@ function paintSchnitzel(){
            '" data-sch-v="'+esc(f)+'">'+f+'</button>').join('')+'</div></div>';
     h += '<div class="sect"><h4>איזה שניצל</h4>'+
          '<div class="note">בחירה אחת לכל המארז</div>'+
-         schCoat(H.schBox, 'box')+'</div>';
-    h += '<div class="sect"><h4>התוספות</h4>'+
-         '<div class="note">בחירה אחת לכל המארז</div>'+
+         schTypeRow(H.schBox, 'box')+
          schTops(H.schBox, 'box')+
          '<div class="note" style="margin-top:12px">'+SCH_PACK_NOTE+'</div></div>';
+    h += schCocotteRow();
   }
   wrap.innerHTML = h;
   if(isBoxFlow()) $('live_val').textContent = nf(holidayTotal())+' ₪';
@@ -3042,6 +2986,12 @@ $('h2_body').addEventListener('click', function(e){
       H.saladQty[v] = btn.dataset.act==='q+' ? cur+1 : Math.max(0,cur-1);
       paintSaladQty(); $('w_h2').textContent=''; return;
     }
+    if(btn.dataset.act==='cc+' || btn.dataset.act==='cc-'){
+      const v=btn.dataset.v, cur=H.schCocotte[v]||0;
+      const n = btn.dataset.act==='cc+' ? cur+1 : Math.max(0,cur-1);
+      if(n===0) delete H.schCocotte[v]; else H.schCocotte[v]=n;
+      paintSchnitzel(); $('w_h2').textContent=''; return;
+    }
     if(btn.dataset.act==='sc+' || btn.dataset.act==='sc-'){
       H.schCount = btn.dataset.act==='sc+' ? H.schCount+1 : Math.max(1,H.schCount-1);
       paintSchnitzel(); $('w_h2').textContent=''; return;
@@ -3067,19 +3017,12 @@ $('h2_body').addEventListener('click', function(e){
     const fill = scope==='box' ? H.schBox : (scope!==undefined ? schSlot(+scope) : null);
     if(kind==='mode'){ H.schMode = v; }
     else if(kind==='form'){ H.schForm = v; }
-    else if(kind==='coat'){ fill.coat = v; }
+    else if(kind==='type'){
+      /* רשימות התוספות של שני הסוגים לא חופפות — החלפת סוג מאפסת אותן */
+      if(fill.type !== v){ fill.type = v; fill.tops = []; }
+    }
     else if(kind==='top'){
-      const at = fill.tops.indexOf(v), sub = SCH_SUB[v];
-      if(sub){
-        /* תוספת עם סוג — הסימון פותח חלונית, ולחיצה נוספת פותחת לשינוי.
-           ההסרה עצמה נעשית מתוך החלונית. */
-        e.stopPropagation();          /* אחרת document סוגר את החלונית מיד */
-        if(at<0) fill.tops.push(v);
-        paintSchnitzel();
-        openSchPop(scope, v);
-        $('w_h2').textContent='';
-        return;
-      }
+      const at = fill.tops.indexOf(v);
       if(at>=0) fill.tops.splice(at,1); else fill.tops.push(v);
     }
     paintSchnitzel(); $('w_h2').textContent='';
@@ -3401,8 +3344,9 @@ function boxPrice(){
     return t;
   }
   if(b.schnitzel){
-    if(H.schMode==='אישי') return H.schCount*SCH_PERSONAL;
-    if(H.schMode==='מארז משפחתי') return SCH_FAMILY;
+    const cocotte = cocotteCount()*COCOTTE_PRICE;
+    if(H.schMode==='לפי יחידה') return H.schCount*SCH_PERSONAL + cocotte;
+    if(H.schMode==='מארז')      return SCH_FAMILY + cocotte;
     return 0;
   }
   if(b.unit) return H.units*(H.units>b.bigFrom ? b.rateBig : b.rate);
@@ -3481,25 +3425,17 @@ function valid(){
     if(b.protein && !H.protein) miss.push('בחירת התוספת הבשרית');
     if(b.packaging && (!H.couscousPack || !H.tabboulehPack)) miss.push('אריזת הקוסקוס והטבחה');
     if(b.schnitzel){
-      if(!H.schMode) miss.push('אישי או מארז משפחתי');
-      else if(H.schMode==='אישי'){
+      if(!H.schMode) miss.push('לפי יחידה או מארז');
+      else if(H.schMode==='לפי יחידה'){
         for(let i=0;i<H.schCount;i++){
           const f = schSlot(i), n = H.schCount>1 ? ' בחלה '+(i+1) : '';
-          if(!f.coat) miss.push('סוג השניצל'+n);
-          if(f.tops.length===0) miss.push('בחירת תוספת אחת לפחות'+n);
-          else SCHNITZEL_TOPS.forEach(t=>{
-            const sub = SCH_SUB[t];
-            if(sub && f.tops.indexOf(t)>=0 && !f[sub.key]) miss.push('סוג ה'+sub.label+n);
-          });
+          if(!f.type) miss.push('סוג השניצל'+n);
+          else if(f.tops.length===0) miss.push('בחירת תוספת אחת לפחות'+n);
         }
       } else {
         if(!H.schForm) miss.push('מבנה המארז');
-        if(!H.schBox.coat) miss.push('סוג השניצל');
-        if(H.schBox.tops.length===0) miss.push('בחירת תוספת אחת לפחות');
-        else SCHNITZEL_TOPS.forEach(t=>{
-          const sub = SCH_SUB[t];
-          if(sub && H.schBox.tops.indexOf(t)>=0 && !H.schBox[sub.key]) miss.push('סוג ה'+sub.label);
-        });
+        if(!H.schBox.type) miss.push('סוג השניצל');
+        else if(H.schBox.tops.length===0) miss.push('בחירת תוספת אחת לפחות');
       }
     }
     if(b.meals && mealCount()===0) miss.push('בחירת מנת קוסקוס אחת לפחות');
@@ -3565,23 +3501,25 @@ function estimate(){
 function j(a){ return a && a.length ? a.join(', ') : ''; }
 /* תיאור המילוי של חלה אחת · "מטבוחה (חריפה), טחינה" */
 function schFillText(f){
-  const tops = f.tops.map(t=>{
-    const sub = SCH_SUB[t];
-    return sub && f[sub.key] ? t+' ('+f[sub.key]+')' : t;
-  }).join(', ');
-  return f.coat ? f.coat + (tops ? ' · '+tops : '') : tops;
+  const tops = f.tops.join(', ');
+  return f.type ? f.type + (tops ? ' · '+tops : '') : tops;
+}
+function cocotteText(){
+  const parts = SCH_COCOTTE.filter(c=>H.schCocotte[c]>0).map(c=>c+' ×'+H.schCocotte[c]);
+  return parts.length ? 'קוקוט: '+parts.join(', ') : '';
 }
 function schSummary(){
-  if(H.schMode==='אישי'){
+  const cc = cocotteText(), tail = cc ? ' | '+cc : '';
+  if(H.schMode==='לפי יחידה'){
     const lines = [];
     for(let i=0;i<H.schCount;i++){
       const txt = schFillText(schSlot(i));
       lines.push((H.schCount>1 ? 'חלה '+(i+1)+': ' : '')+(txt || '—'));
     }
-    return 'אישי · '+H.schCount+' חלות · '+lines.join(' | ');
+    return 'לפי יחידה · '+H.schCount+' חלות · '+lines.join(' | ')+tail;
   }
-  if(H.schMode==='מארז משפחתי'){
-    return 'מארז משפחתי · '+(H.schForm||'')+' · '+(schFillText(H.schBox)||'—');
+  if(H.schMode==='מארז'){
+    return 'מארז · '+(H.schForm||'')+' · '+(schFillText(H.schBox)||'—')+tail;
   }
   return '';
 }
