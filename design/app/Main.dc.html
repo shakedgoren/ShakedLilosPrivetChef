@@ -22,7 +22,7 @@
 
   
 
-  <sc-if value="{{ aboutOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAbout }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"></div><div style="position: absolute; z-index: 41; top: 60px; bottom: 60px; right: 16px; left: 16px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; text-align: right; background: {{ popBg }}; border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 2px 0 rgba(255,255,255,0.95), 0 30px 60px -28px rgba(60,48,84,0.7);"><div style="flex-shrink: 0; padding: 20px 22px 14px; display: flex; align-items: flex-start; gap: 12px;"><div style="flex-grow: 1; font-weight: 600; font-size: 19px; line-height: 1.25;">נעים להכיר, אני שקד לילוז 👋</div><div onClick="{{ closeAbout }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); box-shadow: 0 2px 6px -3px rgba(90,74,120,0.5);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div style="flex-grow: 1; overflow-y: auto; padding: 0 22px 24px; display: flex; flex-direction: column; gap: 15px;"><div style="font-weight: 300; font-size: 13.5px; line-height: 1.75; color: #6E6478;">שף, קונדיטורית ~ יוצרת רגעים בלתי נשכחים דרך אוכל, אירוח ותשומת לב לכל פרט 👩🏼‍🍳</div><div style="height: 1px; background: {{ popRule }};"></div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">אוכל בשבילי מעולם לא היה רק מתכון,<br>הוא דרך לארח,<br>לשמח,<br>לחבר אנשים סביב שולחן אחד.</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">האהבה והתשוקה שלי לעולם הזה הובילה אותי<br>ללמוד קונדיטוריה בבית הספר Estella,<br>ובהמשך גם לימודי שף בבית הספר Danon,<br>שניים מהמוסדות המובילים בישראל בתחום הקולינריה!</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">ככל שהזמן עבר, הבנתי שיש לי ייעוד בחיים<br>והוא לשמח אחרים בעזרת האוכל שלי.</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">מתוך אהבה אמיתית לאוכל, לאירוח<br>ולרגעים הקטנים שמחברים בין אנשים נולד העסק שלי<br>מקום שמחבר בין חומרי גלם איכותיים, אהבה לאירוח ותשומת לב לכל פרט קטן,<br>כדי ליצור חוויות קולינריות שמרגישות אישיות, מוקפדות ובלתי נשכחות!</div><div style="font-weight: 400; font-size: 14px; line-height: 1.8; color: {{ hue }};">כי בשבילי, אוכל הוא אף פעם לא רק אוכל,<br>הוא הדרך ליצור רגעים שאנשים זוכרים!</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">אני מזמינה אתכם להיכנס למטבח שלי,<br>לתת לי להיות חלק מהרגעים המיוחדים שלכם,<br>ולדאוג שכל מה שיוגש לשולחן יהיה מוקפד, טעים ובעיקר – מכל הלב. ❤️</div></div></div></sc-if>
+
 
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 50px; border-radius: 999px; background: linear-gradient(150deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.38) 100%); backdrop-filter: blur(30px) saturate(170%); -webkit-backdrop-filter: blur(30px) saturate(170%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 16px 30px -22px rgba(96,80,132,0.45); display: flex; align-items: center; justify-content: space-around; padding: 0 10px">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 55px; height: 40px; border-radius: 999px; transition: background 560ms ease; background: {{ navPill }}; width: 30px">
@@ -52,7 +52,7 @@
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </div>
       </div>
-    <div style="position: absolute; left: 1px; top: 64px; width: 344px; height: 161px; box-sizing: border-box; border-radius: 24px; padding: 18px 20px; backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); transition: background 560ms ease, box-shadow 560ms ease; background: {{ aboutBg }}; border: 1px solid rgba(255,255,255,0.62); box-shadow: {{ aboutShadow }}; display: flex; flex-direction: column; text-align: right"><div style="font-weight: 600; font-size: 16px; line-height: 1.3; text-align: center; margin-top: 5px">נעים להכיר, אני שקד לילוז&nbsp;</div><div style="font-weight: 300; font-size: 13px; line-height: 1.6; margin-top: 8px; color: #7D7488; text-align: center; text-decoration-line: none">שף, קונדיטורית ~ יוצרת רגעים בלתי נשכחים דרך אוכל, אירוח ותשומת לב לכל פרט 👩🏼‍🍳</div><div style="flex-grow: 1;"></div><div onClick="{{ openAbout }}" style="align-self: center; cursor: pointer; border-radius: 999px; padding: 11px 16px; min-height: 30px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; transition: background 560ms ease; background: {{ aboutBtnBg }}; width: 119px; height: 30px"><div style="font-size: 13px; font-weight: 600; white-space: nowrap; transition: color 560ms ease; color: {{ hue }};">לסיפור המלא</div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke="{{ hue }}"><path d="M15 18l-6-6 6-6"></path></svg></div></div>
+
 </div>
 
     
@@ -61,7 +61,7 @@
 
     
 
-    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 354px; height: 698px; padding-top: 40px; margin-left: -18px; margin-right: -18px; margin-top: 160px; touch-action: pan-y; user-select: none; -webkit-user-select: none;">
+    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 354px; height: 698px; padding-top: 40px; margin-left: -18px; margin-right: -18px; margin-top: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none;">
       <div data-track="1" style="display: flex; gap: 12px; transition: {{ trackEase }}; transform: {{ trackShift }}; width: 298px; height: 265px">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5">
           <div style="position: static; width: 303px; height: 308px; flex-shrink: 0; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; border-color: #FFFFFF; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
@@ -168,7 +168,7 @@ const clampIdx = (n) => Math.max(0, Math.min(ITEMS.length - 1, n));
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { active: 0, aboutOpen: false, pitch: CARD_PITCH, dragDx: 0, dragging: false };
+    this.state = { active: 0, pitch: CARD_PITCH, dragDx: 0, dragging: false };
   }
 
   componentDidMount() {
@@ -231,15 +231,6 @@ class Component extends DCLogic {
       dragEnd: () => this.dragEnd(),
       cta: cur.cta,
       hue: cur.hue,
-      aboutOpen: this.state.aboutOpen,
-      openAbout: () => this.setState({ aboutOpen: true }),
-      closeAbout: () => this.setState({ aboutOpen: false }),
-      aboutBg: 'linear-gradient(150deg, rgba(255,255,255,0.52) 0%, ' + a(cur.rgb, 0.1) + ' 100%)',
-      aboutShadow: 'inset 0 1px 0 rgba(255,255,255,0.82), 0 12px 28px -22px ' + a(cur.rgb, 0.5),
-      aboutBtnBg: a(cur.rgb, 0.15),
-      popBg: 'radial-gradient(120% 60% at 82% 4%, ' + a(cur.rgb, 0.16) + ' 0%, ' + a(cur.rgb, 0) + ' 66%), '
-           + 'linear-gradient(160deg, #FEFCFB 0%, #FBF7F5 100%)',
-      popRule: a(cur.rgb, 0.24),
 
       /* כל המסך מקבל נגיעה קלה בגוון הנושא */
       pageWash: 'radial-gradient(76% 44% at 52% 20%, ' + a(cur.rgb, 0.14) + ' 0%, ' + a(cur.rgb, 0) + ' 72%)',
