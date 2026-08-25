@@ -2596,20 +2596,21 @@ const PROTEINS = ['ירכי עוף ברוטב מתוק','קציצות בשר מ�
    שני מסלולים: אישי — כמה חלות, לכל אחת מילוי משלה, 50 ₪ לחלה.
    מארז משפחתי — 160 ₪, תוספות נבחרות פעם אחת לכל המארז. */
 const SCHNITZEL_MODES = ['לפי יחידה','מארז'];
-const SCHNITZEL_FORMS = ['4 חלות אישיות','חלה משפחתית'];
+const SCHNITZEL_FORMS = ['5 חלות אישיות','חלה משפחתית'];
 /* שני סוגי שניצל · לכל אחד רשימת תוספות משלו. בחירת סוג מאפסת את התוספות
    שנבחרו, כי הרשימות לא חופפות. */
 const SCH_TYPES = [
-  {name:'שניצל דק בציפוי פירורי לחם',
+  {name:'שניצל דק בציפוי פירורי לחם', unit:50, box:200,
    tops:['מטבוחה','טחינה','חציל בטמפורה','כרוב סגול','פלפל חריף']},
-  {name:'פילה בציפוי טמפורה',
+  {name:'פילה בציפוי טמפורה', unit:60, box:250,
    tops:['איולי עמבה','איולי עשבי תיבול','עלי רוקט','מלפפון חמוץ']}
 ];
+/* המחיר על כרטיס המארז בעמוד הבחירה — הזול מבין הסוגים */
+const SCH_MIN_UNIT = Math.min.apply(null, SCH_TYPES.map(t=>t.unit));
 const schTypeDef = n => SCH_TYPES.filter(t=>t.name===n)[0];
 /* קוקוט רוטב · כמות חופשית להזמנה */
 const SCH_COCOTTE = ['איולי עמבה','איולי כוסברה'];
 const COCOTTE_PRICE = 3;
-const SCH_PERSONAL = 50, SCH_FAMILY = 160;
 const SCH_PACK_NOTE = 'המארז מגיע ארוז — כל דבר בנפרד.';
 /* ציפוי השניצל · נבחר לכל חלה בנפרד במסלול האישי, ופעם אחת במארז */
 const SCH_WINGS_NOTE  = 'כנפי עוף מגיעות במתנה לצד כל הזמנה, ברוטב מפתיע שמתחלף כל שבוע.';
@@ -2652,7 +2653,7 @@ function renderBoxCards(){
   const cardHTML = k => {
     const b = BOXES[k];
     const price = b.custom    ? '<div class="box-price"><span class="pre">החל מ</span> 22 <small>₪</small></div>'
-                : b.schnitzel ? '<div class="box-price"><span class="pre">החל מ</span> '+SCH_PERSONAL+' <small>₪</small></div>'
+                : b.schnitzel ? '<div class="box-price"><span class="pre">החל מ</span> '+SCH_MIN_UNIT+' <small>₪</small></div>'
                 : b.unit      ? '<div class="box-price">'+(b.min*b.rate)+' <small>₪</small></div>'
                               : '<div class="box-price">'+b.price+' <small>₪</small></div>';
     const sp = b.subPrice ? '<div class="sub-price">'+b.subPrice+'</div>' : '';
@@ -2810,10 +2811,22 @@ function schSlot(i){
   return H.schFill[i];
 }
 /* scope מזהה לאיזה מילוי הצ׳יפ שייך: מספר החלה, או 'box' למארז. */
+/* המחיר יושב על הצ׳יפ עצמו — ההפרש בין הסוגים נראה ברגע הבחירה */
 function schTypeRow(fill, scope){
+  const key = scope==='box' ? 'box' : 'unit';
   return '<div class="chips one" data-sch="type" data-sch-i="'+scope+'">'+
     SCH_TYPES.map(t=>'<button type="button" class="chip'+(fill.type===t.name?' on':'')+
-      '" data-sch-v="'+esc(t.name)+'">'+t.name+'</button>').join('')+'</div>';
+      '" data-sch-v="'+esc(t.name)+'">'+t.name+
+      ' <span class="add">'+t[key]+' ₪</span></button>').join('')+'</div>';
+}
+/* סכום החלות במסלול לפי יחידה · חלה בלי סוג עדיין לא מתומחרת */
+function schUnitsTotal(){
+  let t=0;
+  for(let i=0;i<H.schCount;i++){
+    const def = schTypeDef(schSlot(i).type);
+    if(def) t += def.unit;
+  }
+  return t;
 }
 /* התוספות נגזרות מסוג השניצל — בלי סוג אין מה להציג */
 function schTops(fill, scope){
@@ -2841,12 +2854,11 @@ function paintSchnitzel(){
   let h = '';
   if(H.schMode === 'לפי יחידה'){
     h += '<div class="sect"><h4>כמה חלות?</h4>'+
-         '<div class="note">'+SCH_PERSONAL+' ₪ לחלה · אפשר להרכיב כל חלה אחרת</div>'+
+         '<div class="note">אפשר להרכיב כל חלה אחרת</div>'+
          '<div class="stepper"><button type="button" data-act="sc-">−</button>'+
          '<div class="val"><span>'+H.schCount+'</span><small>חלות</small></div>'+
          '<button type="button" data-act="sc+">+</button></div>'+
-         '<div class="hint" style="margin:10px 0 0">'+H.schCount+' × '+SCH_PERSONAL+' ₪ = '+
-         nf(H.schCount*SCH_PERSONAL)+' ₪</div></div>';
+         '<div class="hint" style="margin:10px 0 0">סה״כ החלות: '+nf(schUnitsTotal())+' ₪</div></div>';
     for(let i=0;i<H.schCount;i++){
       h += '<div class="sect"><h4>'+(H.schCount>1 ? 'חלה '+(i+1) : 'החלה שלכם')+'</h4>'+
            '<div class="note">איזה שניצל</div>'+schTypeRow(schSlot(i), i)+
@@ -2855,7 +2867,6 @@ function paintSchnitzel(){
     h += schCocotteRow();
   } else if(H.schMode === 'מארז'){
     h += '<div class="sect"><h4>מבנה המארז</h4>'+
-         '<div class="note">'+SCH_FAMILY+' ₪</div>'+
          '<div class="chips one" data-sch="form">'+
          SCHNITZEL_FORMS.map(f=>'<button type="button" class="chip'+(H.schForm===f?' on':'')+
            '" data-sch-v="'+esc(f)+'">'+f+'</button>').join('')+'</div></div>';
@@ -3345,8 +3356,11 @@ function boxPrice(){
   }
   if(b.schnitzel){
     const cocotte = cocotteCount()*COCOTTE_PRICE;
-    if(H.schMode==='לפי יחידה') return H.schCount*SCH_PERSONAL + cocotte;
-    if(H.schMode==='מארז')      return SCH_FAMILY + cocotte;
+    if(H.schMode==='לפי יחידה') return schUnitsTotal() + cocotte;
+    if(H.schMode==='מארז'){
+      const def = schTypeDef(H.schBox.type);
+      return (def ? def.box : 0) + cocotte;
+    }
     return 0;
   }
   if(b.unit) return H.units*(H.units>b.bigFrom ? b.rateBig : b.rate);
