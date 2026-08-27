@@ -50,15 +50,15 @@
     <div style="font-size: 12.5px; color: #7A7080;">שישי · 28 באוגוסט</div>
   </div>
 
-  <div style="position: absolute; top: 88px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+  <div style="position: absolute; top: 78px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
     <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">שניצל דק וקריספי/פילה עוף בטמפורה בחלה ביתית רכה, לצד שלל תוספות.<br>לפי כמות או מארז משפחתי לחמישה.</div>
 
-    <div style="flex-shrink: 0; height: 16px;"></div>
+    <div style="flex-shrink: 0; height: 12px;"></div>
 
-    <div style="flex-shrink: 0; height: 52px; box-sizing: border-box; border-radius: 999px; padding: 5px; display: flex; gap: 5px; background: rgba(65,109,158,0.09); border: 1px solid rgba(65,109,158,0.18);">
+    <div style="flex-shrink: 0; height: 52px; box-sizing: border-box; border-radius: 18px; padding: 5px; display: flex; gap: 5px; background: rgba(65,109,158,0.09); border: 1px solid rgba(65,109,158,0.18);">
       <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
-        <div onClick="{{ m.pick }}" class="press" style="flex-grow: 1; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 260ms ease, box-shadow 260ms ease; background: {{ m.bg }}; box-shadow: {{ m.sh }};">
+        <div onClick="{{ m.pick }}" class="press" style="flex-grow: 1; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 260ms ease, box-shadow 260ms ease; background: {{ m.bg }}; box-shadow: {{ m.sh }};">
           <div style="font-size: 14.5px; font-weight: {{ m.w }}; color: {{ m.fg }};">{{ m.label }}</div>
         </div>
       </sc-for>
@@ -69,7 +69,7 @@
 
     <div style="flex-shrink: 0; border-radius: 18px; padding: 13px 15px; display: flex; align-items: flex-start; gap: 10px; background: rgba(65,109,158,0.07); border: 1px solid rgba(65,109,158,0.18);">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#416D9E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M4 11h16v9H4z"></path><path d="M12 11v9M4 11V8h16v3"></path><path d="M12 8S9 3.5 7 5.5 12 8 12 8zM12 8s3-4.5 5-2.5S12 8 12 8z"></path></svg>
-      <div style="font-size: 12.5px; font-weight: 300; line-height: 1.55; color: #6E6478;">כנפי עוף במתנה לצד כל חלה, ברוטב מתחלף כל שבוע.</div>
+      <div style="font-size: 14.5px; font-weight: 600; line-height: 1.35; color: #2A2430;">כנפי עוף במתנה לצד כל חלה, ברוטב מתחלף כל שבוע.</div>
     </div>
 
     <div style="flex-shrink: 0; height: 18px;"></div>
@@ -131,23 +131,24 @@
       <div style="font-size: 12.5px; font-weight: 300; color: #7D7488; padding: 0 4px;">המארז מגיע ארוז — כל דבר בנפרד.</div>
     </div></sc-if>
 
+    <div style="flex-shrink: 0; height: 22px;"></div>
     <div style="flex-shrink: 0; font-size: 10.5px; letter-spacing: 0.22em; font-weight: 600; color: #A69EAE; text-align: center;">קוקוט רוטב</div>
     <div style="flex-shrink: 0; height: 10px;"></div>
 
     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;">
       <sc-for list="{{ cocottes }}" as="c" hint-placeholder-count="2">
-        <div style="height: 64px; box-sizing: border-box; border-radius: 20px; padding: 0 14px; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.36) 100%); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.88), 0 10px 22px -22px rgba(96,80,132,0.6);">
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-            <div style="font-weight: 600; font-size: 14.5px; line-height: 1.2;">{{ c.name }}</div>
-            <div style="font-size: 12.5px; color: #416D9E; font-weight: 600;">3 ₪</div>
+        <div style="height: 52px; box-sizing: border-box; border-radius: 16px; padding: 0 8px 0 12px; display: flex; align-items: center; gap: 9px; background: linear-gradient(152deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.36) 100%); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.88), 0 10px 22px -22px rgba(96,80,132,0.6);">
+          <div style="flex-grow: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;">
+            <div style="font-weight: 600; font-size: 13.5px; white-space: nowrap;">{{ c.name }}</div>
+            <div style="font-size: 12.5px; color: #416D9E; font-weight: 600; white-space: nowrap;">3 ₪</div>
           </div>
-          <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 2px;">
-            <div onClick="{{ c.dec }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FBFAFD 50%, #F2EFF7 100%); box-shadow: inset -2px -3px 6px rgba(150,125,190,0.13), inset 2px 2px 5px rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{ c.ink }}" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+          <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 1px;">
+            <div onClick="{{ c.dec }}" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FBFAFD 50%, #F2EFF7 100%); box-shadow: inset -2px -2px 5px rgba(150,125,190,0.13), inset 2px 2px 4px rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{ c.ink }}" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path></svg>
             </div>
-            <div style="width: 24px; text-align: center; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; color: {{ c.ink }};">{{ c.qty }}</div>
-            <div onClick="{{ c.inc }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 27%), radial-gradient(circle at 34% 28%, #F1F5FA 0%, #DCE7F3 30%, #AFC6E2 66%, #94B2D7 100%); box-shadow: inset -3px -4px 8px rgba(65,109,158,0.3), inset 2px 3px 6px rgba(255,255,255,0.9), 0 6px 13px -9px rgba(65,109,158,0.5); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            <div style="width: 22px; text-align: center; font-weight: 600; font-size: 15.5px; font-variant-numeric: tabular-nums; color: {{ c.ink }};">{{ c.qty }}</div>
+            <div onClick="{{ c.inc }}" style="width: 36px; height: 36px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 27%), radial-gradient(circle at 34% 28%, #F1F5FA 0%, #DCE7F3 30%, #AFC6E2 66%, #94B2D7 100%); box-shadow: inset -2px -3px 6px rgba(65,109,158,0.3), inset 2px 2px 5px rgba(255,255,255,0.9), 0 5px 11px -8px rgba(65,109,158,0.5); display: flex; align-items: center; justify-content: center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
             </div>
           </div>
         </div>
@@ -206,9 +207,9 @@
       </sc-for>
     </div>
 
-    <div onClick="{{ popAdd }}" class="press" style="align-self: center; height: 50px; margin-top: 18px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-      <div style="color: #43307A; font-weight: 600; font-size: 15.5px; white-space: nowrap;">{{ popBtn }}</div>
+    <div onClick="{{ popAdd }}" class="press" style="align-self: center; height: 50px; margin-top: 18px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(90,130,190,0.75);">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      <div style="color: #2B4A6E; font-weight: 600; font-size: 15.5px; white-space: nowrap;">{{ popBtn }}</div>
     </div>
   </div></sc-if>
 
@@ -220,9 +221,9 @@
       <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{ total }}</div>
       <div style="font-size: 15px; font-weight: 400; color: #7A7080;">₪</div>
     </div>
-    <div onClick="{{ openFlow }}" class="press" style="flex-shrink: 0; height: 46px; padding: 0 18px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -12px rgba(150,125,205,0.75);">
-      <div class="glow" style="color: #43307A; font-weight: 600; font-size: 15.5px; white-space: nowrap;">המשך</div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    <div onClick="{{ openFlow }}" class="press" style="flex-shrink: 0; height: 46px; padding: 0 18px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -12px rgba(90,130,190,0.75);">
+      <div class="glow" style="color: #2B4A6E; font-weight: 600; font-size: 15.5px; white-space: nowrap;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
     </div>
   </div>
 
@@ -281,9 +282,9 @@
       <input type="time" min="11:30" max="14:30" step="60" value="{{ clock }}" onInput="{{ setClock }}" onBlur="{{ settleClock }}" style="width: 168px; border: 0; background: transparent; text-align: center; font-family: 'Assistant', system-ui, sans-serif; font-size: 42px; font-weight: 600; letter-spacing: 0.02em; color: #2B4A6E; font-variant-numeric: tabular-nums; outline: none;">
       <div style="font-size: 11.5px; font-weight: 300; color: {{ clockNoteFg }};">{{ clockNote }}</div>
     </div>
-    <div onClick="{{ clockNext }}" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-      <div style="color: #43307A; font-weight: 600; font-size: 15.5px;">המשך</div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    <div onClick="{{ clockNext }}" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(90,130,190,0.75);">
+      <div style="color: #2B4A6E; font-weight: 600; font-size: 15.5px;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
     </div>
   </div></sc-if>
 
@@ -340,9 +341,9 @@
       <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; line-height: 1.5;">אזור החלוקה: מאשדוד ועד ראשון לציון</div>
     </div>
 
-    <div onClick="{{ addrNext }}" class="press" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; opacity: {{ addrOpacity }}; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-      <div style="color: #43307A; font-weight: 600; font-size: 15.5px;">המשך</div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    <div onClick="{{ addrNext }}" class="press" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; opacity: {{ addrOpacity }}; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(90,130,190,0.75);">
+      <div style="color: #2B4A6E; font-weight: 600; font-size: 15.5px;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
     </div>
   </div></sc-if>
 
@@ -385,8 +386,8 @@
         <div style="font-size: 14px; font-weight: 600;">{{ payLabel }}</div>
       </div>
     </div>
-    <div onClick="{{ placeOrder }}" class="press" style="align-self: center; height: 52px; margin-top: 16px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-      <div style="color: #43307A; font-weight: 600; font-size: 16px; white-space: nowrap;">ביצוע הזמנה</div>
+    <div onClick="{{ placeOrder }}" class="press" style="align-self: center; height: 52px; margin-top: 16px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(90,130,190,0.75);">
+      <div style="color: #2B4A6E; font-weight: 600; font-size: 16px; white-space: nowrap;">ביצוע הזמנה</div>
     </div>
   </div></sc-if>
 
@@ -466,8 +467,8 @@
     </div>
 
     <div style="position: relative; flex-shrink: 0; padding: 0 20px 30px; display: flex; justify-content: center;">
-      <div onClick="{{ closeFlow }}" class="press" style="height: 52px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-        <div style="color: #43307A; font-weight: 600; font-size: 16px; white-space: nowrap;">חזרה לדף הבית</div>
+      <div onClick="{{ closeFlow }}" class="press" style="height: 52px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #C2D6F2 0%, #A4BCE4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(90,130,190,0.75);">
+        <div style="color: #2B4A6E; font-weight: 600; font-size: 16px; white-space: nowrap;">חזרה לדף הבית</div>
       </div>
     </div>
   </div></sc-if>
