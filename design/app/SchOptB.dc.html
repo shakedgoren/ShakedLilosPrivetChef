@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 130ms cubic-bezier(.3,.7,.4,1); }
+    .press:active { transform: scale(0.955); }
+    .glow { animation: glowpulse 2.4s ease-in-out infinite; }
+    @keyframes glowpulse {
+      0%, 100% { text-shadow: 0 0 8px rgba(255,255,255,0.72), 0 0 17px rgba(255,255,255,0.34); }
+      50%      { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,255,255,0.68); }
+    }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FAF7F5; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.2) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.16) 0%, rgba(246,180,172,0) 66%), radial-gradient(58% 38% at 84% 72%, rgba(176,216,190,0.15) 0%, rgba(176,216,190,0) 62%), radial-gradient(76% 44% at 52% 20%, rgba(185,83,73,0.14) 0%, rgba(185,83,73,0) 72%);"></div>
+
+  <div style="position: absolute; top: 30px; right: 18px; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 30%), radial-gradient(circle at 34% 28%, #FFFFFF 0%, #F9F6FD 45%, #EDE6F7 100%); box-shadow: inset -3px -4px 8px rgba(150,125,190,0.2), inset 2px 3px 6px rgba(255,255,255,0.95), 0 6px 13px -8px rgba(120,95,170,0.45); display: flex; align-items: center; justify-content: center;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+  </div>
+
+  <div style="position: absolute; top: 32px; right: 74px; left: 74px; text-align: center; display: flex; flex-direction: column; gap: 1px;">
+    <div style="font-weight: 600; font-size: 20px; letter-spacing: -0.015em;">שישניצל</div>
+    <div style="font-size: 12.5px; color: #7A7080;">שישי · 28 באוגוסט</div>
+  </div>
+
+  <div style="position: absolute; top: 88px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+
+    <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">שניצל דק וקריספי/פילה עוף בטמפורה בחלה ביתית רכה, לצד שלל תוספות.<br>לפי כמות או מארז משפחתי לחמישה.</div>
+
+    <div style="flex-shrink: 0; height: 16px;"></div>
+
+    <div style="flex-shrink: 0; height: 52px; box-sizing: border-box; border-radius: 999px; padding: 5px; display: flex; gap: 5px; background: rgba(185,83,73,0.09); border: 1px solid rgba(185,83,73,0.18);">
+      <div style="flex-grow: 1; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; box-shadow: 0 2px 6px -2px rgba(96,80,132,0.35);">
+        <div style="font-size: 14.5px; font-weight: 600; color: #8C3A32;">לפי יחידה</div>
+      </div>
+      <div style="flex-grow: 1; border-radius: 999px; display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14.5px; font-weight: 400; color: #8A8194;">מארז</div>
+      </div>
+    </div>
+
+    <div style="flex-shrink: 0; height: 18px;"></div>
+
+    <div style="flex-shrink: 0; height: 64px; box-sizing: border-box; border-radius: 20px; padding: 0 14px; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
+      <div style="flex-grow: 1; min-width: 0; font-weight: 600; font-size: 15px;">כמה חלות</div>
+      <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 2px;">
+        <div onClick="{{ dec }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FBFAFD 50%, #F2EFF7 100%); box-shadow: inset -2px -3px 6px rgba(150,125,190,0.13), inset 2px 2px 5px rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{ countInk }}" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+        </div>
+        <div style="width: 26px; text-align: center; font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums;">{{ count }}</div>
+        <div onClick="{{ inc }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 27%), radial-gradient(circle at 34% 28%, #FDF1EF 0%, #F7DAD5 30%, #EBB3AB 66%, #DE9A91 100%); box-shadow: inset -3px -4px 8px rgba(185,83,73,0.3), inset 2px 3px 6px rgba(255,255,255,0.9), 0 6px 13px -9px rgba(185,83,73,0.55); display: flex; align-items: center; justify-content: center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8C3A32" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex-shrink: 0; height: 12px;"></div>
+
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+        <div style="box-sizing: border-box; border-radius: 20px; overflow: hidden; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
+
+          <div onClick="{{ r.toggle }}" class="press" style="min-height: 62px; box-sizing: border-box; padding: 12px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: {{ r.badgeBg }};">
+              <div style="font-size: 12px; font-weight: 600; color: #8C3A32; font-variant-numeric: tabular-nums;">{{ r.n }}</div>
+            </div>
+            <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+              <div style="font-size: 13.5px; font-weight: 600;">{{ r.title }}</div>
+              <div style="font-size: 11.5px; font-weight: 300; color: #7D7488;">{{ r.sub }}</div>
+            </div>
+            <div style="flex-shrink: 0; font-size: 13.5px; font-weight: 600; color: {{ r.priceFg }}; font-variant-numeric: tabular-nums;">{{ r.price }}</div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B1A9BD" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transition: transform 240ms cubic-bezier(.22,.9,.28,1); transform: {{ r.caret }};"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+
+          <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 13px 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+            <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">איזה שניצל</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <sc-for list="{{ r.types }}" as="t" hint-placeholder-count="2">
+                <div onClick="{{ t.pick }}" class="press" style="min-height: 50px; box-sizing: border-box; border-radius: 15px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 9px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
+                  <div style="flex-grow: 1; min-width: 0; font-size: 13px; line-height: 1.3; font-weight: {{ t.w }};">{{ t.name }}</div>
+                  <div style="flex-shrink: 0; border-radius: 8px; padding: 3px 9px; background: rgba(255,255,255,0.82); font-size: 12.5px; font-weight: 600; color: #B95349; font-variant-numeric: tabular-nums;">{{ t.price }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ r.hasType }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">מה ייכנס פנימה</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+              <sc-for list="{{ r.tops }}" as="o" hint-placeholder-count="5">
+                <div onClick="{{ o.pick }}" class="press" style="height: 36px; box-sizing: border-box; border-radius: 999px; padding: 0 12px; cursor: pointer; display: flex; align-items: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+                  <div style="font-size: 12px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
+                </div>
+              </sc-for>
+            </div></sc-if>
+          </div></sc-if>
+
+        </div>
+      </sc-for>
+    </div>
+
+
+    <div style="flex-shrink: 0; height: 12px;"></div>
+  </div>
+
+  <div style="position: absolute; bottom: 84px; right: 18px; left: 18px; height: 60px; box-sizing: border-box; border-radius: 22px; padding: 0 16px 0 7px; display: flex; align-items: center; gap: 10px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); border: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -24px rgba(96,80,132,0.6);">
+    <div style="flex-grow: 1; min-width: 0; display: flex; align-items: baseline; gap: 7px;">
+      <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap;">{{ countLabel }}</div>
+      <div style="font-size: 15px; font-weight: 400; color: #C1BBCB;">·</div>
+      <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap;">סה״כ :</div>
+      <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{ total }}</div>
+      <div style="font-size: 15px; font-weight: 400; color: #7A7080;">₪</div>
+    </div>
+    <div class="press" style="flex-shrink: 0; height: 46px; padding: 0 18px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -12px rgba(150,125,205,0.75);">
+      <div class="glow" style="color: #43307A; font-weight: 600; font-size: 15.5px; white-space: nowrap;">המשך</div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </div>
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 50px; border-radius: 999px; background: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.46) 100%); backdrop-filter: blur(30px) saturate(170%); -webkit-backdrop-filter: blur(30px) saturate(170%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 16px 30px -22px rgba(96,80,132,0.5); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 58px; height: 40px; cursor: pointer; border-radius: 999px; background: rgba(185,83,73,0.16);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 10.5px; font-weight: 600; color: #B95349;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 58px; height: 40px; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A93A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 10.5px; font-weight: 300; color: #9A93A6;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 58px; height: 40px; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A93A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
+      <div style="font-size: 10.5px; font-weight: 300; color: #9A93A6;">אזור אישי</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const SCH_TYPES = [
+  { name: 'שניצל דק בציפוי פירורי לחם', short: 'דק', unit: 50,
+    tops: ['מטבוחה', 'טחינה', 'חציל בטמפורה', 'כרוב סגול', 'פלפל חריף'] },
+  { name: 'פילה בציפוי טמפורה', short: 'פילה', unit: 60,
+    tops: ['איולי עמבה', 'איולי עשבי תיבול', 'עלי רוקט', 'מלפפון חמוץ'] }
+];
+const HUE = '#B95349', HUE_DEEP = '#8C3A32';
+const SEL_BG = 'rgba(185,83,73,0.1)', SEL_BD = 'rgba(185,83,73,0.42)';
+const IDLE_BG = 'rgba(255,255,255,0.7)', IDLE_BD = 'rgba(130,112,162,0.16)';
+const OFF = '#C0B9CA', ON = '#2A2430';
+const chip = (on) => ({ bg: on ? SEL_BG : IDLE_BG, bd: on ? SEL_BD : IDLE_BD, fg: on ? HUE_DEEP : '#4A4254', w: on ? '600' : '400' });
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { count: 3, open: 1, fills: [
+      { type: 0, tops: ['\u05DE\u05D8\u05D1\u05D5\u05D7\u05D4', '\u05D8\u05D7\u05D9\u05E0\u05D4'] },
+      { type: null, tops: [] },
+      { type: 1, tops: ['\u05E2\u05DC\u05D9 \u05E8\u05D5\u05E7\u05D8'] }
+    ] };
+  }
+  blank() { return { type: null, tops: [] }; }
+  setCount(d) {
+    const n = Math.max(1, Math.min(12, this.state.count + d));
+    const f = this.state.fills.slice(0, n);
+    while (f.length < n) f.push(this.blank());
+    this.setState({ count: n, fills: f, open: Math.min(this.state.open, n - 1) });
+  }
+  setType(i, k) { this.setState({ fills: this.state.fills.map((f, j) => (j === i ? { type: k, tops: [] } : f)) }); }
+  toggleTop(i, n) {
+    this.setState({ fills: this.state.fills.map((f, j) => {
+      if (j !== i) return f;
+      const on = f.tops.indexOf(n) !== -1;
+      return { type: f.type, tops: on ? f.tops.filter((x) => x !== n) : f.tops.concat([n]) };
+    }) });
+  }
+  total() {
+    let t = 0;
+    for (let i = 0; i < this.state.count; i++) {
+      const f = this.state.fills[i];
+      if (f && f.type !== null) t += SCH_TYPES[f.type].unit;
+    }
+    return t;
+  }
+  rowVals(i) {
+    const f = this.state.fills[i] || this.blank();
+    const has = f.type !== null;
+    return {
+      f: f, has: has,
+      types: SCH_TYPES.map((t, k) => {
+        const c = chip(f.type === k);
+        return { name: t.name, price: t.unit + ' \u20AA', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.setType(i, k) };
+      }),
+      tops: has ? SCH_TYPES[f.type].tops.map((n) => {
+        const c = chip(f.tops.indexOf(n) !== -1);
+        return { name: n, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggleTop(i, n) };
+      }) : []
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const rows = [];
+    for (let i = 0; i < st.count; i++) {
+      const v = this.rowVals(i);
+      const open = st.open === i;
+      rows.push({
+        n: i + 1,
+        title: '\u05D7\u05DC\u05D4 ' + (i + 1) + (v.has ? ' \u00B7 ' + SCH_TYPES[v.f.type].short : ''),
+        sub: v.has ? (v.f.tops.length ? v.f.tops.join(' \u00B7 ') : '\u05D1\u05DC\u05D9 \u05EA\u05D5\u05E1\u05E4\u05D5\u05EA') : '\u05D8\u05E8\u05DD \u05E0\u05D1\u05D7\u05E8 \u05E1\u05D5\u05D2',
+        price: v.has ? SCH_TYPES[v.f.type].unit + ' \u20AA' : '\u2014',
+        priceFg: v.has ? HUE : '#A79FB2',
+        badgeBg: open ? 'rgba(185,83,73,0.18)' : 'rgba(185,83,73,0.09)',
+        caret: open ? 'rotate(180deg)' : 'rotate(0deg)',
+        open: open, hasType: v.has, types: v.types, tops: v.tops,
+        toggle: () => this.setState({ open: open ? -1 : i })
+      });
+    }
+    return {
+      count: st.count, countInk: st.count <= 1 ? OFF : ON,
+      inc: () => this.setCount(1), dec: () => this.setCount(-1),
+      rows: rows,
+      countLabel: st.count === 1 ? '\u05D7\u05DC\u05D4 \u05D0\u05D7\u05EA' : st.count + ' \u05D7\u05DC\u05D5\u05EA',
+      total: this.total()
+    };
+  }
+}
+</script>
+</body>
+</html>
