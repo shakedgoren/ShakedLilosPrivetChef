@@ -255,8 +255,8 @@
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
     <div style="margin-top: 18px; border-radius: 22px; padding: 20px 16px; background: rgba(169,118,31,0.08); border: 1.5px solid rgba(169,118,31,0.24); display: flex; flex-direction: column; align-items: center; gap: 6px;">
-      <input type="time" min="11:30" max="14:30" step="60" value="{{ clock }}" onChange="{{ setClock }}" style="width: 168px; border: 0; background: transparent; text-align: center; font-family: 'Assistant', system-ui, sans-serif; font-size: 42px; font-weight: 600; letter-spacing: 0.02em; color: #6B4A12; font-variant-numeric: tabular-nums; outline: none;">
-      <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ clockNote }}</div>
+      <input type="time" min="11:30" max="14:30" step="60" value="{{ clock }}" onInput="{{ setClock }}" onBlur="{{ settleClock }}" style="width: 168px; border: 0; background: transparent; text-align: center; font-family: 'Assistant', system-ui, sans-serif; font-size: 42px; font-weight: 600; letter-spacing: 0.02em; color: #6B4A12; font-variant-numeric: tabular-nums; outline: none;">
+      <div style="font-size: 11.5px; font-weight: 300; color: {{ clockNoteFg }};">{{ clockNote }}</div>
     </div>
     <div onClick="{{ clockNext }}" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
       <div style="color: #43307A; font-weight: 600; font-size: 15.5px;">המשך</div>
@@ -427,6 +427,16 @@
           <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">מועד</div>
           <div style="font-size: 13.5px; font-weight: 600;">שלישי · 25 באוגוסט</div>
         </div>
+
+        <sc-if value="{{ isPickup }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">כתובת לאיסוף</div>
+          <div style="font-size: 13.5px; font-weight: 600;">נופר 25 יבנה</div>
+        </div>
+        <div style="width: 100%; height: 148px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(169,118,31,0.36); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(138,95,22,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5z"></path><path d="M9 4v13M15 6.5v13"></path></svg>
+          <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(138,95,22,0.66);">תמונה</div>
+        </div></sc-if>
       </div>
 
       <div style="height: 24px; flex-shrink: 0;"></div>
@@ -485,6 +495,8 @@ const CONFETTI = (() => {
   return out;
 })();
 
+const CLOCK_FALLBACK = '12:00';
+
 const OFF = '#C0B9CA';
 const ON  = '#2A2430';
 
@@ -532,11 +544,19 @@ class Component extends DCLogic {
     this.setState({ ship: 'deliv', time: null, step: 2 });
   }
 
-  /* שעה מחוץ לטווח נתפסת מיד · 15:00 הופך ל-14:30, 11:00 ל-11:30 */
+  /* שעה מחוץ לטווח נתפסת · 15:00 הופך ל-14:30, 11:00 ל-11:30.
+     חשוב: לא מצמידים תוך כדי הקלדה. ל-input[type=time] יש ערכי ביניים
+     ריקים בין ספרה לספרה, והצמדה עליהם החזירה את השדה לערך הקודם
+     ולכן לא היה אפשר להקליד בכלל. ההצמדה רצה ביציאה מהשדה ובהמשך. */
   clampClock(v) {
     const m = toMin(v);
-    if (m === null) return this.state.clock;
+    if (m === null) return CLOCK_FALLBACK;
     return hhmm(Math.min(PICK_TO, Math.max(PICK_FROM, m)));
+  }
+
+  settleClock() {
+    const c = this.clampClock(this.state.clock);
+    if (c !== this.state.clock) this.setState({ clock: c });
   }
 
   clockNext() {
@@ -549,6 +569,11 @@ class Component extends DCLogic {
     const meals = this.meals();
     const total = st.qty.reduce((s, v, i) => s + v * ITEMS[i].price, 0);
     const deliv = st.ship === 'deliv';
+    /* אם השעה שהוקלדה חורגת, מראים לאן היא תיתפס · בלי לגעת בה תוך כדי */
+    const cm = toMin(st.clock);
+    const clockFixTo = (cm !== null && (cm < PICK_FROM || cm > PICK_TO))
+      ? hhmm(Math.min(PICK_TO, Math.max(PICK_FROM, cm))) : null;
+
     /* ״כתובת מלאה״ = רחוב ומספר בית, ולכן נדרשת גם ספרה */
     const a = String(st.addr || '').trim();
     const addrOk = a.length >= 4 && /\d/.test(a);
@@ -567,6 +592,7 @@ class Component extends DCLogic {
       isDone:    st.step === 5,
       isConfirm: st.step === 6,
       isDeliv:   deliv,
+      isPickup:  !deliv,
 
       openFlow:  () => this.setState({ step: 1 }),
       closeFlow: () => this.setState({ step: 0 }),
@@ -580,9 +606,11 @@ class Component extends DCLogic {
       placeOrder: () => this.setState({ step: 6 }),
 
       clock: st.clock,
-      setClock: (e) => this.setState({ clock: this.clampClock(e.target.value) }),
+      setClock: (e) => this.setState({ clock: e.target.value }),
+      settleClock: () => this.settleClock(),
       clockNext: () => this.clockNext(),
-      clockNote: 'ניתן להקליד שעה · 11:30–14:30',
+      clockNote: clockFixTo ? 'מחוץ לטווח · יתוקן ל-' + clockFixTo : 'ניתן להקליד שעה · 11:30–14:30',
+      clockNoteFg: clockFixTo ? '#B95349' : '#8A8194',
 
       city: st.city,
       setCity: (e) => this.setState({ city: e.target.value }),
