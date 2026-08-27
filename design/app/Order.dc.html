@@ -22,12 +22,12 @@
     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
   </div>
 
-  <div style="position: absolute; top: 86px; right: 18px; left: 18px; text-align: center; display: flex; flex-direction: column; gap: 2px;">
+  <div style="position: absolute; top: 70px; right: 18px; left: 18px; text-align: center; display: flex; flex-direction: column; gap: 2px;">
     <div style="font-weight: 600; font-size: 20px; letter-spacing: -0.015em;">שלישי של קוסקוס</div>
     <div style="font-size: 12.5px; color: #7A7080;">שלישי · 25 באוגוסט</div>
   </div>
 
-  <div style="position: absolute; top: 144px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+  <div style="position: absolute; top: 128px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
     <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">הטעם שכולם מחכים לו, יש מסורות שלא מוותרים עליהן!<br>קוסקוס עננים ביתי שמוכן באהבה, בדיוק כמו של פעם.</div>
 
@@ -186,11 +186,15 @@
     </div>
   </div>
 
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 60; top: 22px; right: 22px; left: 22px; border-radius: 18px; padding: 13px 16px; display: flex; align-items: center; gap: 10px; background: #3B3244; box-shadow: 0 18px 40px -18px rgba(40,32,52,0.8);">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6C87A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.4v.2"></path></svg>
+    <div style="font-size: 14px; font-weight: 500; color: #FDFBFA;">משלוחים החל מ4 מנות</div>
+  </div></sc-if>
+
   <sc-if value="{{ flowOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeFlow }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div></sc-if>
 
-  <sc-if value="{{ isShip }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; bottom: 0; right: 0; left: 0; border-radius: 30px 30px 0 0; padding: 16px 18px 26px; background: #FEFCFB; box-shadow: 0 -20px 50px -26px rgba(60,48,84,0.6); display: flex; flex-direction: column;">
-    <div style="align-self: center; width: 38px; height: 4px; border-radius: 999px; background: rgba(130,112,162,0.24);"></div>
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
+  <sc-if value="{{ isShip }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <div style="flex-grow: 1; font-weight: 600; font-size: 18px;">איך מגיע אליכם?</div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
@@ -207,34 +211,99 @@
         <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="1.6"></circle><circle cx="17" cy="18" r="1.6"></circle></svg>
         <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
           <div style="font-weight: 600; font-size: 15.5px;">משלוח</div>
-          <div style="font-size: 12px; font-weight: 300; color: #7D7488;">12:00–14:00 · 20 ₪</div>
+          <div style="font-size: 12px; font-weight: 300; color: #7D7488;">12:00–14:00</div>
         </div>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
       </div>
     </div>
   </div></sc-if>
 
-  <sc-if value="{{ isTime }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; bottom: 0; right: 0; left: 0; border-radius: 30px 30px 0 0; padding: 16px 18px 26px; background: #FEFCFB; box-shadow: 0 -20px 50px -26px rgba(60,48,84,0.6); display: flex; flex-direction: column;">
-    <div style="align-self: center; width: 38px; height: 4px; border-radius: 999px; background: rgba(130,112,162,0.24);"></div>
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
+  <sc-if value="{{ isClock }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <div onClick="{{ backShip }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></div>
       <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
-        <div style="font-weight: 600; font-size: 18px;">בחירת שעה</div>
-        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">{{ shipLabel }}</div>
+        <div style="font-weight: 600; font-size: 18px;">שעת איסוף</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">בין 11:30 ל-14:30</div>
+      </div>
+      <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+    <div style="margin-top: 18px; border-radius: 22px; padding: 20px 16px; background: rgba(169,118,31,0.08); border: 1.5px solid rgba(169,118,31,0.24); display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <input type="time" min="11:30" max="14:30" step="60" value="{{ clock }}" onChange="{{ setClock }}" style="width: 168px; border: 0; background: transparent; text-align: center; font-family: 'Assistant', system-ui, sans-serif; font-size: 42px; font-weight: 600; letter-spacing: 0.02em; color: #6B4A12; font-variant-numeric: tabular-nums; outline: none;">
+      <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ clockNote }}</div>
+    </div>
+    <div onClick="{{ clockNext }}" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
+      <div style="color: #43307A; font-weight: 600; font-size: 15.5px;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </div>
+  </div></sc-if>
+
+  <sc-if value="{{ isSlots }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div onClick="{{ backShip }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></div>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+        <div style="font-weight: 600; font-size: 18px;">שעת משלוח</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">12:00–14:00</div>
       </div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
     <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 16px;">
-      <sc-for list="{{ slots }}" as="t" hint-placeholder-count="8">
+      <sc-for list="{{ slots }}" as="t" hint-placeholder-count="7">
         <div onClick="{{ t.pick }}" style="height: 46px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-variant-numeric: tabular-nums; font-weight: {{ t.w }}; color: {{ t.fg }}; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">{{ t.label }}</div>
       </sc-for>
     </div>
   </div></sc-if>
 
-  <sc-if value="{{ isPay }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; bottom: 0; right: 0; left: 0; border-radius: 30px 30px 0 0; padding: 16px 18px 26px; background: #FEFCFB; box-shadow: 0 -20px 50px -26px rgba(60,48,84,0.6); display: flex; flex-direction: column;">
-    <div style="align-self: center; width: 38px; height: 4px; border-radius: 999px; background: rgba(130,112,162,0.24);"></div>
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
+  <sc-if value="{{ isAddr }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <div onClick="{{ backTime }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></div>
+      <div style="flex-grow: 1; font-weight: 600; font-size: 18px;">כתובת למשלוח</div>
+      <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px; margin-top: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194; padding-right: 4px;">עיר</div>
+        <select value="{{ city }}" onChange="{{ setCity }}" style="height: 50px; border-radius: 16px; padding: 0 14px; font-family: 'Assistant', system-ui, sans-serif; font-size: 15px; font-weight: 500; color: #2A2430; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+          <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+            <option value="{{ c.v }}">{{ c.v }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div style="display: flex; gap: 9px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194; padding-right: 4px;">רחוב</div>
+          <input type="text" style="height: 50px; border-radius: 16px; padding: 0 14px; font-family: 'Assistant', system-ui, sans-serif; font-size: 15px; color: #2A2430; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        </div>
+        <div style="width: 90px; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194; padding-right: 4px;">מספר</div>
+          <input type="text" style="width: 90px; height: 50px; border-radius: 16px; padding: 0 14px; font-family: 'Assistant', system-ui, sans-serif; font-size: 15px; color: #2A2430; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; border-radius: 18px; padding: 13px 15px; background: rgba(169,118,31,0.07); border: 1px solid rgba(169,118,31,0.18); display: flex; flex-direction: column; gap: 7px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="flex-grow: 1; font-size: 12.5px; font-weight: 400; color: #6E6478;">משלוחים בתוך יבנה</div>
+        <div style="font-size: 13.5px; font-weight: 600; color: #8A5F16; font-variant-numeric: tabular-nums;">20 ₪</div>
+      </div>
+      <div style="height: 1px; background: rgba(169,118,31,0.16);"></div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="flex-grow: 1; font-size: 12.5px; font-weight: 400; color: #6E6478;">משלוחים באזור השפלה</div>
+        <div style="font-size: 13.5px; font-weight: 600; color: #8A5F16; font-variant-numeric: tabular-nums;">60 ₪</div>
+      </div>
+      <div style="height: 1px; background: rgba(169,118,31,0.16);"></div>
+      <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; line-height: 1.5;">אזור החלוקה: מאשדוד ועד ראשון לציון</div>
+    </div>
+
+    <div onClick="{{ addrNext }}" style="align-self: center; height: 50px; margin-top: 16px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
+      <div style="color: #43307A; font-weight: 600; font-size: 15.5px;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </div>
+  </div></sc-if>
+
+  <sc-if value="{{ isPay }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div onClick="{{ backFromPay }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></div>
       <div style="flex-grow: 1; font-weight: 600; font-size: 18px;">אמצעי תשלום</div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
@@ -249,9 +318,8 @@
     </div>
   </div></sc-if>
 
-  <sc-if value="{{ isDone }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; bottom: 0; right: 0; left: 0; border-radius: 30px 30px 0 0; padding: 16px 18px 26px; background: #FEFCFB; box-shadow: 0 -20px 50px -26px rgba(60,48,84,0.6); display: flex; flex-direction: column;">
-    <div style="align-self: center; width: 38px; height: 4px; border-radius: 999px; background: rgba(130,112,162,0.24);"></div>
-    <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px;">
+  <sc-if value="{{ isDone }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 41; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <div onClick="{{ backPay }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg></div>
       <div style="flex-grow: 1; font-weight: 600; font-size: 18px;">סיום</div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
@@ -272,15 +340,79 @@
         <div style="font-size: 14px; font-weight: 600;">{{ payLabel }}</div>
       </div>
     </div>
-    <div onClick="{{ closeFlow }}" style="height: 56px; margin-top: 14px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
-      <div style="color: #43307A; font-weight: 600; font-size: 16.5px;">ביצוע הזמנה</div>
+    <div onClick="{{ placeOrder }}" style="align-self: center; height: 52px; margin-top: 16px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
+      <div style="color: #43307A; font-weight: 600; font-size: 16px; white-space: nowrap;">ביצוע הזמנה</div>
     </div>
   </div></sc-if>
 
+  <sc-if value="{{ isConfirm }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 70; inset: 0; background: #FAF7F5; display: flex; flex-direction: column;">
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(60% 34% at 50% 2%, rgba(169,118,31,0.16) 0%, rgba(169,118,31,0) 66%), radial-gradient(56% 34% at 12% 70%, rgba(186,166,228,0.18) 0%, rgba(186,166,228,0) 64%);"></div>
+
+    <div style="position: relative; flex-grow: 1; overflow-y: auto; scrollbar-width: none; padding: 44px 20px 0; display: flex; flex-direction: column; align-items: center;">
+
+      <div style="position: relative; width: 82px; height: 82px; flex-shrink: 0;">
+        <div style="position: absolute; inset: -12px; border-radius: 50%; filter: blur(10px); background: radial-gradient(closest-side, rgba(169,118,31,0.42) 0%, rgba(169,118,31,0) 78%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0) 28%), radial-gradient(circle at 34% 28%, #FBF4E7 0%, #F4E4C4 34%, #E4C98D 100%); box-shadow: inset -6px -8px 16px rgba(169,118,31,0.26), inset 5px 6px 12px rgba(255,255,255,0.98), 0 14px 28px -14px rgba(169,118,31,0.6); display: flex; align-items: center; justify-content: center;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#6B4A12" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </div>
+      </div>
+
+      <div style="font-weight: 600; font-size: 22px; margin-top: 18px; text-align: center;">ההזמנה התקבלה</div>
+      <div style="font-weight: 300; font-size: 13.5px; color: #7D7488; margin-top: 5px; text-align: center;">נשלח לך אישור לוואטסאפ</div>
+
+      <div style="width: 100%; margin-top: 22px; border-radius: 24px; padding: 16px 18px; box-sizing: border-box; background: linear-gradient(152deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.54) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 36px -26px rgba(96,80,132,0.6); display: flex; flex-direction: column; gap: 11px;">
+
+        <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">סיכום ההזמנה</div>
+
+        <sc-for list="{{ lines }}" as="l" hint-placeholder-count="3">
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 500; color: #4A4254; flex-shrink: 0; font-variant-numeric: tabular-nums;">{{ l.qty }}×</div>
+            <div style="flex-grow: 1; min-width: 0; font-size: 13.5px; font-weight: 400; color: #4A4254;">{{ l.name }}</div>
+            <div style="font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ l.sum }} ₪</div>
+          </div>
+        </sc-for>
+
+        <div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
+
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 14px; font-weight: 600;">סה״כ</div>
+          <div style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ total }}</div>
+          <div style="font-size: 13px; font-weight: 400; color: #7A7080;">₪</div>
+        </div>
+
+        <div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">{{ shipLabel }}</div>
+          <div style="font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ timeLabel }}</div>
+        </div>
+        <sc-if value="{{ isDeliv }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">כתובת</div>
+          <div style="font-size: 13.5px; font-weight: 600;">{{ city }}</div>
+        </div></sc-if>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">תשלום</div>
+          <div style="font-size: 13.5px; font-weight: 600;">{{ payLabel }}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">מועד</div>
+          <div style="font-size: 13.5px; font-weight: 600;">שלישי · 25 באוגוסט</div>
+        </div>
+      </div>
+
+      <div style="height: 24px; flex-shrink: 0;"></div>
+    </div>
+
+    <div style="position: relative; flex-shrink: 0; padding: 0 20px 30px; display: flex; justify-content: center;">
+      <div onClick="{{ closeFlow }}" style="height: 52px; padding: 0 34px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
+        <div style="color: #43307A; font-weight: 600; font-size: 16px; white-space: nowrap;">חזרה לדף הבית</div>
+      </div>
+    </div>
+  </div></sc-if>
 </div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
-/* מחירי המנות והתוספות · הכיתובים והמחירים נמסרו על ידי שקד */
+/* המנות, התוספות והמחירים · נמסרו על ידי שקד */
 const ITEMS = [
   { name: 'קוסקוס צמחוני',  price: 45, meal: true },
   { name: 'קוסקוס עם עוף',   price: 55, meal: true },
@@ -290,80 +422,146 @@ const ITEMS = [
   { name: 'תוספת מפרום',     price: 20, meal: false }
 ];
 
-/* חלונות השעות של הקוסקוס · מהאתר הקודם */
-const SLOTS_PICKUP = ['11:30','12:00','12:30','13:00','13:30','14:00','14:30'];
-const SLOTS_DELIV  = ['12:00','12:30','13:00','13:30','14:00'];
-const PAYS = ['ביט', 'פייבוקס', 'אפל פיי', 'מזומן'];
-const DELIVERY_FEE = 20;
+/* משלוח · כל 20 דקות בטווח 12:00–14:00 */
+const DELIV_FROM = 12 * 60;
+const DELIV_TO   = 14 * 60;
+const DELIV_STEP = 20;
+
+/* איסוף · שעון חופשי בטווח 11:30–14:30 */
+const PICK_FROM = 11 * 60 + 30;
+const PICK_TO   = 14 * 60 + 30;
+
+const DELIV_MIN_MEALS = 4;
+const PAYS   = ['ביט', 'פייבוקס', 'אפל פיי', 'מזומן'];
+/* אזור החלוקה · מאשדוד ועד ראשון לציון */
+const CITIES = ['יבנה', 'אשדוד', 'גדרה', 'נס ציונה', 'רחובות', 'ראשון לציון'];
 
 const OFF = '#C0B9CA';
 const ON  = '#2A2430';
 
+const hhmm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+const toMin = (t) => {
+  const p = String(t || '').split(':');
+  const h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  return (isNaN(h) || isNaN(m)) ? null : h * 60 + m;
+};
+
+const DELIV_SLOTS = (() => {
+  const out = [];
+  for (let m = DELIV_FROM; m <= DELIV_TO; m += DELIV_STEP) out.push(hhmm(m));
+  return out;
+})();
+
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { qty: [2, 0, 1, 0, 0, 0], step: 0, ship: null, time: null, pay: null };
+    this.state = {
+      qty: [2, 0, 1, 0, 0, 0],
+      step: 0, ship: null, time: null, clock: '12:00',
+      city: CITIES[0], pay: null, toast: false
+    };
   }
 
+  componentWillUnmount() { clearTimeout(this._t); }
+
   bump(i, d) {
-    const qty = this.state.qty.map((v, j) => (j === i ? Math.max(0, v + d) : v));
-    this.setState({ qty: qty });
+    this.setState({ qty: this.state.qty.map((v, j) => (j === i ? Math.max(0, v + d) : v)) });
+  }
+
+  meals() {
+    return this.state.qty.reduce((s, v, i) => s + (ITEMS[i].meal ? v : 0), 0);
+  }
+
+  /* מתחת למינימום המשלוח · הודעה במעלה המסך, בלי לעבור שלב */
+  wantDelivery() {
+    if (this.meals() < DELIV_MIN_MEALS) {
+      clearTimeout(this._t);
+      this.setState({ toast: true });
+      this._t = setTimeout(() => this.setState({ toast: false }), 2800);
+      return;
+    }
+    this.setState({ ship: 'deliv', time: null, step: 2 });
+  }
+
+  /* השעון נכתב חופשי ולכן נאכף לטווח לפני שממשיכים */
+  clockNext() {
+    const m = toMin(this.state.clock);
+    if (m === null) return;
+    const clamped = Math.min(PICK_TO, Math.max(PICK_FROM, m));
+    this.setState({ clock: hhmm(clamped), time: hhmm(clamped), step: 4 });
   }
 
   renderVals() {
     const st = this.state;
-    const qty = st.qty;
-
-    const meals = qty.reduce((s, v, i) => s + (ITEMS[i].meal ? v : 0), 0);
-    let total = qty.reduce((s, v, i) => s + v * ITEMS[i].price, 0);
-    if (st.ship === 'deliv') total += DELIVERY_FEE;
-
-    const slots = (st.ship === 'deliv' ? SLOTS_DELIV : SLOTS_PICKUP).map((t) => ({
-      label: t,
-      pick: () => this.setState({ time: t, step: 3 }),
-      bg: st.time === t ? 'rgba(169,118,31,0.14)' : 'rgba(255,255,255,0.7)',
-      bd: st.time === t ? 'rgba(169,118,31,0.42)' : 'rgba(130,112,162,0.16)',
-      fg: st.time === t ? '#6B4A12' : '#4A4254',
-      w:  st.time === t ? '600' : '400'
-    }));
-
-    const pays = PAYS.map((p) => ({
-      label: p,
-      pick: () => this.setState({ pay: p, step: 4 }),
-      bg:  st.pay === p ? 'rgba(169,118,31,0.08)' : 'rgba(255,255,255,0.7)',
-      bd:  st.pay === p ? 'rgba(169,118,31,0.3)'  : 'rgba(130,112,162,0.16)',
-      dot: st.pay === p ? '#A9761F' : 'rgba(130,112,162,0.28)',
-      w:   st.pay === p ? '600' : '400'
-    }));
+    const meals = this.meals();
+    const total = st.qty.reduce((s, v, i) => s + v * ITEMS[i].price, 0);
+    const deliv = st.ship === 'deliv';
+    const cm = toMin(st.clock);
+    const outOfRange = cm !== null && (cm < PICK_FROM || cm > PICK_TO);
 
     const vals = {
       countLabel: meals === 1 ? 'מנה אחת' : meals + ' מנות',
       total: total,
+      toast: st.toast,
 
-      flowOpen: st.step > 0,
-      isShip: st.step === 1,
-      isTime: st.step === 2,
-      isPay:  st.step === 3,
-      isDone: st.step === 4,
+      flowOpen:  st.step > 0,
+      isShip:    st.step === 1,
+      isClock:   st.step === 2 && !deliv,
+      isSlots:   st.step === 2 && deliv,
+      isAddr:    st.step === 3,
+      isPay:     st.step === 4,
+      isDone:    st.step === 5,
+      isConfirm: st.step === 6,
+      isDeliv:   deliv,
 
       openFlow:  () => this.setState({ step: 1 }),
       closeFlow: () => this.setState({ step: 0 }),
-      pickSelf:  () => this.setState({ ship: 'self',  time: null, step: 2 }),
-      pickDeliv: () => this.setState({ ship: 'deliv', time: null, step: 2 }),
+      pickSelf:  () => this.setState({ ship: 'self', time: null, step: 2 }),
+      pickDeliv: () => this.wantDelivery(),
       backShip:  () => this.setState({ step: 1 }),
       backTime:  () => this.setState({ step: 2 }),
-      backPay:   () => this.setState({ step: 3 }),
+      backFromPay: () => this.setState({ step: deliv ? 3 : 2 }),
+      backPay:   () => this.setState({ step: 4 }),
+      addrNext:  () => this.setState({ step: 4 }),
+      placeOrder: () => this.setState({ step: 6 }),
 
-      shipLabel: st.ship === 'deliv' ? 'משלוח' : 'איסוף עצמי',
+      clock: st.clock,
+      setClock: (e) => this.setState({ clock: e.target.value }),
+      clockNext: () => this.clockNext(),
+      clockNote: outOfRange ? 'מחוץ לטווח · יתוקן להזמנה' : 'ניתן להקליד שעה',
+
+      city: st.city,
+      setCity: (e) => this.setState({ city: e.target.value }),
+      cities: CITIES.map((c) => ({ v: c })),
+
+      shipLabel: deliv ? 'משלוח' : 'איסוף עצמי',
       timeLabel: st.time || '',
       payLabel:  st.pay || '',
 
-      slots: slots,
-      pays: pays
+      slots: DELIV_SLOTS.map((t) => ({
+        label: t,
+        pick: () => this.setState({ time: t, step: 3 }),
+        bg: st.time === t ? 'rgba(169,118,31,0.14)' : 'rgba(255,255,255,0.7)',
+        bd: st.time === t ? 'rgba(169,118,31,0.42)' : 'rgba(130,112,162,0.16)',
+        fg: st.time === t ? '#6B4A12' : '#4A4254',
+        w:  st.time === t ? '600' : '400'
+      })),
+
+      pays: PAYS.map((p) => ({
+        label: p,
+        pick: () => this.setState({ pay: p, step: 5 }),
+        bg:  st.pay === p ? 'rgba(169,118,31,0.08)' : 'rgba(255,255,255,0.7)',
+        bd:  st.pay === p ? 'rgba(169,118,31,0.3)'  : 'rgba(130,112,162,0.16)',
+        dot: st.pay === p ? '#A9761F' : 'rgba(130,112,162,0.28)',
+        w:   st.pay === p ? '600' : '400'
+      })),
+
+      lines: ITEMS
+        .map((it, i) => ({ name: it.name, qty: st.qty[i], sum: st.qty[i] * it.price }))
+        .filter((l) => l.qty > 0)
     };
 
-    /* סטפר לכל שורה · המינוס דוהה כשהכמות אפס */
-    qty.forEach((v, i) => {
+    st.qty.forEach((v, i) => {
       vals['q' + i] = v;
       vals['ink' + i] = v === 0 ? OFF : ON;
       vals['inc' + i] = () => this.bump(i, 1);
