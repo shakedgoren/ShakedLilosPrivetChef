@@ -65,56 +65,32 @@
     </div>
 
     <div style="flex-shrink: 0; height: 18px;"></div>
-    <sc-if value="{{ isUnit }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="flex-shrink: 0; height: 18px;"></div>
 
-      <div style="height: 64px; box-sizing: border-box; border-radius: 20px; padding: 0 14px; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 12px 26px -24px rgba(96,80,132,0.6);">
-        <div style="flex-grow: 1; min-width: 0; font-weight: 600; font-size: 15px;">כמה חלות</div>
-        <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 2px;">
-          <div onClick="{{ decCount }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FBFAFD 50%, #F2EFF7 100%); box-shadow: inset -2px -3px 6px rgba(150,125,190,0.13), inset 2px 2px 5px rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{ countInk }}" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+    <div style="flex-shrink: 0; border-radius: 18px; padding: 13px 15px; display: flex; align-items: flex-start; gap: 10px; background: rgba(185,83,73,0.07); border: 1px solid rgba(185,83,73,0.18);">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M4 11h16v9H4z"></path><path d="M12 11v9M4 11V8h16v3"></path><path d="M12 8S9 3.5 7 5.5 12 8 12 8zM12 8s3-4.5 5-2.5S12 8 12 8z"></path></svg>
+      <div style="font-size: 12.5px; font-weight: 300; line-height: 1.55; color: #6E6478;">כנפי עוף במתנה לצד כל חלה, ברוטב מתחלף כל שבוע.</div>
+    </div>
+
+    <div style="flex-shrink: 0; height: 18px;"></div>
+
+    <sc-if value="{{ isUnit }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-size: 10.5px; letter-spacing: 0.22em; font-weight: 600; color: #A69EAE; text-align: center;">בחר סוג חלה</div>
+      <sc-for list="{{ types }}" as="t" hint-placeholder-count="2">
+        <div onClick="{{ t.pick }}" class="press" style="height: 84px; box-sizing: border-box; border-radius: 22px; padding: 13px 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
+          <div style="width: 58px; height: 58px; flex-shrink: 0; border-radius: 16px; border: 1.5px dashed rgba(185,83,73,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(140,58,50,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg>
           </div>
-          <div style="width: 26px; text-align: center; font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums;">{{ count }}</div>
-          <div onClick="{{ incCount }}" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 27%), radial-gradient(circle at 34% 28%, #FDF1EF 0%, #F7DAD5 30%, #EBB3AB 66%, #DE9A91 100%); box-shadow: inset -3px -4px 8px rgba(185,83,73,0.3), inset 2px 3px 6px rgba(255,255,255,0.9), 0 6px 13px -9px rgba(185,83,73,0.55); display: flex; align-items: center; justify-content: center;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8C3A32" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-weight: 600; font-size: 14.5px; line-height: 1.25;">{{ t.name }}</div>
+            <div style="font-size: 13.5px; color: #B95349; font-weight: 600;">{{ t.price }}</div>
           </div>
-        </div>
-      </div>
-
-      <sc-for list="{{ challahs }}" as="ch" hint-placeholder-count="2">
-        <div style="box-sizing: border-box; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 11px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(185,83,73,0.13);">
-              <div style="font-size: 12px; font-weight: 600; color: #8C3A32; font-variant-numeric: tabular-nums;">{{ ch.n }}</div>
-            </div>
-            <div style="flex-grow: 1; min-width: 0; font-weight: 600; font-size: 15px;">{{ ch.title }}</div>
-            <div style="font-size: 13.5px; font-weight: 600; color: {{ ch.priceFg }}; font-variant-numeric: tabular-nums;">{{ ch.priceLabel }}</div>
-          </div>
-
-          <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">איזה שניצל</div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <sc-for list="{{ ch.types }}" as="t" hint-placeholder-count="2">
-              <div onClick="{{ t.pick }}" class="press" style="min-height: 52px; box-sizing: border-box; border-radius: 16px; padding: 9px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
-                <div style="flex-grow: 1; min-width: 0; font-size: 13.5px; line-height: 1.3; font-weight: {{ t.w }};">{{ t.name }}</div>
-                <div style="flex-shrink: 0; border-radius: 8px; padding: 3px 9px; background: rgba(255,255,255,0.82); font-size: 12.5px; font-weight: 600; color: #B95349; font-variant-numeric: tabular-nums;">{{ t.price }}</div>
-              </div>
-            </sc-for>
-          </div>
-
-          <sc-if value="{{ ch.hasType }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">מה ייכנס פנימה</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
-            <sc-for list="{{ ch.tops }}" as="o" hint-placeholder-count="5">
-              <div onClick="{{ o.pick }}" class="press" style="height: 38px; box-sizing: border-box; border-radius: 999px; padding: 0 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
-                <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
-              </div>
-            </sc-for>
-          </div></sc-if>
-
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
         </div>
       </sc-for>
     </div></sc-if>
 
-    <sc-if value="{{ isBox }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;">
+<sc-if value="{{ isBox }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;">
 
       <div style="box-sizing: border-box; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 11px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
         <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">צורת המארז</div>
@@ -155,8 +131,6 @@
       <div style="font-size: 12.5px; font-weight: 300; color: #7D7488; padding: 0 4px;">המארז מגיע ארוז — כל דבר בנפרד.</div>
     </div></sc-if>
 
-    <div style="flex-shrink: 0; height: 18px;"></div>
-
     <div style="flex-shrink: 0; font-size: 10.5px; letter-spacing: 0.22em; font-weight: 600; color: #A69EAE; text-align: center;">קוקוט רוטב</div>
     <div style="flex-shrink: 0; height: 10px;"></div>
 
@@ -180,16 +154,64 @@
       </sc-for>
     </div>
 
-    <div style="flex-shrink: 0; height: 14px;"></div>
+    <sc-if value="{{ isUnit }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; height: 20px;"></div>
+    <div style="flex-shrink: 0; font-size: 10.5px; letter-spacing: 0.22em; font-weight: 600; color: #A69EAE; text-align: center;">{{ basketLabel }}</div>
+    <div style="flex-shrink: 0; height: 10px;"></div>
 
-    <div style="flex-shrink: 0; border-radius: 18px; padding: 13px 15px; display: flex; align-items: flex-start; gap: 10px; background: rgba(185,83,73,0.07); border: 1px solid rgba(185,83,73,0.18);">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M4 11h16v9H4z"></path><path d="M12 11v9M4 11V8h16v3"></path><path d="M12 8S9 3.5 7 5.5 12 8 12 8zM12 8s3-4.5 5-2.5S12 8 12 8z"></path></svg>
-      <div style="font-size: 12.5px; font-weight: 300; line-height: 1.55; color: #6E6478;">כנפי עוף מגיעות במתנה לצד כל הזמנה, ברוטב מפתיע שמתחלף כל שבוע.</div>
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;">
+      <sc-for list="{{ basket }}" as="b" hint-placeholder-count="2">
+        <div style="box-sizing: border-box; border-radius: 18px; padding: 11px 13px; display: flex; align-items: center; gap: 9px; background: linear-gradient(152deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.36) 100%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.88), 0 10px 22px -22px rgba(96,80,132,0.6);">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 13.5px; font-weight: 600;">{{ b.title }}</div>
+            <div style="font-size: 11.5px; font-weight: 300; color: #7D7488;">{{ b.tops }}</div>
+          </div>
+          <div style="flex-shrink: 0; font-size: 13.5px; font-weight: 600; color: #B95349; font-variant-numeric: tabular-nums;">{{ b.price }}</div>
+          <div onClick="{{ b.edit }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.1); display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8C3A32" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M14.5 5.5l4 4"></path></svg>
+          </div>
+          <div onClick="{{ b.dup }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.1); display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8C3A32" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8h11v11H8z"></path><path d="M16 8V5H5v11h3"></path></svg>
+          </div>
+          <div onClick="{{ b.del }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.08); display: flex; align-items: center; justify-content: center;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </div>
+        </div>
+      </sc-for>
     </div>
+
+    <sc-if value="{{ basketEmpty }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; border-radius: 18px; padding: 22px 16px; text-align: center; border: 1.5px dashed rgba(185,83,73,0.3); background: rgba(255,255,255,0.4);">
+      <div style="font-size: 12.5px; font-weight: 300; color: #8A8194;">עוד לא נוספו חלות</div>
+    </div></sc-if></sc-if>
+
 
     <div style="flex-shrink: 0; height: 12px;"></div>
 
   </div>
+
+  <sc-if value="{{ popOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ popClose }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-weight: 600; font-size: 17px; line-height: 1.25;">{{ popTitle }}</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">מה ייכנס פנימה</div>
+      </div>
+      <div onClick="{{ popClose }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+      <sc-for list="{{ popTops }}" as="o" hint-placeholder-count="5">
+        <div onClick="{{ o.pick }}" class="press" style="height: 40px; box-sizing: border-box; border-radius: 999px; padding: 0 14px; cursor: pointer; display: flex; align-items: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+          <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div onClick="{{ popAdd }}" class="press" style="align-self: center; height: 50px; margin-top: 18px; padding: 0 30px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,125,205,0.75);">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      <div style="color: #43307A; font-weight: 600; font-size: 15.5px; white-space: nowrap;">{{ popBtn }}</div>
+    </div>
+  </div></sc-if>
+
   <div style="position: absolute; bottom: 84px; right: 18px; left: 18px; height: 60px; box-sizing: border-box; border-radius: 22px; padding: 0 16px 0 7px; display: flex; align-items: center; gap: 10px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); border: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -24px rgba(96,80,132,0.6);">
     <div style="flex-grow: 1; min-width: 0; display: flex; align-items: baseline; gap: 7px;">
       <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap;">{{ countLabel }}</div>
@@ -453,11 +475,11 @@
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 /* שני סוגי שניצל · לכל אחד מחיר יחידה, מחיר מארז ורשימת תוספות משלו.
-   התמחור נגזר מהסוג ולא ממחיר אחיד. הכל נמסר על ידי שקד. */
+   השמות, המחירים והתוספות נמסרו על ידי שקד. */
 const SCH_TYPES = [
-  { name: 'שניצל דק בציפוי פירורי לחם', unit: 50, box: 200,
+  { name: 'שניצל דק בציפוי פירורי לחם', short: 'שניצל דק', unit: 50, box: 200,
     tops: ['מטבוחה', 'טחינה', 'חציל בטמפורה', 'כרוב סגול', 'פלפל חריף'] },
-  { name: 'פילה בציפוי טמפורה', unit: 60, box: 250,
+  { name: 'פילה עוף בציפוי טמפורה', short: 'פילה עוף', unit: 60, box: 250,
     tops: ['איולי עמבה', 'איולי עשבי תיבול', 'עלי רוקט', 'מלפפון חמוץ'] }
 ];
 
@@ -465,9 +487,7 @@ const SCHNITZEL_MODES = ['לפי יחידה', 'מארז'];
 const SCHNITZEL_FORMS = ['5 חלות אישיות', 'חלה משפחתית'];
 const SCH_COCOTTE = ['איולי עמבה', 'איולי כוסברה'];
 const COCOTTE_PRICE = 3;
-const MAX_CHALLAHS = 12;
 
-/* איסוף ומשלוח · חלון השישניצל */
 const PICK_FROM = 11 * 60;
 const PICK_TO   = 15 * 60;
 const DELIV_FROM = 11 * 60;
@@ -487,6 +507,7 @@ const SEL_BG   = 'rgba(185,83,73,0.1)';
 const SEL_BD   = 'rgba(185,83,73,0.42)';
 const IDLE_BG  = 'rgba(255,255,255,0.7)';
 const IDLE_BD  = 'rgba(130,112,162,0.16)';
+const chip = (on) => ({ bg: on ? SEL_BG : IDLE_BG, bd: on ? SEL_BD : IDLE_BD, fg: on ? HUE_DEEP : '#4A4254', w: on ? '600' : '400' });
 
 const CONFETTI = (() => {
   const cols = ['#A9761F', '#B95349', '#7B5CBC', '#437C59', '#416D9E', '#D2C2F2'];
@@ -519,56 +540,51 @@ const DELIV_SLOTS = (() => {
   return out;
 })();
 
-const blankFill = () => ({ type: null, tops: [] });
-
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
       mode: 0,
-      count: 2,
-      fills: [blankFill(), blankFill()],
+      basket: [],
+      pop: null,                       /* {type, tops, edit} · null = סגור */
       form: null,
-      box: blankFill(),
+      box: { type: null, tops: [] },
       coc: SCH_COCOTTE.map(() => 0),
       step: 0, ship: null, time: null, clock: '12:00',
       city: CITIES[0], addr: '', pay: null
     };
   }
 
-  setCount(d) {
-    const n = Math.max(1, Math.min(MAX_CHALLAHS, this.state.count + d));
-    const fills = this.state.fills.slice(0, n);
-    while (fills.length < n) fills.push(blankFill());
-    this.setState({ count: n, fills: fills });
+  /* בחירת סוג פותחת את החלונית · התוספות נבחרות שם ולא בעמוד */
+  openPop(type)       { this.setState({ pop: { type: type, tops: [], edit: null } }); }
+  openEdit(i) {
+    const b = this.state.basket[i];
+    this.setState({ pop: { type: b.type, tops: b.tops.slice(), edit: i } });
   }
-
-  /* החלפת סוג מאפסת את התוספות · הרשימות של שני הסוגים לא חופפות */
-  setFillType(i, t) {
-    const fills = this.state.fills.map((f, j) => (j === i ? { type: t, tops: [] } : f));
-    this.setState({ fills: fills });
+  closePop()          { this.setState({ pop: null }); }
+  togglePopTop(name) {
+    const p = this.state.pop;
+    if (!p) return;
+    const on = p.tops.indexOf(name) !== -1;
+    this.setState({ pop: { type: p.type, tops: on ? p.tops.filter((x) => x !== name) : p.tops.concat([name]), edit: p.edit } });
   }
-
-  toggleFillTop(i, name) {
-    const fills = this.state.fills.map((f, j) => {
-      if (j !== i) return f;
-      const on = f.tops.indexOf(name) !== -1;
-      return { type: f.type, tops: on ? f.tops.filter((x) => x !== name) : f.tops.concat([name]) };
-    });
-    this.setState({ fills: fills });
+  commitPop() {
+    const p = this.state.pop;
+    if (!p) return;
+    const row = { type: p.type, tops: p.tops.slice() };
+    const b = p.edit === null
+      ? this.state.basket.concat([row])
+      : this.state.basket.map((x, j) => (j === p.edit ? row : x));
+    this.setState({ basket: b, pop: null });
   }
 
   setBoxType(t) { this.setState({ box: { type: t, tops: [] } }); }
-
   toggleBoxTop(name) {
     const b = this.state.box;
     const on = b.tops.indexOf(name) !== -1;
     this.setState({ box: { type: b.type, tops: on ? b.tops.filter((x) => x !== name) : b.tops.concat([name]) } });
   }
-
-  bumpCoc(i, d) {
-    this.setState({ coc: this.state.coc.map((v, j) => (j === i ? Math.max(0, v + d) : v)) });
-  }
+  bumpCoc(i, d) { this.setState({ coc: this.state.coc.map((v, j) => (j === i ? Math.max(0, v + d) : v)) }); }
 
   componentWillUnmount() { clearTimeout(this._t); }
 
@@ -586,22 +602,14 @@ class Component extends DCLogic {
     this.setState({ clock: c, time: c, step: 4 });
   }
 
-  chipOn(on)  { return { bg: on ? SEL_BG : IDLE_BG, bd: on ? SEL_BD : IDLE_BD, fg: on ? HUE_DEEP : '#4A4254', w: on ? '600' : '400' }; }
-
   renderVals() {
     const st = this.state;
     const unit = st.mode === 0;
+    const p = st.pop;
 
-    /* חלה בלי סוג עדיין לא מתומחרת · המחיר גדל תוך כדי הבחירה */
     let items = 0;
-    if (unit) {
-      for (let i = 0; i < st.count; i++) {
-        const t = st.fills[i] && st.fills[i].type;
-        if (t !== null && t !== undefined) items += SCH_TYPES[t].unit;
-      }
-    } else if (st.box.type !== null) {
-      items = SCH_TYPES[st.box.type].box;
-    }
+    if (unit) items = st.basket.reduce((s, b) => s + SCH_TYPES[b.type].unit, 0);
+    else if (st.box.type !== null) items = SCH_TYPES[st.box.type].box;
     const cocTotal = st.coc.reduce((s, v) => s + v * COCOTTE_PRICE, 0);
     const total = items + cocTotal;
 
@@ -612,30 +620,11 @@ class Component extends DCLogic {
 
     const a = String(st.addr || '').trim();
     const addrOk = a.length >= 4 && /\d/.test(a);
+    const boxHas = st.box.type !== null;
 
-    const challahs = [];
-    for (let i = 0; i < st.count; i++) {
-      const f = st.fills[i] || blankFill();
-      const has = f.type !== null && f.type !== undefined;
-      challahs.push({
-        n: i + 1,
-        title: 'חלה ' + (i + 1),
-        hasType: has,
-        priceLabel: has ? SCH_TYPES[f.type].unit + ' ₪' : 'בחרו סוג',
-        priceFg: has ? HUE : '#A79FB2',
-        types: SCH_TYPES.map((t, k) => {
-          const on = f.type === k;
-          const c = this.chipOn(on);
-          return { name: t.name, price: t.unit + ' ₪', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.setFillType(i, k) };
-        }),
-        tops: has ? SCH_TYPES[f.type].tops.map((name) => {
-          const c = this.chipOn(f.tops.indexOf(name) !== -1);
-          return { name: name, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggleFillTop(i, name) };
-        }) : []
-      });
-    }
-
-    const boxHas = st.box.type !== null && st.box.type !== undefined;
+    const cocLines = st.coc
+      .map((v, i) => ({ qty: v, name: 'קוקוט ' + SCH_COCOTTE[i], sum: v * COCOTTE_PRICE }))
+      .filter((l) => l.qty > 0);
 
     return {
       modes: SCHNITZEL_MODES.map((label, k) => ({
@@ -649,36 +638,52 @@ class Component extends DCLogic {
       isUnit: unit,
       isBox: !unit,
 
-      count: st.count,
-      countInk: st.count <= 1 ? OFF : ON,
-      incCount: () => this.setCount(1),
-      decCount: () => this.setCount(-1),
-      challahs: challahs,
+      types: SCH_TYPES.map((t, k) => ({
+        name: t.name, price: t.unit + ' ₪', pick: () => this.openPop(k)
+      })),
+
+      popOpen: p !== null,
+      popTitle: p ? SCH_TYPES[p.type].name : '',
+      popBtn: p && p.edit !== null ? 'שמור' : 'הוסף חלה',
+      popClose: () => this.closePop(),
+      popAdd: () => this.commitPop(),
+      popTops: p ? SCH_TYPES[p.type].tops.map((n) => {
+        const c = chip(p.tops.indexOf(n) !== -1);
+        return { name: n, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.togglePopTop(n) };
+      }) : [],
+
+      basketEmpty: st.basket.length === 0,
+      basketLabel: st.basket.length === 0 ? 'בהזמנה' : 'בהזמנה · ' + st.basket.length,
+      basket: st.basket.map((b, i) => ({
+        title: 'חלה ' + (i + 1) + ' · ' + SCH_TYPES[b.type].short,
+        tops: b.tops.length ? b.tops.join(' · ') : 'בלי תוספות',
+        price: SCH_TYPES[b.type].unit + ' ₪',
+        edit: () => this.openEdit(i),
+        dup: () => this.setState({ basket: st.basket.slice(0, i + 1).concat([{ type: b.type, tops: b.tops.slice() }], st.basket.slice(i + 1)) }),
+        del: () => this.setState({ basket: st.basket.filter((x, j) => j !== i) })
+      })),
 
       forms: SCHNITZEL_FORMS.map((name, k) => {
         const on = st.form === k;
-        const c = this.chipOn(on);
+        const c = chip(on);
         return { name: name, isFive: k === 0, isFamily: k === 1, bg: c.bg, bd: c.bd, fg: on ? HUE_DEEP : '#8A8194', w: c.w, pick: () => this.setState({ form: k }) };
       }),
       boxTypes: SCH_TYPES.map((t, k) => {
-        const c = this.chipOn(st.box.type === k);
+        const c = chip(st.box.type === k);
         return { name: t.name, price: t.box + ' ₪', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.setBoxType(k) };
       }),
       boxHasType: boxHas,
-      boxTops: boxHas ? SCH_TYPES[st.box.type].tops.map((name) => {
-        const c = this.chipOn(st.box.tops.indexOf(name) !== -1);
-        return { name: name, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggleBoxTop(name) };
+      boxTops: boxHas ? SCH_TYPES[st.box.type].tops.map((n) => {
+        const c = chip(st.box.tops.indexOf(n) !== -1);
+        return { name: n, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggleBoxTop(n) };
       }) : [],
 
       cocottes: SCH_COCOTTE.map((name, i) => ({
-        name: name,
-        qty: st.coc[i],
-        ink: st.coc[i] === 0 ? OFF : ON,
-        inc: () => this.bumpCoc(i, 1),
-        dec: () => this.bumpCoc(i, -1)
+        name: name, qty: st.coc[i], ink: st.coc[i] === 0 ? OFF : ON,
+        inc: () => this.bumpCoc(i, 1), dec: () => this.bumpCoc(i, -1)
       })),
 
-      countLabel: unit ? (st.count === 1 ? 'חלה אחת' : st.count + ' חלות') : 'מארז',
+      countLabel: unit ? (st.basket.length === 1 ? 'חלה אחת' : st.basket.length + ' חלות') : 'מארז',
       total: total,
 
       flowOpen:  st.step > 0,
@@ -708,7 +713,7 @@ class Component extends DCLogic {
       settleClock: () => this.settleClock(),
       clockNext: () => this.clockNext(),
       clockNote: clockFixTo ? 'מחוץ לטווח · יתוקן ל-' + clockFixTo : 'ניתן להקליד שעה · 11:00–15:00',
-      clockNoteFg: clockFixTo ? '#B95349' : '#8A8194',
+      clockNoteFg: clockFixTo ? HUE : '#8A8194',
 
       city: st.city,
       setCity: (e) => this.setState({ city: e.target.value }),
@@ -717,7 +722,7 @@ class Component extends DCLogic {
       setAddr: (e) => this.setState({ addr: e.target.value }),
       addrBd: addrOk || st.addr === '' ? 'rgba(130,112,162,0.18)' : 'rgba(185,83,73,0.5)',
       addrHint: addrOk ? '' : 'יש להזין רחוב ומספר בית',
-      addrHintFg: st.addr === '' ? '#A79FB2' : '#B95349',
+      addrHintFg: st.addr === '' ? '#A79FB2' : HUE,
       addrOpacity: addrOk ? '1' : '0.45',
       fullAddr: (st.addr ? st.addr + ', ' : '') + st.city,
 
@@ -730,33 +735,24 @@ class Component extends DCLogic {
       slots: DELIV_SLOTS.map((t) => {
         const on = st.time === t;
         return {
-          label: t,
-          pick: () => this.setState({ time: t, step: 3 }),
-          bg: on ? 'rgba(185,83,73,0.14)' : IDLE_BG,
-          bd: on ? SEL_BD : IDLE_BD,
-          fg: on ? HUE_DEEP : '#4A4254',
-          w:  on ? '600' : '400'
+          label: t, pick: () => this.setState({ time: t, step: 3 }),
+          bg: on ? 'rgba(185,83,73,0.14)' : IDLE_BG, bd: on ? SEL_BD : IDLE_BD,
+          fg: on ? HUE_DEEP : '#4A4254', w: on ? '600' : '400'
         };
       }),
-
-      pays: PAYS.map((p) => {
-        const on = st.pay === p;
+      pays: PAYS.map((x) => {
+        const on = st.pay === x;
         return {
-          label: p,
-          pick: () => this.setState({ pay: p, step: 5 }),
-          bg:  on ? SEL_BG : IDLE_BG,
-          bd:  on ? SEL_BD : IDLE_BD,
-          dot: on ? HUE : 'rgba(130,112,162,0.28)',
-          w:   on ? '600' : '400'
+          label: x, pick: () => this.setState({ pay: x, step: 5 }),
+          bg: on ? SEL_BG : IDLE_BG, bd: on ? SEL_BD : IDLE_BD,
+          dot: on ? HUE : 'rgba(130,112,162,0.28)', w: on ? '600' : '400'
         };
       }),
 
-      lines: unit
-        ? challahs.filter((c) => c.hasType).map((c) => ({
-            qty: 1, name: c.title + ' · ' + SCH_TYPES[st.fills[c.n - 1].type].name, sum: SCH_TYPES[st.fills[c.n - 1].type].unit
-          })).concat(st.coc.map((v, i) => ({ qty: v, name: 'קוקוט ' + SCH_COCOTTE[i], sum: v * COCOTTE_PRICE })).filter((l) => l.qty > 0))
-        : (boxHas ? [{ qty: 1, name: 'מארז · ' + SCH_TYPES[st.box.type].name, sum: SCH_TYPES[st.box.type].box }] : [])
-            .concat(st.coc.map((v, i) => ({ qty: v, name: 'קוקוט ' + SCH_COCOTTE[i], sum: v * COCOTTE_PRICE })).filter((l) => l.qty > 0))
+      lines: (unit
+        ? st.basket.map((b, i) => ({ qty: 1, name: 'חלה ' + (i + 1) + ' · ' + SCH_TYPES[b.type].short, sum: SCH_TYPES[b.type].unit }))
+        : (boxHas ? [{ qty: 1, name: 'מארז · ' + SCH_TYPES[st.box.type].short, sum: SCH_TYPES[st.box.type].box }] : [])
+      ).concat(cocLines)
     };
   }
 }
