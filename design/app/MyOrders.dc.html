@@ -7,90 +7,95 @@
 <body>
 <x-dc>
 <helmet>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700&family=Assistant:wght@300;400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
   <style>
     body { margin: 0; }
     a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 160ms ease; }
+    .press:active { transform: scale(0.97); }
   </style>
 </helmet>
 
-<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FAF5F3; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
 
-  <div style="position: absolute; inset: 0; background-image: radial-gradient(52% 36% at 90% 4%, rgba(180,158,226,0.5) 0%, rgba(180,158,226,0) 62%), radial-gradient(46% 34% at 8% 34%, rgba(168,214,182,0.34) 0%, rgba(168,214,182,0) 66%), radial-gradient(58% 40% at 76% 88%, rgba(246,170,162,0.34) 0%, rgba(246,170,162,0) 62%);"></div>
-
-  <div style="position: absolute; top: 96px; left: 30px; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 32% 26%, #FFFFFF 0%, #E9F1E9 40%, #C2DCC9 100%); box-shadow: inset -1.5px -1.5px 3px rgba(120,150,130,0.4), 0 3px 6px -3px rgba(100,140,115,0.55);"></div>
-  <div style="position: absolute; bottom: 196px; right: 26px; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 32% 26%, #FFFFFF 0%, #F2ECFA 30%, #D6C8EE 70%, #BCA9E0 100%); box-shadow: 0 3px 6px -3px rgba(120,95,170,0.6);"></div>
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.07) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%), radial-gradient(58% 38% at 84% 72%, rgba(176,216,190,0.05) 0%, rgba(176,216,190,0) 62%);"></div>
 
   <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0;">
 
-    <div style="padding: 0 6px 20px;">
-      <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -0.02em;">ההזמנות שלי</div>
+    <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 6px 18px;">
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">ההזמנות שלי</div>
+        <div style="font-weight: 300; font-size: 13px; color: #8A8194;">{{ countLabel }}</div>
+      </div>
+      <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0;">
+        <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FAF7FD 45%, #EFEAF7 100%); box-shadow: inset -3px -4px 8px rgba(150,125,190,0.16), inset 2px 3px 6px rgba(255,255,255,0.95), 0 6px 13px -9px rgba(120,95,170,0.4);"></div>
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+      </div>
     </div>
 
-    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 13px; overflow: hidden;">
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 11px;">
 
-      <div style="position: relative; border-radius: 28px; overflow: hidden; background: linear-gradient(152deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.34) 55%, rgba(255,255,255,0.5) 100%); backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 20px 40px -26px rgba(96,80,132,0.5); padding: 20px;">
-        <div style="position: absolute; top: -45%; right: -10%; width: 68%; height: 95%; background: radial-gradient(closest-side, rgba(255,255,255,0.5), rgba(255,255,255,0)); pointer-events: none;"></div>
-        <div style="position: relative; display: flex; flex-direction: column; gap: 14px;">
+      <!-- ההזמנה הפעילה · כרטיס מודגש עם מצב חי -->
+      <sc-for list="{{ live }}" as="o" hint-placeholder-count="1">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 26px; padding: 18px; border-right: 3px solid {{ o.hue }}; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border-top: 1px solid rgba(255,255,255,0.78); border-bottom: 1px solid rgba(255,255,255,0.78); border-left: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 36px -26px rgba(96,80,132,0.55); display: flex; flex-direction: column; gap: 13px;">
+
           <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-              <div style="display: flex; align-items: center; gap: 7px;"><div style="width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 30%), radial-gradient(circle at 34% 28%, #DCF0E0 0%, #A8D6B4 45%, #74B489 100%); box-shadow: inset -1.5px -2px 4px rgba(70,130,95,0.4), 0 3px 6px -3px rgba(80,140,105,0.7);"></div><div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 700; color: #4E8A64;">בהכנה</div></div>
-              <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 700; font-size: 19px;">שלישי של קוסקוס</div>
-              <div style="font-size: 13px; color: #6E6478;">איסוף היום · 12:30</div>
+            <div style="min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #4E8A64;"></div>
+                <div style="font-size: 10.5px; letter-spacing: 0.18em; font-weight: 700; color: #4E8A64;">{{ o.status }}</div>
+              </div>
+              <div style="font-weight: 600; font-size: 19px; letter-spacing: -0.015em; line-height: 1.2;">{{ o.name }}</div>
+              <div style="font-size: 13px; font-weight: 400; color: {{ o.deep }};">{{ o.when }}</div>
             </div>
-            <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 700; font-size: 20px; white-space: nowrap;">145 ₪</div>
+            <div style="flex-shrink: 0; font-weight: 600; font-size: 20px; white-space: nowrap; font-variant-numeric: tabular-nums;">{{ o.sum }} ₪</div>
           </div>
-          <div style="height: 1px; background: rgba(132,122,152,0.16);"></div>
-          <div style="font-size: 13.5px; color: #5E5568; line-height: 1.6;">2 × צמחוני · 1 × עם 2 יח׳ מפרום</div>
-        </div>
-      </div>
 
-      <div style="border-radius: 26px; background: linear-gradient(152deg, rgba(255,255,255,0.44) 0%, rgba(255,255,255,0.22) 100%); backdrop-filter: blur(24px) saturate(175%); -webkit-backdrop-filter: blur(24px) saturate(175%); border: 1px solid rgba(255,255,255,0.58); box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 14px 28px -22px rgba(96,80,132,0.42); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 700; color: #A69EAE;">נאסף · 15.8</div>
-            <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 600; font-size: 19px;">שישניצל</div>
-            <div style="font-size: 13px; color: #7A7080;">2 חלות · שניצל דק</div>
+          <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+
+          <div style="font-size: 13px; font-weight: 300; line-height: 1.6; color: #7D7488;">{{ o.items }}</div>
+        </div>
+      </sc-for>
+
+      <div style="flex-shrink: 0; padding: 8px 8px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #A79FB2;">{{ pastLabel }}</div>
+
+      <!-- הזמנות שהסתיימו -->
+      <sc-for list="{{ past }}" as="o" hint-placeholder-count="2">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 22px; padding: 16px 18px; border-right: 3px solid {{ o.edge }}; background: linear-gradient(150deg, rgba(255,255,255,0.56) 0%, rgba(255,255,255,0.32) 100%); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border-top: 1px solid rgba(255,255,255,0.62); border-bottom: 1px solid rgba(255,255,255,0.62); border-left: 1px solid rgba(255,255,255,0.62); box-shadow: inset 0 1px 0 rgba(255,255,255,0.86), 0 12px 26px -24px rgba(96,80,132,0.45); display: flex; flex-direction: column; gap: 13px;">
+
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+            <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+              <div style="font-size: 10.5px; letter-spacing: 0.18em; font-weight: 600; color: #A79FB2;">{{ o.status }}</div>
+              <div style="font-weight: 600; font-size: 17px; letter-spacing: -0.01em; line-height: 1.2;">{{ o.name }}</div>
+              <div style="font-size: 12.5px; font-weight: 300; line-height: 1.55; color: #7D7488;">{{ o.items }}</div>
+            </div>
+            <div style="flex-shrink: 0; font-weight: 600; font-size: 17px; color: #6E6478; white-space: nowrap; font-variant-numeric: tabular-nums;">{{ o.sum }} ₪</div>
           </div>
-          <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 700; font-size: 20px; color: #6E6478; white-space: nowrap;">110 ₪</div>
-        </div>
-        <div style="position: relative; height: 50px; border-radius: 999px; overflow: hidden; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -14px rgba(150,125,205,0.5); display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
-          <div style="font-weight: 700; font-size: 15.5px; color: #43307A;">להזמין שוב</div>
-        </div>
-      </div>
 
-      <div style="border-radius: 26px; background: linear-gradient(152deg, rgba(255,255,255,0.44) 0%, rgba(255,255,255,0.22) 100%); backdrop-filter: blur(24px) saturate(175%); -webkit-backdrop-filter: blur(24px) saturate(175%); border: 1px solid rgba(255,255,255,0.58); box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 14px 28px -22px rgba(96,80,132,0.42); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 700; color: #A69EAE;">נאסף · 11.8</div>
-            <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 600; font-size: 19px;">שלישי של קוסקוס</div>
-            <div style="font-size: 13px; color: #7A7080;">3 × עם ירך עוף מתוק</div>
+          <div onClick="{{ o.again }}" class="press" style="height: 44px; border-radius: 999px; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 10px 20px -15px rgba(96,80,132,0.9); display: flex; align-items: center; justify-content: center; gap: 7px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
+            <div style="font-weight: 600; font-size: 14.5px; color: #43307A;">להזמין שוב</div>
           </div>
-          <div style="font-family: 'Rubik', system-ui, sans-serif; font-weight: 700; font-size: 20px; color: #6E6478; white-space: nowrap;">165 ₪</div>
         </div>
-        <div style="position: relative; height: 50px; border-radius: 999px; overflow: hidden; background: linear-gradient(168deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -14px rgba(150,125,205,0.5); display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
-          <div style="font-weight: 700; font-size: 15.5px; color: #43307A;">להזמין שוב</div>
-        </div>
-      </div>
+      </sc-for>
 
+      <div style="flex-shrink: 0; height: 108px;"></div>
     </div>
-
-    <div style="height: 108px; flex-shrink: 0;"></div>
 
   </div>
 
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">בית</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; border-radius: 999px; background: rgba(155,127,212,0.13);">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
       <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">הזמנות</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">אזור אישי</div>
     </div>
@@ -98,9 +103,49 @@
 
 </div>
 </x-dc>
-<script data-dc-script data-props='{}'>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* גוון הקטגוריה · אותם חמישה גוונים של כל האפליקציה */
+const HUES = {
+  cous:  { hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188' },
+  schn:  { hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158'  },
+  box:   { hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89'   },
+  fruit: { hue: '#B04A76', deep: '#7A2E4E', rgb: '176,74,118'  },
+  chef:  { hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40'   }
+};
+
+/* ההזמנות · live היא ההזמנה שעוד בתהליך */
+const ORDERS = [
+  { key: 'cous', live: true,  status: 'בהכנה',      name: 'שלישי של קוסקוס',
+    when: 'איסוף היום · 12:30', items: '2 × צמחוני · 1 × עם 2 יח׳ מפרום', sum: 145 },
+  { key: 'schn', live: false, status: 'נאסף · 15.8', name: 'שישניצל',
+    items: '2 חלות · שניצל דק', sum: 110 },
+  { key: 'cous', live: false, status: 'נאסף · 11.8', name: 'שלישי של קוסקוס',
+    items: '3 × עם ירך עוף מתוק', sum: 165 }
+];
+
+const a = (rgb, alpha) => 'rgba(' + rgb + ',' + alpha + ')';
+
 class Component extends DCLogic {
-  renderVals() { return {}; }
+  renderVals() {
+    const dress = (o) => {
+      const h = HUES[o.key] || HUES.cous;
+      return {
+        status: o.status, name: o.name, when: o.when || '', items: o.items, sum: o.sum,
+        hue: h.hue, deep: h.deep,
+        edge: a(h.rgb, 0.34),              /* הזמנה שהסתיימה · הגוון מרומז בלבד */
+        again: () => {}
+      };
+    };
+    const live = ORDERS.filter((o) => o.live);
+    const past = ORDERS.filter((o) => !o.live);
+    return {
+      live: live.map(dress),
+      past: past.map(dress),
+      countLabel: live.length ? live.length + ' פעילה · ' + past.length + ' קודמות'
+                              : past.length + ' הזמנות קודמות',
+      pastLabel: 'הזמנות קודמות'
+    };
+  }
 }
 </script>
 </body>
