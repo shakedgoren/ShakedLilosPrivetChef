@@ -113,6 +113,8 @@
       <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
         <div style="display: flex; flex-direction: column; gap: 6px;">
 
+          <sc-if value="{{ s.isHead }}" hint-placeholder-val="{{ true }}"><div style="font-weight: 600; font-size: 18px; letter-spacing: -0.015em; text-align: center; padding: 2px 2px 0;">{{ s.label }}</div></sc-if>
+
           <sc-if value="{{ s.isTitle }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 12px 2px 0;">
             <div style="font-weight: 600; font-size: 15.5px; letter-spacing: -0.01em;">{{ s.label }}</div>
             <div style="font-size: 11.5px; font-weight: 400; color: #A85A28;">{{ s.hint }}</div>
@@ -162,15 +164,19 @@
           <sc-if value="{{ s.isTiers }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 18px; padding: 12px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
-                <div style="font-size: 9.5px; font-weight: 500; letter-spacing: 0.04em; color: #A79FB2;">לפי מספר הסועדים</div>
                 <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.25; text-align: center;">{{ o.name }}</div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 0;">
+                  <sc-for list="{{ o.lines }}" as="l" hint-placeholder-count="4">
+                    <div style="font-size: 10px; font-weight: 300; color: #7D7488; white-space: nowrap;">{{ l.t }}</div>
+                  </sc-for>
+                </div>
                 <div style="font-size: 15px; font-weight: 700; color: #A85A28; font-variant-numeric: tabular-nums;">{{ o.price }}</div>
                 <div style="font-size: 9.5px; font-weight: 400; color: #7D7488;">₪ לסועד</div>
               </div>
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isPair }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;">
+          <sc-if value="{{ s.isPair }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="2">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 74px; border-radius: 18px; padding: 12px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 13.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.3; text-align: center;">{{ o.name }}</div>
@@ -225,6 +231,16 @@
             </div>
           </div></sc-if>
 
+          <sc-if value="{{ s.isMulti }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; padding: 0 2px;">
+            <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="5">
+              <div onClick="{{ o.pick }}" class="press" style="height: 36px; box-sizing: border-box; border-radius: 999px; padding: 0 13px; cursor: pointer; display: flex; align-items: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+                <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
+              </div>
+            </sc-for>
+          </div></sc-if>
+
+          <sc-if value="{{ s.isDate }}" hint-placeholder-val="{{ true }}"><input type="date" value="{{ s.value }}" onInput="{{ s.set }}" style="width: 100%; box-sizing: border-box; height: 50px; border-radius: 16px; padding: 0 13px; font-family: 'Assistant', system-ui, sans-serif; font-size: 14px; font-weight: 500; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;"></sc-if>
+
           <sc-if value="{{ s.isText }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: stretch; gap: 8px;">
             <input type="text" value="{{ s.value }}" onInput="{{ s.set }}" placeholder="{{ s.ph }}" style="flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 54px; border-radius: 16px; padding: 0 13px; font-family: 'Assistant', system-ui, sans-serif; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
             <sc-if value="{{ s.hasUpload }}" hint-placeholder-val="{{ true }}"><div class="press" style="flex: 0 0 20%; box-sizing: border-box; height: 54px; border-radius: 16px; cursor: pointer; background: rgba(168,90,40,0.08); border: 1.5px dashed rgba(168,90,40,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
@@ -247,7 +263,7 @@
       <div style="font-size: 15px; font-weight: 400; color: #7A7080;">₪</div>
     </div>
     <div onClick="{{ openFlow }}" class="press" style="flex-shrink: 0; height: 46px; padding: 0 18px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; opacity: {{ contOpacity }}; background: linear-gradient(168deg, #F2D8C0 0%, #E2BC97 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -12px rgba(150,100,55,0.75);">
-      <div class="glow" style="color: #7A3D18; font-weight: 600; font-size: 15.5px; white-space: nowrap;">המשך</div>
+      <div class="glow" style="color: #7A3D18; font-weight: 600; font-size: 15.5px; white-space: nowrap;">{{ nextLabel }}</div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A3D18" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
     </div>
   </div></sc-if>
@@ -528,13 +544,33 @@
 const CONCEPTS = [
   { n: 'חלבי · צמחוני', d: 'גבינות, חמאה, פסטות טריות וירקות העונה. עדין, עשיר ומלא שכבות טעם. ללא דגים/בשר.', fam: 'milk' },
   { n: 'חלבי · דגים',   d: 'דגים טריים לאורך כל הערב, נאים, צרובים או אפויים; לשיקולכם, לצד גבינות ירקות ומאפים משובחים.', fam: 'meat' },
-  { n: 'בשרי',          d: 'צלייה, אש וטעמים עמוקים. תפריט עוצמתי שנבנה סביב נתח מרכזי ומשלב שלל של מנות בטעמים מטורפים.', fam: 'meat' },
-  { n: 'גם וגם וגם',    d: 'למה לבחור מסלול אחד? כשאפשר את כולם! בשר, דגים וחלבי באותו התפריט. המסלול העשיר ביותר, ללא גבולות; לא כשר.', fam: 'meat' }
+  { n: 'בשרי',          d: 'צלייה, אש וטעמים עמוקים. תפריט עוצמתי שנבנה סביב נתח מרכזי ומשלב שלל של מנות בטעמים מטורפים.', fam: 'meat' }
 ];
 const CONCEPT_FAM = {};
 CONCEPTS.forEach((c) => { CONCEPT_FAM[c.n] = c.fam; });
 
 const TIERS = ['8 סוגי מנות', '10 סוגי מנות', '12 סוגי מנות'];
+const TIER_LINES = [
+  ['2 מנות פתיחה', '2 סלטים', '2 עיקריות', '2 קינוחים'],
+  ['3 מנות פתיחה', '3 סלטים', '2 עיקריות', '2 קינוחים'],
+  ['3 מנות פתיחה', '3 סלטים', '3 עיקריות', '3 קינוחים']
+];
+
+const STYLES = ['איטלקי', 'אסייאתי', 'מזרח תיכוני', 'דיינר אמריקאי'];
+
+/* המשך השאלון · הועתק מהאתר הקודם */
+const SPICE   = ['בלי בכלל', 'עדין', 'אוהבים מאוד'];
+const BRAVE   = ['קלאסי ומוכר', 'באמצע', 'הפתיעי אותנו'];
+const FISH    = ['סלמון', 'טונה אדומה', 'דניס', 'לברק', 'מוסר ים', 'סומכים עלייך'];
+const ALLERGY = ['אין אלרגיות', 'גלוטן', 'לקטוז', 'אגוזים', 'בוטנים', 'שומשום', 'ביצים', 'דגים', 'סויה'];
+const DISLIKE = ['כוסברה', 'חצילים', 'פטריות', 'זיתים', 'עגבניות', 'גבינה כחולה', 'סלק', 'ארטישוק', 'כמהין'];
+const DIET    = ['צמחוני', 'טבעוני', 'ללא גלוטן', 'הריון', 'ילדים'];
+const KITCHEN = ['הכול קיים', 'חסר משהו', 'לא בטוחים'];
+const DAYPART = ['בוקר', 'צהריים', 'ערב'];
+const EXTRAS  = [
+  { n: 'עיצוב שולחן יוקרתי', d: 'סכו״ם, צלחות, כוסות, מפיות וקשים, כולל תפריט מעוצב ומודפס לכל סועד. תוספת 250-550 ₪ סה״כ בהתאם לכמות הסועדים. (השולחן והכיסאות עליכם)' },
+  { n: 'חבילת שתייה ללא הגבלה', d: '4 סוגי בקבוקי שתייה קלה אישיים, מים מינרליים וסודה משותפים, יין לבן או אדום. תוספת 120 ₪ לסועד.' }
+];
 
 /* ₪ לסועד לפי [8, 10, 12] · ככל שיש יותר סועדים המחיר לסועד יורד */
 const CHEF_PRICES = {
@@ -607,19 +643,77 @@ const BOXES = [
       BODY('אך לא כולל כלי אוכל אישיים ועיצוב שולחן.'),
       BODY('ניתן לשדרג בתוספת מחיר.')
     ],
-    sections: [
-      { kind: 'title', label: 'מספר סועדים' },
-      { kind: 'note',  label: 'בין 2 ל-16 סועדים.', tight: true },
-      { kind: 'stepper', id: 'guests', min: 2, max: 16, step: 1, unit: 'סועדים', slim: true },
-      { kind: 'title', label: 'על איזה ציר הולכים' },
-      { kind: 'note',  label: 'זו ההחלטה שקובעת את אופי כל הערב.', tight: true },
-      { kind: 'cards', id: 'concept', options: CONCEPTS },
-      { kind: 'title', label: 'איך המסלול שלנו הולך להראות' },
-      { kind: 'tiers', id: 'tier', options: TIERS },
-      { kind: 'title', label: 'איך אתם אוהבים את הבשר שלכם', when: { id: 'concept', not: 'חלבי · צמחוני' } },
-      { kind: 'chips', id: 'meatDone', options: MEAT_DONE, when: { id: 'concept', not: 'חלבי · צמחוני' } },
-      { kind: 'title', label: 'הערות, אלרגיות והעדפות' },
-      { kind: 'text',  id: 'notes', ph: 'למשל: אלרגיה לאגוזים · אחד מהסועדים טבעוני' }
+    pages: [
+      [
+        { kind: 'title', label: 'מספר סועדים' },
+        { kind: 'note',  label: 'בין 2 ל-16 סועדים.', tight: true },
+        { kind: 'stepper', id: 'guests', min: 2, max: 16, step: 1, unit: 'סועדים', slim: true },
+        { kind: 'title', label: 'על איזה ציר הולכים' },
+        { kind: 'note',  label: 'זו ההחלטה שקובעת את אופי כל הערב.', tight: true },
+        { kind: 'pair',  id: 'concept', options: CONCEPTS.map((c) => ({ n: c.n, d: c.d })), cols: 3, req: true },
+        { kind: 'title', label: 'איך המסלול שלנו הולך להראות' },
+        { kind: 'fine',  label: '* המחיר משתנה בהתאם לכמות הסועדים *' },
+        { kind: 'tiers', id: 'tier', options: TIERS, req: true },
+        { kind: 'title', label: 'סגנון' },
+        { kind: 'grid',  id: 'style', options: STYLES, narrow: true, req: true }
+      ],
+      [
+        { kind: 'head',  label: 'מה הטעמים המועדפים עליכם' },
+        { kind: 'note',  label: 'כאן אני מבינה עד כמה להעז.', tight: true },
+        { kind: 'title', label: 'איך אתם אוהבים את הבשר שלכם', when: { id: 'concept', not: 'חלבי · צמחוני' } },
+        { kind: 'multi', id: 'meatDone', options: MEAT_DONE, when: { id: 'concept', not: 'חלבי · צמחוני' } },
+        { kind: 'title', label: 'איך אתם אוהבים את הדגים שלכם', when: { id: 'concept', is: 'חלבי · דגים' } },
+        { kind: 'multi', id: 'fishDone', options: FISH_DONE, when: { id: 'concept', is: 'חלבי · דגים' } },
+        { kind: 'title', label: 'דגים שאתם אוהבים במיוחד', when: { id: 'concept', is: 'חלבי · דגים' } },
+        { kind: 'multi', id: 'fish', options: FISH, when: { id: 'concept', is: 'חלבי · דגים' } },
+        { kind: 'title', label: 'חריפות' },
+        { kind: 'grid',  id: 'spice', options: SPICE, narrow: true, req: true },
+        { kind: 'title', label: 'רמת הרפתקנות' },
+        { kind: 'grid',  id: 'brave', options: BRAVE, narrow: true, req: true },
+        { kind: 'note',  label: '״הפתיעי אותנו״ פותח לי דלת למרקמים וטעמים שלא בהכרח פגשתם.', tight: true },
+        { kind: 'title', label: 'טעמים שאתם אוהבים במיוחד' },
+        { kind: 'text',  id: 'love', ph: 'חמוץ, מעושן, פטריות, לימון כבוש…' }
+      ],
+      [
+        { kind: 'head',  label: 'מה לא ייכנס לתפריט' },
+        { kind: 'note',  label: 'החלק הכי חשוב בשאלון! עדיף לפרט יותר מדי מאשר פחות.', tight: true },
+        { kind: 'title', label: 'אלרגיות ורגישויות' },
+        { kind: 'multi', id: 'allergy', options: ALLERGY, req: true },
+        { kind: 'text',  id: 'allergyTxt', ph: 'פירוט — למי מהסועדים, ובאיזו חומרה' },
+        { kind: 'title', label: 'מאכלים שאתם פשוט לא אוהבים' },
+        { kind: 'multi', id: 'dislike', options: DISLIKE },
+        { kind: 'text',  id: 'dislikeTxt', ph: 'עוד משהו שלא נכנס לצלחת' },
+        { kind: 'title', label: 'מגבלות תזונתיות' },
+        { kind: 'multi', id: 'diet', options: DIET }
+      ],
+      [
+        { kind: 'head',  label: 'פרטים נוספים' },
+        { kind: 'title', label: 'המטבח במקום' },
+        { kind: 'note',  label: 'כל המנות נעשות אצלכם בזמן אמת, ולכן חשוב שיהיה במקום: מקרר, גז, תנור וברז מים.', tight: true },
+        { kind: 'grid',  id: 'kitchen', options: KITCHEN, narrow: true, req: true },
+        { kind: 'text',  id: 'kitchenTxt', ph: 'אם חסר משהו — מה בדיוק' },
+        { kind: 'title', label: 'משהו שחשוב לכם שיהיה' },
+        { kind: 'text',  id: 'wish', ph: 'בקשה, הפתעה, או משהו שאסור לפספס' }
+      ],
+      [
+        { kind: 'head',  label: 'אפשר גם להעלות הילוך' },
+        { kind: 'note',  label: 'אופציונלי לגמרי, אבל שווה לדעת שזה קיים.', tight: true },
+        { kind: 'cards', id: 'extras', options: EXTRAS, multi: true },
+        { kind: 'note',  label: 'אפשר לסמן את שניהם, אחד, או להמשיך בלי כלום.', tight: true }
+      ],
+      [
+        { kind: 'head',  label: 'קצת פרטים על סוג האירוח' },
+        { kind: 'title', label: 'שם מלא' },
+        { kind: 'text',  id: 'name', ph: 'שם ושם משפחה', req: true },
+        { kind: 'title', label: 'טלפון' },
+        { kind: 'text',  id: 'phone', ph: '050-0000000', req: true },
+        { kind: 'title', label: 'תאריך האירוע' },
+        { kind: 'date',  id: 'date', req: true },
+        { kind: 'title', label: 'באילו שעות' },
+        { kind: 'grid',  id: 'daypart', options: DAYPART, narrow: true, req: true },
+        { kind: 'title', label: 'כתובת מלאה' },
+        { kind: 'text',  id: 'addr', ph: 'היכן חוגגים', req: true }
+      ]
     ]
   },
   {
@@ -722,16 +816,20 @@ const sumOf = (map) => Object.keys(map || {}).reduce((s, k) => s + map[k], 0);
 class Component extends DCLogic {
   constructor(props) {
     super(props);
+    const firstAll = BOXES[0].pages ? [].concat.apply([], BOXES[0].pages) : BOXES[0].sections;
     const first = {};
-    BOXES[0].sections.forEach((x) => {
+    firstAll.forEach((x) => {
       if (x.kind === 'count' || x.kind === 'row') first[x.id] = {};
       if (x.kind === 'stepper') first[x.id] = x.min;
       if (x.kind === 'tiers')   first[x.id] = null;
-      if (x.kind === 'text')    first[x.id] = '';
+      if (x.kind === 'multi')   first[x.id] = [];
+      if (x.kind === 'cards' && x.multi) first[x.id] = [];
+      if (x.kind === 'text' || x.kind === 'date') first[x.id] = '';
     });
     this.state = {
       cur: 0,                  /* המסלול הפעיל · 0 ארוחת שף, 1 עמדת טאבון */
       view: 'menu',            /* menu = בחירת מסלול · opts = האופציות */
+      page: 0,                 /* השלב באשף של ארוחת שף */
       picks: first,
       pop: null,               /* {id, sel} · חלונית בחירה · null = סגורה */
       step: 0, ship: null, time: null, clock: '10:00',
@@ -742,11 +840,14 @@ class Component extends DCLogic {
   /* פתיחת קטגוריה · ערכי הפתיחה נגזרים מהמפרט שלה */
   freshPicks(k) {
     const picks = {};
-    BOXES[k].sections.forEach((s) => {
+    const all = BOXES[k].pages ? [].concat.apply([], BOXES[k].pages) : BOXES[k].sections;
+    all.forEach((s) => {
       if (s.kind === 'count' || s.kind === 'row') picks[s.id] = {};
       if (s.kind === 'stepper') picks[s.id] = s.min;
       if (s.kind === 'tiers')   picks[s.id] = null;
-      if (s.kind === 'text')    picks[s.id] = '';
+      if (s.kind === 'multi')   picks[s.id] = [];
+      if (s.kind === 'cards' && s.multi) picks[s.id] = [];
+      if (s.kind === 'text' || s.kind === 'date') picks[s.id] = '';
     });
     return picks;
   }
@@ -756,7 +857,27 @@ class Component extends DCLogic {
     this.setState({ cur: k, picks: this.freshPicks(k), pop: null, step: 0 });
   }
   /* חזרה לתפריט מאפסת את הבחירות · מתחילים מסלול נקי */
-  backToMenu() { this.setState({ view: 'menu', picks: this.freshPicks(this.state.cur), pop: null, step: 0 }); }
+  backToMenu() { this.setState({ view: 'menu', page: 0, picks: this.freshPicks(this.state.cur), pop: null, step: 0 }); }
+
+  /* המקטעים של השלב הנוכחי · מסלול בלי עמודים הוא עמוד יחיד */
+  pageList() {
+    const b = this.box();
+    return b.pages ? b.pages[Math.min(this.state.page, b.pages.length - 1)] : b.sections;
+  }
+  lastPage() {
+    const b = this.box();
+    return !b.pages || this.state.page >= b.pages.length - 1;
+  }
+  next() {
+    if (!this.ready()) return;
+    if (this.lastPage()) { this.setState({ step: 6 }); return; }
+    this.setState({ page: this.state.page + 1 });
+  }
+  back() {
+    if (this.state.view !== 'opts' || this.state.step > 0) return;
+    if (this.state.page > 0) { this.setState({ page: this.state.page - 1 }); return; }
+    this.backToMenu();
+  }
 
   box() { return BOXES[this.state.cur]; }
 
@@ -769,6 +890,13 @@ class Component extends DCLogic {
     const picks = Object.assign({}, this.state.picks);
     picks[pop.id] = pop.sel;
     this.setState({ picks: picks, pop: null });
+  }
+
+  toggle(id, v) {
+    const cur = (this.state.picks[id] || []).slice();
+    const i = cur.indexOf(v);
+    if (i === -1) cur.push(v); else cur.splice(i, 1);
+    this.setPick(id, cur);
   }
 
   setPick(id, v) {
@@ -812,6 +940,14 @@ class Component extends DCLogic {
   ready() {
     const b = this.box();
     if (!b) return false;
+    if (b.pages) {
+      return this.pageList().every((s) => {
+        if (!s.req || !this.shows(s)) return true;
+        const v = this.state.picks[s.id];
+        if (s.kind === 'multi' || (s.kind === 'cards' && s.multi)) return (v || []).length > 0;
+        return !!v && String(v).trim() !== '';
+      });
+    }
     if (b.key === 'free') return priceOf(b, this.state.picks) > 0;
     return b.sections.every((s) => {
       if (!this.shows(s)) return true;
@@ -858,6 +994,7 @@ class Component extends DCLogic {
       isTitle: false, isNote: false, isPrice: false, isChips: false,
       isCards: false, isCount: false, isStepper: false, isText: false,
       isPair: false, isRow: false, isImages: false, isGrid: false, isFine: false, isTiers: false,
+      isMulti: false, isDate: false, isHead: false,
       label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
       radius: '999px', maxW: 'none',
       value: '', unit: '', ph: '', decOp: '1', mt: '0px', hasUpload: false,
@@ -888,6 +1025,7 @@ class Component extends DCLogic {
           const c = chip(this.state.picks[s.id] === o);
           return {
             name: o,
+            lines: (TIER_LINES[k] || []).map((t) => ({ t: t })),
             price: fam ? CHEF_PRICES[fam][chefBracket(g)][k] : '—',
             bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
             pick: () => this.setPick(s.id, o)
@@ -899,16 +1037,36 @@ class Component extends DCLogic {
     if (s.kind === 'pair') {
       return Object.assign(base, {
         isPair: true,
+        cols: 'repeat(' + (s.cols || 2) + ', minmax(0, 1fr))',
         options: s.options.map((o) => {
           const c = chip(this.state.picks[s.id] === o.n);
           return { name: o.n, desc: o.d, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o.n) };
         })
       });
     }
+    if (s.kind === 'head')  return Object.assign(base, { isHead: true });
     if (s.kind === 'note')  return Object.assign(base, { isNote: true, mt: s.tight ? '-5px' : '0px' });
     if (s.kind === 'price') return Object.assign(base, { isPrice: true });
     if (s.kind === 'hidden') return base;   /* הציפוי נבחר בחלונית בלבד */
     if (s.kind === 'fine')   return Object.assign(base, { isFine: true });
+
+    if (s.kind === 'multi') {
+      const cur = this.state.picks[s.id] || [];
+      return Object.assign(base, {
+        isMulti: true,
+        options: s.options.map((o) => {
+          const c = chip(cur.indexOf(o) !== -1);
+          return { name: o, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggle(s.id, o) };
+        })
+      });
+    }
+
+    if (s.kind === 'date') {
+      return Object.assign(base, {
+        isDate: true, value: this.state.picks[s.id] || '',
+        set: (e) => this.setPick(s.id, e.target.value)
+      });
+    }
 
     if (s.kind === 'text') {
       return Object.assign(base, {
@@ -965,17 +1123,22 @@ class Component extends DCLogic {
     }
 
     if (s.kind === 'cards') {
+      const multi = !!s.multi;
+      const cur = multi ? (this.state.picks[s.id] || []) : null;
       return Object.assign(base, {
         isCards: true,
         options: s.options.map((o) => {
-          const c = chip(this.state.picks[s.id] === o.n);
+          const on = multi ? cur.indexOf(o.n) !== -1 : this.state.picks[s.id] === o.n;
+          const c = chip(on);
           return {
-            name: o.n, desc: o.d, on: this.state.picks[s.id] === o.n,
+            name: o.n, desc: o.d, on: on,
             add: o.add ? '+' + o.add + ' ש״ח ליח׳' : '',
             bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
-            pick: o.opens
-              ? () => { this.setPick(s.id, o.n); this.openPop(o.opens); }
-              : () => this.setPick(s.id, o.n)
+            pick: multi
+              ? () => this.toggle(s.id, o.n)
+              : (o.opens
+                  ? () => { this.setPick(s.id, o.n); this.openPop(o.opens); }
+                  : () => this.setPick(s.id, o.n))
           };
         })
       });
@@ -1017,10 +1180,10 @@ class Component extends DCLogic {
     const addrOk = a.length >= 4 && /\d/.test(a);
 
     /* כותרת הקטגוריה מוצגת בשתי שורות · שורה שנייה מתחת לכותרת המסך */
-    const secs = b.sections.filter((s) => this.shows(s)).map((s) => this.sectionVals(s));
+    const secs = this.pageList().filter((s) => this.shows(s)).map((s) => this.sectionVals(s));
 
     const pop = st.pop;
-    const popSec = pop ? b.sections.filter((x) => x.id === pop.id)[0] : null;
+    const popSec = pop ? this.pageList().filter((x) => x.id === pop.id)[0] : null;
 
     return {
       popOpen: pop !== null,
@@ -1037,7 +1200,7 @@ class Component extends DCLogic {
       isMenu: st.view === 'menu',
       isOpts: st.view === 'opts',
       headTitle: st.view === 'menu' ? 'פינת השף' : b.title,
-      goBack: () => { if (st.view === 'opts') this.backToMenu(); },
+      goBack: () => this.back(),
       goOpts: () => this.setState({ view: 'opts' }),
 
       modes: BOXES.map((x, k) => ({
@@ -1063,10 +1226,11 @@ class Component extends DCLogic {
       isPay:     st.step === 4,
       isDone:    st.step === 5,
       isConfirm: st.step === 6,
-      isDeliv:   deliv,
-      isPickup:  !deliv,
+      isDeliv:   b.pages ? true : deliv,
+      isPickup:  b.pages ? false : !deliv,
 
-      openFlow:  () => { if (ready) this.setState({ step: 1 }); },
+      openFlow:  () => { if (b.pages) this.next(); else if (ready) this.setState({ step: 1 }); },
+      nextLabel: b.pages ? (this.lastPage() ? 'סיום ושליחה' : 'המשך') : 'המשך',
       closeFlow: () => this.setState({ step: 0 }),
       pickSelf:  () => this.setState({ ship: 'self',  time: null, step: 2 }),
       pickDeliv: () => this.setState({ ship: 'deliv', time: null, step: 2 }),
@@ -1095,13 +1259,13 @@ class Component extends DCLogic {
       addrHint: addrOk ? '' : 'יש להזין רחוב ומספר בית',
       addrHintFg: st.addr === '' ? '#A79FB2' : '#B95349',
       addrOpacity: addrOk ? '1' : '0.45',
-      fullAddr: (st.addr ? st.addr + ', ' : '') + st.city,
+      fullAddr: b.pages ? (st.picks.addr || '') : ((st.addr ? st.addr + ', ' : '') + st.city),
 
       confetti: CONFETTI,
 
-      shipLabel: deliv ? 'משלוח' : 'איסוף עצמי',
-      timeLabel: st.time || '',
-      payLabel:  st.pay || '',
+      shipLabel: b.pages ? 'תאריך האירוע' : (deliv ? 'משלוח' : 'איסוף עצמי'),
+      timeLabel: b.pages ? (st.picks.date || '') : (st.time || ''),
+      payLabel:  b.pages ? (st.picks.daypart || '') : (st.pay || ''),
 
       slots: DELIV_SLOTS.map((t) => {
         const on = st.time === t;
