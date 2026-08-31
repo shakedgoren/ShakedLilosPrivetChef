@@ -30,7 +30,7 @@
 
   <div style="position: absolute; top: 72px; right: 0; left: 0; display: flex; justify-content: center;">
     <div style="border-radius: 999px; padding: 4px 12px; background: rgba(67,124,89,0.12); border: 1px solid rgba(67,124,89,0.28);">
-      <div style="font-size: 11px; font-weight: 600; color: #2C5A3E; letter-spacing: 0.04em;">א׳ · שורות עם תמונה מימין</div>
+      <div style="font-size: 11px; font-weight: 600; color: #2C5A3E; letter-spacing: 0.04em;">ד׳ · ריבוע נקי</div>
     </div>
   </div>
 
@@ -40,15 +40,14 @@
       <div style="font-weight: 600; font-size: 15.5px;">סוג האירוע</div>
     </div>
 
-    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
+    <div style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
       <sc-for list="{{ items }}" as="o" hint-placeholder-count="4">
-        <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 11px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
-          <div style="width: 62px; height: 62px; flex-shrink: 0; border-radius: 15px; border: 1.5px dashed rgba(67,124,89,0.34); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
-            <div style="font-size: 13.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.2;">{{ o.name }}</div>
-            <div style="font-size: 11px; font-weight: 300; line-height: 1.45; color: #7D7488;">{{ o.desc }}</div>
+        <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 9px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+          <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 15px; border: 1.5px dashed rgba(67,124,89,0.32); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
+          <div style="font-size: 13.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.2; text-align: center; min-height: 33px; display: flex; align-items: center; justify-content: center;">{{ o.name }}</div>
+          <div style="align-self: center; border-radius: 999px; padding: 3px 10px; background: rgba(67,124,89,0.12);">
+            <div style="font-size: 10.5px; font-weight: 600; color: #2C5A3E; white-space: nowrap;">{{ o.add }}</div>
           </div>
-          <div style="flex-shrink: 0; max-width: 62px; text-align: left; font-size: 11px; font-weight: 600; color: #437C59; line-height: 1.35;">{{ o.add }}</div>
         </div>
       </sc-for>
     </div>
