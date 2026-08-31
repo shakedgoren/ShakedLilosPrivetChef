@@ -52,7 +52,7 @@
 
   <div style="position: absolute; top: 78px; bottom: 152px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
-    <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">שניצל דק וקריספי/פילה עוף בטמפורה בחלה ביתית רכה, לצד שלל תוספות.<br>לפי כמות או מארז משפחתי לחמישה.</div>
+    <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">שניצל דק וקריספי/פילה עוף בטמפורה בחלה ביתית רכה,<br>לצד שלל תוספות.<br>לפי כמות או מארז משפחתי לחמישה.</div>
 
     <div style="flex-shrink: 0; height: 12px;"></div>
 
@@ -114,17 +114,19 @@
             <div onClick="{{ t.pick }}" class="press" style="min-height: 52px; box-sizing: border-box; border-radius: 16px; padding: 9px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
               <div style="flex-grow: 1; min-width: 0; font-size: 13.5px; line-height: 1.3; font-weight: {{ t.w }};">{{ t.name }}</div>
               <div style="flex-shrink: 0; border-radius: 8px; padding: 3px 9px; background: rgba(255,255,255,0.82); font-size: 12.5px; font-weight: 600; color: #416D9E; font-variant-numeric: tabular-nums;">{{ t.price }}</div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
             </div>
           </sc-for>
         </div>
 
-        <sc-if value="{{ boxHasType }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">מה ייכנס פנימה</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 7px;">
-          <sc-for list="{{ boxTops }}" as="o" hint-placeholder-count="5">
-            <div onClick="{{ o.pick }}" class="press" style="height: 38px; box-sizing: border-box; border-radius: 999px; padding: 0 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
-              <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
-            </div>
-          </sc-for>
+        <sc-if value="{{ boxHasType }}" hint-placeholder-val="{{ true }}"><div style="border-radius: 16px; padding: 11px 13px; display: flex; align-items: center; gap: 9px; background: rgba(65,109,158,0.07); border: 1px solid rgba(65,109,158,0.2);">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">מה ייכנס פנימה</div>
+            <div style="font-size: 12.5px; font-weight: 400; line-height: 1.5; color: #4A4254;">{{ boxTopsLabel }}</div>
+          </div>
+          <div onClick="{{ boxEdit }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(65,109,158,0.12); display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2B4A6E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M14.5 5.5l4 4"></path></svg>
+          </div>
         </div></sc-if>
       </div>
 
@@ -199,7 +201,7 @@
       <div onClick="{{ popClose }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px;">
       <sc-for list="{{ popTops }}" as="o" hint-placeholder-count="5">
         <div onClick="{{ o.pick }}" class="press" style="height: 40px; box-sizing: border-box; border-radius: 999px; padding: 0 14px; cursor: pointer; display: flex; align-items: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
           <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
@@ -486,7 +488,7 @@ const SCH_TYPES = [
 
 const SCHNITZEL_MODES = ['לפי יחידה', 'מארז'];
 const SCHNITZEL_FORMS = ['5 חלות אישיות', 'חלה משפחתית'];
-const SCH_COCOTTE = ['איולי עמבה', 'איולי כוסברה'];
+const SCH_COCOTTE = ['איולי עמבה', 'איולי כוסברה', 'טחינה'];
 const COCOTTE_PRICE = 3;
 
 const PICK_FROM = 11 * 60;
@@ -556,34 +558,39 @@ class Component extends DCLogic {
     };
   }
 
-  /* בחירת סוג פותחת את החלונית · התוספות נבחרות שם ולא בעמוד */
-  openPop(type)       { this.setState({ pop: { type: type, tops: [], edit: null } }); }
+  /* בחירת סוג פותחת את החלונית · התוספות נבחרות שם ולא בעמוד.
+     target קובע אם הבחירה נכנסת לרשימת החלות או למארז. */
+  openPop(type) { this.setState({ pop: { target: 'unit', type: type, tops: [], edit: null } }); }
   openEdit(i) {
     const b = this.state.basket[i];
-    this.setState({ pop: { type: b.type, tops: b.tops.slice(), edit: i } });
+    this.setState({ pop: { target: 'unit', type: b.type, tops: b.tops.slice(), edit: i } });
   }
-  closePop()          { this.setState({ pop: null }); }
+  openBoxPop(type) {
+    const keep = this.state.box.type === type ? this.state.box.tops.slice() : [];
+    this.setState({ pop: { target: 'box', type: type, tops: keep, edit: null } });
+  }
+  openBoxEdit() {
+    const b = this.state.box;
+    this.setState({ pop: { target: 'box', type: b.type, tops: b.tops.slice(), edit: 'box' } });
+  }
+  closePop() { this.setState({ pop: null }); }
+
   togglePopTop(name) {
     const p = this.state.pop;
     if (!p) return;
     const on = p.tops.indexOf(name) !== -1;
-    this.setState({ pop: { type: p.type, tops: on ? p.tops.filter((x) => x !== name) : p.tops.concat([name]), edit: p.edit } });
+    this.setState({ pop: { target: p.target, type: p.type, tops: on ? p.tops.filter((x) => x !== name) : p.tops.concat([name]), edit: p.edit } });
   }
+
   commitPop() {
     const p = this.state.pop;
     if (!p) return;
     const row = { type: p.type, tops: p.tops.slice() };
+    if (p.target === 'box') { this.setState({ box: row, pop: null }); return; }
     const b = p.edit === null
       ? this.state.basket.concat([row])
       : this.state.basket.map((x, j) => (j === p.edit ? row : x));
     this.setState({ basket: b, pop: null });
-  }
-
-  setBoxType(t) { this.setState({ box: { type: t, tops: [] } }); }
-  toggleBoxTop(name) {
-    const b = this.state.box;
-    const on = b.tops.indexOf(name) !== -1;
-    this.setState({ box: { type: b.type, tops: on ? b.tops.filter((x) => x !== name) : b.tops.concat([name]) } });
   }
   bumpCoc(i, d) { this.setState({ coc: this.state.coc.map((v, j) => (j === i ? Math.max(0, v + d) : v)) }); }
 
@@ -645,7 +652,7 @@ class Component extends DCLogic {
 
       popOpen: p !== null,
       popTitle: p ? SCH_TYPES[p.type].name : '',
-      popBtn: p && p.edit !== null ? 'שמור' : 'הוסף חלה',
+      popBtn: p ? (p.target === 'box' || p.edit !== null ? 'שמור' : 'הוסף חלה') : '',
       popClose: () => this.closePop(),
       popAdd: () => this.commitPop(),
       popTops: p ? SCH_TYPES[p.type].tops.map((n) => {
@@ -671,13 +678,11 @@ class Component extends DCLogic {
       }),
       boxTypes: SCH_TYPES.map((t, k) => {
         const c = chip(st.box.type === k);
-        return { name: t.name, price: t.box + ' ₪', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.setBoxType(k) };
+        return { name: t.name, price: t.box + ' ₪', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.openBoxPop(k) };
       }),
       boxHasType: boxHas,
-      boxTops: boxHas ? SCH_TYPES[st.box.type].tops.map((n) => {
-        const c = chip(st.box.tops.indexOf(n) !== -1);
-        return { name: n, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.toggleBoxTop(n) };
-      }) : [],
+      boxTopsLabel: boxHas ? (st.box.tops.length ? st.box.tops.join(' · ') : 'בלי תוספות') : '',
+      boxEdit: () => this.openBoxEdit(),
 
       cocottes: SCH_COCOTTE.map((name, i) => ({
         name: name, qty: st.coc[i], ink: st.coc[i] === 0 ? OFF : ON,
