@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;display=swap">
+  <style>
+    body { margin: 0; }
+    .press { transition: transform 130ms cubic-bezier(.3,.7,.4,1); }
+    .press:active { transform: scale(0.955); }
+    .noscroll::-webkit-scrollbar { display: none; }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FAF7F5; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.2) 0%, rgba(186,166,228,0) 62%), radial-gradient(58% 38% at 84% 72%, rgba(176,216,190,0.15) 0%, rgba(176,216,190,0) 62%), radial-gradient(76% 44% at 52% 20%, rgba(67,124,89,0.14) 0%, rgba(67,124,89,0) 72%);"></div>
+
+  <div style="position: absolute; top: 30px; right: 18px; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #F9F6FD 45%, #EDE6F7 100%); box-shadow: inset -3px -4px 8px rgba(150,125,190,0.2), inset 2px 3px 6px rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+  </div>
+
+  <div style="position: absolute; top: 32px; right: 74px; left: 74px; text-align: center;">
+    <div style="font-weight: 600; font-size: 20px; letter-spacing: -0.015em;">חלה לכל אירוע</div>
+  </div>
+
+  <div style="position: absolute; top: 72px; right: 0; left: 0; display: flex; justify-content: center;">
+    <div style="border-radius: 999px; padding: 4px 12px; background: rgba(67,124,89,0.12); border: 1px solid rgba(67,124,89,0.28);">
+      <div style="font-size: 11px; font-weight: 600; color: #2C5A3E; letter-spacing: 0.04em;">א׳ · שורות עם תמונה מימין</div>
+    </div>
+  </div>
+
+  <div class="noscroll" style="position: absolute; top: 108px; bottom: 170px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+
+    <div style="flex-shrink: 0; display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 0 2px 6px;">
+      <div style="font-weight: 600; font-size: 15.5px;">סוג האירוע</div>
+    </div>
+
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
+      <sc-for list="{{ items }}" as="o" hint-placeholder-count="4">
+        <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 11px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+          <div style="width: 62px; height: 62px; flex-shrink: 0; border-radius: 15px; border: 1.5px dashed rgba(67,124,89,0.34); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 13.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.2;">{{ o.name }}</div>
+            <div style="font-size: 11px; font-weight: 300; line-height: 1.45; color: #7D7488;">{{ o.desc }}</div>
+          </div>
+          <div style="flex-shrink: 0; max-width: 62px; text-align: left; font-size: 11px; font-weight: 600; color: #437C59; line-height: 1.35;">{{ o.add }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-shrink: 0; height: 14px;"></div>
+  </div>
+
+  <div style="position: absolute; bottom: 102px; right: 18px; left: 18px; height: 60px; box-sizing: border-box; border-radius: 22px; padding: 0 16px 0 7px; display: flex; align-items: center; gap: 10px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.48) 100%); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); border: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -24px rgba(96,80,132,0.6);">
+    <div style="flex-grow: 1; min-width: 0; display: flex; align-items: baseline; gap: 7px;">
+      <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap;">סה״כ :</div>
+      <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums;">{{ total }}</div>
+      <div style="font-size: 15px; font-weight: 400; color: #7A7080;">₪</div>
+    </div>
+    <div class="press" style="flex-shrink: 0; height: 46px; padding: 0 18px; border-radius: 999px; display: flex; align-items: center; gap: 7px; background: linear-gradient(168deg, #C6E4D3 0%, #A8CDBB 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 10px 20px -12px rgba(90,150,115,0.75);">
+      <div style="color: #2C5A3E; font-weight: 600; font-size: 15.5px;">המשך</div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2C5A3E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </div>
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">אזור אישי</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const EVENTS = [
+  { n: 'ראש השנה', d: 'מגיע עם צנצנת דבש אישית ודבשון.', add: 6 },
+  { n: 'הפרשות חלה', d: 'מגיע עם מארז נרות והקדשה אישית.', add: 6 },
+  { n: 'ימי הולדת/אירועים', d: 'עם הקדשה ומיתוג אישי שהופך את החלה לחלק מהאירוע.', add: 0 },
+  { n: 'פינוק לגן/לכיתה', d: 'מגיע לצד ממרח לבחירה: נוטלה/ריבה/דבש עם מיתוג אישי.', add: 4 }
+];
+
+const QTY = 25;
+const BASE = 14;
+const SEL_BG = 'rgba(67,124,89,0.1)';
+const SEL_BD = 'rgba(67,124,89,0.42)';
+const IDLE_BG = 'rgba(255,255,255,0.7)';
+const IDLE_BD = 'rgba(130,112,162,0.16)';
+const chip = (on) => ({ bg: on ? SEL_BG : IDLE_BG, bd: on ? SEL_BD : IDLE_BD, fg: on ? '#2C5A3E' : '#4A4254', w: on ? '600' : '400' });
+const addLabel = (a) => a ? ('+' + a + ' ש״ח ליח׳') : 'ללא תוספת';
+
+class Base extends DCLogic {
+  constructor(props) { super(props); this.state = { ev: null }; }
+  total() {
+    const e = EVENTS.filter((x) => x.n === this.state.ev)[0];
+    return QTY * (BASE + (e ? e.add : 0));
+  }
+  opts() {
+    return EVENTS.map((e) => {
+      const c = chip(this.state.ev === e.n);
+      return {
+        name: e.n, desc: e.d, add: addLabel(e.add), on: this.state.ev === e.n,
+        bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
+        pick: () => this.setState({ ev: e.n })
+      };
+    });
+  }
+}
+
+class Component extends Base {
+  renderVals() { return { items: this.opts(), total: this.total() }; }
+}
+</script>
+</body>
+</html>

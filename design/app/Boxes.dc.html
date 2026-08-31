@@ -105,10 +105,11 @@
 
           <sc-if value="{{ s.isFine }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; font-weight: 400; font-style: italic; line-height: 1.5; color: #9A93A6; text-align: center; padding: 0 6px;">{{ s.label }}</div></sc-if>
 
-          <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+          <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
-              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: 999px; padding: 0 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: {{ s.radius }}; padding: 8px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.name }}</div>
+                <sc-if value="{{ o.hasSub }}" hint-placeholder-val="{{ true }}"><div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.sub }}</div></sc-if>
               </div>
             </sc-for>
           </div></sc-if>
@@ -127,6 +128,7 @@
                 <div style="width: 100%; height: 140px; border-radius: 13px; border: 1.5px dashed rgba(67,124,89,0.34); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
                 <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.25; text-align: center;">{{ o.name }}</div>
                 <div style="font-size: 10.5px; font-weight: 300; line-height: 1.4; color: #7D7488; text-align: center;">{{ o.desc }}</div>
+                <div style="font-size: 11px; font-weight: 600; color: #437C59; text-align: center;">{{ o.add }}</div>
               </div>
             </sc-for>
           </div></sc-if>
@@ -509,11 +511,13 @@ const SALADS = [
 ];
 
 const EVENTS = [
-  { n: 'ראש השנה',             d: 'מגיע עם צנצנת דבש אישית ודבשון.' },
-  { n: 'הפרשות חלה',           d: 'מגיע עם מארז נרות והקדשה אישית.' },
-  { n: 'ימי הולדת/אירועים',    d: 'עם הקדשה ומיתוג אישי שהופך את החלה לחלק מהאירוע.' },
-  { n: 'פינוק לגן/לכיתה',      d: 'מגיע לצד ממרח לבחירה: נוטלה/ריבה/דבש עם מיתוג אישי.' }
+  { n: 'ראש השנה',             d: 'מגיע עם צנצנת דבש אישית ודבשון.', add: 6 },
+  { n: 'הפרשות חלה',           d: 'מגיע עם מארז נרות והקדשה אישית.', add: 6 },
+  { n: 'ימי הולדת/אירועים',    d: 'עם הקדשה ומיתוג אישי שהופך את החלה לחלק מהאירוע.', add: 0 },
+  { n: 'פינוק לגן/לכיתה',      d: 'מגיע לצד ממרח לבחירה: נוטלה/ריבה/דבש עם מיתוג אישי.', add: 4 }
 ];
+const EVENT_ADD = {};
+EVENTS.forEach((e) => { EVENT_ADD[e.n] = e.add; });
 
 const T = (t, w, size, fg) => ({ text: t, w: w, size: size, fg: fg });
 const LEAD = (t) => T(t, '600', '14.5px', '#2A2430');
@@ -613,15 +617,18 @@ const BOXES = [
     title: 'חלה לכל אירוע',
     intro: [
       LEAD('אין אירוע קטן מדי בשביל חלה גדולה מהלב. 🤍'),
-      BODY('חלה אישית מוגדלת או זוג חלות קטנטנות, מגיעות ארוזות בצלופן ופרחי גיבסניות, בעיצוב ובהתאמה אישית לאירוע שלכם.')
+      BODY('מארז של חלה אישית מוגדלת או זוג חלות קטנטנות,'),
+      BODY('מגיע ארוז בנייר פרגמנט, צלופן ופרחי גיבסניות,'),
+      BODY('עם אופציות שדרוג נוספות,'),
+      BODY('בעיצוב ובהתאמה אישית לאירוע שלכם.')
     ],
     sections: [
       { kind: 'title', label: 'כמות' },
-      { kind: 'note',  label: 'מינימום 25 יחידות · 16 ₪ ליח׳ (מעל 50 יחידות · 14 ₪ ליח׳)', tight: true },
+      { kind: 'note',  label: 'מינימום 25 יחידות · 14 ש״ח ליח׳ (מעל 50 יח׳ • 12 ש״ח ליח׳)', tight: true },
       { kind: 'stepper', id: 'qty', min: 25, step: 1, unit: 'יחידות', slim: true },
       { kind: 'fine', label: 'מחירים מותאמים להזמנה בכמויות גדולות' },
       { kind: 'title', label: 'סוג חלה' },
-      { kind: 'grid', id: 'size', options: ['חלה אישית מוגדלת', 'זוג חלות קטנטנות'], opens: 'coat' },
+      { kind: 'grid', id: 'size', options: ['חלה אישית', 'זוג חלות'], subs: ['מוגדלת', 'קטנטנות'], opens: 'coat', narrow: true, boxy: true },
       { kind: 'hidden', id: 'coat', label: 'ציפוי החלה', options: COATS },
       { kind: 'title', label: 'סוג האירוע' },
       { kind: 'cards', id: 'event', options: EVENTS },
@@ -647,11 +654,11 @@ const BOXES = [
     sections: [
       { kind: 'images', count: 1, h: '150px' },
       { kind: 'title', label: 'חלה' },
-      { kind: 'grid', id: 'coat', options: COATS },
+      { kind: 'grid', id: 'coat', options: COATS, narrow: true },
       { kind: 'title', label: 'עוגה' },
-      { kind: 'grid', id: 'cake', options: CAKES },
+      { kind: 'grid', id: 'cake', options: CAKES, narrow: true },
       { kind: 'title', label: 'יין' },
-      { kind: 'grid', id: 'wine', options: WINES },
+      { kind: 'grid', id: 'wine', options: WINES, narrow: true },
       { kind: 'title', label: 'הקדשה אישית' },
       { kind: 'text',  id: 'ded', ph: 'למשל: לאמא הכי טובה בעולם, שנה טובה' }
     ]
@@ -681,8 +688,8 @@ const BOXES = [
 const CHALLAH_ONE  = 25;
 const CHALLAH_PAIR = 44;
 const SALAD_PER_KG = 89;
-const EVENT_PRICE  = 16;
-const EVENT_BULK   = 14;
+const EVENT_PRICE  = 14;
+const EVENT_BULK   = 12;
 const EVENT_BULK_FROM = 50;
 
 function priceOf(b, picks) {
@@ -697,7 +704,8 @@ function priceOf(b, picks) {
   }
   if (b.key === 'challah') {
     const q = picks.qty || 25;
-    return q * (q > EVENT_BULK_FROM ? EVENT_BULK : EVENT_PRICE);
+    const per = (q > EVENT_BULK_FROM ? EVENT_BULK : EVENT_PRICE) + (EVENT_ADD[picks.event] || 0);
+    return q * per;
   }
   const mafroum = picks.main === MAIN_MAFROUM ? MAFROUM_ADD : 0;
   return b.base + mafroum;
@@ -867,6 +875,7 @@ class Component extends DCLogic {
       isCards: false, isCount: false, isStepper: false, isText: false,
       isPair: false, isRow: false, isImages: false, isGrid: false, isFine: false,
       label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
+      radius: '999px', maxW: 'none',
       value: '', unit: '', ph: '', decOp: '1', mt: '0px',
       pad: '12px 14px', gap: '18px', btn: '40px', numW: '74px', numSize: '26px',
       bg: IDLE_BG, bd: IDLE_BD, fg: '#4A4254', w: '400',
@@ -927,12 +936,14 @@ class Component extends DCLogic {
       return Object.assign(base, {
         isGrid: true,
         cols: 'repeat(' + (n <= 3 ? n : 2) + ', minmax(0, 1fr))',
-        options: s.options.map((o) => {
+        radius: s.boxy ? '18px' : '999px',
+        maxW: s.narrow ? '272px' : 'none',
+        options: s.options.map((o, k) => {
           const c = chip(this.state.picks[s.id] === o);
           const pick = s.opens
             ? () => { this.setPick(s.id, o); this.openPop(s.opens); }
             : () => this.setPick(s.id, o);
-          return { name: o, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: pick };
+          return { name: o, sub: s.subs ? s.subs[k] : '', hasSub: !!s.subs, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: pick };
         })
       });
     }
@@ -956,7 +967,11 @@ class Component extends DCLogic {
         isCards: true,
         options: s.options.map((o) => {
           const c = chip(this.state.picks[s.id] === o.n);
-          return { name: o.n, desc: o.d, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o.n) };
+          return {
+            name: o.n, desc: o.d,
+            add: o.add ? '+' + o.add + ' ש״ח ליח׳' : 'ללא תוספת',
+            bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o.n)
+          };
         })
       });
     }
