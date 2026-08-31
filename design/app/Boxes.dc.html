@@ -520,9 +520,10 @@ const SALADS = [
 const EVENTS = [
   { n: 'ראש השנה',             d: 'מגיע עם צנצנת דבש אישית ודבשון.', add: 6 },
   { n: 'הפרשות חלה',           d: 'מגיע עם מארז נרות והקדשה אישית.', add: 6 },
-  { n: 'ימי הולדת/אירועים',    d: 'עם הקדשה ומיתוג אישי שהופך את החלה לחלק מהאירוע.', add: 0 },
-  { n: 'פינוק לגן/לכיתה',      d: 'מגיע לצד ממרח לבחירה: נוטלה/ריבה/דבש עם מיתוג אישי.', add: 4 }
+  { n: 'ימי הולדת/אירועים',    d: 'עם הקדשה ומיתוג אישי.', add: 0 },
+  { n: 'פינוק לגן/לכיתה',      d: 'מגיע לצד ממרח אישי לבחירה', add: 4, opens: 'spread' }
 ];
+const SPREADS = ['נוטלה', 'ריבה', 'דבש'];
 const EVENT_ADD = {};
 EVENTS.forEach((e) => { EVENT_ADD[e.n] = e.add; });
 
@@ -538,7 +539,7 @@ const mainPair = { kind: 'pair', id: 'main', options: MAINS };
 /* שבע קטגוריות הספיישל · השם, התיאור והמחיר על הכרטיסייה כלשונה של שקד */
 const BOXES = [
   {
-    key: 'free', name: 'קחו כמה שבא לכם', base: 0, price: 'החל מ25 ש״ח',
+    key: 'free', name: 'קחו כמה שבא לכם', base: 0, price: 'החל מ- 25 ש״ח',
     desc: 'חלות וסלטים בבחירה חופשית, בלי מארז ובלי מחויבות.',
     title: 'קחו כמה שבא לכם 😍',
     intro: [
@@ -576,7 +577,7 @@ const BOXES = [
     ]
   },
   {
-    key: 'celebMain', name: 'חגיגה בשולחן • עיקרית', base: 339, price: 'החל מ339 ש״ח',
+    key: 'celebMain', name: 'חגיגה בשולחן • עיקרית', base: 339, price: 'החל מ- 339 ש״ח',
     desc: 'ארוחה משפחתית עשירה ומפנקת, עם טעמים של בית ושפע שמגיע ישר לשולחן.',
     title: 'חגיגה בשולחן • עיקרית',
     intro: [
@@ -595,7 +596,7 @@ const BOXES = [
     ]
   },
   {
-    key: 'all', name: 'הכל עלינו', base: 499, price: 'החל מ499 ש״ח',
+    key: 'all', name: 'הכל עלינו', base: 499, price: 'החל מ- 499 ש״ח',
     desc: 'כל הארוחה עלינו! ארוחה שלמה, מפנקת ונדיבה, כדי שאתם תוכלו פשוט לשבת וליהנות.',
     title: 'הכל עלינו',
     intro: [
@@ -619,7 +620,7 @@ const BOXES = [
     ]
   },
   {
-    key: 'challah', name: 'חלה לכל אירוע', base: 400, price: 'החל מ14 ש״ח ליח׳',
+    key: 'challah', name: 'חלה לכל אירוע', base: 400, price: 'החל מ- 12 ש״ח ליח׳',
     desc: 'מארזי חלות שהופכים מיתוג/הקדשה אישית',
     title: 'חלה לכל אירוע',
     intro: [
@@ -639,6 +640,7 @@ const BOXES = [
       { kind: 'hidden', id: 'coat', label: 'ציפוי החלה', options: COATS },
       { kind: 'title', label: 'סוג האירוע' },
       { kind: 'cards', id: 'event', options: EVENTS },
+      { kind: 'hidden', id: 'spread', label: 'הממרח לבחירה', options: SPREADS, when: { id: 'event', is: 'פינוק לגן/לכיתה' } },
       { kind: 'title', label: 'מיתוג/הקדשה אישית' },
       { kind: 'note',  label: 'הכניסו את המלל והעיצוב שתרצו. לא בטוחים לגבי העיצוב?', tight: true },
       { kind: 'note',  label: 'אנחנו נשלח לכם 5 אופציות לאישור.', tight: true },
@@ -839,6 +841,7 @@ class Component extends DCLogic {
     if (!b) return false;
     if (b.key === 'free') return priceOf(b, this.state.picks) > 0;
     return b.sections.every((s) => {
+      if (s.when && this.state.picks[s.when.id] !== s.when.is) return true;
       if (s.kind === 'chips' || s.kind === 'grid' || s.kind === 'cards' || s.kind === 'pair' || s.kind === 'hidden') return !!this.state.picks[s.id];
       if ((s.kind === 'count' || s.kind === 'row') && s.cap !== null) return sumOf(this.state.picks[s.id]) === s.cap;
       return true;
@@ -977,7 +980,10 @@ class Component extends DCLogic {
           return {
             name: o.n, desc: o.d, on: this.state.picks[s.id] === o.n,
             add: o.add ? '+' + o.add + ' ש״ח ליח׳' : 'ללא תוספת',
-            bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o.n)
+            bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
+            pick: o.opens
+              ? () => { this.setPick(s.id, o.n); this.openPop(o.opens); }
+              : () => this.setPick(s.id, o.n)
           };
         })
       });
