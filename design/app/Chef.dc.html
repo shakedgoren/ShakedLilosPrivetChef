@@ -113,9 +113,12 @@
       <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
         <div style="display: flex; flex-direction: column; gap: 6px;">
 
-          <sc-if value="{{ s.isHead }}" hint-placeholder-val="{{ true }}"><div style="font-weight: 600; font-size: 18px; letter-spacing: -0.015em; text-align: center; padding: 2px 2px 0;">{{ s.label }}</div></sc-if>
+          <sc-if value="{{ s.isHead }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 2px 2px 0;">
+            <div style="font-weight: 600; font-size: 18px; letter-spacing: -0.015em;">{{ s.label }}</div>
+            <sc-if value="{{ s.hasHint }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: #A85A28; font-variant-numeric: tabular-nums;">{{ s.hint }}</div></sc-if>
+          </div></sc-if>
 
-          <sc-if value="{{ s.isTitle }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 12px 2px 0;">
+          <sc-if value="{{ s.isTitle }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: {{ s.pad }};">
             <div style="font-weight: 600; font-size: 15.5px; letter-spacing: -0.01em;">{{ s.label }}</div>
             <div style="font-size: 11.5px; font-weight: 400; color: #A85A28;">{{ s.hint }}</div>
           </div></sc-if>
@@ -128,18 +131,12 @@
 
           <sc-if value="{{ s.isRows }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="5">
-              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 16px; padding: 9px 12px; cursor: pointer; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }}; display: flex; align-items: center; gap: 9px;">
-                <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-                  <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.3;">{{ o.name }}</div>
-                  <div style="font-size: 11.5px; font-weight: 300; color: #7D7488; line-height: 1.4;">{{ o.desc }}</div>
-                  <sc-if value="{{ o.hasExtra }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 600; color: #A85A28; line-height: 1.4;">{{ o.extra }}</div></sc-if>
-                </div>
-                <sc-if value="{{ o.on }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: #A85A28; box-shadow: 0 2px 8px -3px rgba(122,61,24,0.7); display: flex; align-items: center; justify-content: center;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
-                </div></sc-if>
+              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 16px; padding: 9px 12px; cursor: pointer; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }}; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.3; text-align: center;">{{ o.name }}</div>
+                <div style="font-size: 11.5px; font-weight: 300; color: #7D7488; line-height: 1.4; text-align: center;">{{ o.desc }}</div>
+                <sc-if value="{{ o.hasExtra }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 600; color: #A85A28; line-height: 1.4; text-align: center;">{{ o.extra }}</div></sc-if>
               </div>
             </sc-for>
-            <div style="align-self: center; margin-top: 2px; font-size: 11.5px; font-weight: 500; color: #A79FB2;">{{ s.tally }}</div>
           </div></sc-if>
 
           <sc-if value="{{ s.isFine }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; font-weight: 400; font-style: italic; line-height: 1.5; color: #9A93A6; text-align: center; padding: 0 6px;">{{ s.label }}</div></sc-if>
@@ -166,7 +163,7 @@
               <div onClick="{{ o.pick }}" class="press" style="position: relative; box-sizing: border-box; height: {{ s.cardH }}; border-radius: 20px; overflow: hidden; cursor: pointer; background: rgba(255,255,255,0.6); border: 2px solid {{ o.bd }};">
                 <div style="position: absolute; inset: 0; border-radius: 18px; border: 1.5px dashed rgba(168,90,40,0.28); display: flex; align-items: center; justify-content: center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
                 <div style="position: absolute; right: 0; left: 0; bottom: 0; padding: 26px 10px 11px; background: linear-gradient(to top, rgba(242,216,192,0.96) 0%, rgba(242,216,192,0.9) 46%, rgba(242,216,192,0.55) 78%, rgba(242,216,192,0) 100%); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; gap: 3px;">
-                  <div style="font-size: 14.5px; font-weight: 600; color: #5E2E12; line-height: 1.2; text-align: center;">{{ o.name }}</div>
+                  <div style="font-size: {{ s.nameSize }}; font-weight: 600; color: #5E2E12; line-height: 1.2; text-align: center; white-space: nowrap;">{{ o.name }}</div>
                   <div style="font-size: {{ s.descSize }}; font-weight: 400; line-height: 1.5; color: #6B3F22; text-align: center;">{{ o.desc }}</div>
                   <sc-if value="{{ o.hasPrice }}" hint-placeholder-val="{{ true }}"><div style="margin-top: 3px; font-size: {{ s.descSize }}; font-weight: 600; line-height: 1.5; color: #5E2E12; text-align: center;">{{ o.price }}</div></sc-if>
                   <sc-if value="{{ o.hasAdd }}" hint-placeholder-val="{{ true }}"><div style="margin-top: 2px; border-radius: 999px; padding: 2px 9px; background: rgba(255,255,255,0.6);">
@@ -344,15 +341,15 @@
     <div style="flex-shrink: 0; display: flex; align-items: flex-start; gap: 10px;">
       <div style="flex-grow: 1; min-width: 0; text-align: center; display: flex; flex-direction: column; gap: 2px; padding-right: 32px;">
         <div style="font-weight: 600; font-size: 17px; line-height: 1.25;">{{ pastaSauce }}</div>
-        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">בחרו את סוג הפסטה</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488;">בחרו סוג פסטה או שדרוג</div>
       </div>
       <div onClick="{{ pastaClose }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
 
     <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; margin-top: 14px; display: flex; flex-direction: column; gap: 7px;">
-      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 7px;">
         <sc-for list="{{ pastaShapes }}" as="o" hint-placeholder-count="7">
-          <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 14px; padding: 7px 3px; cursor: pointer; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }}; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+          <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; width: 72px; border-radius: 14px; padding: 7px 3px; cursor: pointer; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }}; display: flex; flex-direction: column; align-items: center; gap: 3px;">
             <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="{{ o.stroke }}" stroke-linecap="round" stroke-linejoin="round">
               <sc-for list="{{ o.paths }}" as="q" hint-placeholder-count="3"><path d="{{ q.d }}" stroke-width="{{ q.w }}"></path></sc-for>
             </svg>
@@ -913,25 +910,23 @@ const BOXES = [
     ],
     pages: [
       [
-        { kind: 'title', label: 'מספר סועדים' },
+        { kind: 'title', label: 'מספר סועדים', flush: true },
         { kind: 'note',  label: 'בין 10 ל-25 סועדים.', tight: true },
         { kind: 'stepper', id: 'guests', min: 10, max: 25, step: 1, unit: 'סועדים', slim: true },
-        { kind: 'title', label: 'הסלטים' },
-        { kind: 'note',  label: 'כולם מגיעים בקערות הגשה גדולות לשולחן. כל סלט נוסף בתוספת של 20 ₪ לסועד.', tight: true },
+        { kind: 'title', label: 'סלטים', link: 'salads', cap: SALAD_BASE },
+        { kind: 'note',  label: 'כל סלט נוסף בתוספת של 20 ₪ לסועד.', tight: true },
         { kind: 'multicap', id: 'salads', options: T_SALADS, cap: SALAD_BASE, req: true,
           note: 'כל בחירת סלט נוסף בתוספת 20 ש״ח לסועד.' }
       ],
       [
-        { kind: 'head',  label: 'הפסטות' },
-        { kind: 'note',  label: 'כל פסטה נוספת בתוספת של 25 ₪ לסועד', tight: true },
-        { kind: 'note',  label: 'שדרוג מנת פסטה בתוספת 15 ₪ לסועד', tight: true },
+        { kind: 'head',  label: 'פסטות', link: 'pastas', cap: PASTA_BASE },
+        { kind: 'note',  label: 'כל פסטה נוספת בתוספת של 25 ₪ לסועד.', tight: true },
         { kind: 'fine',  label: 'בחרו רוטב על מנת לבחור את סוג הפסטה' },
         { kind: 'sauces', id: 'pastas', options: T_PASTAS, cap: PASTA_BASE, req: true,
           note: 'כל בחירת פסטה נוספת בתוספת 25 ש״ח לסועד.' }
       ],
       [
-        { kind: 'head',  label: 'הקינוחים' },
-        { kind: 'note',  label: 'הדובדבן שבקצפת', tight: true },
+        { kind: 'head',  label: 'קינוחים', link: 'desserts', cap: DESSERT_BASE },
         { kind: 'note',  label: 'כל קינוח נוסף בתוספת של 20 ₪ לסועד.', tight: true },
         { kind: 'multicap', id: 'desserts', options: T_DESSERTS, cap: DESSERT_BASE, req: true,
           note: 'כל בחירת קינוח נוסף בתוספת 20 ש״ח לסועד.' }
@@ -1204,15 +1199,18 @@ class Component extends DCLogic {
     this.setState({ pop: { pasta: true, sec: sec.id, cap: sec.cap, note: sec.note,
                            sauce: x.sauce, shape: x.shape, up: x.up, edit: true } });
   }
+  /* או סוג פסטה או שדרוג · לא שניהם */
   pastaPick(field, v) {
     const pop = this.state.pop;
+    const other = field === 'shape' ? 'up' : 'shape';
     const next = Object.assign({}, pop);
     next[field] = pop[field] === v ? null : v;   /* לחיצה חוזרת מבטלת */
+    if (next[field]) next[other] = null;
     this.setState({ pop: next });
   }
   pastaCommit() {
     const pop = this.state.pop;
-    if (!pop || !pop.shape) return;
+    if (!pop || (!pop.shape && !pop.up)) return;
     const cur = this.state.picks[pop.sec] || [];
     const entry = { sauce: pop.sauce, shape: pop.shape, up: pop.up };
     const list = pop.edit
@@ -1288,7 +1286,7 @@ class Component extends DCLogic {
         if (!s.req || !this.shows(s)) return true;
         if (s.kind === 'pairtext') return s.ids.every((id) => String(this.state.picks[id] || '').trim() !== '');
         const v = this.state.picks[s.id];
-        if (s.kind === 'sauces') return (v || []).length >= s.cap && (v || []).every((x) => x.shape);
+        if (s.kind === 'sauces') return (v || []).length >= s.cap && (v || []).every((x) => x.shape || x.up);
         if (s.kind === 'multicap') return (v || []).length >= s.cap;
         if (s.kind === 'count' || s.kind === 'row') return Object.keys(v || {}).length >= (s.soft || 1);
         if (s.kind === 'multi' || (s.kind === 'cards' && s.multi)) return (v || []).length > 0;
@@ -1341,6 +1339,7 @@ class Component extends DCLogic {
       isTitle: false, isNote: false, isPrice: false, isChips: false,
       isCards: false, isCount: false, isStepper: false, isText: false,
       isPair: false, isRow: false, isImages: false, isGrid: false, isFine: false, isTiers: false, isGap: false,
+      flush: false, hasHint: false,
       isMulti: false, isDate: false, isHead: false, isPairText: false, isCal: false, isAddr: false, isRows: false,
       fields: [], days: [], dows: [], sug: [], month: '', prev: () => {}, next: () => {}, prevOp: '1', hasSug: false,
       label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
@@ -1350,9 +1349,18 @@ class Component extends DCLogic {
       bg: IDLE_BG, bd: IDLE_BD, fg: '#4A4254', w: '400',
       set: () => {}, dec: () => {}, inc: () => {}, open: () => {}
     };
+    /* המונה מתעדכן חי · חריגה מהמכסה פשוט ממשיכה לעלות */
+    const liveHint = (x) => {
+      if (!x.link) return x.hint || '';
+      const v = this.state.picks[x.link];
+      const n = Array.isArray(v) ? v.length : Object.keys(v || {}).length;
+      return n + '/' + x.cap;
+    };
     if (s.kind === 'title') {
-      const hint = s.link ? Object.keys(this.state.picks[s.link] || {}).length + '/' + s.cap : (s.hint || '');
-      return Object.assign(base, { isTitle: true, hint: hint });
+      return Object.assign(base, { isTitle: true, hint: liveHint(s), pad: s.flush ? '0 2px' : '12px 2px 0' });
+    }
+    if (s.kind === 'head') {
+      return Object.assign(base, { isHead: true, hint: liveHint(s), hasHint: !!s.link });
     }
 
     if (s.kind === 'images') {
@@ -1485,8 +1493,6 @@ class Component extends DCLogic {
       const names = isSauce ? list.map((x) => x.sauce) : list;
       return Object.assign(base, {
         isRows: true,
-        tally: names.length + ' מתוך ' + s.cap,
-        overCap: names.length > s.cap,
         options: s.options.map((o) => {
           const on = names.indexOf(o.n) !== -1;
           const c = chip(on);
@@ -1583,6 +1589,7 @@ class Component extends DCLogic {
         cols: 'repeat(' + (s.one ? 1 : 2) + ', minmax(0, 1fr))',
         cardH: s.one ? '250px' : '208px',
         descSize: s.one ? '12.5px' : '10px',
+        nameSize: s.one ? '14.5px' : '12.5px',
         options: s.options.map((o) => {
           const on = multi ? cur.indexOf(o.n) !== -1 : this.state.picks[s.id] === o.n;
           const c = chip(on);
@@ -1668,7 +1675,7 @@ class Component extends DCLogic {
         return { name: o, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
                  pick: () => this.pastaPick('up', o) };
       }) : [],
-      pastaOpacity: (isPasta && pop.shape) ? '1' : '0.45',
+      pastaOpacity: (isPasta && (pop.shape || pop.up)) ? '1' : '0.45',
       pastaClose: () => this.closePop(),
       pastaAdd: () => this.pastaCommit(),
 
