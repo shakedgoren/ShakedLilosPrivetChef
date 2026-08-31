@@ -33,18 +33,18 @@
 
   <sc-if value="{{ newCustomer }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 630px; right: 18px; left: 18px; height: 74px; box-sizing: border-box; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; gap: 10px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6);"><div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;"><div style="font-size: 14px; font-weight: 600;">שלישי 25.8 · קוסקוס</div><div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">המכירה הקרובה</div></div><div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"><div style="width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: {{ stockDot }};"></div><div style="font-size: 12.5px; font-weight: 500; color: {{ stockFg }};">{{ stockLabel }}</div></div></div></sc-if>
 
-  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 50px; border-radius: 999px; background: linear-gradient(150deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.38) 100%); backdrop-filter: blur(30px) saturate(170%); -webkit-backdrop-filter: blur(30px) saturate(170%); border: 1px solid rgba(255,255,255,0.68); box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 16px 30px -22px rgba(96,80,132,0.45); display: flex; align-items: center; justify-content: space-around; padding: 0 10px">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 55px; height: 40px; border-radius: 999px; transition: background 560ms ease; background: {{ navPill }}; width: 30px">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke="{{ navInk }}" style="transition: stroke 560ms ease;"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-      <div style="font-size: 11px; font-weight: 600; transition: color 560ms ease; color: {{ navInk }};">בית</div>
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 54px;">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A93A6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
-      <div style="font-size: 11px; font-weight: 300; color: #9A93A6;">הזמנות</div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 54px;">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A93A6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
-      <div style="font-size: 11px; font-weight: 300; color: #9A93A6;">אזור אישי</div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">אזור אישי</div>
     </div>
   </div>
 
