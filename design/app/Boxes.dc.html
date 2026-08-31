@@ -195,7 +195,13 @@
             </div>
           </div></sc-if>
 
-          <sc-if value="{{ s.isText }}" hint-placeholder-val="{{ true }}"><input type="text" value="{{ s.value }}" onInput="{{ s.set }}" placeholder="{{ s.ph }}" style="width: 100%; box-sizing: border-box; height: 50px; border-radius: 16px; padding: 0 13px; font-family: 'Assistant', system-ui, sans-serif; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;"></sc-if>
+          <sc-if value="{{ s.isText }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: stretch; gap: 8px;">
+            <input type="text" value="{{ s.value }}" onInput="{{ s.set }}" placeholder="{{ s.ph }}" style="flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 54px; border-radius: 16px; padding: 0 13px; font-family: 'Assistant', system-ui, sans-serif; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+            <sc-if value="{{ s.hasUpload }}" hint-placeholder-val="{{ true }}"><div class="press" style="flex: 0 0 20%; box-sizing: border-box; height: 54px; border-radius: 16px; cursor: pointer; background: rgba(67,124,89,0.08); border: 1.5px dashed rgba(67,124,89,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2C5A3E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5"></path><path d="M8 9l4-4 4 4"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
+              <div style="font-size: 9.5px; font-weight: 600; color: #2C5A3E;">עיצוב</div>
+            </div></sc-if>
+          </div></sc-if>
 
         </div>
       </sc-for>
@@ -644,7 +650,7 @@ const BOXES = [
       { kind: 'title', label: 'מיתוג/הקדשה אישית' },
       { kind: 'note',  label: 'הכניסו את המלל והעיצוב שתרצו. לא בטוחים לגבי העיצוב?', tight: true },
       { kind: 'note',  label: 'אנחנו נשלח לכם 5 אופציות לאישור.', tight: true },
-      { kind: 'text',  id: 'ded', ph: 'למשל: כיתה ב׳2 · שנה טובה מגן רימון' }
+      { kind: 'text',  id: 'ded', ph: 'למשל: כיתה ב׳2 · שנה טובה מגן רימון', upload: true }
     ]
   },
   {
@@ -886,7 +892,7 @@ class Component extends DCLogic {
       isPair: false, isRow: false, isImages: false, isGrid: false, isFine: false,
       label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
       radius: '999px', maxW: 'none',
-      value: '', unit: '', ph: '', decOp: '1', mt: '0px',
+      value: '', unit: '', ph: '', decOp: '1', mt: '0px', hasUpload: false,
       pad: '12px 14px', gap: '18px', btn: '40px', numW: '74px', numSize: '26px',
       bg: IDLE_BG, bd: IDLE_BD, fg: '#4A4254', w: '400',
       set: () => {}, dec: () => {}, inc: () => {}, open: () => {}
@@ -922,6 +928,7 @@ class Component extends DCLogic {
     if (s.kind === 'text') {
       return Object.assign(base, {
         isText: true, ph: s.ph, value: this.state.picks[s.id] || '',
+        hasUpload: !!s.upload,                 /* העלאת עיצוב · לא חובה */
         set: (e) => this.setPick(s.id, e.target.value)
       });
     }
