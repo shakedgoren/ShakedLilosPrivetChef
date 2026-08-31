@@ -432,7 +432,10 @@
 const COATS  = ['שומשום', 'קמח', 'קלאסית'];
 const CAKES  = ['דבש', 'שוקולד', 'ברד פודינג', 'ביסקוויטים', 'מייפל אגוזים'];
 const WINES  = ['לבן', 'אדום', 'רוזה', 'שמפנייה'];
-const MAINS  = ['5 יח׳ ירכי עוף ברוטב מתוק', '5 מנות מפרום טריפוליטאי'];
+const MAIN_CHICKEN = '5 יח׳ ירכי עוף ברוטב מתוק';
+const MAIN_MAFROUM = '5 מנות מפרום טריפוליטאי';
+const MAINS = [MAIN_CHICKEN, MAIN_MAFROUM];
+const MAFROUM_ADD = 20;      /* עוף 339 · מפרום 359 */
 
 const SALADS = [
   { n: 'מטבוחה של בית',       d: 'עגבניות, פלפל אדום, שום, שמן ותבלינים, מבושלים יחד לאט עד לקבלת מטבוחה עשירה, עמוקה ומלאת טעם.' },
@@ -620,7 +623,8 @@ function priceOf(b, picks) {
     const q = picks.qty || 25;
     return q * (q > EVENT_BULK_FROM ? EVENT_BULK : EVENT_PRICE);
   }
-  return b.base;
+  const mafroum = picks.main === MAIN_MAFROUM ? MAFROUM_ADD : 0;
+  return b.base + mafroum;
 }
 
 /* איסוף ומשלוח · חלון המארזים */
@@ -803,7 +807,8 @@ class Component extends DCLogic {
         isChips: true,
         options: s.options.map((o) => {
           const c = chip(this.state.picks[s.id] === o);
-          return { name: o, desc: '', bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o) };
+          const add = (s.id === 'main' && o === MAIN_MAFROUM) ? '  +' + MAFROUM_ADD + ' ₪' : '';
+          return { name: o + add, desc: '', bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o) };
         })
       });
     }
