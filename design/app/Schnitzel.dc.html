@@ -108,12 +108,14 @@
 
       <div style="box-sizing: border-box; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 11px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
         <div style="font-size: 10.5px; letter-spacing: 0.2em; font-weight: 600; color: #A69EAE;">איזה שניצל</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;">
           <sc-for list="{{ boxTypes }}" as="t" hint-placeholder-count="2">
-            <div onClick="{{ t.pick }}" class="press" style="min-height: 52px; box-sizing: border-box; border-radius: 16px; padding: 9px 13px; cursor: pointer; display: flex; align-items: center; gap: 10px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
-              <div style="flex-grow: 1; min-width: 0; font-size: 13.5px; line-height: 1.3; font-weight: {{ t.w }};">{{ t.name }}</div>
-              <div style="flex-shrink: 0; border-radius: 8px; padding: 3px 9px; background: rgba(255,255,255,0.82); font-size: 12.5px; font-weight: 600; color: #416D9E; font-variant-numeric: tabular-nums;">{{ t.price }}</div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
+            <div onClick="{{ t.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 11px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
+              <div style="width: 100%; height: 76px; border-radius: 14px; border: 1.5px dashed rgba(65,109,158,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(43,74,110,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg>
+              </div>
+              <div style="font-size: 13px; font-weight: {{ t.w }}; color: {{ t.fg }}; line-height: 1.25; text-align: center; min-height: 33px; display: flex; align-items: center;">{{ t.name }}</div>
+              <div style="font-size: 13px; color: #416D9E; font-weight: 600;">{{ t.price }}</div>
             </div>
           </sc-for>
         </div>
@@ -677,7 +679,7 @@ class Component extends DCLogic {
       }),
       boxTypes: SCH_TYPES.map((t, k) => {
         const c = chip(st.box.type === k);
-        return { name: t.name, price: t.box + ' ₪', bg: c.bg, bd: c.bd, w: c.w, pick: () => this.openBoxPop(k) };
+        return { name: t.name, price: t.box + ' ₪', bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.openBoxPop(k) };
       }),
       boxHasType: boxHas,
       boxTopsLabel: boxHas ? (st.box.tops.length ? st.box.tops.join(' · ') : 'בלי תוספות') : '',
