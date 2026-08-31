@@ -49,38 +49,25 @@
     <div style="font-weight: 600; font-size: 20px; letter-spacing: -0.015em; line-height: 1.2;">{{ headTitle }}</div>
   </div>
 
-  <!-- ══════════ מסך הקטגוריות ══════════ -->
-  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 78px; bottom: 104px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+  <div style="position: absolute; top: 78px; bottom: 170px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; padding: 0 4px; text-align: center;">
-      <div style="font-weight: 600; font-size: 15px; line-height: 1.35;">🔥 אירוח שלא שוכחים</div>
-      <div style="font-weight: 300; font-size: 13px; line-height: 1.62; color: #7D7488;">שני מסלולים, אותה תשומת לב לכל פרט.<br>אני מגיעה אליכם עם הכל, מבשלת במקום ומשאירה אתכם רק ליהנות.</div>
+      <div style="font-weight: 600; font-size: 15px; line-height: 1.35;">כשהאוכל הופך לאירוע המרכזי • חוויה בלתי נשכחת 🔥</div>
+      <div style="font-weight: 300; font-size: 13px; line-height: 1.62; color: #7D7488;">יש אירועים שנהנים מהם ויש אירועים שזוכרים לנצח!<br>בין אם תבחרו בארוחת שף פרטית או בעמדת טאבון מרהיבה,<br>אנחנו יוצרים חוויה קולינרית שממשיכה ללוות את האורחים גם הרבה אחרי שהאירוע מסתיים!</div>
       <div style="font-weight: 500; font-size: 13px; line-height: 1.4; color: #A85A28;">בוחרים את המסלול שלכם</div>
     </div>
 
     <div style="flex-shrink: 0; height: 12px;"></div>
 
-    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;">
-      <sc-for list="{{ boxes }}" as="b" hint-placeholder-count="3">
-        <div onClick="{{ b.pick }}" class="press" style="box-sizing: border-box; border-radius: 22px; padding: 13px 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-          <div style="width: 60px; height: 60px; flex-shrink: 0; border-radius: 16px; border: 1.5px dashed rgba(168,90,40,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg>
-          </div>
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-weight: 600; font-size: 14.5px; line-height: 1.25;">{{ b.name }}</div>
-            <div style="font-size: 11px; font-weight: 300; line-height: 1.45; color: #7D7488;">{{ b.desc }}</div>
-            <div style="text-align: left; font-size: 12.5px; color: #A85A28; font-weight: 600;">{{ b.price }}</div>
-          </div>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
+    <div style="flex-shrink: 0; height: 52px; box-sizing: border-box; border-radius: 18px; padding: 5px; display: flex; gap: 5px; background: rgba(168,90,40,0.09); border: 1px solid rgba(168,90,40,0.18);">
+      <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+        <div onClick="{{ m.pick }}" class="press" style="flex-grow: 1; border-radius: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 260ms ease, box-shadow 260ms ease; background: {{ m.bg }}; box-shadow: {{ m.sh }};">
+          <div style="font-size: 14.5px; font-weight: {{ m.w }}; color: {{ m.fg }};">{{ m.label }}</div>
         </div>
       </sc-for>
     </div>
 
-    <div style="flex-shrink: 0; height: 12px;"></div>
-  </div></sc-if>
-
-  <!-- ══════════ מסך הקטגוריה ══════════ -->
-  <sc-if value="{{ isBox }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 78px; bottom: 170px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
+    <div style="flex-shrink: 0; height: 14px;"></div>
 
     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 3px; padding: 0 4px; text-align: center;">
       <sc-for list="{{ intro }}" as="t" hint-placeholder-count="3">
@@ -231,7 +218,7 @@
       <div class="glow" style="color: #7A3D18; font-weight: 600; font-size: 15.5px; white-space: nowrap;">המשך</div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A3D18" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
     </div>
-  </div></sc-if>
+  </div>
 
   <sc-if value="{{ popOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ popClose }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
   <div style="position: absolute; z-index: 31; top: 56px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
@@ -575,7 +562,7 @@ const pick3 = (id, list, cap) => ({ kind: 'count', id: id, options: list, step: 
 
 const BOXES = [
   {
-    key: 'chef', name: 'ארוחת שף פרטית', base: 0, price: 'החל מ- 250 ש״ח לסועד',
+    key: 'chef', short: 'ארוחת שף', name: 'ארוחת שף פרטית', base: 0, price: 'החל מ- 250 ש״ח לסועד',
     desc: 'שף פרטית בבית שלכם · 2 עד 16 סועדים.',
     title: 'ארוחת שף פרטית 👨🏻‍🍳',
     intro: [
@@ -600,7 +587,7 @@ const BOXES = [
     ]
   },
   {
-    key: 'taboon', name: 'עמדת טאבון', base: 0, price: '55 ש״ח לסועד',
+    key: 'taboon', short: 'עמדת טאבון', name: 'עמדת טאבון', base: 0, price: '55 ש״ח לסועד',
     desc: 'פיצות נאפות במקום · 10 עד 25 סועדים.',
     title: 'עמדת טאבון 🔥',
     intro: [
@@ -697,9 +684,16 @@ const sumOf = (map) => Object.keys(map || {}).reduce((s, k) => s + map[k], 0);
 class Component extends DCLogic {
   constructor(props) {
     super(props);
+    const first = {};
+    BOXES[0].sections.forEach((x) => {
+      if (x.kind === 'count' || x.kind === 'row') first[x.id] = {};
+      if (x.kind === 'stepper') first[x.id] = x.min;
+      if (x.kind === 'tiers')   first[x.id] = null;
+      if (x.kind === 'text')    first[x.id] = '';
+    });
     this.state = {
-      cur: null,               /* null = מסך הקטגוריות · אחרת האינדקס של הקטגוריה */
-      picks: {},
+      cur: 0,                  /* המסלול הפעיל · 0 ארוחת שף, 1 עמדת טאבון */
+      picks: first,
       pop: null,               /* {id, sel} · חלונית בחירה · null = סגורה */
       step: 0, ship: null, time: null, clock: '10:00',
       city: CITIES[0], addr: '', pay: null
@@ -707,7 +701,7 @@ class Component extends DCLogic {
   }
 
   /* פתיחת קטגוריה · ערכי הפתיחה נגזרים מהמפרט שלה */
-  openBox(k) {
+  freshPicks(k) {
     const picks = {};
     BOXES[k].sections.forEach((s) => {
       if (s.kind === 'count' || s.kind === 'row') picks[s.id] = {};
@@ -715,11 +709,15 @@ class Component extends DCLogic {
       if (s.kind === 'tiers')   picks[s.id] = null;
       if (s.kind === 'text')    picks[s.id] = '';
     });
-    this.setState({ cur: k, picks: picks, pop: null, step: 0 });
+    return picks;
   }
-  backToList() { this.setState({ cur: null, picks: {}, pop: null, step: 0 }); }
+  /* החלפת מסלול מאפסת את הבחירות · אין שדות משותפים בין השניים */
+  pickTrack(k) {
+    if (k === this.state.cur) return;
+    this.setState({ cur: k, picks: this.freshPicks(k), pop: null, step: 0 });
+  }
 
-  box() { return this.state.cur === null ? null : BOXES[this.state.cur]; }
+  box() { return BOXES[this.state.cur]; }
 
   openPop(id)  { this.setState({ pop: { id: id, sel: this.state.picks[id] || null } }); }
   closePop()   { this.setState({ pop: null }); }
@@ -966,7 +964,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     const b = this.box();
-    const total = b ? priceOf(b, st.picks) : 0;
+    const total = priceOf(b, st.picks);
     const ready = this.ready();
 
     const deliv = st.ship === 'deliv';
@@ -978,10 +976,10 @@ class Component extends DCLogic {
     const addrOk = a.length >= 4 && /\d/.test(a);
 
     /* כותרת הקטגוריה מוצגת בשתי שורות · שורה שנייה מתחת לכותרת המסך */
-    const secs = b ? b.sections.filter((s) => this.shows(s)).map((s) => this.sectionVals(s)) : [];
+    const secs = b.sections.filter((s) => this.shows(s)).map((s) => this.sectionVals(s));
 
     const pop = st.pop;
-    const popSec = (pop && b) ? b.sections.filter((x) => x.id === pop.id)[0] : null;
+    const popSec = pop ? b.sections.filter((x) => x.id === pop.id)[0] : null;
 
     return {
       popOpen: pop !== null,
@@ -995,16 +993,19 @@ class Component extends DCLogic {
       popClose: () => this.closePop(),
       popAdd: () => this.popCommit(),
 
-      isList: b === null,
-      isBox:  b !== null,
-      headTitle: b ? b.title : 'שף וטאבון',
-      goBack: () => this.backToList(),
+      headTitle: 'פינת השף',
+      goBack: () => {},
 
-      boxes: BOXES.map((x, k) => ({
-        name: x.name, desc: x.desc, price: x.price, pick: () => this.openBox(k)
+      modes: BOXES.map((x, k) => ({
+        label: x.short,
+        pick: () => this.pickTrack(k),
+        bg: st.cur === k ? '#FFFFFF' : 'transparent',
+        sh: st.cur === k ? '0 2px 6px -2px rgba(96,80,132,0.35)' : 'none',
+        fg: st.cur === k ? '#7A3D18' : '#8A8194',
+        w:  st.cur === k ? '600' : '400'
       })),
 
-      intro: b ? b.intro : [],
+      intro: b.intro,
       sections: secs,
 
       total: total,
@@ -1032,7 +1033,7 @@ class Component extends DCLogic {
       addrNext:  () => { if (addrOk) this.setState({ step: 4 }); },
       placeOrder: () => this.setState({ step: 6 }),
 
-      countLabel: b ? b.name : '',
+      countLabel: b.name,
 
       clock: st.clock,
       setClock: (e) => this.setState({ clock: e.target.value }),
@@ -1075,7 +1076,7 @@ class Component extends DCLogic {
         };
       }),
 
-      lines: b ? [{ qty: 1, name: b.name, sum: total }] : []
+      lines: [{ qty: 1, name: b.name, sum: total }]
     };
   }
 }
