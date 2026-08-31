@@ -63,29 +63,24 @@
     <div style="flex-shrink: 0; height: 6px;"></div>
     <div style="flex-shrink: 0; font-size: 11px; font-weight: 300; line-height: 1.5; color: #A79FB2; padding: 0 4px; text-align: center;">העיצוב בתמונה להמחשה • כל מגש נבנה באופן ייחודי לפי פירות העונה.</div>
     <div style="flex-shrink: 0; height: 6px;"></div>
-    <div style="flex-shrink: 0; font-size: 12.5px; font-weight: 600; color: #B04A76; text-align: center;">לפרטים נוספים: 052-2958511 📞</div>
+    <div style="flex-shrink: 0; align-self: center; border-radius: 999px; padding: 8px 18px; background: rgba(176,74,118,0.11); border: 1.5px solid rgba(176,74,118,0.3);">
+      <div style="font-size: 14.5px; font-weight: 700; color: #7A2E4E; letter-spacing: 0.01em;">לפרטים נוספים: 052-2958511 📞</div>
+    </div>
 
     <div style="flex-shrink: 0; height: 16px;"></div>
 
-    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
+    <div style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
       <sc-for list="{{ trays }}" as="t" hint-placeholder-count="4">
-        <div style="box-sizing: border-box; border-radius: 22px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-          <div style="width: 62px; height: 62px; flex-shrink: 0; border-radius: 16px; border: 1.5px dashed rgba(176,74,118,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(122,46,78,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg>
-          </div>
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
-            <div style="font-weight: 600; font-size: 14.5px; line-height: 1.2;">{{ t.name }}</div>
-            <div style="font-size: 11px; font-weight: 300; line-height: 1.45; color: #7D7488;">{{ t.desc }}</div>
-            <div style="font-size: 13px; color: #B04A76; font-weight: 600;">{{ t.price }} ₪</div>
-          </div>
-          <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 2px;">
-            <div onClick="{{ t.dec }}" class="press" style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 30%), radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FDF7FA 45%, #F7E9F0 100%); box-shadow: inset -3px -4px 8px rgba(190,125,155,0.2), inset 2px 3px 6px rgba(255,255,255,0.95), 0 6px 13px -8px rgba(170,95,135,0.45); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{ t.ink }}" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg>
-            </div>
-            <div style="width: 22px; text-align: center; font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; color: {{ t.ink }};">{{ t.qty }}</div>
-            <div onClick="{{ t.inc }}" class="press" style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 27%), radial-gradient(circle at 34% 28%, #FDF4F8 0%, #F8E4EE 30%, #EFC2D6 66%, #E7ADC6 100%); box-shadow: inset -4px -5px 10px rgba(176,74,118,0.34), inset 3px 4px 8px rgba(255,255,255,0.9), 0 8px 16px -9px rgba(176,74,118,0.55); display: flex; align-items: center; justify-content: center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A2E4E" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-            </div>
+        <div style="box-sizing: border-box; border-radius: 20px; padding: 9px; display: flex; flex-direction: column; gap: 7px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
+          <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 15px; border: 1.5px dashed rgba(176,74,118,0.34); background: rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(122,46,78,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
+          <div style="font-size: 13.5px; font-weight: {{ t.w }}; color: {{ t.fg }}; line-height: 1.2; text-align: center; min-height: 33px; display: flex; align-items: center; justify-content: center;">{{ t.name }}</div>
+          <div style="font-size: 10.5px; font-weight: 300; line-height: 1.45; color: #7D7488; text-align: center; min-height: 46px;">{{ t.desc }}</div>
+          <div style="font-size: 10.5px; font-weight: 400; line-height: 1.4; color: #9A93A6; text-align: center;">{{ t.serves }}</div>
+          <div style="font-size: 12.5px; font-weight: 600; color: #B04A76; text-align: center;">{{ t.price }} ₪</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div onClick="{{ t.inc }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(176,74,118,0.13); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A2E4E" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+            <div style="flex-grow: 1; min-width: 0; text-align: center; font-size: 13px; font-weight: 700; color: #7A2E4E; font-variant-numeric: tabular-nums;">{{ t.qtyLabel }}</div>
+            <div onClick="{{ t.dec }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ t.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
           </div>
         </div>
       </sc-for>
@@ -337,7 +332,7 @@
         <sc-if value="{{ isPickup }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">כתובת לאיסוף</div>
-          <div style="font-size: 13.5px; font-weight: 600;">בתיאום עם מיכל · 052-2958511</div>
+          <div style="font-size: 13.5px; font-weight: 600;">נופר 25 יבנה</div>
         </div>
         <div style="width: 100%; height: 148px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(176,74,118,0.36); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(122,46,78,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5z"></path><path d="M9 4v13M15 6.5v13"></path></svg>
@@ -544,13 +539,21 @@ class Component extends DCLogic {
         .filter((l) => l.qty > 0)
     };
 
-    vals.trays = ITEMS.map((it, i) => ({
-      name: it.name, desc: it.desc, price: it.price,
-      qty: st.qty[i],
-      ink: st.qty[i] === 0 ? OFF : ON,
-      inc: () => this.bump(i, 1),
-      dec: () => this.bump(i, -1)
-    }));
+    vals.trays = ITEMS.map((it, i) => {
+      const parts = it.desc.split(' • ');           /* התיאור וכמות הסועדים בשתי שורות */
+      const q = st.qty[i];
+      return {
+        name: it.name, desc: parts[0], serves: parts[1] || '', price: it.price,
+        qty: q, qtyLabel: q === 0 ? '0' : String(q),
+        decOp: q > 0 ? '1' : '0.4',
+        bg: q > 0 ? 'rgba(176,74,118,0.1)' : 'rgba(255,255,255,0.7)',
+        bd: q > 0 ? 'rgba(176,74,118,0.42)' : 'rgba(130,112,162,0.16)',
+        fg: q > 0 ? '#7A2E4E' : '#4A4254',
+        w:  q > 0 ? '600' : '400',
+        inc: () => this.bump(i, 1),
+        dec: () => this.bump(i, -1)
+      };
+    });
 
     return vals;
   }
