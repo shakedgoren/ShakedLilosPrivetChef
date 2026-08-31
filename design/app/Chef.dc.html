@@ -128,7 +128,7 @@
 
           <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
-              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: {{ s.radius }}; padding: 8px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: {{ s.radius }}; padding: 8px 6px; opacity: {{ o.op }}; cursor: {{ o.cur }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.name }}</div>
                 <sc-if value="{{ o.hasSub }}" hint-placeholder-val="{{ true }}"><div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.sub }}</div></sc-if>
               </div>
@@ -163,7 +163,7 @@
 
           <sc-if value="{{ s.isTiers }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
-              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 18px; padding: 12px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 18px; padding: 12px 6px; opacity: {{ o.op }}; cursor: {{ o.cur }}; display: flex; flex-direction: column; align-items: center; gap: 4px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.25; text-align: center;">{{ o.name }}</div>
                 <div style="font-size: 12px; line-height: 1;">✨</div>
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px 0;">
@@ -704,16 +704,17 @@ const BOXES = [
         { kind: 'note',  label: 'זו ההחלטה שקובעת את אופי כל הערב.', tight: true },
         { kind: 'pair',  id: 'concept', options: CONCEPTS.map((c) => ({ n: c.n, d: c.d })), cols: 3, req: true },
         { kind: 'title', label: 'סגנון' },
-        { kind: 'grid',  id: 'style', options: STYLES, cols: 4, boxy: true, req: true },
+        { kind: 'grid',  id: 'style', options: STYLES, cols: 4, boxy: true, req: true,
+          lock: 'concept', allow: (p) => p.concept === 'בשרי' ? STYLES : STYLES.slice(0, 2) },
         { kind: 'title', label: 'איך המסלול שלנו הולך להראות' },
         { kind: 'fine',  label: '* המחיר משתנה בהתאם לכמות הסועדים *' },
-        { kind: 'tiers', id: 'tier', options: TIERS, req: true }
+        { kind: 'tiers', id: 'tier', options: TIERS, req: true, lock: 'concept' }
       ],
       [
         { kind: 'head',  label: 'מה הטעמים המועדפים עליכם' },
         { kind: 'note',  label: 'כאן אני מבינה עד כמה להעז.', tight: true },
-        { kind: 'title', label: 'איך אתם אוהבים את הבשר שלכם', when: { id: 'concept', not: 'חלבי · צמחוני' } },
-        { kind: 'multi', id: 'meatDone', options: MEAT_DONE, when: { id: 'concept', not: 'חלבי · צמחוני' } },
+        { kind: 'title', label: 'איך אתם אוהבים את הבשר שלכם', when: { id: 'concept', is: 'בשרי' } },
+        { kind: 'multi', id: 'meatDone', options: MEAT_DONE, when: { id: 'concept', is: 'בשרי' } },
         { kind: 'title', label: 'איך אתם אוהבים את הדגים שלכם', when: { id: 'concept', is: 'חלבי · דגים' } },
         { kind: 'multi', id: 'fishDone', options: FISH_DONE, when: { id: 'concept', is: 'חלבי · דגים' } },
         { kind: 'title', label: 'דגים שאתם אוהבים במיוחד', when: { id: 'concept', is: 'חלבי · דגים' } },
@@ -962,6 +963,11 @@ class Component extends DCLogic {
   setPick(id, v) {
     const picks = Object.assign({}, this.state.picks);
     picks[id] = v;
+    /* ציר חדש · סגנון שכבר אינו זמין מתאפס */
+    if (id === 'concept' && picks.style) {
+      const ok = v === 'בשרי' ? STYLES : STYLES.slice(0, 2);
+      if (ok.indexOf(picks.style) === -1) picks.style = null;
+    }
     this.setState({ picks: picks });
   }
 
@@ -1085,12 +1091,16 @@ class Component extends DCLogic {
         isTiers: true,
         options: s.options.map((o, k) => {
           const c = chip(this.state.picks[s.id] === o);
+          const allowed = !s.lock || !!this.state.picks[s.lock];
           return {
             name: o,
             lines: (TIER_LINES[k] || []).map((t) => ({ t: t })),
             price: fam ? CHEF_PRICES[fam][chefBracket(g)][k] : '—',
-            bg: c.bg, bd: c.bd, fg: c.fg, w: c.w,
-            pick: () => this.setPick(s.id, o)
+            bg: allowed ? c.bg : 'rgba(130,112,162,0.05)',
+            bd: allowed ? c.bd : 'rgba(130,112,162,0.12)',
+            fg: allowed ? c.fg : '#BDB7C6',
+            w: c.w, op: allowed ? '1' : '0.55', cur: allowed ? 'pointer' : 'default',
+            pick: allowed ? () => this.setPick(s.id, o) : () => {}
           };
         })
       });
@@ -1223,10 +1233,19 @@ class Component extends DCLogic {
         maxW: s.narrow ? '272px' : 'none',
         options: s.options.map((o, k) => {
           const c = chip(this.state.picks[s.id] === o);
-          const pick = s.opens
+          const locked = s.lock && !this.state.picks[s.lock];
+          const allowed = !locked && (!s.allow || s.allow(this.state.picks).indexOf(o) !== -1);
+          const pick = !allowed ? () => {} : (s.opens
             ? () => { this.setPick(s.id, o); this.openPop(s.opens); }
-            : () => this.setPick(s.id, o);
-          return { name: o, sub: s.subs ? s.subs[k] : '', hasSub: !!s.subs, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: pick };
+            : () => this.setPick(s.id, o));
+          return {
+            name: o, sub: s.subs ? s.subs[k] : '', hasSub: !!s.subs,
+            bg: allowed ? c.bg : 'rgba(130,112,162,0.05)',
+            bd: allowed ? c.bd : 'rgba(130,112,162,0.12)',
+            fg: allowed ? c.fg : '#BDB7C6',
+            w: c.w, op: allowed ? '1' : '0.55', cur: allowed ? 'pointer' : 'default',
+            pick: pick
+          };
         })
       });
     }
