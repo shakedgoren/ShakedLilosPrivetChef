@@ -53,9 +53,9 @@
   <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 78px; bottom: 104px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; padding: 0 4px; text-align: center;">
-      <div style="font-weight: 600; font-size: 15px; line-height: 1.35;">✨ יש רגעים שמגיע להם יותר</div>
+      <div style="font-weight: 600; font-size: 15px; line-height: 1.35;">✨ יש רגעים שמגיע להם יותר ✨</div>
       <div style="font-weight: 300; font-size: 13px; line-height: 1.62; color: #7D7488;">לא עוד מתנה. חוויה שלמה שמגיעה עד השולחן. 🤍<br>מארזי ספיישל עם שילובים מפתיעים, טעמים מפנקים וכל מה שצריך כדי להפוך כל רגע לרגע שאי אפשר לשכוח.</div>
-      <div style="font-weight: 500; font-size: 13px; line-height: 1.4; color: #437C59;">בוחרים את הספיישל שלכם ✨</div>
+      <div style="font-weight: 500; font-size: 13px; line-height: 1.4; color: #437C59;">בוחרים את הספיישל שלכם</div>
     </div>
 
     <div style="flex-shrink: 0; height: 12px;"></div>
@@ -103,6 +103,16 @@
 
           <sc-if value="{{ s.isPrice }}" hint-placeholder-val="{{ true }}"><div style="font-size: 12.5px; font-weight: 600; line-height: 1.5; color: #437C59; padding: 0 2px; text-align: center;">{{ s.label }}</div></sc-if>
 
+          <sc-if value="{{ s.isFine }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; font-weight: 400; font-style: italic; line-height: 1.5; color: #9A93A6; text-align: center; padding: 0 6px;">{{ s.label }}</div></sc-if>
+
+          <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+            <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
+              <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: 999px; padding: 0 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
+                <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.name }}</div>
+              </div>
+            </sc-for>
+          </div></sc-if>
+
           <sc-if value="{{ s.isChips }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; gap: 7px; padding: 0 2px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
               <div onClick="{{ o.pick }}" class="press" style="height: 38px; box-sizing: border-box; border-radius: 999px; padding: 0 14px; cursor: pointer; display: flex; align-items: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
@@ -114,7 +124,7 @@
           <sc-if value="{{ s.isCards }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="4">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 18px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; gap: 7px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
-                <div style="width: 100%; height: 64px; border-radius: 13px; border: 1.5px dashed rgba(67,124,89,0.34); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
+                <div style="width: 100%; height: 140px; border-radius: 13px; border: 1.5px dashed rgba(67,124,89,0.34); background: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
                 <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.25; text-align: center;">{{ o.name }}</div>
                 <div style="font-size: 10.5px; font-weight: 300; line-height: 1.4; color: #7D7488; text-align: center;">{{ o.desc }}</div>
               </div>
@@ -169,15 +179,15 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isStepper }}" hint-placeholder-val="{{ true }}"><div style="box-sizing: border-box; border-radius: 20px; padding: 12px 14px; display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; gap: 18px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-            <div onClick="{{ s.dec }}" class="press" style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; opacity: {{ s.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+          <sc-if value="{{ s.isStepper }}" hint-placeholder-val="{{ true }}"><div style="box-sizing: border-box; align-self: center; border-radius: 18px; padding: {{ s.pad }}; display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; gap: {{ s.gap }}; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
+            <div onClick="{{ s.dec }}" class="press" style="width: {{ s.btn }}; height: {{ s.btn }}; border-radius: 50%; cursor: pointer; opacity: {{ s.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
             </div>
-            <div style="min-width: 74px; display: flex; flex-direction: column; align-items: center; gap: 1px;">
-              <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1;">{{ s.value }}</div>
-              <div style="font-size: 11.5px; font-weight: 300; color: #7D7488;">{{ s.unit }}</div>
+            <div style="min-width: {{ s.numW }}; display: flex; flex-direction: column; align-items: center; gap: 0px;">
+              <div style="font-size: {{ s.numSize }}; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1;">{{ s.value }}</div>
+              <div style="font-size: 10.5px; font-weight: 300; color: #7D7488;">{{ s.unit }}</div>
             </div>
-            <div onClick="{{ s.inc }}" class="press" style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; background: rgba(67,124,89,0.13); display: flex; align-items: center; justify-content: center;">
+            <div onClick="{{ s.inc }}" class="press" style="width: {{ s.btn }}; height: {{ s.btn }}; border-radius: 50%; cursor: pointer; background: rgba(67,124,89,0.13); display: flex; align-items: center; justify-content: center;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2C5A3E" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
             </div>
           </div></sc-if>
@@ -527,7 +537,9 @@ const BOXES = [
     desc: 'חלות וסלטים בבחירה חופשית, בלי מארז ובלי מחויבות.',
     title: 'קחו כמה שבא לכם 😍',
     intro: [
-      BODY('בוחרים את החלות והסלטים שאוהבים, בדיוק בכמות שמתאימה לכם. חלות טריות ורכות וסלטים ביתיים עשירים בטעם ומוכנים להגיע אליכם ישירות לשולחן.')
+      BODY('בוחרים את החלות והסלטים שאוהבים, בדיוק בכמות שמתאימה לכם.'),
+      BODY('חלות טריות ורכות וסלטים ביתיים עשירים בטעם,'),
+      BODY('מוכנים להגיע אליכם ישירות לשולחן.')
     ],
     sections: [
       { kind: 'title', label: 'חלה משפחתית' },
@@ -603,7 +615,7 @@ const BOXES = [
   },
   {
     key: 'challah', name: 'חלה לכל אירוע', base: 400, price: 'החל מ14 ש״ח ליח׳',
-    desc: 'חלה שהופכת כל רגע למיוחד, בעיצוב אישי ובהתאמה מושלמת לאירוע שלכם.',
+    desc: 'מארזי חלות שהופכים מיתוג/הקדשה אישית',
     title: 'חלה לכל אירוע',
     intro: [
       LEAD('אין אירוע קטן מדי בשביל חלה גדולה מהלב. 🤍'),
@@ -612,14 +624,16 @@ const BOXES = [
     sections: [
       { kind: 'title', label: 'כמות' },
       { kind: 'note',  label: 'מינימום 25 יחידות · 16 ₪ ליח׳ (מעל 50 יחידות · 14 ₪ ליח׳)', tight: true },
-      { kind: 'stepper', id: 'qty', min: 25, step: 1, unit: 'יחידות' },
+      { kind: 'stepper', id: 'qty', min: 25, step: 1, unit: 'יחידות', slim: true },
+      { kind: 'fine', label: 'מחירים מותאמים להזמנה בכמויות גדולות' },
       { kind: 'title', label: 'סוג חלה' },
-      { kind: 'chips', id: 'size', options: ['חלה אישית מוגדלת', 'זוג חלות קטנטנות'], opens: 'coat' },
+      { kind: 'grid', id: 'size', options: ['חלה אישית מוגדלת', 'זוג חלות קטנטנות'], opens: 'coat' },
       { kind: 'hidden', id: 'coat', label: 'ציפוי החלה', options: COATS },
       { kind: 'title', label: 'סוג האירוע' },
       { kind: 'cards', id: 'event', options: EVENTS },
       { kind: 'title', label: 'מיתוג/הקדשה אישית' },
-      { kind: 'note',  label: 'הכניסו את המלל והעיצוב שתרצו. לא בטוחים לגבי העיצוב? אנחנו נשלח לכם 5 אופציות לאישור.', tight: true },
+      { kind: 'note',  label: 'הכניסו את המלל והעיצוב שתרצו. לא בטוחים לגבי העיצוב?', tight: true },
+      { kind: 'note',  label: 'אנחנו נשלח לכם 5 אופציות לאישור.', tight: true },
       { kind: 'text',  id: 'ded', ph: 'למשל: כיתה ב׳2 · שנה טובה מגן רימון' }
     ]
   },
@@ -632,18 +646,18 @@ const BOXES = [
       BODY('מארז מפנק ומלא באהבה, שנועד ליצור את הרגע המושלם סביב השולחן:'),
       ITEM('חלת ענן משפחתית • רכה, אוורירית ומפנקת'),
       ITEM('עוגה זוגית • משהו מתוק לחלוק ביחד'),
-      ITEM('🍷 בקבוק יין • להרים לחיים ולרגעים הטובים'),
+      ITEM('בקבוק יין • להרים לחיים ולרגעים הטובים'),
       ITEM('מארז הדלקת נרות שבת • להכניס לבית אור, שלווה וברכה'),
       BODY('הכול במארז אחד שמזמין לעצור לרגע, להתכנס יחד וליהנות מהדברים שבאמת חשובים.')
     ],
     sections: [
       { kind: 'images', count: 1, h: '150px' },
       { kind: 'title', label: 'חלה' },
-      { kind: 'chips', id: 'coat', options: COATS },
+      { kind: 'grid', id: 'coat', options: COATS },
       { kind: 'title', label: 'עוגה' },
-      { kind: 'chips', id: 'cake', options: CAKES },
+      { kind: 'grid', id: 'cake', options: CAKES },
       { kind: 'title', label: 'יין' },
-      { kind: 'chips', id: 'wine', options: WINES },
+      { kind: 'grid', id: 'wine', options: WINES },
       { kind: 'title', label: 'הקדשה אישית' },
       { kind: 'text',  id: 'ded', ph: 'למשל: לאמא הכי טובה בעולם, שנה טובה' }
     ]
@@ -653,14 +667,18 @@ const BOXES = [
     desc: 'הדרך הכי מתוקה לפתוח את השנה! חלה מתוקה חגיגית, צנצנת דבש והמון אהבה באריזה אחת.',
     title: 'טעם של שנה טובה',
     intro: [
-      LEAD('🍯 טעם של שנה טובה 🍎✨'),
+      LEAD('טעם של שנה טובה 🍎'),
       BODY('פותחים את השנה החדשה עם מתיקות שאי אפשר להפסיק לחייך ממנה 🤍'),
-      BODY('חלת דבש ושקדים עגולה, רכה ומפנקת, שבמרכזה מחכה צנצנת דבש מתוקה ודבשון קטן להגשה מושלמת — כי אם כבר לאחל שנה טובה, אז שתהיה מתוקה, שופעת ומלאה בטעם טוב.'),
-      BODY('🎁 המארז המושלם למתנה לראש השנה — למשפחה, לחברים, לעובדים או פשוט לפנק מישהו שאוהבים.'),
+      BODY('חלת דבש ושקדים עגולה, רכה ומפנקת,'),
+      BODY('שבמרכזה מונחת צנצנת דבש מתוקה'),
+      BODY('ודבשון קטן להגשה מושלמת!'),
+      BODY('כי אם כבר לאחל שנה טובה, אז שתהיה מתוקה, שופעת ומלאה בטעם טוב.'),
+      BODY('🎁 המארז המושלם למתנה לראש השנה • למשפחה, לחברים, לעובדים או פשוט לפנק מישהו שאוהבים.'),
       LEAD('שנה טובה מתחילה בביס הראשון. 🍯')
     ],
     sections: [
-      { kind: 'images', count: 1, h: '150px' }
+      { kind: 'images', count: 1, h: '190px' },
+      { kind: 'fine', label: 'מחירים מותאמים להזמנה בכמויות גדולות' }
     ]
   }
 ];
@@ -812,7 +830,7 @@ class Component extends DCLogic {
     if (!b) return false;
     if (b.key === 'free') return priceOf(b, this.state.picks) > 0;
     return b.sections.every((s) => {
-      if (s.kind === 'chips' || s.kind === 'cards' || s.kind === 'pair' || s.kind === 'hidden') return !!this.state.picks[s.id];
+      if (s.kind === 'chips' || s.kind === 'grid' || s.kind === 'cards' || s.kind === 'pair' || s.kind === 'hidden') return !!this.state.picks[s.id];
       if ((s.kind === 'count' || s.kind === 'row') && s.cap !== null) return sumOf(this.state.picks[s.id]) === s.cap;
       return true;
     });
@@ -824,7 +842,7 @@ class Component extends DCLogic {
     const parts = [];
     b.sections.forEach((s) => {
       const v = this.state.picks[s.id];
-      if ((s.kind === 'chips' || s.kind === 'cards' || s.kind === 'pair' || s.kind === 'hidden') && v) parts.push(v);
+      if ((s.kind === 'chips' || s.kind === 'grid' || s.kind === 'cards' || s.kind === 'pair' || s.kind === 'hidden') && v) parts.push(v);
       if (s.kind === 'stepper' && v) parts.push(v + ' יח׳');
       if ((s.kind === 'count' || s.kind === 'row') && v) {
         Object.keys(v).forEach((k) => parts.push(k + ' ×' + v[k] + (s.unit ? ' ' + s.unit : '')));
@@ -853,9 +871,10 @@ class Component extends DCLogic {
     const base = {
       isTitle: false, isNote: false, isPrice: false, isChips: false,
       isCards: false, isCount: false, isStepper: false, isText: false,
-      isPair: false, isRow: false, isImages: false,
+      isPair: false, isRow: false, isImages: false, isGrid: false, isFine: false,
       label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
       value: '', unit: '', ph: '', decOp: '1', mt: '0px',
+      pad: '12px 14px', gap: '18px', btn: '40px', numW: '74px', numSize: '26px',
       bg: IDLE_BG, bd: IDLE_BD, fg: '#4A4254', w: '400',
       set: () => {}, dec: () => {}, inc: () => {}, open: () => {}
     };
@@ -885,6 +904,7 @@ class Component extends DCLogic {
     if (s.kind === 'note')  return Object.assign(base, { isNote: true, mt: s.tight ? '-5px' : '0px' });
     if (s.kind === 'price') return Object.assign(base, { isPrice: true });
     if (s.kind === 'hidden') return base;   /* הציפוי נבחר בחלונית בלבד */
+    if (s.kind === 'fine')   return Object.assign(base, { isFine: true });
 
     if (s.kind === 'text') {
       return Object.assign(base, {
@@ -897,9 +917,29 @@ class Component extends DCLogic {
       const q = this.state.picks[s.id] || s.min;
       return Object.assign(base, {
         isStepper: true, value: q, unit: s.unit,
+        pad: s.slim ? '6px 10px' : '12px 14px',
+        gap: s.slim ? '10px' : '18px',
+        btn: s.slim ? '30px' : '40px',
+        numW: s.slim ? '46px' : '74px',
+        numSize: s.slim ? '18px' : '26px',
         decOp: q > s.min ? '1' : '0.4',
         dec: () => this.bumpQty(s, -1),
         inc: () => this.bumpQty(s, +1)
+      });
+    }
+
+    if (s.kind === 'grid') {
+      const n = s.options.length;
+      return Object.assign(base, {
+        isGrid: true,
+        cols: 'repeat(' + (n <= 3 ? n : 2) + ', minmax(0, 1fr))',
+        options: s.options.map((o) => {
+          const c = chip(this.state.picks[s.id] === o);
+          const pick = s.opens
+            ? () => { this.setPick(s.id, o); this.openPop(s.opens); }
+            : () => this.setPick(s.id, o);
+          return { name: o, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: pick };
+        })
       });
     }
 
