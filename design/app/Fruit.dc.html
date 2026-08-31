@@ -72,11 +72,11 @@
     <div style="flex-shrink: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
       <sc-for list="{{ trays }}" as="t" hint-placeholder-count="4">
         <div style="box-sizing: border-box; border-radius: 20px; padding: 9px; display: flex; flex-direction: column; gap: 7px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
-          <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: 15px; border: 1.5px dashed rgba(176,74,118,0.34); background: rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(122,46,78,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
+          <div style="width: 100%; height: 118px; border-radius: 15px; border: 1.5px dashed rgba(176,74,118,0.34); background: rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(122,46,78,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
           <div style="font-size: 13.5px; font-weight: {{ t.w }}; color: {{ t.fg }}; line-height: 1.2; text-align: center; min-height: 33px; display: flex; align-items: center; justify-content: center;">{{ t.name }}</div>
-          <div style="font-size: 10.5px; font-weight: 300; line-height: 1.45; color: #7D7488; text-align: center; min-height: 46px;">{{ t.desc }}</div>
-          <div style="font-size: 10.5px; font-weight: 400; line-height: 1.4; color: #9A93A6; text-align: center;">{{ t.serves }}</div>
-          <div style="font-size: 12.5px; font-weight: 600; color: #B04A76; text-align: center;">{{ t.price }} ₪</div>
+          <div style="font-size: 10.5px; font-weight: 300; line-height: 1.45; color: #7D7488; text-align: center;">{{ t.desc }}</div>
+          <div style="margin-top: -5px; font-size: 10.5px; font-weight: 400; line-height: 1.45; color: #9A93A6; text-align: center;">{{ t.serves }}</div>
+          <div style="margin-top: auto; padding-top: 2px; font-size: 12.5px; font-weight: 600; color: #B04A76; text-align: center;">{{ t.price }} ₪</div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div onClick="{{ t.inc }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(176,74,118,0.13); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A2E4E" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
             <div style="flex-grow: 1; min-width: 0; text-align: center; font-size: 13px; font-weight: 700; color: #7A2E4E; font-variant-numeric: tabular-nums;">{{ t.qtyLabel }}</div>
@@ -357,7 +357,7 @@
    כל מגשי הפירות נעשים על ידי מיכל גורן. */
 const ITEMS = [
   { name: 'מגש מרובע גדול', price: 300, desc: 'הבחירה הקלאסית לאירוח משפחתי • מתאים לכ־ 10–8 סועדים.' },
-  { name: 'מגש מלבני גדול', price: 300, desc: 'נוכחות אלגנטית שמתאימה בול לשולחן אירוח • מתאים לכ־ 10–8 סועדים.' },
+  { name: 'מגש מלבני גדול', price: 300, desc: 'נוכחות אלגנטית שמתאימה לכל אירוח • מתאים לכ־ 10–8 סועדים.' },
   { name: 'מגש עגול ענק',   price: 400, desc: 'שפע שנועד לחלוק עם כולם • מתאים לכ־ 12-15 סועדים.' },
   { name: 'מגש סירה מפואר', price: 450, desc: 'מרכז שולחן שלא צריך שום קישוט לידו • מתאים לכ־ 15–12 סועדים.' }
 ];
