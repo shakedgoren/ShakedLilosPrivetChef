@@ -30,7 +30,7 @@
 
   <div style="position: absolute; top: 72px; right: 0; left: 0; display: flex; justify-content: center;">
     <div style="border-radius: 999px; padding: 4px 12px; background: rgba(67,124,89,0.12); border: 1px solid rgba(67,124,89,0.28);">
-      <div style="font-size: 11px; font-weight: 600; color: #2C5A3E; letter-spacing: 0.04em;">ו׳ · תמונה ממלאת</div>
+      <div style="font-size: 11px; font-weight: 600; color: #2C5A3E; letter-spacing: 0.04em;">ו1 · התיאור מתחת לרשת</div>
     </div>
   </div>
 
@@ -54,7 +54,12 @@
         </div>
       </sc-for>
     </div>
-    <div style="flex-shrink: 0; padding-top: 8px; font-size: 11px; font-weight: 300; color: #A79FB2; text-align: center;">התיאור המלא של כל סוג יופיע אחרי הבחירה</div>
+
+    <sc-if value="{{ hasPick }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; margin-top: 12px; border-radius: 16px; padding: 12px 14px; background: rgba(67,124,89,0.09); border: 1px solid rgba(67,124,89,0.22); display: flex; flex-direction: column; gap: 3px;">
+      <div style="font-size: 12.5px; font-weight: 600; color: #2C5A3E; text-align: center;">{{ pickName }}</div>
+      <div style="font-size: 12px; font-weight: 300; line-height: 1.55; color: #6E6478; text-align: center;">{{ pickDesc }}</div>
+    </div></sc-if>
+    <sc-if value="{{ noPick }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; margin-top: 12px; font-size: 11.5px; font-weight: 300; color: #A79FB2; text-align: center;">בוחרים סוג אירוע והפרטים יופיעו כאן</div></sc-if>
 
     <div style="flex-shrink: 0; height: 14px;"></div>
   </div>
@@ -123,7 +128,17 @@ class Base extends DCLogic {
 }
 
 class Component extends Base {
-  renderVals() { return { items: this.opts(), total: this.total() }; }
+  renderVals() {
+    const e = EVENTS.filter((x) => x.n === this.state.ev)[0];
+    return {
+      items: this.opts(),
+      total: this.total(),
+      hasPick: !!e,
+      noPick: !e,
+      pickName: e ? e.n : '',
+      pickDesc: e ? e.d : ''
+    };
+  }
 }
 </script>
 </body>
