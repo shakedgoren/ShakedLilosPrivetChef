@@ -47,25 +47,28 @@
 
   <div style="position: absolute; top: 32px; right: 74px; left: 74px; text-align: center; display: flex; flex-direction: column; gap: 1px;">
     <div style="font-weight: 600; font-size: 20px; letter-spacing: -0.015em;">מארזי ספיישל</div>
-    <div style="font-size: 12.5px; color: #7A7080;">בחרו את המארז</div>
   </div>
 
   <div style="position: absolute; top: 78px; bottom: 170px; right: 18px; left: 18px; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column;">
 
-    <div style="flex-shrink: 0; font-weight: 300; font-size: 13.5px; line-height: 1.62; color: #7D7488; padding: 0 4px; text-align: center;">כל המארזים מגיעים ארוזים בארגז עץ<br>מקושטים עם פרחי גיבסניות לאווירת החג.</div>
+    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 7px; padding: 0 4px; text-align: center;">
+      <div style="font-weight: 600; font-size: 15px; line-height: 1.35;">✨ יש רגעים שמגיע להם יותר</div>
+      <div style="font-weight: 300; font-size: 13px; line-height: 1.62; color: #7D7488;">לא עוד מתנה. חוויה שלמה שמגיעה עד השולחן. 🤍<br>מארזי ספיישל עם שילובים מפתיעים, טעמים מפנקים וכל מה שצריך כדי להפוך כל רגע לרגע שאי אפשר לשכוח.</div>
+      <div style="font-weight: 500; font-size: 13px; line-height: 1.4; color: #437C59;">בוחרים את הספיישל שלכם ✨</div>
+    </div>
 
     <div style="flex-shrink: 0; height: 16px;"></div>
 
     <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
       <sc-for list="{{ boxes }}" as="b" hint-placeholder-count="3">
         <div onClick="{{ b.pick }}" class="press" style="box-sizing: border-box; border-radius: 22px; padding: 13px 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-          <div style="width: 66px; height: 66px; flex-shrink: 0; border-radius: 18px; border: 1.5px dashed rgba(67,124,89,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
+          <div style="width: 60px; height: 60px; flex-shrink: 0; border-radius: 16px; border: 1.5px dashed rgba(67,124,89,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(44,90,62,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg>
           </div>
           <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-            <div style="font-weight: 600; font-size: 15px; line-height: 1.2;">{{ b.name }}</div>
-            <div style="font-size: 11.5px; font-weight: 300; line-height: 1.5; color: #7D7488;">{{ b.desc }}</div>
-            <div style="font-size: 13.5px; color: #437C59; font-weight: 600;">{{ b.price }}</div>
+            <div style="font-weight: 600; font-size: 14.5px; line-height: 1.25;">{{ b.name }}</div>
+            <div style="font-size: 11px; font-weight: 300; line-height: 1.45; color: #7D7488;">{{ b.desc }}</div>
+            <div style="font-size: 12.5px; color: #437C59; font-weight: 600;">{{ b.price }}</div>
           </div>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C1BBCB" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
         </div>
@@ -402,27 +405,23 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
-/* המארזים, התיאורים והמחירים · מהאתר הקודם, נכתבו על ידי שקד.
-   ⚠ התיאור של ״הכל עליי״ הורכב על ידי Claude מתיאורים קיימים וטרם אושר. */
+/* שבע קטגוריות הספיישל · השמות, התיאורים והמחירים נכתבו על ידי שקד. */
 const BOXES = [
-  { key: 'pamper', name: 'פינוק משפחתי', price: 380,
-    desc: 'חלה משפחתית, עוגה זוגית, צנצנת דבש, דבשון, בקבוק יין ומארז הדלקת נרות.',
-    challah: 1, wine: 1, cake: 1, dedication: true },
-  { key: 'famA', name: 'מארחים בסטייל', price: 120,
-    desc: 'חלת דבש עגולה גדולה ופס עוגה.',
-    fixedChallah: 'חלת דבש עם פרוסות שקדים', cake: 1 },
-  { key: 'friAll', name: 'הכל עליי', price: 550,
-    desc: '2 חלות משפחתיות ו-5 קופסאות סלטים 250 מ״ל, 2 ק״ג קוסקוס, 2 ק״ג טבחה, 5 יחידות בשר/עוף ופס עוגה.',
-    challah: 2, salads: 5, protein: 1, cake: 1 }
+  { name: 'חלה לכל אירוע', base: 14, price: 'החל מ14 ש״ח ליח׳',
+    desc: 'חלה שהופכת כל רגע למיוחד, בעיצוב אישי ובהתאמה מושלמת לאירוע שלכם.' },
+  { name: 'חגיגה בשולחן; סלטים', base: 179, price: '179 ש״ח',
+    desc: 'השילוב המושלם של חלות ענן טריות ורכות וסלטים ביתיים לשולחן שלא מפסיקים לנשנש ממנו.' },
+  { name: 'חגיגה בשולחן; עיקרית', base: 339, price: 'החל מ339 ש״ח',
+    desc: 'ארוחה משפחתית עשירה ומפנקת, עם טעמים של בית ושפע שמגיע ישר לשולחן.' },
+  { name: 'הכל עלינו', base: 499, price: 'החל מ499 ש״ח',
+    desc: 'כל הארוחה עלינו! ארוחה שלמה, מפנקת ונדיבה, כדי שאתם תוכלו פשוט לשבת וליהנות.' },
+  { name: 'מארז פרימיום', base: 219, price: '219 ש״ח',
+    desc: 'מארז מפנק שנבנה במיוחד לרגעים מיוחדים. כל מה שצריך כדי להפוך כל מאורע לרגע מיוחד.' },
+  { name: 'טעם של שנה טובה', base: 79, price: '79 ש״ח',
+    desc: 'הדרך הכי מתוקה לפתוח את השנה! חלה מתוקה חגיגית, צנצנת דבש והמון אהבה באריזה אחת.' },
+  { name: 'קחו כמה שבא לכם', base: 25, price: 'החל מ25 ש״ח',
+    desc: 'חלות וסלטים בבחירה חופשית, בלי מארז ובלי מחויבות.' }
 ];
-
-const CHALLAHS = ['שומשום', 'קמח', 'בלי כלום'];
-const WINES    = ['לבן', 'אדום', 'רוזה', 'שמפנייה'];
-const CAKES    = ['דבש', 'שוקולד', 'ברד פודינג', 'ביסקוויטים', 'מייפל אגוזים'];
-const PROTEINS = ['ירכי עוף ברוטב מתוק', 'קציצות בשר מטוגנות'];
-const SALADS   = ['מטבוחה', 'ביצים', 'חציל במיונז', 'חציל מרוקאי', 'מיונז', 'גזר חריף',
-                  'מאשוויה', 'כרוב לבן', 'כרוב במיונז', 'כרוב סיני', 'סלק', 'טאבולה',
-                  'סלט ירוק', 'פלפלים מתוק'];
 
 /* איסוף ומשלוח · חלון המארזים */
 const PICK_FROM = 9 * 60;
@@ -474,20 +473,10 @@ const DELIV_SLOTS = (() => {
   return out;
 })();
 
-/* מה כל מארז מבקש · נגזר מהשדות שלו ולא מרשימה קשיחה */
-function specOf(b) {
-  const g = [];
-  if (b.fixedChallah) g.push({ id: 'fixed', kind: 'note', label: 'החלה', value: b.fixedChallah });
-  for (let i = 0; i < (b.challah || 0); i++) {
-    g.push({ id: 'ch' + i, kind: 'single', label: (b.challah > 1 ? 'ציפוי חלה ' + (i + 1) : 'ציפוי החלה'), options: CHALLAHS });
-  }
-  if (b.salads) g.push({ id: 'salads', kind: 'multi', label: 'סלטים', options: SALADS, max: b.salads });
-  if (b.protein) g.push({ id: 'protein', kind: 'single', label: 'בשר או עוף', options: PROTEINS });
-  if (b.wine) g.push({ id: 'wine', kind: 'single', label: 'היין', options: WINES });
-  if (b.cake) g.push({ id: 'cake', kind: 'single', label: 'העוגה', options: CAKES });
-  if (b.dedication) g.push({ id: 'ded', kind: 'text', label: 'הקדשה' });
-  return g;
-}
+/* התוכן הפנימי של כל מארז טרם נמסר · עד אז אין בחירות ולחיצה מוסיפה ישירות.
+   כשיתווסף מפרט, החלונית תיפתח מעצמה בלי שינוי נוסף. */
+const SPEC = {};
+function specOf(b) { return SPEC[b.name] || []; }
 
 class Component extends DCLogic {
   constructor(props) {
@@ -500,7 +489,13 @@ class Component extends DCLogic {
     };
   }
 
-  openPop(k)  { this.setState({ pop: { box: k, picks: {}, edit: null } }); }
+  openPop(k) {
+    if (specOf(BOXES[k]).length === 0) {          /* בלי בחירות · נכנס ישר להזמנה */
+      this.setState({ basket: this.state.basket.concat([{ box: k, picks: {} }]) });
+      return;
+    }
+    this.setState({ pop: { box: k, picks: {}, edit: null } });
+  }
   openEdit(i) {
     const r = this.state.basket[i];
     this.setState({ pop: { box: r.box, picks: JSON.parse(JSON.stringify(r.picks)), edit: i } });
@@ -555,7 +550,7 @@ class Component extends DCLogic {
       if (g.kind === 'single' && v) parts.push(v);
       if (g.kind === 'multi' && v && v.length) parts.push(v.join(', '));
     });
-    return parts.length ? parts.join(' · ') : 'בלי בחירות';
+    return parts.length ? parts.join(' · ') : '';
   }
 
   componentWillUnmount() { clearTimeout(this._t); }
@@ -577,7 +572,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     const p = st.pop;
-    const total = st.basket.reduce((s, r) => s + BOXES[r.box].price, 0);
+    const total = st.basket.reduce((s, r) => s + BOXES[r.box].base, 0);
 
     const deliv = st.ship === 'deliv';
     const cm = toMin(st.clock);
@@ -615,12 +610,12 @@ class Component extends DCLogic {
 
     return {
       boxes: BOXES.map((b, k) => ({
-        name: b.name, desc: b.desc, price: b.price + ' ₪', pick: () => this.openPop(k)
+        name: b.name, desc: b.desc, price: b.price, pick: () => this.openPop(k)
       })),
 
       popOpen: p !== null,
       popTitle: p ? BOXES[p.box].name : '',
-      popPrice: p ? BOXES[p.box].price + ' ₪' : '',
+      popPrice: p ? BOXES[p.box].price : '',
       popBtn: p && p.edit !== null ? 'שמור' : 'הוסף מארז',
       popOpacity: ready ? '1' : '0.45',
       popClose: () => this.closePop(),
@@ -632,7 +627,7 @@ class Component extends DCLogic {
       basket: st.basket.map((r, i) => ({
         name: BOXES[r.box].name,
         summary: this.summaryOf(r),
-        price: BOXES[r.box].price + ' ₪',
+        price: BOXES[r.box].price,
         edit: () => this.openEdit(i),
         dup: () => this.setState({ basket: st.basket.slice(0, i + 1).concat([JSON.parse(JSON.stringify(r))], st.basket.slice(i + 1)) }),
         del: () => this.setState({ basket: st.basket.filter((x, j) => j !== i) })
@@ -704,7 +699,7 @@ class Component extends DCLogic {
         };
       }),
 
-      lines: st.basket.map((r) => ({ qty: 1, name: BOXES[r.box].name, sum: BOXES[r.box].price }))
+      lines: st.basket.map((r) => ({ qty: 1, name: BOXES[r.box].name, sum: BOXES[r.box].base }))
     };
   }
 }
