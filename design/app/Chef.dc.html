@@ -164,7 +164,7 @@
                 <div style="position: absolute; inset: 0; border-radius: 18px; border: 1.5px dashed rgba(168,90,40,0.28); display: flex; align-items: center; justify-content: center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
                 <div style="position: absolute; right: 0; left: 0; bottom: 0; padding: 26px 10px 11px; background: linear-gradient(to top, rgba(242,216,192,0.96) 0%, rgba(242,216,192,0.9) 46%, rgba(242,216,192,0.55) 78%, rgba(242,216,192,0) 100%); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; gap: 3px;">
                   <div style="font-size: {{ s.nameSize }}; font-weight: 600; color: #5E2E12; line-height: 1.2; text-align: center; white-space: nowrap;">{{ o.name }}</div>
-                  <div style="font-size: {{ s.descSize }}; font-weight: 400; line-height: 1.5; color: #6B3F22; text-align: center;">{{ o.desc }}</div>
+                  <div style="font-size: {{ s.descSize }}; font-weight: 400; line-height: 1.5; color: #6B3F22; text-align: center; min-height: {{ s.descMinH }}; display: flex; align-items: flex-start; justify-content: center;">{{ o.desc }}</div>
                   <sc-if value="{{ o.hasPrice }}" hint-placeholder-val="{{ true }}"><div style="margin-top: 3px; font-size: {{ s.descSize }}; font-weight: 600; line-height: 1.5; color: #5E2E12; text-align: center;">{{ o.price }}</div></sc-if>
                   <sc-if value="{{ o.hasAdd }}" hint-placeholder-val="{{ true }}"><div style="margin-top: 2px; border-radius: 999px; padding: 2px 9px; background: rgba(255,255,255,0.6);">
                     <div style="font-size: 10px; font-weight: 600; color: #5E2E12; white-space: nowrap;">{{ o.add }}</div>
@@ -1590,6 +1590,7 @@ class Component extends DCLogic {
         cardH: s.one ? '250px' : '208px',
         descSize: s.one ? '12.5px' : '10px',
         nameSize: s.one ? '14.5px' : '12.5px',
+        descMinH: s.one ? '0' : '58px',
         options: s.options.map((o) => {
           const on = multi ? cur.indexOf(o.n) !== -1 : this.state.picks[s.id] === o.n;
           const c = chip(on);
