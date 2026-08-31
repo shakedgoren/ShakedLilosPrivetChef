@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 160ms ease; }
+    .press:active { transform: scale(0.97); }
+    input { font-family: 'Assistant', system-ui, sans-serif; }
+    input::placeholder { color: #B3ABBD; }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.07) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%), radial-gradient(58% 38% at 84% 72%, rgba(176,216,190,0.05) 0%, rgba(176,216,190,0) 62%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0;">
+
+    <div style="flex-shrink: 0; padding: 0 6px 16px;">
+      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">אזור אישי</div>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- ── התמונה והשם ── -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 4px 0 6px;">
+        <div style="position: relative; width: 92px; height: 92px;">
+          <div style="position: absolute; inset: -10px; border-radius: 50%; filter: blur(8px); background: radial-gradient(closest-side, rgba(123,92,188,0.26) 0%, rgba(123,92,188,0.08) 52%, rgba(123,92,188,0) 78%);"></div>
+          <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0) 28%), radial-gradient(circle at 34% 28%, #FFFFFF 0%, rgba(123,92,188,0.06) 38%, rgba(123,92,188,0.22) 100%); box-shadow: inset -7px -9px 18px rgba(123,92,188,0.2), inset 5px 6px 14px rgba(255,255,255,0.98), 0 12px 24px -15px rgba(123,92,188,0.5);"></div>
+          <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div onClick="{{ pickPhoto }}" class="press" style="position: absolute; bottom: 0; left: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: 0 4px 10px -4px rgba(96,80,132,0.8); border: 2px solid #FCFBFB; display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z"></path><circle cx="12" cy="13" r="3.2"></circle></svg>
+          </div>
+        </div>
+        <div style="font-weight: 600; font-size: 19px; letter-spacing: -0.015em;">{{ displayName }}</div>
+        <div style="font-weight: 300; font-size: 12.5px; color: #8A8194;">{{ sinceLabel }}</div>
+      </div>
+
+      <!-- ── פרטים אישיים ── -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 24px; padding: 16px 18px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.40) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6); display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #A79FB2;">{{ personalLabel }}</div>
+        <sc-for list="{{ personal }}" as="f" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ f.label }}</div>
+            <input type="{{ f.type }}" value="{{ f.value }}" onInput="{{ f.set }}" placeholder="{{ f.ph }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ f.bd }}; outline: none;">
+            <sc-if value="{{ f.bad }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 400; color: #B95349;">{{ f.hint }}</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- ── כתובת מגורים ── -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 24px; padding: 16px 18px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.40) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6); display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #A79FB2;">{{ addrLabel }}</div>
+          <div style="font-size: 11.5px; font-weight: 400; color: #8A8194;">{{ addrNote }}</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ cityLabel }}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+            <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+              <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; min-height: 38px; border-radius: 13px; padding: 8px 13px; cursor: pointer; display: flex; align-items: center; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }};">
+                <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-for list="{{ address }}" as="f" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ f.label }}</div>
+            <input type="text" value="{{ f.value }}" onInput="{{ f.set }}" placeholder="{{ f.ph }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ f.bd }}; outline: none;">
+            <sc-if value="{{ f.bad }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 400; color: #B95349;">{{ f.hint }}</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex-shrink: 0; height: 116px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ── שמירה · צף מעל הנאב בר ── -->
+  <div style="position: absolute; bottom: 106px; right: 18px; left: 18px; display: flex; flex-direction: column; align-items: center; gap: 7px;">
+    <sc-if value="{{ saved }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 13px; background: rgba(78,138,100,0.12);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4E8A64" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      <div style="font-size: 12.5px; font-weight: 600; color: #4E8A64;">{{ savedLabel }}</div>
+    </div></sc-if>
+    <div onClick="{{ save }}" class="press" style="width: 100%; box-sizing: border-box; height: 52px; border-radius: 999px; cursor: {{ saveCur }}; opacity: {{ saveOp }}; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 14px 28px -18px rgba(96,80,132,0.9); display: flex; align-items: center; justify-content: center;">
+      <div style="font-weight: 600; font-size: 15.5px; color: #43307A;">{{ saveLabel }}</div>
+    </div>
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">אזור אישי</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* אותן ערים של מסכי ההזמנה */
+const CITIES = ['יבנה', 'אשדוד', 'גדרה', 'נס ציונה', 'רחובות', 'ראשון לציון'];
+
+const IDLE_BD = 'rgba(130,112,162,0.18)';
+const BAD_BD  = 'rgba(185,83,73,0.5)';
+const SEL_BG  = 'rgba(123,92,188,0.1)';
+const SEL_BD  = 'rgba(123,92,188,0.42)';
+const IDLE_BG = 'rgba(255,255,255,0.7)';
+
+/* ⚠ ערכי הדגמה · נכתבו על ידי Claude כדי שהמסך לא יהיה ריק */
+const SEED = {
+  name:  'דנה כהן',
+  phone: '050-1234567',
+  mail:  'dana@example.com',
+  city:  'יבנה',
+  street:'הרצל 14',
+  floor: 'קומה 2, דירה 7'
+};
+
+const trim = (v) => String(v || '').trim();
+/* טלפון ישראלי · 05X ואחריו שבע ספרות, עם או בלי מקף */
+const okPhone = (v) => /^0(5\d|[2-4,8-9])-?\d{7}$/.test(trim(v).replace(/\s/g, ''));
+const okMail  = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trim(v));
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { form: Object.assign({}, SEED), saved: false };
+  }
+
+  set(id, v) {
+    const form = Object.assign({}, this.state.form);
+    form[id] = v;
+    this.setState({ form: form, saved: false });
+  }
+
+  /* השדות שנשמרים · שינוי כלשהו פותח את כפתור השמירה */
+  dirty() {
+    return Object.keys(SEED).some((k) => this.state.form[k] !== SEED[k]);
+  }
+
+  errors() {
+    const f = this.state.form;
+    return {
+      name:   trim(f.name) === '',
+      phone:  !okPhone(f.phone),
+      mail:   trim(f.mail) !== '' && !okMail(f.mail),
+      street: trim(f.street) === ''
+    };
+  }
+
+  save() {
+    const e = this.errors();
+    if (Object.keys(e).some((k) => e[k]) || !this.dirty()) return;
+    this.setState({ saved: true });
+  }
+
+  renderVals() {
+    const f = this.state.form;
+    const e = this.errors();
+
+    const field = (id, label, ph, type, bad, hint) => ({
+      label: label, ph: ph, type: type || 'text',
+      value: f[id] || '',
+      bad: !!bad, hint: hint || '',
+      bd: bad ? BAD_BD : IDLE_BD,
+      set: (ev) => this.set(id, ev.target.value)
+    });
+
+    const ok = !Object.keys(e).some((k) => e[k]);
+    const canSave = ok && this.dirty();
+
+    return {
+      displayName: trim(f.name) || 'ללא שם',
+      sinceLabel: 'לקוחה מאז אוגוסט 2026',
+
+      personalLabel: 'פרטים אישיים',
+      personal: [
+        field('name',  'שם מלא', 'שם ושם משפחה', 'text', e.name,  'צריך שם כדי שאדע למי לקרוא'),
+        field('phone', 'טלפון',  '050-0000000',  'tel',  e.phone, 'מספר טלפון לא תקין'),
+        field('mail',  'אימייל', 'name@mail.com', 'email', e.mail, 'כתובת אימייל לא תקינה')
+      ],
+
+      addrLabel: 'כתובת מגורים',
+      addrNote: 'לשימוש במשלוחים',
+      cityLabel: 'עיר',
+      cities: CITIES.map((c) => {
+        const on = f.city === c;
+        return {
+          name: c,
+          bg: on ? SEL_BG : IDLE_BG,
+          bd: on ? SEL_BD : IDLE_BD,
+          fg: on ? '#43307A' : '#4A4254',
+          w:  on ? '600' : '400',
+          pick: () => this.set('city', c)
+        };
+      }),
+      address: [
+        field('street', 'רחוב ומספר', 'למשל: הרצל 14', 'text', e.street, 'יש להזין רחוב ומספר בית'),
+        field('floor',  'קומה ודירה · לא חובה', 'קומה 2, דירה 7')
+      ],
+
+      saveLabel: canSave ? 'שמירת השינויים' : 'אין מה לשמור',
+      saveOp:  canSave ? '1' : '0.45',
+      saveCur: canSave ? 'pointer' : 'default',
+      save: () => this.save(),
+
+      saved: this.state.saved,
+      savedLabel: 'הפרטים נשמרו',
+
+      pickPhoto: () => {}
+    };
+  }
+}
+</script>
+</body>
+</html>

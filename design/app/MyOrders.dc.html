@@ -66,6 +66,7 @@
                 <div style="font-size: 10.5px; letter-spacing: 0.18em; font-weight: 700; color: #4E8A64;">{{ o.status }}</div>
               </div>
               <div style="font-weight: 600; font-size: 19px; letter-spacing: -0.015em; line-height: 1.2;">{{ o.name }}</div>
+              <div style="font-size: 13px; font-weight: 500; color: {{ o.deep }};">{{ o.when }}</div>
             </div>
             <div style="flex-shrink: 0; display: flex; align-items: center; gap: 9px;">
               <div style="font-weight: 600; font-size: 20px; white-space: nowrap; font-variant-numeric: tabular-nums;">{{ o.sum }} ₪</div>
@@ -184,7 +185,7 @@ class Component extends DCLogic {
       const h = HUES[o.key] || HUES.cous;
       const isOpen = open === i;
       return {
-        status: o.status, name: o.name, sum: o.sum,
+        status: o.status, name: o.name, sum: o.sum, when: o.when,
         hue: h.hue, deep: h.deep,
         edge: a(h.rgb, 0.34),          /* הזמנה שהסתיימה · הגוון מרומז בלבד */
         open: isOpen,
