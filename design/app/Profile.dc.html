@@ -85,10 +85,69 @@
         </sc-for>
       </div>
 
+      <!-- ── אבטחה ── -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 24px; padding: 16px 18px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.40) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6); display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #A79FB2;">{{ securityLabel }}</div>
+        <div onClick="{{ openPass }}" class="press" style="display: flex; align-items: center; gap: 11px; cursor: pointer;">
+          <div style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 12px; background: rgba(123,92,188,0.1); display: flex; align-items: center; justify-content: center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.4"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+          </div>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 600;">{{ passTitle }}</div>
+            <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 1px;">{{ passSub }}</div>
+          </div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B3ABBD" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
+        </div>
+      </div>
+
+      <div onClick="{{ askOut }}" class="press" style="flex-shrink: 0; align-self: center; margin-top: 4px; height: 44px; padding: 0 24px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: rgba(185,83,73,0.07); border: 1.5px solid rgba(185,83,73,0.22);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"></path><path d="M17 15l4-3-4-3"></path><path d="M21 12H10"></path></svg>
+        <div style="font-size: 14px; font-weight: 600; color: #B95349;">{{ logoutLabel }}</div>
+      </div>
+
       <div style="flex-shrink: 0; height: 116px;"></div>
     </div>
 
   </div>
+
+  <!-- ── שינוי סיסמה ── -->
+  <sc-if value="{{ passOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closePass }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 120px; right: 16px; left: 16px; border-radius: 28px; padding: 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ passTitle }}</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ passRule }}</div>
+      </div>
+      <div onClick="{{ closePass }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <sc-for list="{{ passFields }}" as="f" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ f.label }}</div>
+        <input type="password" value="{{ f.value }}" onInput="{{ f.set }}" placeholder="{{ f.ph }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ f.bd }}; outline: none;">
+        <sc-if value="{{ f.bad }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 400; color: #B95349;">{{ f.hint }}</div></sc-if>
+      </div>
+    </sc-for>
+
+    <div onClick="{{ savePass }}" class="press" style="align-self: center; height: 48px; margin-top: 4px; padding: 0 30px; border-radius: 999px; cursor: {{ passCur }}; opacity: {{ passOp }}; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 12px 24px -16px rgba(96,80,132,0.9); display: flex; align-items: center; justify-content: center;">
+      <div style="font-weight: 600; font-size: 15px; color: #43307A;">{{ passCta }}</div>
+    </div>
+  </div></sc-if>
+
+  <!-- ── אישור התנתקות ── -->
+  <sc-if value="{{ outOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ cancelOut }}" style="position: absolute; inset: 0; z-index: 32; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 33; top: 300px; right: 30px; left: 30px; border-radius: 26px; padding: 22px 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+    <div style="font-size: 16px; font-weight: 600; text-align: center;">{{ outTitle }}</div>
+    <div style="font-size: 13px; font-weight: 300; color: #7D7488; text-align: center; line-height: 1.55;">{{ outBody }}</div>
+    <div style="display: flex; gap: 9px; margin-top: 12px; width: 100%;">
+      <div onClick="{{ cancelOut }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #4A4254;">{{ outCancel }}</div>
+      </div>
+      <div onClick="{{ doOut }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: rgba(185,83,73,0.1); border: 1.5px solid rgba(185,83,73,0.3); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #B95349;">{{ outConfirm }}</div>
+      </div>
+    </div>
+  </div></sc-if>
 
   <!-- ── שמירה · צף מעל הנאב בר ── -->
   <div style="position: absolute; bottom: 106px; right: 18px; left: 18px; display: flex; flex-direction: column; align-items: center; gap: 7px;">
@@ -138,6 +197,7 @@ const SEED = {
   floor: 'קומה 2, דירה 7'
 };
 
+const PASS_MIN = 8;
 const trim = (v) => String(v || '').trim();
 /* טלפון ישראלי · 05X ואחריו שבע ספרות, עם או בלי מקף */
 const okPhone = (v) => /^0(5\d|[2-4,8-9])-?\d{7}$/.test(trim(v).replace(/\s/g, ''));
@@ -146,7 +206,11 @@ const okMail  = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trim(v));
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { form: Object.assign({}, SEED), saved: false };
+    this.state = {
+      form: Object.assign({}, SEED), saved: false,
+      pass: { cur: '', next: '', again: '' },
+      passOpen: false, outOpen: false
+    };
   }
 
   set(id, v) {
@@ -174,6 +238,31 @@ class Component extends DCLogic {
     const e = this.errors();
     if (Object.keys(e).some((k) => e[k]) || !this.dirty()) return;
     this.setState({ saved: true });
+  }
+
+  /* ── סיסמה ── */
+  setPass(id, v) {
+    const pass = Object.assign({}, this.state.pass);
+    pass[id] = v;
+    this.setState({ pass: pass });
+  }
+  passErrors() {
+    const p = this.state.pass;
+    return {
+      cur:   trim(p.cur) === '',
+      next:  trim(p.next) !== '' && trim(p.next).length < PASS_MIN,
+      again: trim(p.again) !== '' && p.again !== p.next
+    };
+  }
+  passReady() {
+    const p = this.state.pass;
+    const e = this.passErrors();
+    return trim(p.cur) !== '' && trim(p.next).length >= PASS_MIN
+        && p.again === p.next && !Object.keys(e).some((k) => e[k]);
+  }
+  savePass() {
+    if (!this.passReady()) return;
+    this.setState({ passOpen: false, pass: { cur: '', next: '', again: '' }, saved: true });
   }
 
   renderVals() {
@@ -228,6 +317,42 @@ class Component extends DCLogic {
 
       saved: this.state.saved,
       savedLabel: 'הפרטים נשמרו',
+
+      securityLabel: 'אבטחה',
+      passTitle: 'שינוי סיסמה',
+      passSub: 'מומלץ להחליף מדי כמה חודשים',
+      passRule: 'לפחות ' + PASS_MIN + ' תווים',
+      passOpen: this.state.passOpen,
+      openPass:  () => this.setState({ passOpen: true }),
+      closePass: () => this.setState({ passOpen: false, pass: { cur: '', next: '', again: '' } }),
+      passFields: (() => {
+        const pe = this.passErrors();
+        const pf = (id, label, ph, bad, hint) => ({
+          label: label, ph: ph, value: this.state.pass[id] || '',
+          bad: !!bad, hint: hint || '',
+          bd: bad ? BAD_BD : IDLE_BD,
+          set: (ev) => this.setPass(id, ev.target.value)
+        });
+        return [
+          pf('cur',   'הסיסמה הנוכחית', 'הסיסמה שאיתה נכנסת', false, ''),
+          pf('next',  'סיסמה חדשה', 'לפחות ' + PASS_MIN + ' תווים', pe.next, 'הסיסמה קצרה מדי'),
+          pf('again', 'אימות הסיסמה החדשה', 'שוב, בדיוק אותו דבר', pe.again, 'שתי הסיסמאות לא זהות')
+        ];
+      })(),
+      passCta: 'עדכון הסיסמה',
+      passOp:  this.passReady() ? '1' : '0.45',
+      passCur: this.passReady() ? 'pointer' : 'default',
+      savePass: () => this.savePass(),
+
+      logoutLabel: 'התנתקות',
+      outOpen: this.state.outOpen,
+      outTitle: 'להתנתק מהחשבון?',
+      outBody: 'ההזמנות והפרטים שלך יישמרו. תוכלי להיכנס שוב מתי שתרצי.',
+      outCancel: 'ביטול',
+      outConfirm: 'התנתקות',
+      askOut:    () => this.setState({ outOpen: true }),
+      cancelOut: () => this.setState({ outOpen: false }),
+      doOut:     () => this.setState({ outOpen: false }),
 
       pickPhoto: () => {}
     };
