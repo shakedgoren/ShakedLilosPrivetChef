@@ -72,24 +72,21 @@
           <div style="font-size: 11.5px; font-weight: 400; color: #8A8194;">{{ addrNote }}</div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 5px;">
-          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ cityLabel }}</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 7px;">
-            <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
-              <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; min-height: 38px; border-radius: 13px; padding: 8px 13px; cursor: pointer; display: flex; align-items: center; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }};">
-                <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+        <div style="position: relative; display: flex; flex-direction: column; gap: 5px;">
+          <input type="text" value="{{ addr }}" onInput="{{ setAddr }}" placeholder="{{ addrPh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ addrBd }}; outline: none;">
+
+          <sc-if value="{{ hasSug }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 5; top: 53px; right: 0; left: 0; border-radius: 14px; overflow: hidden; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); box-shadow: 0 16px 32px -18px rgba(96,80,132,0.6);">
+            <sc-for list="{{ sug }}" as="g" hint-placeholder-count="3">
+              <div onClick="{{ g.pick }}" class="press" style="padding: 10px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(130,112,162,0.1);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+                <div style="font-size: 13px; font-weight: 400; color: #4A4254;">{{ g.t }}</div>
               </div>
             </sc-for>
-          </div>
-        </div>
+          </div></sc-if>
 
-        <sc-for list="{{ address }}" as="f" hint-placeholder-count="2">
-          <div style="display: flex; flex-direction: column; gap: 5px;">
-            <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ f.label }}</div>
-            <input type="text" value="{{ f.value }}" onInput="{{ f.set }}" placeholder="{{ f.ph }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ f.bd }}; outline: none;">
-            <sc-if value="{{ f.bad }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 400; color: #B95349;">{{ f.hint }}</div></sc-if>
-          </div>
-        </sc-for>
+          <sc-if value="{{ addrBad }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 400; color: #B95349;">{{ addrHint }}</div></sc-if>
+          <sc-if value="{{ noShip }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 600; color: #7B5CBC;">{{ noShipLabel }}</div></sc-if>
+        </div>
       </div>
 
       <!-- ── אבטחה ── -->
@@ -116,7 +113,7 @@
         <div style="font-size: 15px; font-weight: 600; color: {{ saveFg }};">{{ saveLabel }}</div>
       </div>
 
-      <div style="flex-shrink: 0; height: 40px;"></div>
+      <div style="flex-shrink: 0; height: 120px;"></div>
     </div>
 
   </div>
@@ -179,7 +176,34 @@
 </x-dc>
 <script data-dc-script data-props='{"loggedIn":{"editor":"boolean","default":true,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* אותן ערים של מסכי ההזמנה */
-const CITIES = ['יבנה', 'אשדוד', 'גדרה', 'נס ציונה', 'רחובות', 'ראשון לציון'];
+/* ⚠ הדגמה בלבד · מסד הכתובות האמיתי יגיע מ-Google Places או מ-data.gov.il.
+   להחלפה צריך רק להחליף את STREETS במקור אמיתי. */
+const SHIP_CITIES = ['יבנה', 'אשדוד', 'גדרה', 'נס ציונה', 'רחובות', 'ראשון לציון'];
+const STREETS = {
+  'יבנה':        ['הרצל', 'ויצמן', 'הדקל', 'נופר', 'שדרות דואני', 'הפרחים'],
+  'אשדוד':       ['רוגוזין', 'הבנים', 'שבי ציון', 'הרצל'],
+  'גדרה':        ['הרצל', 'בילו', 'ויצמן'],
+  'נס ציונה':    ['הבנים', 'ויצמן', 'הרצל'],
+  'רחובות':      ['הרצל', 'ויצמן', 'בילו', 'רוטשילד'],
+  'ראשון לציון': ['רוטשילד', 'הרצל', 'ז׳בוטינסקי'],
+  'תל אביב':     ['דיזנגוף', 'אלנבי', 'רוטשילד', 'הרצל'],
+  'ירושלים':     ['יפו', 'קינג ג׳ורג׳', 'הרצל'],
+  'חיפה':        ['הרצל', 'מוריה', 'הנשיא'],
+  'באר שבע':     ['הרצל', 'רגר', 'העצמאות']
+};
+/* כל צירופי רחוב·עיר · המקור להשלמה */
+const PLACES = (() => {
+  const out = [];
+  Object.keys(STREETS).forEach((city) => {
+    STREETS[city].forEach((st) => out.push({ street: st, city: city }));
+  });
+  return out;
+})();
+/* העיר מתוך ״רחוב 14, עיר״ */
+function cityOf(v) {
+  const after = String(v || '').split(',').pop().trim();
+  return Object.keys(STREETS).filter((c) => c === after)[0] || '';
+}
 
 const IDLE_BD = 'rgba(130,112,162,0.18)';
 const BAD_BD  = 'rgba(185,83,73,0.5)';
@@ -192,9 +216,7 @@ const SEED = {
   name:  'דנה כהן',
   phone: '050-1234567',
   mail:  'dana@example.com',
-  city:  'יבנה',
-  street:'הרצל 14',
-  floor: 'קומה 2, דירה 7'
+  addr:  'הרצל 14, יבנה'
 };
 
 const PASS_MIN = 8;
@@ -233,7 +255,7 @@ class Component extends DCLogic {
       name:   trim(f.name) === '',
       phone:  !okPhone(f.phone),
       mail:   trim(f.mail) !== '' && !okMail(f.mail),
-      street: trim(f.street) === ''
+      addr: trim(f.addr) === ''
     };
   }
 
@@ -284,6 +306,16 @@ class Component extends DCLogic {
     const ok = !Object.keys(e).some((k) => e[k]);
     const canSave = ok && this.dirty();
 
+    /* ההשלמה · מחפשת גם ברחוב וגם בעיר, ומרכיבה ״רחוב מספר, עיר״ */
+    const raw = trim(f.addr);
+    const num = (raw.match(/\d+/) || [''])[0];
+    const words = raw.replace(/[,\d]/g, ' ').split(/\s+/).filter(Boolean);
+    const city = cityOf(raw);
+    const sug = (raw.length < 2 || city) ? [] : PLACES
+      .filter((pl) => words.some((w) => pl.street.indexOf(w) === 0 || pl.city.indexOf(w) === 0))
+      .slice(0, 4)
+      .map((pl) => pl.street + (num ? ' ' + num : '') + ', ' + pl.city);
+
     return {
       displayName: trim(f.name) || 'ללא שם',
       sinceLabel: 'לקוחה מאז אוגוסט 2026',
@@ -297,23 +329,21 @@ class Component extends DCLogic {
 
       addrLabel: 'כתובת מגורים',
       addrNote: 'לשימוש במשלוחים',
-      cityLabel: 'עיר',
-      cities: CITIES.map((c) => {
-        const on = f.city === c;
-        return {
-          name: c,
-          bg: on ? SEL_BG : IDLE_BG,
-          bd: on ? SEL_BD : IDLE_BD,
-          fg: on ? '#43307A' : '#4A4254',
-          w:  on ? '600' : '400',
-          pick: () => this.set('city', c)
-        };
-      }),
-      address: [
-        field('street', 'רחוב ומספר', 'למשל: הרצל 14', 'text', e.street, 'יש להזין רחוב ומספר בית'),
-        field('floor',  'קומה ודירה · לא חובה', 'קומה 2, דירה 7')
-      ],
+      addrPh: 'רחוב, מספר ועיר',
+      addr: f.addr || '',
+      setAddr: (ev) => this.set('addr', ev.target.value),
+      addrBd: e.addr ? BAD_BD : IDLE_BD,
+      addrBad: e.addr,
+      addrHint: 'יש להזין כתובת מלאה',
 
+      /* השלמה · מוצגת רק בזמן הקלדה, ולא אחרי שנבחרה כתובת מדויקת */
+      hasSug: sug.length > 0,
+      sug: sug.map((g) => ({ t: g, pick: () => this.set('addr', g) })),
+
+      noShip: !!(city && SHIP_CITIES.indexOf(city) === -1),
+      noShipLabel: 'אין משלוחים לאיזור הזה',
+
+      saved: this.state.saved,
       saveLabel: 'שמור',
       saveBg: canSave ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
       saveFg: canSave ? '#43307A' : '#A79FB2',
@@ -322,14 +352,12 @@ class Component extends DCLogic {
         : 'none',
       saveCur: canSave ? 'pointer' : 'default',
       save: () => this.save(),
+      savedLabel: 'הפרטים נשמרו',
 
       /* פקד ההזדהות בכותרת · מחוברת מתנתקת, לא מחוברת נכנסת */
       isIn:  !!this.props.loggedIn,
       isOut: !this.props.loggedIn,
       authTap: () => { if (this.props.loggedIn) this.setState({ outOpen: true }); },
-
-      saved: this.state.saved,
-      savedLabel: 'הפרטים נשמרו',
 
       securityLabel: 'אבטחה',
       passTitle: 'שינוי סיסמה',
