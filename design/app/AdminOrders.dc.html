@@ -1,0 +1,399 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 160ms ease; }
+    .press:active { transform: scale(0.97); }
+    .chev { transition: transform 300ms cubic-bezier(.22,.9,.28,1); }
+    input { font-family: 'Assistant', system-ui, sans-serif; }
+    input::placeholder { color: #B3ABBD; }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%), radial-gradient(58% 38% at 84% 72%, rgba(176,216,190,0.05) 0%, rgba(176,216,190,0) 62%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+
+    <!-- ── כותרת ── -->
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0;">
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">הזמנות</div>
+        <div style="font-weight: 300; font-size: 12.5px; color: #8A8194;">{{ subLabel }}</div>
+      </div>
+      <div onClick="{{ openNew }}" class="press" style="flex-shrink: 0; height: 38px; padding: 0 15px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 7px; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 10px 20px -15px rgba(96,80,132,0.9);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        <div style="font-size: 13px; font-weight: 600; color: #43307A; white-space: nowrap;">{{ newLabel }}</div>
+      </div>
+    </div>
+
+    <!-- ── סינון לפי מצב ── -->
+    <div style="flex-shrink: 0; display: flex; gap: 6px;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <div onClick="{{ t.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 13px; cursor: pointer; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="font-size: 12.5px; font-weight: {{ t.w }}; color: {{ t.fg }}; white-space: nowrap;">{{ t.name }}</div>
+          <div style="font-size: 10px; font-weight: 500; color: {{ t.cfg }}; font-variant-numeric: tabular-nums;">{{ t.count }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ── סיכום היום ── -->
+    <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 11px 14px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border: 1px solid rgba(255,255,255,0.78); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); display: flex; align-items: center;">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="3">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;">
+          <div style="font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; color: {{ k.fg }};">{{ k.v }}</div>
+          <div style="font-size: 10.5px; font-weight: 300; color: #8A8194;">{{ k.k }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ── רשימת ההזמנות ── -->
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}"><div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding-bottom: 120px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9C2D2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 9h6"></path></svg>
+        <div style="font-size: 14px; font-weight: 500; color: #A79FB2;">{{ emptyLabel }}</div>
+      </div></sc-if>
+
+      <sc-for list="{{ orders }}" as="o" hint-placeholder-count="4">
+        <div onClick="{{ o.toggle }}" class="press" style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 13px 15px; cursor: pointer; border-right: 3px solid {{ o.hue }}; background: linear-gradient(150deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); border-top: 1px solid rgba(255,255,255,0.72); border-bottom: 1px solid rgba(255,255,255,0.72); border-left: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 10px;">
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="min-width: 0; flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <div style="border-radius: 7px; padding: 2px 8px; background: {{ o.chipBg }};">
+                  <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: {{ o.chipFg }}; white-space: nowrap;">{{ o.status }}</div>
+                </div>
+                <sc-if value="{{ o.viaWa }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10px; font-weight: 600; letter-spacing: 0.06em; color: #A79FB2;">{{ o.source }}</div></sc-if>
+              </div>
+              <div style="font-weight: 600; font-size: 15.5px; letter-spacing: -0.01em; line-height: 1.2;">{{ o.who }}</div>
+              <div style="font-size: 12px; font-weight: 300; color: #7D7488;">{{ o.line }}</div>
+            </div>
+            <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+              <div style="text-align: left;">
+                <div style="font-weight: 600; font-size: 16px; white-space: nowrap; font-variant-numeric: tabular-nums;">{{ o.sum }} ₪</div>
+                <div style="font-size: 11.5px; font-weight: 500; color: {{ o.deep }}; white-space: nowrap;">{{ o.time }}</div>
+              </div>
+              <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ o.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
+            </div>
+          </div>
+
+          <sc-if value="{{ o.open }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+
+            <sc-for list="{{ o.rows }}" as="r" hint-placeholder-count="4">
+              <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <div style="flex-shrink: 0; width: 78px; font-size: 11.5px; font-weight: 300; color: #7D7488; line-height: 1.55;">{{ r.k }}</div>
+                <div style="flex-grow: 1; min-width: 0; font-size: 12.5px; font-weight: 500; color: #2A2430; line-height: 1.55;">{{ r.v }}</div>
+              </div>
+            </sc-for>
+
+            <div style="display: flex; gap: 7px;">
+              <div onClick="{{ o.call }}" class="press" style="flex: 1; height: 38px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.08); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A4254" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5A16.5 16.5 0 0 1 3.5 5.7 1.5 1.5 0 0 1 5 4z"></path></svg>
+                <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ callLabel }}</div>
+              </div>
+              <div onClick="{{ o.advance }}" class="press" style="flex: 2; height: 38px; border-radius: 999px; cursor: {{ o.nextCur }}; background: {{ o.nextBg }}; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <div style="font-size: 12.5px; font-weight: 600; color: {{ o.nextFg }};">{{ o.nextLabel }}</div>
+              </div>
+            </div>
+          </div></sc-if>
+        </div>
+      </sc-for>
+
+      <div style="flex-shrink: 0; height: 108px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ── הזמנה ידנית ── -->
+  <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeNew }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 96px; right: 16px; left: 16px; border-radius: 28px; padding: 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ newTitle }}</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ newSub }}</div>
+      </div>
+      <div onClick="{{ closeNew }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ phoneLabel }}</div>
+      <input type="tel" value="{{ nPhone }}" onInput="{{ setPhone }}" placeholder="050-0000000" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ phoneBd }}; outline: none;">
+      <div style="font-size: 11.5px; font-weight: 500; color: {{ matchFg }};">{{ matchLabel }}</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ catLabel }}</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5">
+          <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 36px; border-radius: 12px; padding: 0 12px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+            <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ itemsLabel }}</div>
+      <input type="text" value="{{ nItems }}" onInput="{{ setItems }}" placeholder="{{ itemsPh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+    </div>
+
+    <div style="display: flex; gap: 9px;">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ sumLabel }}</div>
+        <input type="text" value="{{ nSum }}" onInput="{{ setSum }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ timeLabel }}</div>
+        <input type="text" value="{{ nTime }}" onInput="{{ setTime }}" placeholder="12:30" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+      </div>
+    </div>
+
+    <div style="font-size: 11.5px; font-weight: 300; line-height: 1.5; color: #7D7488; text-align: center;">{{ notifyNote }}</div>
+
+    <div onClick="{{ saveNew }}" class="press" style="align-self: center; height: 48px; padding: 0 30px; border-radius: 999px; cursor: {{ newCur }}; background: {{ newBg }}; box-shadow: {{ newShadow }}; display: flex; align-items: center; justify-content: center;">
+      <div style="font-size: 15px; font-weight: 600; color: {{ newFg }};">{{ newCta }}</div>
+    </div>
+  </div></sc-if>
+
+  <!-- ── נאב בר ── -->
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4z"></path><path d="M4 11h16M9 7V4h6v3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">מלאי</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M21 19H3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">כספים</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* גוון הקטגוריה · אותם חמישה גוונים של כל האפליקציה */
+const HUES = {
+  cous:  { n: 'קוסקוס',   hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188' },
+  schn:  { n: 'שישניצל',  hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158'  },
+  box:   { n: 'ספיישל',   hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89'   },
+  fruit: { n: 'פירות',    hue: '#B04A76', deep: '#7A2E4E', rgb: '176,74,118'  },
+  chef:  { n: 'שף וטאבון', hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40'   }
+};
+const CAT_KEYS = ['cous', 'schn', 'box', 'fruit', 'chef'];
+
+/* מסלול המצבים · כל הזמנה מתקדמת בסדר הזה */
+const FLOW = ['חדשה', 'בהכנה', 'מוכנה', 'נמסרה'];
+const TONE = {
+  'חדשה':  { bg: 'rgba(123,92,188,0.12)', fg: '#43307A' },
+  'בהכנה': { bg: 'rgba(199,125,62,0.14)', fg: '#A65E2A' },
+  'מוכנה': { bg: 'rgba(78,138,100,0.14)', fg: '#4E8A64' },
+  'נמסרה': { bg: 'rgba(130,112,162,0.10)', fg: '#8A8194' }
+};
+
+/* ⚠ הזמנות הדגמה · נכתבו על ידי Claude */
+const ORDERS = [
+  { key: 'cous',  status: 'בהכנה', who: 'דנה כהן',    phone: '050-1234567', time: '12:30',
+    items: '2 × צמחוני · 1 × עם 2 יח׳ מפרום', sum: 145, ship: 'איסוף', pay: 'ביט', via: '' },
+  { key: 'cous',  status: 'חדשה',  who: 'מיכל אברהם', phone: '052-7654321', time: '13:00',
+    items: '4 × עם ירך עוף מתוק', sum: 220, ship: 'משלוח · הרצל 14, יבנה', pay: 'ביט', via: 'וואטסאפ' },
+  { key: 'schn',  status: 'מוכנה', who: 'יעל לוי',    phone: '054-9988776', time: '11:40',
+    items: '2 חלות · שניצל דק', sum: 110, ship: 'איסוף', pay: 'אפל פיי', via: '' },
+  { key: 'fruit', status: 'נמסרה', who: 'רונית שגב',  phone: '053-4455667', time: '09:20',
+    items: 'מגש בינוני', sum: 300, ship: 'משלוח · ויצמן 8, רחובות', pay: 'מזומן', via: 'וואטסאפ' }
+];
+
+const a = (rgb, alpha) => 'rgba(' + rgb + ',' + alpha + ')';
+const trim = (v) => String(v || '').trim();
+const okPhone = (v) => /^0(5\d|[2-4,8-9])-?\d{7}$/.test(trim(v).replace(/\s/g, ''));
+/* מספר מנורמל · כדי שכל הצורות של אותו טלפון ייחשבו זהות */
+const norm = (v) => trim(v).replace(/[-\s]/g, '').replace(/^\+972/, '0');
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'הכל',
+      open: -1,
+      moved: {},                 /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
+      newOpen: false,
+      nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' }
+    };
+  }
+
+  statusOf(i) { return this.state.moved[i] || ORDERS[i].status; }
+  toggle(i)   { this.setState({ open: this.state.open === i ? -1 : i }); }
+
+  /* קידום למצב הבא במסלול */
+  advance(i) {
+    const cur = this.statusOf(i);
+    const k = FLOW.indexOf(cur);
+    if (k < 0 || k >= FLOW.length - 1) return;
+    const moved = Object.assign({}, this.state.moved);
+    moved[i] = FLOW[k + 1];
+    this.setState({ moved: moved });
+  }
+
+  setNw(id, v) {
+    const nw = Object.assign({}, this.state.nw);
+    nw[id] = v;
+    this.setState({ nw: nw });
+  }
+  newReady() {
+    const n = this.state.nw;
+    return okPhone(n.phone) && trim(n.items) !== '' && trim(n.sum) !== '';
+  }
+  saveNew() {
+    if (!this.newReady()) return;
+    this.setState({ newOpen: false, nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' } });
+  }
+
+  renderVals() {
+    const st = this.state;
+
+    const all = ORDERS.map((o, i) => ({ o: o, i: i, status: this.statusOf(i) }));
+    const shown = st.tab === 'הכל' ? all : all.filter((x) => x.status === st.tab);
+
+    const dress = (x) => {
+      const o = x.o, i = x.i;
+      const h = HUES[o.key];
+      const isOpen = st.open === i;
+      const k = FLOW.indexOf(x.status);
+      const last = k >= FLOW.length - 1;
+      const t = TONE[x.status] || TONE['חדשה'];
+      return {
+        who: o.who, sum: o.sum, time: o.time, status: x.status,
+        line: h.n + ' · ' + o.items,
+        hue: h.hue, deep: h.deep,
+        chipBg: t.bg, chipFg: t.fg,
+        viaWa: !!o.via, source: o.via,
+        open: isOpen,
+        spin: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+        rows: [
+          { k: 'טלפון', v: o.phone },
+          { k: 'הפריטים', v: o.items },
+          { k: 'איסוף / משלוח', v: o.ship },
+          { k: 'תשלום', v: o.pay }
+        ],
+        nextLabel: last ? 'ההזמנה נמסרה' : 'סמני כ' + FLOW[k + 1],
+        nextBg: last ? 'rgba(130,112,162,0.09)' : a(h.rgb, 0.14),
+        nextFg: last ? '#A79FB2' : h.deep,
+        nextCur: last ? 'default' : 'pointer',
+        advance: () => this.advance(i),
+        toggle: () => this.toggle(i),
+        call: () => {}
+      };
+    };
+
+    const count = (name) => name === 'הכל' ? all.length : all.filter((x) => x.status === name).length;
+    const tabs = ['הכל'].concat(FLOW.slice(0, 3)).map((name) => {
+      const on = st.tab === name;
+      return {
+        name: name, count: count(name),
+        bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+        bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+        fg: on ? '#43307A' : '#4A4254',
+        cfg: on ? '#7B5CBC' : '#A79FB2',
+        w: on ? '600' : '400',
+        pick: () => this.setState({ tab: name, open: -1 })
+      };
+    });
+
+    const openCount = all.filter((x) => x.status !== 'נמסרה').length;
+    const daySum = all.reduce((s, x) => s + x.o.sum, 0);
+
+    /* זיהוי לקוחה קיימת לפי טלפון · נרמול לפני ההשוואה */
+    const n = st.nw;
+    const hit = ORDERS.filter((o) => norm(o.phone) === norm(n.phone))[0];
+    const phoneTyped = trim(n.phone) !== '';
+    const phoneOk = okPhone(n.phone);
+
+    return {
+      subLabel: 'שלישי · 25 באוגוסט',
+      newLabel: 'הזמנה ידנית',
+
+      tabs: tabs,
+      kpis: [
+        { k: 'הזמנות היום', v: all.length, fg: '#2A2430' },
+        { k: 'עוד לא נמסרו', v: openCount, fg: '#A65E2A' },
+        { k: 'מחזור היום', v: daySum, fg: '#43307A' }
+      ],
+
+      orders: shown.map(dress),
+      isEmpty: shown.length === 0,
+      emptyLabel: 'אין הזמנות במצב הזה',
+      callLabel: 'חיוג',
+
+      /* ── ההזמנה הידנית ── */
+      newOpen: st.newOpen,
+      openNew:  () => this.setState({ newOpen: true }),
+      closeNew: () => this.setState({ newOpen: false }),
+      newTitle: 'הזמנה ידנית',
+      newSub: 'מוואטסאפ או בטלפון',
+      phoneLabel: 'טלפון הלקוחה',
+      nPhone: n.phone,
+      setPhone: (e) => this.setNw('phone', e.target.value),
+      phoneBd: (phoneTyped && !phoneOk) ? 'rgba(185,83,73,0.5)' : 'rgba(130,112,162,0.18)',
+      matchLabel: !phoneTyped ? 'לפי הטלפון אזהה אם זו לקוחה קיימת'
+                : !phoneOk    ? 'מספר טלפון לא תקין'
+                : hit         ? 'לקוחה קיימת · ' + hit.who
+                              : 'לקוחה חדשה · ייפתח לה כרטיס',
+      matchFg: !phoneTyped ? '#A79FB2' : !phoneOk ? '#B95349' : hit ? '#4E8A64' : '#7B5CBC',
+
+      catLabel: 'קטגוריה',
+      cats: CAT_KEYS.map((k) => {
+        const h = HUES[k];
+        const on = n.cat === k;
+        return {
+          name: h.n,
+          bg: on ? a(h.rgb, 0.1) : 'rgba(255,255,255,0.7)',
+          bd: on ? a(h.rgb, 0.42) : 'rgba(130,112,162,0.16)',
+          fg: on ? h.deep : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('cat', k)
+        };
+      }),
+
+      itemsLabel: 'מה הוזמן',
+      itemsPh: 'למשל: 3 × צמחוני',
+      nItems: n.items,
+      setItems: (e) => this.setNw('items', e.target.value),
+
+      sumLabel: 'סכום ₪',
+      nSum: n.sum,
+      setSum: (e) => this.setNw('sum', e.target.value),
+      timeLabel: 'שעת איסוף',
+      nTime: n.time,
+      setTime: (e) => this.setNw('time', e.target.value),
+
+      notifyNote: 'עם השמירה תישלח ללקוחה הודעת וואטסאפ עם פרטי ההזמנה.',
+      newCta: 'שמירת ההזמנה',
+      newBg: this.newReady() ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
+      newFg: this.newReady() ? '#43307A' : '#A79FB2',
+      newShadow: this.newReady() ? 'inset 0 1.5px 0 rgba(255,255,255,0.6), 0 12px 24px -16px rgba(96,80,132,0.9)' : 'none',
+      newCur: this.newReady() ? 'pointer' : 'default',
+      saveNew: () => this.saveNew()
+    };
+  }
+}
+</script>
+</body>
+</html>
