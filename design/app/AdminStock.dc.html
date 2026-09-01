@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 150ms ease; }
+    .press:active { transform: scale(0.96); }
+    .bar { transition: width 420ms cubic-bezier(.22,.9,.28,1); }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(176,216,190,0.06) 0%, rgba(176,216,190,0) 66%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+
+    <div style="flex-shrink: 0;">
+      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">מלאי</div>
+      <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+    </div>
+
+    <div style="flex-shrink: 0; box-sizing: border-box; height: 46px; border-radius: 999px; padding: 4px; background: rgba(130,112,162,0.08); display: flex; gap: 4px;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+        <div onClick="{{ t.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 999px; cursor: pointer; background: {{ t.bg }}; box-shadow: {{ t.shadow }}; display: flex; align-items: center; justify-content: center;">
+          <div style="font-size: 13.5px; font-weight: {{ t.w }}; color: {{ t.fg }}; white-space: nowrap;">{{ t.name }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 11px;">
+
+      <!-- ═══════ מלאי מכירה ═══════ -->
+      <sc-if value="{{ isSale }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 11px;">
+
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 14px 16px; background: linear-gradient(152deg, rgba(210,194,242,0.44) 0%, rgba(185,164,228,0.3) 100%); border: 1px solid rgba(255,255,255,0.7); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.9); display: flex; align-items: center; gap: 10px;">
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #5B4794;">{{ dayTag }}</div>
+            <div style="font-size: 16px; font-weight: 600; color: #43307A; margin-top: 2px;">{{ dayName }}</div>
+          </div>
+          <div style="flex-shrink: 0; text-align: left;">
+            <div style="font-size: 21px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ leftAll }}</div>
+            <div style="font-size: 10.5px; font-weight: 400; color: #5B4794;">{{ leftTag }}</div>
+          </div>
+        </div>
+
+        <sc-for list="{{ sale }}" as="s" hint-placeholder-count="3">
+          <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1.5px solid {{ s.bd }}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+              <div style="font-size: 13.5px; font-weight: 600;">{{ s.name }}</div>
+              <div style="display: flex; align-items: baseline; gap: 5px;">
+                <div style="font-size: 19px; font-weight: 700; color: {{ s.fg }}; font-variant-numeric: tabular-nums;">{{ s.left }}</div>
+                <div style="font-size: 11.5px; font-weight: 400; color: #A79FB2;">{{ s.leftTag }}</div>
+              </div>
+            </div>
+            <div style="height: 7px; border-radius: 999px; background: rgba(130,112,162,0.1); overflow: hidden;">
+              <div class="bar" style="height: 100%; border-radius: 999px; width: {{ s.w }}; background: {{ s.barBg }};"></div>
+            </div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between;">
+              <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ s.soldLabel }}</div>
+              <div style="font-size: 11.5px; font-weight: 600; color: {{ s.fg }};">{{ s.state }}</div>
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ saleNote }}</div>
+      </div></sc-if>
+
+      <!-- ═══════ מלאי לוגיסטי ═══════ -->
+      <sc-if value="{{ isSupply }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 11px;">
+
+        <sc-if value="{{ hasLow }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 12px 15px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.28); display: flex; align-items: center; gap: 10px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 4l9 16H3z"></path><path d="M12 10v4M12 17.2v.1"></path></svg>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 600; color: #A65E2A;">{{ lowTitle }}</div>
+            <div style="font-size: 11.5px; font-weight: 300; color: #9A6B3C; margin-top: 1px;">{{ lowSub }}</div>
+          </div>
+          <div onClick="{{ toShopping }}" class="press" style="flex-shrink: 0; height: 32px; padding: 0 12px; border-radius: 999px; cursor: pointer; background: rgba(255,255,255,0.86); display: flex; align-items: center;">
+            <div style="font-size: 12px; font-weight: 600; color: #A65E2A; white-space: nowrap;">{{ lowCta }}</div>
+          </div>
+        </div></sc-if>
+
+        <sc-if value="{{ sent }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; align-self: center; display: flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 13px; background: rgba(78,138,100,0.12);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4E8A64" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          <div style="font-size: 12.5px; font-weight: 600; color: #4E8A64;">{{ sentLabel }}</div>
+        </div></sc-if>
+
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+          <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 7px;">
+            <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #A79FB2; padding: 0 4px;">{{ g.name }}</div>
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+              <div style="box-sizing: border-box; border-radius: 16px; padding: 11px 13px; background: {{ it.bg }}; border: 1.5px solid {{ it.bd }}; display: flex; align-items: center; gap: 10px;">
+                <div style="flex-grow: 1; min-width: 0;">
+                  <div style="font-size: 13.5px; font-weight: 500;">{{ it.name }}</div>
+                  <div style="font-size: 11px; font-weight: 300; color: {{ it.subFg }}; margin-top: 1px;">{{ it.sub }}</div>
+                </div>
+                <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 9px;">
+                  <div onClick="{{ it.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; justify-content: center;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                  </div>
+                  <div style="min-width: 42px; text-align: center;">
+                    <div style="font-size: 16px; font-weight: 700; color: {{ it.fg }}; font-variant-numeric: tabular-nums;">{{ it.n }}</div>
+                    <div style="font-size: 10px; font-weight: 400; color: #A79FB2;">{{ it.unit }}</div>
+                  </div>
+                  <div onClick="{{ it.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ it.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ supplyNote }}</div>
+      </div></sc-if>
+
+      <div style="flex-shrink: 0; height: 108px;"></div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4z"></path><path d="M4 11h16M9 7V4h6v3"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">מלאי</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M21 19H3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">כספים</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* ═══ שתי טבלאות נפרדות · אסור לערבב ═══
+   מלאי מכירה  · נקבע בפתיחת יום המכירה ויורד עם כל הזמנה. לקריאה בלבד כאן.
+   מלאי לוגיסטי · אריזות, יבשים וציוד. מתעדכן ידנית בלבד ואינו קשור למכירות. */
+
+/* ⚠ נתוני הדגמה · נכתבו על ידי Claude. המכסות תואמות את ימי המכירה. */
+const SALE = [
+  { name: 'קוסקוס צמחוני',  quota: 40, sold: 28 },
+  { name: 'קוסקוס עם עוף',   quota: 30, sold: 30 },
+  { name: 'קוסקוס עם מפרום', quota: 30, sold: 22 }
+];
+
+const SUPPLY = [
+  { g: 'אריזות', name: 'מגשי אלומיניום',  n: 40,  unit: 'יח׳', min: 60 },
+  { g: 'אריזות', name: 'קופסאות אישיות',  n: 220, unit: 'יח׳', min: 100 },
+  { g: 'אריזות', name: 'שקיות נשיאה',     n: 15,  unit: 'יח׳', min: 50 },
+  { g: 'יבשים',  name: 'קוסקוס',          n: 4,   unit: 'ק״ג', min: 8 },
+  { g: 'יבשים',  name: 'חומוס יבש',       n: 6,   unit: 'ק״ג', min: 3 },
+  { g: 'יבשים',  name: 'שמן זית',         n: 5,   unit: 'ל׳',  min: 4 },
+  { g: 'ציוד',   name: 'מגשי הגשה',       n: 12,  unit: 'יח׳', min: 8 },
+  { g: 'ציוד',   name: 'גז לטאבון',       n: 2,   unit: 'בלונים', min: 2 }
+];
+const SUP_GROUPS = ['אריזות', 'יבשים', 'ציוד'];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'sale',
+      supply: SUPPLY.map((x, i) => Object.assign({}, x, { id: i })),
+      sent: false
+    };
+  }
+
+  bump(id, d) {
+    const supply = this.state.supply.map((x) =>
+      x.id === id ? Object.assign({}, x, { n: Math.max(0, x.n + d) }) : x);
+    this.setState({ supply: supply, sent: false });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const isSale = st.tab === 'sale';
+
+    /* ── מלאי מכירה ── */
+    const sale = SALE.map((s) => {
+      const left = s.quota - s.sold;
+      const out = left <= 0;
+      const low = !out && left <= 5;
+      const fg = out ? '#B95349' : low ? '#A65E2A' : '#43307A';
+      return {
+        name: s.name, left: left, leftTag: 'נותרו',
+        soldLabel: 'נמכרו ' + s.sold + ' מתוך ' + s.quota,
+        state: out ? 'אזל' : low ? 'כמעט אזל' : 'זמין',
+        fg: fg,
+        bd: out ? 'rgba(185,83,73,0.3)' : low ? 'rgba(199,125,62,0.32)' : 'rgba(255,255,255,0.8)',
+        w: Math.round(s.sold / s.quota * 100) + '%',
+        barBg: out ? '#B95349' : low ? '#C77D3E' : 'linear-gradient(90deg, #B9A4E4, #7B5CBC)'
+      };
+    });
+    const leftAll = SALE.reduce((s, x) => s + Math.max(0, x.quota - x.sold), 0);
+
+    /* ── מלאי לוגיסטי ── */
+    const low = st.supply.filter((x) => x.n < x.min);
+    const groups = SUP_GROUPS.map((g) => ({
+      name: g,
+      items: st.supply.filter((x) => x.g === g).map((x) => {
+        const isLow = x.n < x.min;
+        return {
+          name: x.name, n: x.n, unit: x.unit,
+          sub: isLow ? 'מתחת למינימום · ' + x.min : 'מינימום ' + x.min,
+          subFg: isLow ? '#A65E2A' : '#A79FB2',
+          fg: isLow ? '#A65E2A' : '#2A2430',
+          bg: isLow ? 'rgba(199,125,62,0.07)' : 'rgba(255,255,255,0.7)',
+          bd: isLow ? 'rgba(199,125,62,0.28)' : 'rgba(130,112,162,0.14)',
+          decOp: x.n > 0 ? '1' : '0.4',
+          inc: () => this.bump(x.id, 1),
+          dec: () => this.bump(x.id, -1)
+        };
+      })
+    })).filter((g) => g.items.length > 0);
+
+    return {
+      sub: isSale ? 'מנות מוכנות למכירה' : 'אריזות, יבשים וציוד',
+
+      tabs: [{ id: 'sale', n: 'מלאי מכירה' }, { id: 'supply', n: 'מלאי לוגיסטי' }].map((t) => {
+        const on = st.tab === t.id;
+        return {
+          name: t.n,
+          bg: on ? '#FFFFFF' : 'transparent',
+          shadow: on ? '0 4px 10px -5px rgba(96,80,132,0.5)' : 'none',
+          fg: on ? '#43307A' : '#8A8194',
+          w: on ? '600' : '400',
+          pick: () => this.setState({ tab: t.id })
+        };
+      }),
+
+      isSale: isSale,
+      isSupply: !isSale,
+
+      dayTag: 'יום המכירה הפעיל',
+      dayName: 'שלישי · 1 בספטמבר',
+      leftAll: leftAll,
+      leftTag: 'מנות נותרו',
+      sale: sale,
+      saleNote: 'המכסות נקבעות בפתיחת יום המכירה ויורדות עם כל הזמנה. לשינוי — במסך ימי מכירה.',
+
+      hasLow: low.length > 0,
+      lowTitle: low.length + ' פריטים מתחת למינימום',
+      lowSub: low.map((x) => x.name).join(' · '),
+      lowCta: 'לרשימת הקניות',
+      toShopping: () => this.setState({ sent: true }),
+      sent: st.sent,
+      sentLabel: 'נוספו ' + low.length + ' פריטים לרשימת הקניות',
+
+      groups: groups,
+      supplyNote: 'המלאי הזה מתעדכן ידנית בלבד ואינו קשור למכירות.'
+    };
+  }
+}
+</script>
+</body>
+</html>
