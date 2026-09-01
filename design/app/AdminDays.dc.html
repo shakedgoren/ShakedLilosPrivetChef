@@ -1,0 +1,393 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 150ms ease; }
+    .press:active { transform: scale(0.95); }
+    .knob { transition: transform 300ms cubic-bezier(.22,.9,.28,1); }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+
+    <div style="flex-shrink: 0;">
+      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">ימי מכירה</div>
+      <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- ═══ הלוח ═══ -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 22px; padding: 14px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -26px rgba(96,80,132,0.5);">
+
+        <div style="display: flex; align-items: center; gap: 8px; direction: ltr;">
+          <div onClick="{{ nextMonth }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.1); display: flex; align-items: center; justify-content: center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+          </div>
+          <div style="flex-grow: 1; text-align: center; font-size: 14.5px; font-weight: 600;">{{ monthLabel }}</div>
+          <div onClick="{{ prevMonth }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.1); display: flex; align-items: center; justify-content: center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 12px;">
+          <sc-for list="{{ dows }}" as="d" hint-placeholder-count="7">
+            <div style="text-align: center; font-size: 10.5px; font-weight: 600; color: #A79FB2;">{{ d.t }}</div>
+          </sc-for>
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="35">
+            <div onClick="{{ d.pick }}" class="press" style="position: relative; box-sizing: border-box; height: 42px; border-radius: 12px; cursor: {{ d.cur }}; background: {{ d.bg }}; border: 1.5px solid {{ d.bd }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <div style="font-size: 13px; font-weight: {{ d.w }}; color: {{ d.fg }}; font-variant-numeric: tabular-nums;">{{ d.n }}</div>
+              <sc-if value="{{ d.hasDot }}" hint-placeholder-val="{{ true }}"><div style="width: 5px; height: 5px; border-radius: 50%; background: {{ d.dot }};"></div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; padding-top: 11px; border-top: 1px solid rgba(130,112,162,0.12);">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <div style="width: 8px; height: 8px; border-radius: 3px; background: {{ l.c }};"></div>
+              <div style="font-size: 11px; font-weight: 400; color: #7D7488;">{{ l.t }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- ═══ היום שנבחר ═══ -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 22px; padding: 16px 18px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -26px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 13px;">
+
+        <div style="font-weight: 600; font-size: 16.5px; letter-spacing: -0.01em;">{{ dayTitle }}</div>
+
+        <!-- זמינות -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 13.5px; font-weight: 600;">{{ availTitle }}</div>
+            <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 1px;">{{ availSub }}</div>
+          </div>
+          <div onClick="{{ toggleAvail }}" class="press" style="flex-shrink: 0; position: relative; width: 52px; height: 30px; border-radius: 999px; cursor: pointer; background: {{ availBg }};">
+            <div class="knob" style="position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 2px 6px -2px rgba(60,48,84,0.6); transform: {{ availKnob }};"></div>
+          </div>
+        </div>
+
+        <!-- חריגה · יום חסום שבו קטגוריה אחת בכל זאת פתוחה -->
+        <sc-if value="{{ isBlocked }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+          <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ exceptTitle }}</div>
+          <div style="font-size: 11.5px; font-weight: 300; line-height: 1.5; color: #8A8194;">{{ exceptSub }}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px;">
+            <sc-for list="{{ excepts }}" as="c" hint-placeholder-count="5">
+              <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 34px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+                <div style="font-size: 12px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div></sc-if>
+
+        <!-- יום מכירה -->
+        <sc-if value="{{ isFree }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+          <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ saleTitle }}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{ sales }}" as="c" hint-placeholder-count="3">
+              <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 34px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+                <div style="font-size: 12px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div></sc-if>
+
+        <!-- מכסות ופתיחה -->
+        <sc-if value="{{ hasSale }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 11px;">
+          <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 600;">{{ openTitle }}</div>
+              <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 1px;">{{ openSub }}</div>
+            </div>
+            <div onClick="{{ toggleOpen }}" class="press" style="flex-shrink: 0; position: relative; width: 52px; height: 30px; border-radius: 999px; cursor: pointer; background: {{ openBg }};">
+              <div class="knob" style="position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 2px 6px -2px rgba(60,48,84,0.6); transform: {{ openKnob }};"></div>
+            </div>
+          </div>
+
+          <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ quotaTitle }}</div>
+          <sc-for list="{{ quotas }}" as="q" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="flex-grow: 1; min-width: 0;">
+                <div style="font-size: 13px; font-weight: 500;">{{ q.name }}</div>
+                <div style="font-size: 11px; font-weight: 300; color: #8A8194; margin-top: 1px;">{{ q.soldLabel }}</div>
+              </div>
+              <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 9px;">
+                <div onClick="{{ q.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: {{ q.plusBg }}; display: flex; align-items: center; justify-content: center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ q.plusInk }}" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                </div>
+                <div style="min-width: 32px; text-align: center; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ q.n }}</div>
+                <div onClick="{{ q.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ q.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding-top: 3px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ totalLabel }}</div>
+            <div style="font-size: 16px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ totalQuota }}</div>
+          </div>
+        </div></sc-if>
+      </div>
+
+      <div style="flex-shrink: 0; height: 108px;"></div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4z"></path><path d="M4 11h16M9 7V4h6v3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">מלאי</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M21 19H3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">כספים</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const DOWS   = ['א','ב','ג','ד','ה','ו','ש'];
+const DAYNAM = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+/* חמש הקטגוריות · אותם גוונים של כל האפליקציה */
+const CATS = {
+  cous:  { n: 'שלישי של קוסקוס', short: 'קוסקוס',  hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188',
+           dishes: [ { id: 'veg', n: 'קוסקוס צמחוני', q: 40 },
+                     { id: 'chick', n: 'קוסקוס עם עוף', q: 30 },
+                     { id: 'mafr', n: 'קוסקוס עם מפרום', q: 30 } ] },
+  schn:  { n: 'שישי של מטעמים', short: 'שישניצל', hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158',
+           dishes: [ { id: 'chal', n: 'חלות שישניצל', q: 50 } ] },
+  box:   { n: 'מארזי ספיישל', short: 'ספיישל', hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89', dishes: [] },
+  fruit: { n: 'מגשי פירות',  short: 'פירות',  hue: '#B04A76', deep: '#7A2E4E', rgb: '176,74,118', dishes: [] },
+  chef:  { n: 'שף וטאבון',   short: 'שף',     hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40',  dishes: [] }
+};
+const CAT_KEYS = ['cous', 'schn', 'box', 'fruit', 'chef'];
+
+const pad2 = (n) => String(n).padStart(2, '0');
+const key = (y, m, d) => y + '-' + pad2(m + 1) + '-' + pad2(d);
+const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
+
+/* ⚠ מצב פתיחה · התאריכים החסומים הועתקו מהשאלון הישן ולא אושרו.
+   כאן הם רק מצב התחלתי — שקד פותחת וסוגרת ימים מהמסך הזה. */
+const SEED = {
+  /* ימי מכירה · שלישי לקוסקוס, שישי לשישניצל */
+  '2026-09-01': { sale: 'cous', open: true,  q: { veg: 40, chick: 30, mafr: 30 }, sold: { veg: 28, chick: 30, mafr: 22 } },
+  '2026-09-04': { sale: 'schn', open: true,  q: { chal: 50 }, sold: { chal: 41 } },
+  '2026-09-08': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
+  '2026-09-15': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
+  '2026-09-18': { sale: 'schn', open: false, q: { chal: 50 } },
+  '2026-09-22': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
+  /* ⚠ חסומים · הועתקו מהשאלון הישן ולא אושרו. כאן זה רק מצב פתיחה. */
+  '2026-09-10': { blocked: true },
+  '2026-09-11': { blocked: true },
+  '2026-09-12': { blocked: true },
+  '2026-09-13': { blocked: true },
+  '2026-09-14': { blocked: true },
+  '2026-09-20': { blocked: true },
+  '2026-09-21': { blocked: true },
+  '2026-09-25': { blocked: true, except: 'fruit' },
+  '2026-09-26': { blocked: true },
+  '2026-09-27': { blocked: true },
+  '2026-09-28': { blocked: true },
+  '2026-09-29': { blocked: true },
+  '2026-09-30': { blocked: true }
+};
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const t = new Date(2026, 8, 1);
+    this.state = {
+      y: t.getFullYear(), m: t.getMonth(),
+      sel: key(2026, 8, 8),
+      days: JSON.parse(JSON.stringify(SEED))
+    };
+  }
+
+  /* היום הנבחר · נוצר בעצלתיים כשנוגעים בו */
+  rec(k) { return this.state.days[k] || {}; }
+  put(k, patch) {
+    const days = Object.assign({}, this.state.days);
+    days[k] = Object.assign({}, days[k] || {}, patch);
+    this.setState({ days: days });
+  }
+
+  step(dir) {
+    let m = this.state.m + dir, y = this.state.y;
+    if (m < 0) { m = 11; y--; }
+    if (m > 11) { m = 0; y++; }
+    this.setState({ y: y, m: m });
+  }
+
+  toggleAvail() {
+    const k = this.state.sel, r = this.rec(k);
+    if (r.blocked) this.put(k, { blocked: false, except: null });
+    else this.put(k, { blocked: true, sale: null, open: false });
+  }
+
+  setSale(cat) {
+    const k = this.state.sel, r = this.rec(k);
+    if (r.sale === cat) { this.put(k, { sale: null, open: false }); return; }
+    const q = {};
+    (CATS[cat].dishes || []).forEach((d) => { q[d.id] = d.q; });
+    this.put(k, { sale: cat, open: false, q: q });
+  }
+
+  bumpQuota(id, d) {
+    const k = this.state.sel, r = this.rec(k);
+    const q = Object.assign({}, r.q || {});
+    q[id] = Math.max(0, (q[id] || 0) + d);
+    this.put(k, { q: q });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const sel = st.sel;
+    const r = this.rec(sel);
+    const cat = r.sale ? CATS[r.sale] : null;
+
+    /* ── רשת החודש ── */
+    const first = new Date(st.y, st.m, 1);
+    const startDow = first.getDay();
+    const inMonth = new Date(st.y, st.m + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < startDow; i++) {
+      cells.push({ n: '', bg: 'transparent', bd: 'transparent', fg: '#2A2430', w: '400',
+                   hasDot: false, dot: 'transparent', cur: 'default', pick: () => {} });
+    }
+    for (let d = 1; d <= inMonth; d++) {
+      const k = key(st.y, st.m, d);
+      const x = this.state.days[k] || {};
+      const on = sel === k;
+      const c = x.sale ? CATS[x.sale] : null;
+      let bg = 'rgba(255,255,255,0.6)', bd = 'rgba(130,112,162,0.12)', fg = '#4A4254', w = '400';
+      if (x.blocked) { bg = 'rgba(130,112,162,0.1)'; bd = 'rgba(130,112,162,0.16)'; fg = '#B3ABBD'; }
+      if (c) { bg = a(c.rgb, 0.13); bd = a(c.rgb, 0.34); fg = c.deep; w = '700'; }
+      if (on) { bd = '#43307A'; }
+      cells.push({
+        n: d, bg: bg, bd: bd, fg: fg, w: w,
+        hasDot: !!(c && x.open),
+        dot: c ? c.hue : 'transparent',
+        cur: 'pointer',
+        pick: () => this.setState({ sel: k })
+      });
+    }
+
+    const sd = new Date(sel);
+    const dayTitle = DAYNAM[sd.getDay()] + ', ' + sd.getDate() + ' ב' + MONTHS[sd.getMonth()];
+
+    /* ── מכסות ── */
+    const quotas = (cat ? cat.dishes : []).map((d) => {
+      const n = (r.q || {})[d.id] !== undefined ? r.q[d.id] : d.q;
+      const sold = (r.sold || {})[d.id];
+      const full = sold !== undefined && sold >= n;
+      return {
+        name: d.n, n: n,
+        soldLabel: sold === undefined ? 'טרם נמכרו' : (full ? 'אזל · נמכרו ' + sold : 'נמכרו ' + sold),
+        plusBg: a(cat.rgb, 0.13), plusInk: cat.deep,
+        decOp: n > 0 ? '1' : '0.4',
+        inc: () => this.bumpQuota(d.id, 1),
+        dec: () => this.bumpQuota(d.id, -1)
+      };
+    });
+    const totalQuota = quotas.reduce((s, q) => s + q.n, 0);
+
+    return {
+      sub: 'פתיחה, סגירה ומכסות',
+      monthLabel: MONTHS[st.m] + ' ' + st.y,
+      prevMonth: () => this.step(-1),
+      nextMonth: () => this.step(1),
+      dows: DOWS.map((t) => ({ t: t })),
+      days: cells,
+      legend: [
+        { t: 'יום מכירה', c: '#7B5CBC' },
+        { t: 'פתוח להזמנות', c: '#4E8A64' },
+        { t: 'לא זמינה', c: '#C4BDCE' }
+      ],
+
+      dayTitle: dayTitle,
+
+      availTitle: r.blocked ? 'לא זמינה ביום הזה' : 'זמינה ביום הזה',
+      availSub: r.blocked ? 'היום חסום לכל הקטגוריות' : 'אפשר לקבוע יום מכירה',
+      availBg: r.blocked ? 'rgba(130,112,162,0.22)' : '#4E8A64',
+      availKnob: r.blocked ? 'translateX(-22px)' : 'translateX(0)',
+      toggleAvail: () => this.toggleAvail(),
+
+      isBlocked: !!r.blocked,
+      exceptTitle: 'חריגה לקטגוריה',
+      exceptSub: 'אפשר לפתוח קטגוריה אחת גם ביום חסום.',
+      excepts: CAT_KEYS.map((k) => {
+        const c = CATS[k];
+        const on = r.except === k;
+        return {
+          name: c.short,
+          bg: on ? a(c.rgb, 0.13) : 'rgba(255,255,255,0.7)',
+          bd: on ? a(c.rgb, 0.42) : 'rgba(130,112,162,0.16)',
+          fg: on ? c.deep : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.put(sel, { except: r.except === k ? null : k })
+        };
+      }),
+
+      isFree: !r.blocked,
+      saleTitle: 'יום מכירה',
+      sales: ['cous', 'schn'].map((k) => {
+        const c = CATS[k];
+        const on = r.sale === k;
+        return {
+          name: c.n,
+          bg: on ? a(c.rgb, 0.13) : 'rgba(255,255,255,0.7)',
+          bd: on ? a(c.rgb, 0.42) : 'rgba(130,112,162,0.16)',
+          fg: on ? c.deep : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setSale(k)
+        };
+      }),
+
+      hasSale: !!cat,
+      openTitle: r.open ? 'פתוח להזמנות' : 'סגור להזמנות',
+      openSub: r.open ? 'לקוחות רואות את היום ויכולות להזמין' : 'היום מוגדר, אבל עוד לא נפתח',
+      openBg: r.open ? '#4E8A64' : 'rgba(130,112,162,0.22)',
+      openKnob: r.open ? 'translateX(0)' : 'translateX(-22px)',
+      toggleOpen: () => this.put(sel, { open: !r.open }),
+
+      quotaTitle: 'מכסות היום',
+      quotas: quotas,
+      totalLabel: 'סה״כ מנות',
+      totalQuota: totalQuota
+    };
+  }
+}
+</script>
+</body>
+</html>
