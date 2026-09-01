@@ -33,6 +33,20 @@
 
   <sc-if value="{{ newCustomer }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; top: 630px; right: 18px; left: 18px; height: 74px; box-sizing: border-box; border-radius: 18px; padding: 0 14px; display: flex; align-items: center; gap: 10px; background: linear-gradient(150deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.4) 100%); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 30px -24px rgba(96,80,132,0.6);"><div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;"><div style="font-size: 14px; font-weight: 600;">שלישי 25.8 · קוסקוס</div><div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">המכירה הקרובה</div></div><div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;"><div style="width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: {{ stockDot }};"></div><div style="font-size: 12.5px; font-weight: 500; color: {{ stockFg }};">{{ stockLabel }}</div></div></div></sc-if>
 
+  <sc-if value="{{ outOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ cancelOut }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 41; top: 300px; right: 30px; left: 30px; border-radius: 26px; padding: 22px 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+    <div style="font-size: 16px; font-weight: 600; text-align: center;">{{ outTitle }}</div>
+    <div style="font-size: 13px; font-weight: 300; color: #7D7488; text-align: center; line-height: 1.55;">{{ outBody }}</div>
+    <div style="display: flex; gap: 9px; margin-top: 12px; width: 100%;">
+      <div onClick="{{ cancelOut }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #4A4254;">{{ outCancel }}</div>
+      </div>
+      <div onClick="{{ doOut }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: rgba(185,83,73,0.1); border: 1.5px solid rgba(185,83,73,0.3); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #B95349;">{{ outConfirm }}</div>
+      </div>
+    </div>
+  </div></sc-if>
+
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
@@ -55,10 +69,11 @@
         <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">שקד לילוז</div>
         <div style="font-weight: 300; font-size: 13px; color: #8A8194;">שף פרטית · יבנה והשפלה</div>
       </div>
-      <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0;">
+      <div onClick="{{ authTap }}" class="press" style="position: relative; width: 44px; height: 44px; flex-shrink: 0; cursor: pointer;">
         <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FAF7FD 45%, #EFEAF7 100%); box-shadow: inset -3px -4px 8px rgba(150,125,190,0.16), inset 2px 3px 6px rgba(255,255,255,0.95), 0 6px 13px -9px rgba(120,95,170,0.4);"></div>
         <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <sc-if value="{{ isOut }}" hint-placeholder-val="{{ true }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></sc-if>
+          <sc-if value="{{ isIn }}" hint-placeholder-val="{{ true }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8"></path><path d="M17 15l4-3-4-3"></path><path d="M21 12H10"></path></svg></sc-if>
         </div>
       </div>
 
@@ -144,7 +159,7 @@
 
   </div></div>
 </x-dc>
-<script data-dc-script data-props='{"newCustomer":{"editor":"boolean","default":false,"tsType":"boolean"},"soldOut":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
+<script data-dc-script data-props='{"loggedIn":{"editor":"boolean","default":true,"tsType":"boolean"},"newCustomer":{"editor":"boolean","default":false,"tsType":"boolean"},"soldOut":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* rgb — הגוון של כל נושא כשלושה מספרים, כדי לגזור ממנו את כל השקיפויות */
 const ITEMS = [
   { key: 'cous',  num: '01', title: 'קוסקוס', sub: 'שלישי של קוסקוס', short: 'קוסקוס', tag: 'כל שלישי',
@@ -233,6 +248,18 @@ class Component extends DCLogic {
     }));
 
     return {
+
+      /* פקד ההזדהות בכותרת · מחוברת מתנתקת, לא מחוברת נכנסת */
+      isIn:  !!this.props.loggedIn,
+      isOut: !this.props.loggedIn,
+      authTap: () => { if (this.props.loggedIn) this.setState({ outOpen: true }); },
+      outOpen: !!this.state.outOpen,
+      outTitle: 'להתנתק מהחשבון?',
+      outBody: 'ההזמנות והפרטים שלך יישמרו. תוכלי להיכנס שוב מתי שתרצי.',
+      outCancel: 'ביטול',
+      outConfirm: 'התנתקות',
+      cancelOut: () => this.setState({ outOpen: false }),
+      doOut:     () => this.setState({ outOpen: false }),
       trackShift: 'translateX(' + (active * this.state.pitch + this.state.dragDx) + 'px)',
       trackEase: this.state.dragging ? 'none' : EASE,
       dragStart: (e) => this.dragStart(e),
