@@ -107,9 +107,12 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A4254" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5A16.5 16.5 0 0 1 3.5 5.7 1.5 1.5 0 0 1 5 4z"></path></svg>
                 <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ callLabel }}</div>
               </div>
-              <div onClick="{{ o.advance }}" class="press" style="flex: 2; height: 38px; border-radius: 999px; cursor: {{ o.nextCur }}; background: {{ o.nextBg }}; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <sc-if value="{{ o.canAct }}" hint-placeholder-val="{{ true }}"><div onClick="{{ o.advance }}" class="press" style="flex: 2; height: 38px; border-radius: 999px; cursor: {{ o.nextCur }}; background: {{ o.nextBg }}; display: flex; align-items: center; justify-content: center; gap: 6px;">
                 <div style="font-size: 12.5px; font-weight: 600; color: {{ o.nextFg }};">{{ o.nextLabel }}</div>
               </div>
+              <div onClick="{{ o.askCancel }}" class="press" style="flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.08); display: flex; align-items: center; justify-content: center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+              </div></sc-if>
             </div>
           </div></sc-if>
         </div>
@@ -119,6 +122,48 @@
     </div>
 
   </div>
+
+  <!-- ── ביטול הזמנה ── -->
+  <sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeCancel }}" style="position: absolute; inset: 0; z-index: 34; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 35; top: 150px; right: 16px; left: 16px; border-radius: 28px; padding: 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ cancelTitle }}</div>
+        <div style="font-size: 12.5px; font-weight: 400; color: #7D7488; margin-top: 2px;">{{ cancelWho }}</div>
+      </div>
+      <div onClick="{{ closeCancel }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="box-sizing: border-box; border-radius: 16px; padding: 12px 14px; background: {{ feeBg }};">
+      <div style="font-size: 13px; font-weight: 700; color: {{ feeFg }};">{{ feeTitle }}</div>
+      <div style="font-size: 11.5px; font-weight: 400; color: {{ feeFg }}; margin-top: 2px;">{{ feeSub }}</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ reasonLabel }}</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="4">
+          <div onClick="{{ r.pick }}" class="press" style="box-sizing: border-box; height: 34px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ r.bg }}; border: 1.5px solid {{ r.bd }}; display: flex; align-items: center;">
+            <div style="font-size: 12px; font-weight: {{ r.w }}; color: {{ r.fg }}; white-space: nowrap;">{{ r.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ noteLabel }}</div>
+      <input type="text" value="{{ cxNote }}" onInput="{{ setNote }}" placeholder="{{ notePh }}" style="width: 100%; box-sizing: border-box; height: 46px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+    </div>
+
+    <div style="display: flex; gap: 9px; margin-top: 2px;">
+      <div onClick="{{ closeCancel }}" class="press" style="flex: 1; height: 46px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #4A4254;">{{ keepLabel }}</div>
+      </div>
+      <div onClick="{{ doCancel }}" class="press" style="flex: 1; box-sizing: border-box; height: 46px; border-radius: 999px; cursor: {{ cancelCur }}; background: {{ cancelBg }}; border: 1.5px solid {{ cancelBd }}; display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: {{ cancelFg }};">{{ cancelCta }}</div>
+      </div>
+    </div>
+  </div></sc-if>
 
   <!-- ── הזמנה ידנית ── -->
   <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeNew }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
@@ -206,23 +251,31 @@ const CAT_KEYS = ['cous', 'schn', 'box', 'fruit', 'chef'];
 
 /* מסלול המצבים · כל הזמנה מתקדמת בסדר הזה */
 const FLOW = ['חדשה', 'בהכנה', 'מוכנה', 'נמסרה'];
+/* ״בוטלה״ אינו חלק מהמסלול · אפשר להגיע אליו מכל מצב שטרם נמסר */
+const CANCELLED = 'בוטלה';
 const TONE = {
   'חדשה':  { bg: 'rgba(123,92,188,0.12)', fg: '#43307A' },
   'בהכנה': { bg: 'rgba(199,125,62,0.14)', fg: '#A65E2A' },
   'מוכנה': { bg: 'rgba(78,138,100,0.14)', fg: '#4E8A64' },
-  'נמסרה': { bg: 'rgba(130,112,162,0.10)', fg: '#8A8194' }
+  'נמסרה': { bg: 'rgba(130,112,162,0.10)', fg: '#8A8194' },
+  'בוטלה': { bg: 'rgba(185,83,73,0.12)',  fg: '#B95349' }
 };
+
+/* ביטול מאוחר · פחות מ-12 שעות לפני האיסוף מחייב 30% מהעסקה */
+const LATE_HOURS = 12;
+const LATE_FEE = 0.3;
+const REASONS = ['הלקוחה ביטלה', 'אני ביטלתי', 'לא הגיעה לאיסוף', 'אחר'];
 
 /* ⚠ הזמנות הדגמה · נכתבו על ידי Claude */
 const ORDERS = [
   { key: 'cous',  status: 'בהכנה', who: 'דנה כהן',    phone: '050-1234567', time: '12:30',
-    items: '2 × צמחוני · 1 × עם 2 יח׳ מפרום', sum: 145, ship: 'איסוף', pay: 'ביט', via: '' },
+    items: '2 × צמחוני · 1 × עם 2 יח׳ מפרום', sum: 145, ship: 'איסוף', pay: 'ביט', via: '', hrs: 2.5 },
   { key: 'cous',  status: 'חדשה',  who: 'מיכל אברהם', phone: '052-7654321', time: '13:00',
-    items: '4 × עם ירך עוף מתוק', sum: 220, ship: 'משלוח · הרצל 14, יבנה', pay: 'ביט', via: 'וואטסאפ' },
+    items: '4 × עם ירך עוף מתוק', sum: 220, ship: 'משלוח · הרצל 14, יבנה', pay: 'ביט', via: 'וואטסאפ', hrs: 3 },
   { key: 'schn',  status: 'מוכנה', who: 'יעל לוי',    phone: '054-9988776', time: '11:40',
-    items: '2 חלות · שניצל דק', sum: 110, ship: 'איסוף', pay: 'אפל פיי', via: '' },
+    items: '2 חלות · שניצל דק', sum: 110, ship: 'איסוף', pay: 'אפל פיי', via: '', hrs: 30 },
   { key: 'fruit', status: 'נמסרה', who: 'רונית שגב',  phone: '053-4455667', time: '09:20',
-    items: 'מגש בינוני', sum: 300, ship: 'משלוח · ויצמן 8, רחובות', pay: 'מזומן', via: 'וואטסאפ' }
+    items: 'מגש בינוני', sum: 300, ship: 'משלוח · ויצמן 8, רחובות', pay: 'מזומן', via: 'וואטסאפ', hrs: -1 }
 ];
 
 const a = (rgb, alpha) => 'rgba(' + rgb + ',' + alpha + ')';
@@ -239,7 +292,9 @@ class Component extends DCLogic {
       open: -1,
       moved: {},                 /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
       newOpen: false,
-      nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' }
+      nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' },
+      cancelling: -1,                /* איזו הזמנה בתהליך ביטול · -1 = אין */
+      cx: { reason: '', note: '' }
     };
   }
 
@@ -249,11 +304,30 @@ class Component extends DCLogic {
   /* קידום למצב הבא במסלול */
   advance(i) {
     const cur = this.statusOf(i);
+    if (cur === CANCELLED) return;
     const k = FLOW.indexOf(cur);
     if (k < 0 || k >= FLOW.length - 1) return;
     const moved = Object.assign({}, this.state.moved);
     moved[i] = FLOW[k + 1];
     this.setState({ moved: moved });
+  }
+
+  /* ── ביטול ── */
+  askCancel(i) { this.setState({ cancelling: i, cx: { reason: '', note: '' } }); }
+  setCx(k, v) {
+    const cx = Object.assign({}, this.state.cx);
+    cx[k] = v;
+    this.setState({ cx: cx });
+  }
+  cancelReady() { return this.state.cx.reason !== ''; }
+  doCancel() {
+    if (!this.cancelReady()) return;
+    const i = this.state.cancelling;
+    const moved = Object.assign({}, this.state.moved);
+    moved[i] = CANCELLED;
+    const notes = Object.assign({}, this.state.notes || {});
+    notes[i] = this.state.cx;
+    this.setState({ moved: moved, notes: notes, cancelling: -1, open: i });
   }
 
   setNw(id, v) {
@@ -280,6 +354,9 @@ class Component extends DCLogic {
       const o = x.o, i = x.i;
       const h = HUES[o.key];
       const isOpen = st.open === i;
+      const gone = x.status === CANCELLED;
+      const note = (st.notes || {})[i] || {};
+      const fee = (gone && o.hrs < LATE_HOURS) ? Math.round(o.sum * LATE_FEE) : 0;
       const k = FLOW.indexOf(x.status);
       const last = k >= FLOW.length - 1;
       const t = TONE[x.status] || TONE['חדשה'];
@@ -296,19 +373,24 @@ class Component extends DCLogic {
           { k: 'הפריטים', v: o.items },
           { k: 'איסוף / משלוח', v: o.ship },
           { k: 'תשלום', v: o.pay }
-        ],
+        ].concat(gone ? [
+          { k: 'סיבת הביטול', v: (note.reason || '') + (note.note ? ' · ' + note.note : '') },
+          { k: 'דמי ביטול', v: fee > 0 ? fee + ' ₪ · 30% מהעסקה' : 'ללא חיוב' }
+        ] : []),
+        canAct: !gone,
         nextLabel: last ? 'ההזמנה נמסרה' : 'סמני כ' + FLOW[k + 1],
         nextBg: last ? 'rgba(130,112,162,0.09)' : a(h.rgb, 0.14),
         nextFg: last ? '#A79FB2' : h.deep,
         nextCur: last ? 'default' : 'pointer',
         advance: () => this.advance(i),
+        askCancel: () => this.askCancel(i),
         toggle: () => this.toggle(i),
         call: () => {}
       };
     };
 
     const count = (name) => name === 'הכל' ? all.length : all.filter((x) => x.status === name).length;
-    const tabs = ['הכל'].concat(FLOW.slice(0, 3)).map((name) => {
+    const tabs = ['הכל'].concat(FLOW.slice(0, 3)).concat([CANCELLED]).map((name) => {
       const on = st.tab === name;
       return {
         name: name, count: count(name),
@@ -321,8 +403,9 @@ class Component extends DCLogic {
       };
     });
 
-    const openCount = all.filter((x) => x.status !== 'נמסרה').length;
-    const daySum = all.reduce((s, x) => s + x.o.sum, 0);
+    const live = all.filter((x) => x.status !== CANCELLED);
+    const openCount = live.filter((x) => x.status !== 'נמסרה').length;
+    const daySum = live.reduce((s, x) => s + x.o.sum, 0);
 
     /* זיהוי לקוחה קיימת לפי טלפון · נרמול לפני ההשוואה */
     const n = st.nw;
@@ -347,6 +430,52 @@ class Component extends DCLogic {
       isEmpty: shown.length === 0,
       emptyLabel: 'אין הזמנות במצב הזה',
       callLabel: 'חיוג',
+
+      /* ── ביטול הזמנה ── */
+      cancelOpen: st.cancelling >= 0,
+      cancelTitle: 'ביטול הזמנה',
+      cancelWho: st.cancelling >= 0 ? ORDERS[st.cancelling].who : '',
+      closeCancel: () => this.setState({ cancelling: -1 }),
+      reasonLabel: 'סיבת הביטול',
+      reasons: REASONS.map((r) => {
+        const on = st.cx.reason === r;
+        return {
+          name: r,
+          bg: on ? 'rgba(185,83,73,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(185,83,73,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#B95349' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setCx('reason', r)
+        };
+      }),
+      noteLabel: 'הערה · לא חובה',
+      notePh: 'מה קרה',
+      cxNote: st.cx.note,
+      setNote: (e) => this.setCx('note', e.target.value),
+      feeTitle: (() => {
+        if (st.cancelling < 0) return '';
+        const o = ORDERS[st.cancelling];
+        return o.hrs < LATE_HOURS ? 'ביטול מאוחר · חיוב 30%' : 'ביטול מוקדם · ללא חיוב';
+      })(),
+      feeSub: (() => {
+        if (st.cancelling < 0) return '';
+        const o = ORDERS[st.cancelling];
+        if (o.hrs < LATE_HOURS) {
+          const h = o.hrs < 0 ? 'האיסוף כבר עבר' : 'נותרו ' + o.hrs + ' שעות לאיסוף';
+          return h + ' · ' + Math.round(o.sum * LATE_FEE) + ' ₪ מתוך ' + o.sum + ' ₪';
+        }
+        return 'נותרו ' + o.hrs + ' שעות לאיסוף · מעל ' + LATE_HOURS;
+      })(),
+      feeBg: (st.cancelling >= 0 && ORDERS[st.cancelling].hrs < LATE_HOURS)
+        ? 'rgba(185,83,73,0.09)' : 'rgba(78,138,100,0.1)',
+      feeFg: (st.cancelling >= 0 && ORDERS[st.cancelling].hrs < LATE_HOURS) ? '#B95349' : '#4E8A64',
+      cancelCta: 'ביטול ההזמנה',
+      cancelBg: this.cancelReady() ? 'rgba(185,83,73,0.12)' : 'rgba(130,112,162,0.11)',
+      cancelFg: this.cancelReady() ? '#B95349' : '#A79FB2',
+      cancelBd: this.cancelReady() ? 'rgba(185,83,73,0.34)' : 'transparent',
+      cancelCur: this.cancelReady() ? 'pointer' : 'default',
+      doCancel: () => this.doCancel(),
+      keepLabel: 'להשאיר',
 
       /* ── ההזמנה הידנית ── */
       newOpen: st.newOpen,

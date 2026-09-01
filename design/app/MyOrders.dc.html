@@ -94,8 +94,8 @@
 
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
             <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-              <div style="font-size: 10.5px; letter-spacing: 0.18em; font-weight: 600; color: #A79FB2;">{{ o.status }}</div>
-              <div style="font-weight: 600; font-size: 17px; letter-spacing: -0.01em; line-height: 1.2;">{{ o.name }}</div>
+              <div style="font-size: 10.5px; letter-spacing: 0.18em; font-weight: 600; color: {{ o.statusFg }};">{{ o.status }}</div>
+              <div style="font-weight: 600; font-size: 17px; letter-spacing: -0.01em; line-height: 1.2; color: {{ o.nameFg }};">{{ o.name }}</div>
             </div>
 
             <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 7px;">
@@ -103,10 +103,10 @@
                 <div style="font-weight: 600; font-size: 17px; color: #6E6478; white-space: nowrap; font-variant-numeric: tabular-nums;">{{ o.sum }} ₪</div>
                 <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ o.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
               </div>
-              <div onClick="{{ o.again }}" class="press" style="height: 32px; padding: 0 13px; border-radius: 999px; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 8px 16px -13px rgba(96,80,132,0.9); display: flex; align-items: center; gap: 6px;">
+              <sc-if value="{{ o.canAgain }}" hint-placeholder-val="{{ true }}"><div onClick="{{ o.again }}" class="press" style="height: 32px; padding: 0 13px; border-radius: 999px; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 8px 16px -13px rgba(96,80,132,0.9); display: flex; align-items: center; gap: 6px;">
                 <div style="font-weight: 600; font-size: 12.5px; color: #43307A; white-space: nowrap;">להזמין שוב</div>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
-              </div>
+              </div></sc-if>
             </div>
           </div>
 
@@ -179,7 +179,10 @@ const ORDERS = [
     when: 'איסוף · 15.8, 11:40', pay: 'ביט', ref: '1508-1362' },
   { key: 'cous', live: false, status: 'נאסף · 11.8', name: 'שלישי של קוסקוס',
     items: '3 × עם ירך עוף מתוק', sum: 165,
-    when: 'איסוף · 11.8, 13:10', pay: 'אפל פיי', ref: '1108-1289' }
+    when: 'איסוף · 11.8, 13:10', pay: 'אפל פיי', ref: '1108-1289' },
+  { key: 'fruit', live: false, status: 'בוטלה · 22.8', name: 'מגשי פירות', cancelled: true,
+    items: 'מגש בינוני', sum: 300, fee: 90,
+    when: 'איסוף · 22.8, 10:00', pay: 'ביט', ref: '2208-1401' }
 ];
 
 const a = (rgb, alpha) => 'rgba(' + rgb + ',' + alpha + ')';
@@ -199,18 +202,22 @@ class Component extends DCLogic {
     const dress = (o, i) => {
       const h = HUES[o.key] || HUES.cous;
       const isOpen = open === i;
+      const off = !!o.cancelled;
       return {
         status: o.status, name: o.name, sum: o.sum, when: o.when,
         hue: h.hue, deep: h.deep,
-        edge: a(h.rgb, 0.34),          /* הזמנה שהסתיימה · הגוון מרומז בלבד */
+        edge: off ? 'rgba(185,83,73,0.34)' : a(h.rgb, 0.34),
+        statusFg: off ? '#B95349' : '#A79FB2',
+        nameFg: off ? '#8A8194' : '#2A2430',
         open: isOpen,
         spin: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+        canAgain: !off,
         rows: [
           { k: 'הפריטים', v: o.items },
           { k: 'מועד', v: o.when },
           { k: 'תשלום', v: o.pay },
           { k: 'מספר הזמנה', v: o.ref }
-        ],
+        ].concat(off ? [{ k: 'דמי ביטול', v: o.fee ? o.fee + ' ₪ · 30% מהעסקה' : 'ללא חיוב' }] : []),
         toggle: () => this.toggle(i),
         again: () => {}
       };
