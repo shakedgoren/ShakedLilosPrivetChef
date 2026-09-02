@@ -167,8 +167,9 @@
 
   <!-- ── הזמנה ידנית ── -->
   <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeNew }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
-  <div style="position: absolute; z-index: 31; top: 96px; right: 16px; left: 16px; border-radius: 28px; padding: 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 12px;">
-    <div style="display: flex; align-items: flex-start; gap: 10px;">
+  <div style="position: absolute; z-index: 31; top: 58px; bottom: 34px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+
+    <div style="flex-shrink: 0; display: flex; align-items: flex-start; gap: 10px;">
       <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
         <div style="font-weight: 600; font-size: 17px;">{{ newTitle }}</div>
         <div style="font-size: 12px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ newSub }}</div>
@@ -176,42 +177,124 @@
       <div onClick="{{ closeNew }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 5px;">
-      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ phoneLabel }}</div>
-      <input type="tel" value="{{ nPhone }}" onInput="{{ setPhone }}" placeholder="050-0000000" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ phoneBd }}; outline: none;">
-      <div style="font-size: 11.5px; font-weight: 500; color: {{ matchFg }};">{{ matchLabel }}</div>
-    </div>
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
 
-    <div style="display: flex; flex-direction: column; gap: 5px;">
-      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ catLabel }}</div>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="5">
-          <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 36px; border-radius: 12px; padding: 0 12px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
-            <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+      <!-- שם · השלמה מהפנקס -->
+      <div style="position: relative; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ nameLabel }}</div>
+        <input type="text" value="{{ nName }}" onInput="{{ setName }}" placeholder="{{ namePh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        <sc-if value="{{ hasPeople }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 5; top: 76px; right: 0; left: 0; border-radius: 14px; overflow: hidden; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); box-shadow: 0 16px 32px -18px rgba(96,80,132,0.6);">
+          <sc-for list="{{ people }}" as="b" hint-placeholder-count="3">
+            <div onClick="{{ b.pick }}" class="press" style="padding: 10px 12px; cursor: pointer; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid rgba(130,112,162,0.1);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"></path></svg>
+              <div style="flex-grow: 1; min-width: 0; font-size: 13px; font-weight: 500; color: #2A2430;">{{ b.name }}</div>
+              <div style="font-size: 11.5px; font-weight: 400; color: #A79FB2; font-variant-numeric: tabular-nums;">{{ b.phone }}</div>
+            </div>
+          </sc-for>
+        </div></sc-if>
+      </div>
+
+      <!-- טלפון -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ phoneLabel }}</div>
+        <input type="tel" value="{{ nPhone }}" onInput="{{ setPhone }}" placeholder="050-0000000" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid {{ phoneBd }}; outline: none;">
+        <div style="font-size: 11.5px; font-weight: 500; color: {{ matchFg }};">{{ matchLabel }}</div>
+      </div>
+
+      <!-- קטגוריה -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ catLabel }}</div>
+        <div style="display: flex; gap: 6px;">
+          <sc-for list="{{ cats }}" as="c" hint-placeholder-count="2">
+            <div onClick="{{ c.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center; justify-content: center;">
+              <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- הפריטים · בדיוק כמו שהלקוחה בוחרת -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ itemsLabel }}</div>
+        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="6">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-size: 13px; font-weight: 500;">{{ m.name }}</div>
+              <div style="font-size: 11px; font-weight: 300; color: #A79FB2;">{{ m.price }} ₪</div>
+            </div>
+            <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
+              <div onClick="{{ m.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: {{ m.plusBg }}; display: flex; align-items: center; justify-content: center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ m.plusInk }}" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+              </div>
+              <div style="min-width: 20px; text-align: center; font-size: 15.5px; font-weight: {{ m.w }}; color: {{ m.fg }}; font-variant-numeric: tabular-nums;">{{ m.n }}</div>
+              <div onClick="{{ m.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ m.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+              </div>
+            </div>
           </div>
         </sc-for>
       </div>
-    </div>
 
-    <div style="display: flex; flex-direction: column; gap: 5px;">
-      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ itemsLabel }}</div>
-      <input type="text" value="{{ nItems }}" onInput="{{ setItems }}" placeholder="{{ itemsPh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
-    </div>
-
-    <div style="display: flex; gap: 9px;">
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ sumLabel }}</div>
-        <input type="text" value="{{ nSum }}" onInput="{{ setSum }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+      <!-- איסוף או משלוח -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ shipLabel }}</div>
+        <div style="display: flex; gap: 6px;">
+          <sc-for list="{{ ships }}" as="x" hint-placeholder-count="2">
+            <div onClick="{{ x.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ x.bg }}; border: 1.5px solid {{ x.bd }}; display: flex; align-items: center; justify-content: center;">
+              <div style="font-size: 12.5px; font-weight: {{ x.w }}; color: {{ x.fg }};">{{ x.name }}</div>
+            </div>
+          </sc-for>
+        </div>
       </div>
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+
+      <sc-if value="{{ isDeliv }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ areaLabel }}</div>
+          <div style="display: flex; gap: 6px;">
+            <sc-for list="{{ areas }}" as="x" hint-placeholder-count="2">
+              <div onClick="{{ x.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ x.bg }}; border: 1.5px solid {{ x.bd }}; display: flex; align-items: center; justify-content: center;">
+                <div style="font-size: 12px; font-weight: {{ x.w }}; color: {{ x.fg }}; white-space: nowrap;">{{ x.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ addrLabel }}</div>
+          <input type="text" value="{{ nAddr }}" onInput="{{ setAddr }}" placeholder="{{ addrPh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        </div>
+      </div></sc-if>
+
+      <sc-if value="{{ belowMin }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 14px; padding: 10px 13px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.28);">
+        <div style="font-size: 12px; font-weight: 600; color: #A65E2A;">{{ belowMinLabel }}</div>
+      </div></sc-if>
+
+      <!-- שעה -->
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
         <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ timeLabel }}</div>
         <input type="text" value="{{ nTime }}" onInput="{{ setTime }}" placeholder="12:30" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
       </div>
+
+      <!-- הסכום · מחושב, לא מוקלד -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 16px; padding: 12px 14px; background: rgba(123,92,188,0.07); display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <div style="font-size: 12.5px; font-weight: 400; color: #4A4254;">{{ sumItemsLabel }}</div>
+          <div style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ sumItems }} ₪</div>
+        </div>
+        <sc-if value="{{ hasShipFee }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <div style="font-size: 12.5px; font-weight: 400; color: #4A4254;">{{ sumShipLabel }}</div>
+          <div style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;">{{ sumShip }} ₪</div>
+        </div></sc-if>
+        <div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <div style="font-size: 13.5px; font-weight: 600;">{{ sumTotalLabel }}</div>
+          <div style="font-size: 18px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ sumTotal }} ₪</div>
+        </div>
+      </div>
+
+      <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.5; color: #7D7488; text-align: center;">{{ notifyNote }}</div>
     </div>
 
-    <div style="font-size: 11.5px; font-weight: 300; line-height: 1.5; color: #7D7488; text-align: center;">{{ notifyNote }}</div>
-
-    <div onClick="{{ saveNew }}" class="press" style="align-self: center; height: 48px; padding: 0 30px; border-radius: 999px; cursor: {{ newCur }}; background: {{ newBg }}; box-shadow: {{ newShadow }}; display: flex; align-items: center; justify-content: center;">
+    <div onClick="{{ saveNew }}" class="press" style="flex-shrink: 0; align-self: center; height: 48px; margin-top: 12px; padding: 0 30px; border-radius: 999px; cursor: {{ newCur }}; background: {{ newBg }}; box-shadow: {{ newShadow }}; display: flex; align-items: center; justify-content: center;">
       <div style="font-size: 15px; font-weight: 600; color: {{ newFg }};">{{ newCta }}</div>
     </div>
   </div></sc-if>
@@ -247,7 +330,40 @@ const HUES = {
   fruit: { n: 'פירות',    hue: '#B04A76', deep: '#7A2E4E', rgb: '176,74,118'  },
   chef:  { n: 'שף וטאבון', hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40'   }
 };
-const CAT_KEYS = ['cous', 'schn', 'box', 'fruit', 'chef'];
+/* בהזמנה ידנית פתוחות רק שתי הקטגוריות שנמכרות בימי מכירה */
+const MANUAL_CATS = ['cous', 'schn'];
+
+/* ⚠ פנקס לקוחות להדגמה · תואם את מסך הלקוחות */
+const BOOK = [
+  { name: 'דנה כהן',    phone: '050-1234567', addr: 'הרצל 14, יבנה' },
+  { name: 'מיכל אברהם', phone: '052-7654321', addr: 'ויצמן 8, רחובות' },
+  { name: 'יעל לוי',    phone: '054-9988776', addr: 'בילו 3, גדרה' },
+  { name: 'רונית שגב',  phone: '053-4455667', addr: 'הבנים 2, נס ציונה' },
+  { name: 'אורית ברק',  phone: '058-3322110', addr: 'רוטשילד 21, ראשון לציון' },
+  { name: 'שירה מזרחי', phone: '050-7778899', addr: 'נופר 25, יבנה' },
+  { name: 'טל אבידן',   phone: '050-1112223', addr: 'הפרחים 9, יבנה' }
+];
+
+/* הפריטים לכל קטגוריה · המחירים מהמסכים של הלקוחה */
+const MENU = {
+  cous: [
+    { id: 'veg',    n: 'קוסקוס צמחוני',  s: 'צמחוני',      price: 45 },
+    { id: 'chick',  n: 'קוסקוס עם עוף',   s: 'עם עוף',      price: 55 },
+    { id: 'mafr',   n: 'קוסקוס עם מפרום', s: 'עם מפרום',    price: 65 },
+    { id: 'aVeg',   n: 'תוספת ירקות',     price: 10 },
+    { id: 'aChick', n: 'תוספת עוף',       price: 15 },
+    { id: 'aMafr',  n: 'תוספת מפרום',     price: 20 }
+  ],
+  schn: [
+    { id: 'thin',   n: 'שניצל דק · חלה',       s: 'שניצל דק',  price: 50 },
+    { id: 'temp',   n: 'פילה עוף טמפורה · חלה', s: 'פילה עוף',  price: 60 },
+    { id: 'cocotte',n: 'קוקוט רוטב',            price: 3 }
+  ]
+};
+
+/* משלוח · לפי מסך הקוסקוס */
+const SHIP_FEE = { 'יבנה': 20, 'אחר': 60 };
+const DELIV_MIN_MEALS = 4;
 
 /* מסלול המצבים · כל הזמנה מתקדמת בסדר הזה */
 const FLOW = ['חדשה', 'בהכנה', 'מוכנה', 'נמסרה'];
@@ -292,13 +408,15 @@ class Component extends DCLogic {
       open: -1,
       moved: {},                 /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
       newOpen: false,
-      nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' },
+      nw: { name: '', phone: '', cat: 'cous', qty: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' },
       cancelling: -1,                /* איזו הזמנה בתהליך ביטול · -1 = אין */
       cx: { reason: '', note: '' }
     };
   }
 
-  statusOf(i) { return this.state.moved[i] || ORDERS[i].status; }
+  /* הרשימה המלאה · הזמנות ההדגמה ואחריהן הזמנות שנפתחו ידנית */
+  allOrders() { return ORDERS.concat(this.state.extra || []); }
+  statusOf(i) { return this.state.moved[i] || this.allOrders()[i].status; }
   toggle(i)   { this.setState({ open: this.state.open === i ? -1 : i }); }
 
   /* קידום למצב הבא במסלול */
@@ -335,19 +453,94 @@ class Component extends DCLogic {
     nw[id] = v;
     this.setState({ nw: nw });
   }
+
+  /* בחירת שם מהפנקס · הטלפון והכתובת נמשכים מהרשומה */
+  pickPerson(person) {
+    this.setState({
+      nw: Object.assign({}, this.state.nw, {
+        name: person.name, phone: person.phone, addr: person.addr
+      })
+    });
+  }
+
+  /* החלפת קטגוריה מאפסת את הפריטים · הרשימות לא חופפות */
+  setCat(cat) {
+    this.setState({ nw: Object.assign({}, this.state.nw, { cat: cat, qty: {} }) });
+  }
+
+  bumpItem(id, d) {
+    const n = this.state.nw;
+    const qty = Object.assign({}, n.qty);
+    qty[id] = Math.max(0, (qty[id] || 0) + d);
+    if (qty[id] === 0) delete qty[id];
+    this.setState({ nw: Object.assign({}, n, { qty: qty }) });
+  }
+
+  /* הסכום נגזר מהפריטים · אף פעם לא מוקלד */
+  newItemsSum() {
+    const n = this.state.nw;
+    return (MENU[n.cat] || []).reduce((s, it) => s + (n.qty[it.id] || 0) * it.price, 0);
+  }
+  newShipFee() {
+    const n = this.state.nw;
+    return n.ship === 'deliv' ? (SHIP_FEE[n.area] || 0) : 0;
+  }
+  newTotal() { return this.newItemsSum() + this.newShipFee(); }
+
+  /* מנות שנספרות למינימום המשלוח · תוספות אינן מנות */
+  newMeals() {
+    const n = this.state.nw;
+    if (n.cat !== 'cous') return DELIV_MIN_MEALS;
+    return ['veg', 'chick', 'mafr'].reduce((s, id) => s + (n.qty[id] || 0), 0);
+  }
+  belowMin() {
+    const n = this.state.nw;
+    return n.ship === 'deliv' && n.cat === 'cous' && this.newMeals() < DELIV_MIN_MEALS;
+  }
+
+  isKnown() { return BOOK.some((b) => norm(b.phone) === norm(this.state.nw.phone)); }
+
   newReady() {
     const n = this.state.nw;
-    return okPhone(n.phone) && trim(n.items) !== '' && trim(n.sum) !== '';
+    if (trim(n.name) === '' || !okPhone(n.phone)) return false;
+    if (this.newItemsSum() <= 0) return false;
+    if (n.ship === 'deliv' && trim(n.addr) === '') return false;
+    if (this.belowMin()) return false;
+    return true;
   }
+  /* שורת הפריטים · בדיוק בניסוח של הזמנה שהלקוחה שלחה */
+  newItemsLine() {
+    const n = this.state.nw;
+    return (MENU[n.cat] || [])
+      .filter((it) => (n.qty[it.id] || 0) > 0)
+      .map((it) => n.qty[it.id] + ' × ' + (it.s || it.n))
+      .join(' · ');
+  }
+
+  /* השמירה מוסיפה את ההזמנה לרשימה · לקוחה שאינה בפנקס נפתחת עם ההזמנה */
   saveNew() {
     if (!this.newReady()) return;
-    this.setState({ newOpen: false, nw: { phone: '', cat: 'cous', items: '', sum: '', time: '' } });
+    const n = this.state.nw;
+    const extra = (this.state.extra || []).concat([{
+      key: n.cat,
+      who: trim(n.name),
+      phone: n.phone,
+      items: this.newItemsLine(),
+      sum: this.newTotal(),
+      time: trim(n.time) || '—',
+      ship: n.ship === 'deliv' ? 'משלוח · ' + trim(n.addr) : 'איסוף עצמי',
+      pay: 'טרם שולם',
+      hrs: 24,
+      via: '',
+      status: FLOW[0]
+    }]);
+    this.setState({ extra: extra, newOpen: false, nw: { name: '', phone: '', cat: 'cous', qty: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' } });
   }
 
   renderVals() {
     const st = this.state;
 
-    const all = ORDERS.map((o, i) => ({ o: o, i: i, status: this.statusOf(i) }));
+    const all = this.allOrders().map((o, i) => ({ o: o, i: i, status: this.statusOf(i) }));
     const shown = st.tab === 'הכל' ? all : all.filter((x) => x.status === st.tab);
 
     const dress = (x) => {
@@ -407,11 +600,14 @@ class Component extends DCLogic {
     const openCount = live.filter((x) => x.status !== 'נמסרה').length;
     const daySum = live.reduce((s, x) => s + x.o.sum, 0);
 
-    /* זיהוי לקוחה קיימת לפי טלפון · נרמול לפני ההשוואה */
+    /* ההזמנה הידנית · השלמת שם מהפנקס וזיהוי לפי טלפון מנורמל */
     const n = st.nw;
-    const hit = ORDERS.filter((o) => norm(o.phone) === norm(n.phone))[0];
+    const q = trim(n.name);
+    const exact = BOOK.some((b) => b.name === q);
+    const people = (q === '' || exact) ? [] : BOOK.filter((b) => b.name.indexOf(q) !== -1).slice(0, 4);
     const phoneTyped = trim(n.phone) !== '';
     const phoneOk = okPhone(n.phone);
+    const known = phoneOk && this.isKnown();
 
     return {
       subLabel: 'שלישי · 25 באוגוסט',
@@ -483,18 +679,30 @@ class Component extends DCLogic {
       closeNew: () => this.setState({ newOpen: false }),
       newTitle: 'הזמנה ידנית',
       newSub: 'מוואטסאפ או בטלפון',
-      phoneLabel: 'טלפון הלקוחה',
+
+      nameLabel: 'שם מלא',
+      namePh: 'התחילי להקליד שם',
+      nName: n.name,
+      setName: (e) => this.setNw('name', e.target.value),
+      /* השלמה מהפנקס · נסגרת ברגע שנבחר שם מדויק */
+      hasPeople: people.length > 0,
+      people: people.map((b) => ({
+        name: b.name, phone: b.phone,
+        pick: () => this.pickPerson(b)
+      })),
+
+      phoneLabel: 'טלפון',
       nPhone: n.phone,
       setPhone: (e) => this.setNw('phone', e.target.value),
       phoneBd: (phoneTyped && !phoneOk) ? 'rgba(185,83,73,0.5)' : 'rgba(130,112,162,0.18)',
-      matchLabel: !phoneTyped ? 'לפי הטלפון אזהה אם זו לקוחה קיימת'
+      matchLabel: !phoneTyped ? 'אפשר לבחור שם מהרשימה והטלפון יתמלא לבד'
                 : !phoneOk    ? 'מספר טלפון לא תקין'
-                : hit         ? 'לקוחה קיימת · ' + hit.who
-                              : 'לקוחה חדשה · ייפתח לה כרטיס',
-      matchFg: !phoneTyped ? '#A79FB2' : !phoneOk ? '#B95349' : hit ? '#4E8A64' : '#7B5CBC',
+                : known       ? 'לקוחה קיימת'
+                              : 'לקוחה חדשה · תיווצר לה כרטיסייה עם שמירת ההזמנה',
+      matchFg: !phoneTyped ? '#A79FB2' : !phoneOk ? '#B95349' : known ? '#4E8A64' : '#7B5CBC',
 
       catLabel: 'קטגוריה',
-      cats: CAT_KEYS.map((k) => {
+      cats: MANUAL_CATS.map((k) => {
         const h = HUES[k];
         const on = n.cat === k;
         return {
@@ -503,23 +711,73 @@ class Component extends DCLogic {
           bd: on ? a(h.rgb, 0.42) : 'rgba(130,112,162,0.16)',
           fg: on ? h.deep : '#4A4254',
           w: on ? '600' : '400',
-          pick: () => this.setNw('cat', k)
+          pick: () => this.setCat(k)
         };
       }),
 
       itemsLabel: 'מה הוזמן',
-      itemsPh: 'למשל: 3 × צמחוני',
-      nItems: n.items,
-      setItems: (e) => this.setNw('items', e.target.value),
+      menu: (MENU[n.cat] || []).map((it) => {
+        const q = n.qty[it.id] || 0;
+        return {
+          name: it.n, price: it.price, n: q,
+          fg: q > 0 ? HUES[n.cat].deep : '#C4BDCE',
+          w: q > 0 ? '700' : '400',
+          plusBg: a(HUES[n.cat].rgb, 0.13),
+          plusInk: HUES[n.cat].deep,
+          decOp: q > 0 ? '1' : '0.35',
+          inc: () => this.bumpItem(it.id, 1),
+          dec: () => this.bumpItem(it.id, -1)
+        };
+      }),
 
-      sumLabel: 'סכום ₪',
-      nSum: n.sum,
-      setSum: (e) => this.setNw('sum', e.target.value),
+      shipLabel: 'איך מגיע',
+      ships: [{ id: 'pickup', n: 'איסוף' }, { id: 'deliv', n: 'משלוח' }].map((x) => {
+        const on = n.ship === x.id;
+        return {
+          name: x.n,
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('ship', x.id)
+        };
+      }),
+      isDeliv: n.ship === 'deliv',
+      areaLabel: 'אזור',
+      areas: Object.keys(SHIP_FEE).map((k) => {
+        const on = n.area === k;
+        return {
+          name: k === 'יבנה' ? 'יבנה · ' + SHIP_FEE[k] + ' ₪' : 'השפלה · ' + SHIP_FEE[k] + ' ₪',
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('area', k)
+        };
+      }),
+      addrLabel: 'כתובת למשלוח',
+      addrPh: 'רחוב, מספר ועיר',
+      nAddr: n.addr,
+      setAddr: (e) => this.setNw('addr', e.target.value),
+
+      belowMin: this.belowMin(),
+      belowMinLabel: 'משלוח קוסקוס מתחיל מ-' + DELIV_MIN_MEALS + ' מנות',
+
       timeLabel: 'שעת איסוף',
       nTime: n.time,
       setTime: (e) => this.setNw('time', e.target.value),
 
-      notifyNote: 'עם השמירה תישלח ללקוחה הודעת וואטסאפ עם פרטי ההזמנה.',
+      sumItems: this.newItemsSum(),
+      sumShip: this.newShipFee(),
+      hasShipFee: this.newShipFee() > 0,
+      sumTotal: this.newTotal(),
+      sumItemsLabel: 'הפריטים',
+      sumShipLabel: 'משלוח',
+      sumTotalLabel: 'סה״כ',
+
+      notifyNote: known
+        ? 'עם השמירה תישלח ללקוחה הודעת וואטסאפ עם פרטי ההזמנה.'
+        : 'עם השמירה ייפתח ללקוחה כרטיס במערכת ותישלח לה הודעת וואטסאפ.',
       newCta: 'שמירת ההזמנה',
       newBg: this.newReady() ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
       newFg: this.newReady() ? '#43307A' : '#A79FB2',

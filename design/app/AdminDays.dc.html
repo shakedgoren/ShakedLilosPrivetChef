@@ -122,7 +122,7 @@
             </div>
           </div>
 
-          <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ quotaTitle }}</div>
+          <sc-if value="{{ hasQuotas }}" hint-placeholder-val="{{ true }}"><div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ quotaTitle }}</div>
           <sc-for list="{{ quotas }}" as="q" hint-placeholder-count="3">
             <div style="display: flex; align-items: center; gap: 10px;">
               <div style="flex-grow: 1; min-width: 0;">
@@ -144,7 +144,7 @@
           <div style="display: flex; align-items: baseline; justify-content: space-between; padding-top: 3px;">
             <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ totalLabel }}</div>
             <div style="font-size: 16px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ totalQuota }}</div>
-          </div>
+          </div></sc-if>
         </div></sc-if>
       </div>
 
@@ -186,7 +186,8 @@ const CATS = {
                      { id: 'chick', n: 'קוסקוס עם עוף', q: 30 },
                      { id: 'mafr', n: 'קוסקוס עם מפרום', q: 30 } ] },
   schn:  { n: 'שישי של מטעמים', short: 'שישניצל', hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158',
-           dishes: [ { id: 'chal', n: 'חלות שישניצל', q: 50 } ] },
+           dishes: [ { id: 'thin', n: 'שניצל דק בציפוי פירורי לחם', q: 30 },
+                     { id: 'temp', n: 'פילה עוף בציפוי טמפורה',   q: 20 } ] },
   box:   { n: 'מארזי ספיישל', short: 'ספיישל', hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89', dishes: [] },
   fruit: { n: 'מגשי פירות',  short: 'פירות',  hue: '#B04A76', deep: '#7A2E4E', rgb: '176,74,118', dishes: [] },
   chef:  { n: 'שף וטאבון',   short: 'שף',     hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40',  dishes: [] }
@@ -202,10 +203,10 @@ const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
 const SEED = {
   /* ימי מכירה · שלישי לקוסקוס, שישי לשישניצל */
   '2026-09-01': { sale: 'cous', open: true,  q: { veg: 40, chick: 30, mafr: 30 }, sold: { veg: 28, chick: 30, mafr: 22 } },
-  '2026-09-04': { sale: 'schn', open: true,  q: { chal: 50 }, sold: { chal: 41 } },
+  '2026-09-04': { sale: 'schn', open: true,  q: { thin: 30, temp: 20 }, sold: { thin: 26, temp: 15 } },
   '2026-09-08': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
   '2026-09-15': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
-  '2026-09-18': { sale: 'schn', open: false, q: { chal: 50 } },
+  '2026-09-18': { sale: 'schn', open: false, q: { thin: 30, temp: 20 } },
   '2026-09-22': { sale: 'cous', open: false, q: { veg: 40, chick: 30, mafr: 30 } },
   /* ⚠ חסומים · הועתקו מהשאלון הישן ולא אושרו. כאן זה רק מצב פתיחה. */
   '2026-09-10': { blocked: true },
@@ -255,12 +256,24 @@ class Component extends DCLogic {
     else this.put(k, { blocked: true, sale: null, open: false });
   }
 
+  /* ברירת המכסות של קטגוריה · משמשת גם ליום מכירה וגם לחריגה */
+  freshQuota(cat) {
+    const q = {};
+    (CATS[cat].dishes || []).forEach((d) => { q[d.id] = d.q; });
+    return q;
+  }
+
   setSale(cat) {
     const k = this.state.sel, r = this.rec(k);
     if (r.sale === cat) { this.put(k, { sale: null, open: false }); return; }
-    const q = {};
-    (CATS[cat].dishes || []).forEach((d) => { q[d.id] = d.q; });
-    this.put(k, { sale: cat, open: false, q: q });
+    this.put(k, { sale: cat, open: false, q: this.freshQuota(cat) });
+  }
+
+  /* חריגה ביום חסום · מתנהגת כמו יום מכירה לכל דבר */
+  setExcept(cat) {
+    const k = this.state.sel, r = this.rec(k);
+    if (r.except === cat) { this.put(k, { except: null, open: false }); return; }
+    this.put(k, { except: cat, open: false, q: this.freshQuota(cat) });
   }
 
   bumpQuota(id, d) {
@@ -274,7 +287,9 @@ class Component extends DCLogic {
     const st = this.state;
     const sel = st.sel;
     const r = this.rec(sel);
-    const cat = r.sale ? CATS[r.sale] : null;
+    /* ביום חסום, הקטגוריה הפעילה היא החריגה · אחרת יום המכירה */
+    const activeKey = r.blocked ? (r.except || null) : (r.sale || null);
+    const cat = activeKey ? CATS[activeKey] : null;
 
     /* ── רשת החודש ── */
     const first = new Date(st.y, st.m, 1);
@@ -289,10 +304,14 @@ class Component extends DCLogic {
       const k = key(st.y, st.m, d);
       const x = this.state.days[k] || {};
       const on = sel === k;
-      const c = x.sale ? CATS[x.sale] : null;
+      /* ביום חסום הקטגוריה הפעילה היא החריגה · כמו בפאנל */
+      const ck = x.blocked ? (x.except || null) : (x.sale || null);
+      const c = ck ? CATS[ck] : null;
       let bg = 'rgba(255,255,255,0.6)', bd = 'rgba(130,112,162,0.12)', fg = '#4A4254', w = '400';
       if (x.blocked) { bg = 'rgba(130,112,162,0.1)'; bd = 'rgba(130,112,162,0.16)'; fg = '#B3ABBD'; }
-      if (c) { bg = a(c.rgb, 0.13); bd = a(c.rgb, 0.34); fg = c.deep; w = '700'; }
+      /* יום מכירה נצבע בגוון · יום חסום עם חריגה נשאר אפור, והנקודה מספרת */
+      if (c && !x.blocked) { bg = a(c.rgb, 0.13); bd = a(c.rgb, 0.34); fg = c.deep; w = '700'; }
+      if (c && x.blocked) { bd = a(c.rgb, 0.3); }
       if (on) { bd = '#43307A'; }
       cells.push({
         n: d, bg: bg, bd: bd, fg: fg, w: w,
@@ -345,7 +364,7 @@ class Component extends DCLogic {
 
       isBlocked: !!r.blocked,
       exceptTitle: 'חריגה לקטגוריה',
-      exceptSub: 'אפשר לפתוח קטגוריה אחת גם ביום חסום.',
+      exceptSub: 'אפשר לפתוח קטגוריה אחת גם ביום חסום. אחרי הבחירה אפשר לקבוע מכסות ולפתוח להזמנות.',
       excepts: CAT_KEYS.map((k) => {
         const c = CATS[k];
         const on = r.except === k;
@@ -355,7 +374,7 @@ class Component extends DCLogic {
           bd: on ? a(c.rgb, 0.42) : 'rgba(130,112,162,0.16)',
           fg: on ? c.deep : '#4A4254',
           w: on ? '600' : '400',
-          pick: () => this.put(sel, { except: r.except === k ? null : k })
+          pick: () => this.setExcept(k)
         };
       }),
 
@@ -375,13 +394,16 @@ class Component extends DCLogic {
       }),
 
       hasSale: !!cat,
+      hasQuotas: quotas.length > 0,
       openTitle: r.open ? 'פתוח להזמנות' : 'סגור להזמנות',
-      openSub: r.open ? 'לקוחות רואות את היום ויכולות להזמין' : 'היום מוגדר, אבל עוד לא נפתח',
+      openSub: r.open
+        ? (r.blocked ? cat.n + ' בלבד · שאר הקטגוריות סגורות' : 'לקוחות רואות את היום ויכולות להזמין')
+        : (r.blocked ? 'החריגה מוגדרת, אבל עוד לא נפתחה' : 'היום מוגדר, אבל עוד לא נפתח'),
       openBg: r.open ? '#4E8A64' : 'rgba(130,112,162,0.22)',
       openKnob: r.open ? 'translateX(0)' : 'translateX(-22px)',
       toggleOpen: () => this.put(sel, { open: !r.open }),
 
-      quotaTitle: 'מכסות היום',
+      quotaTitle: r.blocked ? 'מכסות החריגה' : 'מכסות היום',
       quotas: quotas,
       totalLabel: 'סה״כ מנות',
       totalQuota: totalQuota
