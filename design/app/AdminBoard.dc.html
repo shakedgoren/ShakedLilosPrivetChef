@@ -88,24 +88,18 @@
               <div style="font-size: 15px; font-weight: 600; color: {{ r.ink }}; font-variant-numeric: tabular-nums;">{{ r.time }}</div>
             </div>
 
-            <div style="box-sizing: border-box; width: 186px; flex-shrink: 0; padding: 10px 12px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
+            <div style="box-sizing: border-box; width: 230px; flex-shrink: 0; padding: 10px 12px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
               <div style="font-size: 14.5px; font-weight: 600; color: {{ r.ink }}; line-height: 1.2;">{{ r.who }}</div>
               <div style="font-size: 11px; font-weight: 400; color: {{ r.muted }};">{{ r.note }}</div>
             </div>
 
             <sc-for list="{{ r.cells }}" as="q" hint-placeholder-count="6">
-              <div onClick="{{ q.bump }}" class="press" style="box-sizing: border-box; width: 92px; flex-shrink: 0; padding: 6px; cursor: pointer; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center; gap: 5px;">
-                <div onClick="{{ q.down }}" class="press" style="width: 22px; height: 22px; border-radius: 7px; cursor: pointer; opacity: {{ q.downOp }}; background: rgba(130,112,162,0.1); display: flex; align-items: center; justify-content: center;">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"></path></svg>
-                </div>
-                <div style="min-width: 20px; text-align: center; font-size: 16px; font-weight: {{ q.w }}; color: {{ q.fg }}; font-variant-numeric: tabular-nums;">{{ q.n }}</div>
-                <div style="width: 22px; height: 22px; border-radius: 7px; background: {{ q.upBg }}; display: flex; align-items: center; justify-content: center;">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{ q.upInk }}" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-                </div>
+              <div style="box-sizing: border-box; width: 68px; flex-shrink: 0; padding: 6px 5px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+                <input type="text" value="{{ q.n }}" onInput="{{ q.setN }}" style="width: 100%; box-sizing: border-box; height: 34px; border-radius: 9px; padding: 0; text-align: center; font-size: 16px; font-weight: {{ q.w }}; color: {{ q.fg }}; font-variant-numeric: tabular-nums; background: {{ q.cellBg }}; border: 1.5px solid {{ q.cellBd }}; outline: none;">
               </div>
             </sc-for>
 
-            <div style="box-sizing: border-box; width: 104px; flex-shrink: 0; padding: 10px 8px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; width: 100px; flex-shrink: 0; padding: 10px 8px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
               <div style="font-size: 15.5px; font-weight: 700; color: {{ r.ink }}; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ r.sum }} ₪</div>
             </div>
 
@@ -113,13 +107,13 @@
               <div style="font-size: 13px; font-weight: 500; color: {{ r.muted }};">{{ r.pay }}</div>
             </div>
 
-            <div style="box-sizing: border-box; flex-grow: 1; min-width: 0; padding: 8px 10px; display: flex; align-items: center; justify-content: flex-end; gap: 7px;">
-              <div onClick="{{ r.advance }}" class="press" style="height: 34px; padding: 0 15px; border-radius: 999px; cursor: {{ r.nextCur }}; background: {{ r.nextBg }}; border: 1.5px solid {{ r.nextBd }}; display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; flex-grow: 1; min-width: 178px; padding: 8px 10px; display: flex; align-items: center; justify-content: flex-end; gap: 7px;">
+              <div onClick="{{ r.advance }}" class="press" style="flex-shrink: 0; height: 34px; padding: 0 15px; border-radius: 999px; cursor: {{ r.nextCur }}; background: {{ r.nextBg }}; border: 1.5px solid {{ r.nextBd }}; display: flex; align-items: center; justify-content: center;">
                 <div style="font-size: 12.5px; font-weight: 600; color: {{ r.nextFg }}; white-space: nowrap;">{{ r.nextLabel }}</div>
               </div>
-              <div onClick="{{ r.askCancel }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.08); display: flex; align-items: center; justify-content: center;">
+              <sc-if value="{{ r.canCancel }}" hint-placeholder-val="{{ true }}"><div onClick="{{ r.askCancel }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.08); display: flex; align-items: center; justify-content: center;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-              </div>
+              </div></sc-if>
             </div>
           </div>
         </sc-for>
@@ -262,12 +256,14 @@ class Component extends DCLogic {
 
   cat() { return CATS.cous; }
 
-  /* שינוי כמות · מתגלגל לסה״כ ולמונה המלאי באותו רגע */
-  bump(i, id, d) {
+  /* שינוי כמות · מקלידים את המספר החדש בתא עצמו.
+     מתגלגל לסה״כ, לסכום העמודה ולמונה המלאי באותו רגע. */
+  setQ(i, id, v) {
+    const n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
     const orders = this.state.orders.map((o, k) => {
       if (k !== i) return o;
       const q = Object.assign({}, o.q);
-      q[id] = Math.max(0, (q[id] || 0) + d);
+      q[id] = isNaN(n) ? 0 : Math.max(0, n);
       return Object.assign({}, o, { q: q });
     });
     this.setState({ orders: orders });
@@ -320,9 +316,9 @@ class Component extends DCLogic {
       });
 
     const cols = [{ t: 'שעת איסוף', w: '96px', align: 'center', hasSub: false, sub: '' },
-                  { t: 'שם מלא',    w: '186px', align: 'right',  hasSub: false, sub: '' }]
-      .concat(cat.items.map((it) => ({ t: it.t, sub: it.sub, hasSub: true, w: '92px', align: 'center' })))
-      .concat([{ t: 'סה״כ', w: '104px', align: 'center', hasSub: false, sub: '' },
+                  { t: 'שם מלא',    w: '230px', align: 'right',  hasSub: false, sub: '' }]
+      .concat(cat.items.map((it) => ({ t: it.t, sub: it.sub, hasSub: true, w: '68px', align: 'center' })))
+      .concat([{ t: 'סה״כ', w: '100px', align: 'center', hasSub: false, sub: '' },
                { t: 'תשלום', w: '104px', align: 'center', hasSub: false, sub: '' }]);
 
     const rows = inMode.map((x) => {
@@ -341,12 +337,12 @@ class Component extends DCLogic {
             n: n,
             fg: n > 0 ? b.ink : '#C4BDCE',
             w: n > 0 ? '700' : '400',
-            downOp: n > 0 ? '1' : '0.3',
-            upBg: 'rgba(123,92,188,0.13)', upInk: '#43307A',
-            bump: () => this.bump(i, it.id, 1),
-            down: () => this.bump(i, it.id, -1)
+            cellBg: n > 0 ? 'rgba(255,255,255,0.62)' : 'transparent',
+            cellBd: n > 0 ? 'rgba(130,112,162,0.2)' : 'rgba(130,112,162,0.1)',
+            setN: (e) => this.setQ(i, it.id, e.target.value)
           };
         }),
+        canCancel: !last,
         nextLabel: last ? 'נמסרה' : 'סמני כ' + FLOW[k + 1],
         nextBg: last ? 'transparent' : 'rgba(255,255,255,0.8)',
         nextBd: last ? 'transparent' : 'rgba(130,112,162,0.28)',

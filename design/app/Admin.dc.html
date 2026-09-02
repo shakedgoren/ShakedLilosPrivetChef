@@ -131,7 +131,7 @@
       <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-shrink: 0;">
         <div style="font-size: 12.5px; font-weight: 600; color: #6E6478;">מחזור · ששת החודשים האחרונים</div>
         <div style="display: flex; align-items: baseline; gap: 4px;">
-          <div style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">47,000</div>
+          <div style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">40,900</div>
           <div style="font-size: 11px; font-weight: 400; color: #8A8194;">₪</div>
         </div>
       </div>
@@ -247,7 +247,7 @@
     </div>
 
     <div style="flex-shrink: 0; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;">
-      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="6">
+      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="7">
         <div onClick="{{ t.go }}" class="press" style="position: relative; flex-shrink: 0; width: 74px; height: 60px; box-sizing: border-box; border-radius: 18px; cursor: pointer; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.78); box-shadow: 0 8px 18px -16px rgba(96,80,132,0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <sc-for list="{{ t.paths }}" as="q" hint-placeholder-count="2"><path d="{{ q.d }}"></path></sc-for>
@@ -307,7 +307,9 @@ const TILES = [
             'M16 5.5a3.4 3.4 0 0 1 0 6M18 20v-1a5 5 0 0 0-2-4'] },
   { key: 'menu',   name: 'תפריט',     file: 'AdminMenu.dc.html',
     paths: ['M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16',
-            'M12 8.6a3.4 3.4 0 1 0 0 6.8a3.4 3.4 0 1 0 0-6.8'] }
+            'M12 8.6a3.4 3.4 0 1 0 0 6.8a3.4 3.4 0 1 0 0-6.8'] },
+  { key: 'costs',  name: 'עלויות',    file: 'AdminCosts.dc.html',
+    paths: ['M12 3v18', 'M16 7.5a3.5 3.5 0 0 0-3.5-2.5h-1a3 3 0 0 0 0 6h1a3 3 0 0 1 0 6h-1A3.5 3.5 0 0 1 8 16.5'] }
 ];
 
 /* ⚠ מספרי הדגמה · נכתבו על ידי Claude ותואמים את מסכי הניהול */
@@ -318,7 +320,8 @@ const STATE = {
   lowStock: 3,       /* AdminStock  · פריטים מתחת למינימום */
   toBuy: 7,          /* AdminShopping · פריטים שטרם נקנו */
   people: 7,         /* AdminCustomers */
-  menuItems: 18      /* AdminMenu */
+  menuItems: 15,     /* AdminMenu · בלי מגשי הפירות */
+  costsDue: true     /* AdminCosts · ה-1 בחודש, זמן לעדכן עלויות */
 };
 
 const QUOTAS = [
@@ -363,7 +366,8 @@ class Component extends DCLogic {
       stock:  badge(STATE.lowStock, AMBER),
       shop:   badge(STATE.toBuy, PLUM),
       people: badge(STATE.people, PLUM),
-      menu:   badge(STATE.menuItems, PLUM)
+      menu:   badge(STATE.menuItems, PLUM),
+      costs:  badge(STATE.costsDue ? '!' : 0, AMBER)
     };
 
     return {

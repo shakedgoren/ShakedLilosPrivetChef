@@ -44,21 +44,10 @@
       <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 22px; padding: 16px 18px; background: linear-gradient(152deg, rgba(210,194,242,0.5) 0%, rgba(185,164,228,0.36) 100%); border: 1px solid rgba(255,255,255,0.7); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.9), 0 16px 32px -26px rgba(96,80,132,0.7);">
         <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #5B4794;">{{ revLabel }}</div>
         <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 5px;">
-          <div style="font-size: 30px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums; letter-spacing: -0.02em;">{{ revNet }}</div>
-          <div style="font-size: 14px; font-weight: 500; color: #5B4794;">₪</div>
-          <div style="font-size: 12px; font-weight: 500; color: #5B4794; margin-right: 2px;">{{ netTag }}</div>
+          <div style="font-size: 34px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums; letter-spacing: -0.02em;">{{ rev }}</div>
+          <div style="font-size: 15px; font-weight: 500; color: #5B4794;">₪</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 14px; margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(67,48,122,0.14);">
-          <div>
-            <div style="font-size: 10.5px; font-weight: 400; color: #5B4794;">{{ grossTag }}</div>
-            <div style="font-size: 15px; font-weight: 600; color: #43307A; font-variant-numeric: tabular-nums; margin-top: 1px;">{{ revGross }} ₪</div>
-          </div>
-          <div style="width: 1px; height: 26px; background: rgba(67,48,122,0.16);"></div>
-          <div>
-            <div style="font-size: 10.5px; font-weight: 400; color: #5B4794;">{{ vatTag }}</div>
-            <div style="font-size: 15px; font-weight: 600; color: #43307A; font-variant-numeric: tabular-nums; margin-top: 1px;">{{ revVat }} ₪</div>
-          </div>
-        </div>
+        <div style="font-size: 12px; font-weight: 500; color: #5B4794; margin-top: 3px;">{{ revSub }}</div>
       </div>
 
       <!-- ═══ הוצאות ורווח ═══ -->
@@ -67,29 +56,11 @@
           <div style="flex: 1; box-sizing: border-box; border-radius: 20px; padding: 14px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5);">
             <div style="font-size: 11.5px; font-weight: 500; color: #7D7488;">{{ t.k }}</div>
             <div style="display: flex; align-items: baseline; gap: 3px; margin-top: 4px;">
-              <div style="font-size: 21px; font-weight: 700; color: {{ t.fg }}; font-variant-numeric: tabular-nums; letter-spacing: -0.02em;">{{ t.net }}</div>
+              <div style="font-size: 22px; font-weight: 700; color: {{ t.fg }}; font-variant-numeric: tabular-nums; letter-spacing: -0.02em;">{{ t.v }}</div>
               <div style="font-size: 12px; font-weight: 500; color: {{ t.fg }};">₪</div>
             </div>
-            <div style="font-size: 10.5px; font-weight: 400; color: #A79FB2; margin-top: 1px;">{{ t.netTag }}</div>
-            <div style="font-size: 12px; font-weight: 500; color: #7D7488; margin-top: 6px; font-variant-numeric: tabular-nums;">{{ t.gross }} ₪ <span style="font-weight: 300;">{{ t.grossTag }}</span></div>
           </div>
         </sc-for>
-      </div>
-
-      <!-- ═══ מע״מ ═══ -->
-      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 15px 18px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 9px;">
-        <div style="display: flex; align-items: baseline; justify-content: space-between;">
-          <div style="font-size: 13.5px; font-weight: 600;">{{ vatTitle }}</div>
-          <div style="font-size: 11.5px; font-weight: 400; color: #A79FB2;">{{ vatRateLabel }}</div>
-        </div>
-        <sc-for list="{{ vatRows }}" as="r" hint-placeholder-count="3">
-          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
-            <div style="font-size: 12.5px; font-weight: {{ r.w }}; color: {{ r.fg }};">{{ r.k }}</div>
-            <div style="font-size: {{ r.size }}; font-weight: {{ r.w }}; color: {{ r.fg }}; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ r.v }} ₪</div>
-          </div>
-          <sc-if value="{{ r.rule }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: rgba(130,112,162,0.14);"></div></sc-if>
-        </sc-for>
-        <div style="font-size: 11px; font-weight: 300; line-height: 1.5; color: #A79FB2;">{{ vatNote }}</div>
       </div>
 
       <!-- ═══ לפי קטגוריה ═══ -->
@@ -126,13 +97,12 @@
               <div style="font-size: 13px; font-weight: 500;">{{ e.k }}</div>
               <div style="font-size: 11px; font-weight: 300; color: #8A8194; margin-top: 1px;">{{ e.sub }}</div>
             </div>
-            <div style="flex-shrink: 0; text-align: left;">
-              <div style="font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ e.net }} ₪</div>
-              <div style="font-size: 10.5px; font-weight: 300; color: #A79FB2; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ e.gross }} ₪ {{ e.grossTag }}</div>
-            </div>
+            <div style="flex-shrink: 0; font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ e.v }} ₪</div>
           </div>
         </sc-for>
       </div>
+
+      <div style="flex-shrink: 0; font-size: 11px; font-weight: 300; line-height: 1.55; color: #A79FB2; text-align: center; padding: 0 8px;">{{ fruitNote }}</div>
 
       <div style="flex-shrink: 0; font-size: 11px; font-weight: 300; line-height: 1.55; color: #A79FB2; text-align: center; padding: 0 8px;">{{ disclaimer }}</div>
 
@@ -163,29 +133,25 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
-/* מע״מ · המחירים ללקוחות כוללים מע״מ, ולכן החלק נטו הוא חלוקה ולא הכפלה */
-const VAT = 0.18;
-const net   = (gross) => Math.round(gross / (1 + VAT));
-const vatOf = (gross) => gross - net(gross);
+/* ⚠ אין פיצול מע״מ · שקד עוסקת פטורה, כל הסכומים כפי שנגבו ושולמו */
 const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
+/* מגשי הפירות אינם בניהול הכספי הזה · לא בהכנסות ולא בהוצאות */
 const CATS = [
-  { n: 'שלישי של קוסקוס', hue: '#7B5CBC', deep: '#43307A', share: 0.37 },
-  { n: 'שישי של מטעמים',  hue: '#416D9E', deep: '#2B4A6E', share: 0.26 },
-  { n: 'מארזי ספיישל',    hue: '#437C59', deep: '#2C5A3E', share: 0.20 },
-  { n: 'מגשי פירות',      hue: '#B04A76', deep: '#7A2E4E', share: 0.13 },
+  { n: 'שלישי של קוסקוס', hue: '#7B5CBC', deep: '#43307A', share: 0.43 },
+  { n: 'שישי של מטעמים',  hue: '#416D9E', deep: '#2B4A6E', share: 0.30 },
+  { n: 'מארזי ספיישל',    hue: '#437C59', deep: '#2C5A3E', share: 0.23 },
   { n: 'שף וטאבון',       hue: '#A85A28', deep: '#7A3D18', share: 0.04 }
 ];
 
-/* ⚠ מספרי הדגמה · נכתבו על ידי Claude. המחזור החודשי נלקח
-   מהדשבורד הקיים (47,000) והפילוח מהפילוח שכבר מוצג שם. */
+/* ⚠ מספרי הדגמה · נכתבו על ידי Claude. המחזור בלי מגשי הפירות. */
 const PERIODS = {
-  month: { n: 'החודש',  label: 'אוגוסט 2026',        gross: 47000,  factor: 1 },
-  quart: { n: 'רבעון',  label: 'יוני–אוגוסט 2026',   gross: 138000, factor: 2.94 },
-  year:  { n: 'השנה',   label: 'ספטמבר 2025 – אוגוסט 2026', gross: 402000, factor: 8.55 }
+  month: { n: 'החודש',  label: 'אוגוסט 2026',        gross: 40900,  factor: 1 },
+  quart: { n: 'רבעון',  label: 'יוני–אוגוסט 2026',   gross: 120000, factor: 2.94 },
+  year:  { n: 'השנה',   label: 'ספטמבר 2025 – אוגוסט 2026', gross: 350000, factor: 8.55 }
 };
 
-/* ההוצאות · הסכומים כוללים מע״מ, כמו שהן מגיעות מהקבלות */
+/* ההוצאות · הסכומים כפי שהם מופיעים בקבלות */
 const EXPENSES = [
   { k: 'חומרי גלם', sub: 'שוק, מחסן וקצביה', gross: 12980 },
   { k: 'אריזות וכלים', sub: 'מארזים, קופסאות וסכו״ם', gross: 3140 },
@@ -202,13 +168,10 @@ class Component extends DCLogic {
 
   renderVals() {
     const p = PERIODS[this.state.period];
-    const revGross = p.gross;
-    const expGross = Math.round(EXPENSES.reduce((s, e) => s + e.gross, 0) * p.factor);
-    const profitNet = net(revGross) - net(expGross);
-    const profitGross = revGross - expGross;
-
-    const vatOut = vatOf(revGross);   /* מע״מ עסקאות · נגבה מהלקוחות */
-    const vatIn  = vatOf(expGross);   /* מע״מ תשומות · חוזר לעסק */
+    const rev = p.gross;
+    const exp = Math.round(EXPENSES.reduce((s, e) => s + e.gross, 0) * p.factor);
+    const profit = rev - exp;
+    const margin = rev > 0 ? Math.round(profit / rev * 100) : 0;
 
     return {
       sub: p.label,
@@ -226,44 +189,28 @@ class Component extends DCLogic {
       }),
 
       revLabel: 'מחזור',
-      revNet: nf(net(revGross)),
-      revGross: nf(revGross),
-      revVat: nf(vatOut),
-      netTag: 'לפני מע״מ',
-      grossTag: 'כולל מע״מ',
-      vatTag: 'מזה מע״מ',
+      rev: nf(rev),
+      revSub: 'רווחיות ' + margin + '%',
 
       tiles: [
-        { k: 'הוצאות', net: nf(net(expGross)), gross: nf(expGross),
-          netTag: 'לפני מע״מ', grossTag: 'כולל מע״מ', fg: '#A65E2A' },
-        { k: 'רווח', net: nf(profitNet), gross: nf(profitGross),
-          netTag: 'לפני מע״מ', grossTag: 'כולל מע״מ', fg: '#4E8A64' }
+        { k: 'הוצאות', v: nf(exp), fg: '#A65E2A' },
+        { k: 'רווח', v: nf(profit), fg: '#4E8A64' }
       ],
-
-      vatTitle: 'מע״מ',
-      vatRateLabel: Math.round(VAT * 100) + '%',
-      vatRows: [
-        { k: 'מע״מ עסקאות · נגבה מהלקוחות', v: nf(vatOut), w: '400', fg: '#4A4254', size: '12.5px', rule: false },
-        { k: 'מע״מ תשומות · חוזר לעסק',     v: nf(vatIn),  w: '400', fg: '#4A4254', size: '12.5px', rule: true },
-        { k: 'לתשלום',                      v: nf(vatOut - vatIn), w: '700', fg: '#43307A', size: '16px', rule: false }
-      ],
-      vatNote: 'המחירים ללקוחות כוללים מע״מ. הסכום הזה אינו של העסק.',
 
       catTitle: 'לפי קטגוריה',
-      catTag: 'לפני מע״מ',
+      catTag: p.n,
       cats: CATS.map((c) => ({
         name: c.n, hue: c.hue, deep: c.deep,
-        v: nf(net(revGross) * c.share),
+        v: nf(rev * c.share),
         pct: Math.round(c.share * 100) + '%',
         w: Math.round(c.share / CATS[0].share * 100) + '%'
       })),
 
       expTitle: 'הוצאות',
       expTag: p.n,
-      expenses: EXPENSES.map((e) => {
-        const g = Math.round(e.gross * p.factor);
-        return { k: e.k, sub: e.sub, net: nf(net(g)), gross: nf(g), grossTag: 'כולל מע״מ' };
-      }),
+      expenses: EXPENSES.map((e) => ({ k: e.k, sub: e.sub, v: nf(Math.round(e.gross * p.factor)) })),
+
+      fruitNote: 'מגשי הפירות אינם נכללים כאן · הם אינם בניהול הכספי שלך.',
 
       disclaimer: 'זהו דוח ניהולי ולא ספרי הנהלת חשבונות. אינו מחליף את רואת החשבון.'
     };

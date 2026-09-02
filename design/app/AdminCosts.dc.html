@@ -1,0 +1,297 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 150ms ease; }
+    .press:active { transform: scale(0.97); }
+    input { font-family: 'Assistant', system-ui, sans-serif; }
+    input::placeholder { color: #C4BDCE; }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+
+    <div style="flex-shrink: 0;">
+      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">עלויות ייצור</div>
+      <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+    </div>
+
+    <!-- ═══ תזכורת ה-1 בחודש ═══ -->
+    <sc-if value="{{ due }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.3); display: flex; align-items: center; gap: 11px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+      <div style="flex-grow: 1; min-width: 0;">
+        <div style="font-size: 13px; font-weight: 600; color: #A65E2A;">{{ dueTitle }}</div>
+        <div style="font-size: 11.5px; font-weight: 300; color: #8A6242; margin-top: 1px;">{{ dueSub }}</div>
+      </div>
+      <div onClick="{{ dismiss }}" class="press" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; background: rgba(199,125,62,0.16); display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div></sc-if>
+
+    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ cats }}" as="c" hint-placeholder-count="4">
+          <div onClick="{{ c.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 36px; border-radius: 12px; padding: 0 13px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+            <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px;">
+
+      <sc-for list="{{ dishes }}" as="d" hint-placeholder-count="4">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 14px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border-right: 3px solid {{ d.edge }}; border-top: 1.5px solid rgba(255,255,255,0.8); border-bottom: 1.5px solid rgba(255,255,255,0.8); border-left: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 11px;">
+
+          <div onClick="{{ d.toggle }}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;">{{ d.name }}</div>
+              <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 2px;">{{ d.summary }}</div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ d.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+
+          <sc-if value="{{ d.open }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 11px;">
+
+            <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ partsLabel }}</div>
+            <sc-for list="{{ d.parts }}" as="p" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <input type="text" value="{{ p.name }}" onInput="{{ p.setName }}" placeholder="{{ partPh }}" style="flex: 1; min-width: 0; box-sizing: border-box; height: 40px; border-radius: 12px; padding: 0 11px; font-size: 13px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+                <input type="text" value="{{ p.cost }}" onInput="{{ p.setCost }}" placeholder="0" style="flex-shrink: 0; width: 74px; box-sizing: border-box; height: 40px; border-radius: 12px; padding: 0 9px; text-align: center; font-size: 13.5px; font-weight: 600; color: #A65E2A; background: #FFFFFF; border: 1.5px solid rgba(199,125,62,0.24); outline: none;">
+                <div onClick="{{ p.remove }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
+              </div>
+            </sc-for>
+
+            <div onClick="{{ d.addPart }}" class="press" style="align-self: flex-start; height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; gap: 6px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+              <div style="font-size: 12px; font-weight: 500; color: #4A4254;">{{ addPartLabel }}</div>
+            </div>
+
+            <div style="display: flex; align-items: flex-end; gap: 8px;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ soldLabel }}</div>
+                <input type="text" value="{{ d.sold }}" onInput="{{ d.setSold }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ priceLabel }}</div>
+                <input type="text" value="{{ d.price }}" onInput="{{ d.setPrice }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+              </div>
+            </div>
+
+            <div style="box-sizing: border-box; border-radius: 15px; padding: 12px 14px; background: rgba(123,92,188,0.07); display: flex; flex-direction: column; gap: 6px;">
+              <sc-for list="{{ d.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+                  <div style="font-size: 12.5px; font-weight: {{ r.w }}; color: {{ r.fg }};">{{ r.k }}</div>
+                  <div style="font-size: {{ r.size }}; font-weight: {{ r.w }}; color: {{ r.fg }}; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ r.v }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+          </div></sc-if>
+        </div>
+      </sc-for>
+
+      <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ note }}</div>
+
+      <div style="flex-shrink: 0; height: 108px;"></div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4z"></path><path d="M4 11h16M9 7V4h6v3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">מלאי</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M21 19H3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">כספים</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* מגשי הפירות אינם כאן · הם לא בניהול הכספי של שקד */
+const CATS = [
+  { id: 'cous', n: 'קוסקוס',  hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188' },
+  { id: 'schn', n: 'שישניצל', hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158' },
+  { id: 'box',  n: 'ספיישל',  hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89'  },
+  { id: 'chef', n: 'שף',      hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40'  }
+];
+
+/* ⚠ נתוני הדגמה · הפריטים והעלויות נכתבו על ידי Claude.
+   כל אחד מהם הוא אצווה חודשית: מה נקנה, כמה עלה, וכמה מנות יצאו ממנו. */
+const DISHES = [
+  { c: 'cous', name: 'קוסקוס צמחוני', price: 45, sold: 120,
+    parts: [ { n: 'סולת קוסקוס', v: 420 }, { n: 'ירקות שורש', v: 890 }, { n: 'חומוס ותבלינים', v: 210 }, { n: 'אריזות', v: 180 } ] },
+  { c: 'cous', name: 'קוסקוס עם עוף', price: 55, sold: 95,
+    parts: [ { n: 'סולת קוסקוס', v: 330 }, { n: 'ירקות שורש', v: 700 }, { n: 'שוקיים עוף', v: 980 }, { n: 'אריזות', v: 145 } ] },
+  { c: 'cous', name: 'קוסקוס עם מפרום', price: 65, sold: 70,
+    parts: [ { n: 'סולת קוסקוס', v: 245 }, { n: 'ירקות שורש', v: 520 }, { n: 'מפרום', v: 1240 }, { n: 'אריזות', v: 105 } ] },
+  { c: 'cous', name: 'תוספת ירקות', price: 10, sold: 60, parts: [ { n: 'ירקות שורש', v: 180 } ] },
+  { c: 'cous', name: 'תוספת עוף', price: 15, sold: 45, parts: [ { n: 'שוקיים עוף', v: 310 } ] },
+  { c: 'cous', name: 'תוספת מפרום', price: 20, sold: 30, parts: [ { n: 'מפרום', v: 330 } ] },
+
+  { c: 'schn', name: 'חלת שניצל דק', price: 50, sold: 110,
+    parts: [ { n: 'חזה עוף', v: 1180 }, { n: 'פירורי לחם וביצים', v: 240 }, { n: 'חלות', v: 420 }, { n: 'תוספות וסלטים', v: 310 } ] },
+  { c: 'schn', name: 'חלת פילה עוף טמפורה', price: 60, sold: 65,
+    parts: [ { n: 'פילה עוף', v: 980 }, { n: 'קמח טמפורה', v: 160 }, { n: 'חלות', v: 250 }, { n: 'תוספות וסלטים', v: 220 } ] },
+  { c: 'schn', name: 'מארז שניצל דק', price: 200, sold: 22,
+    parts: [ { n: 'חזה עוף', v: 1080 }, { n: 'פירורי לחם וביצים', v: 190 }, { n: 'חלות אישיות', v: 380 }, { n: 'מארזים', v: 165 } ] },
+  { c: 'schn', name: 'מארז פילה עוף טמפורה', price: 250, sold: 14,
+    parts: [ { n: 'פילה עוף', v: 860 }, { n: 'קמח טמפורה', v: 90 }, { n: 'חלות אישיות', v: 240 }, { n: 'מארזים', v: 105 } ] },
+  { c: 'schn', name: 'קוקוט רוטב', price: 3, sold: 140, parts: [ { n: 'רטבים וקוקוטים', v: 190 } ] },
+
+  { c: 'box', name: 'חלה לכל אירוע', price: 14, sold: 260,
+    parts: [ { n: 'קמח ושמרים', v: 640 }, { n: 'שומשום וזעתר', v: 180 }, { n: 'אריזות', v: 220 } ] },
+  { c: 'box', name: 'סלטים · ק״ג', price: 89, sold: 48,
+    parts: [ { n: 'ירקות טריים', v: 1420 }, { n: 'שמן, לימון ותבלינים', v: 260 }, { n: 'קופסאות', v: 190 } ] },
+
+  { c: 'chef', name: 'ארוחת שף · לסועד', price: 250, sold: 34,
+    parts: [ { n: 'חומרי גלם לאירוע', v: 4200 }, { n: 'כלים חד־פעמיים מעוצבים', v: 620 }, { n: 'עזרה במטבח', v: 1100 } ] },
+  { c: 'chef', name: 'עמדת טאבון · לסועד', price: 220, sold: 52,
+    parts: [ { n: 'בצק, גבינות ומילויים', v: 3900 }, { n: 'גז ועצים לטאבון', v: 480 }, { n: 'עזרה בעמדה', v: 900 } ] }
+];
+
+/* ⚠ תאריך ההדגמה · ב-1 בחודש התזכורת נדלקת מעצמה */
+const TODAY = new Date(2026, 9, 1);
+const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
+const num = (v) => { const n = parseFloat(String(v).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
+const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cat: 'cous',
+      open: -1,
+      seen: false,
+      dishes: DISHES.map((d, i) => ({
+        id: i, c: d.c, name: d.name,
+        price: String(d.price),
+        sold: String(d.sold),
+        parts: d.parts.map((p, j) => ({ id: j, name: p.n, cost: String(p.v) }))
+      }))
+    };
+  }
+
+  patch(id, p) {
+    this.setState({ dishes: this.state.dishes.map((d) => d.id === id ? Object.assign({}, d, p) : d) });
+  }
+
+  /* עלות האצווה · סכום כל מה שנקנה עבור המנה החודש */
+  batchCost(d) { return d.parts.reduce((s, p) => s + num(p.cost), 0); }
+  /* עלות למנה · האצווה חלקי כמות המנות שנמכרו */
+  unitCost(d) { const q = num(d.sold); return q > 0 ? this.batchCost(d) / q : 0; }
+
+  addPart(id) {
+    const d = this.state.dishes.filter((x) => x.id === id)[0];
+    const next = d.parts.reduce((m, p) => Math.max(m, p.id + 1), 0);
+    this.patch(id, { parts: d.parts.concat([{ id: next, name: '', cost: '' }]) });
+  }
+  removePart(id, pid) {
+    const d = this.state.dishes.filter((x) => x.id === id)[0];
+    this.patch(id, { parts: d.parts.filter((p) => p.id !== pid) });
+  }
+  patchPart(id, pid, p) {
+    const d = this.state.dishes.filter((x) => x.id === id)[0];
+    this.patch(id, { parts: d.parts.map((x) => x.id === pid ? Object.assign({}, x, p) : x) });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const cat = CATS.filter((c) => c.id === st.cat)[0];
+    const list = st.dishes.filter((d) => d.c === st.cat);
+
+    return {
+      sub: 'עדכון חודשי · ' + MONTHS[TODAY.getMonth()] + ' ' + TODAY.getFullYear(),
+
+      due: TODAY.getDate() === 1 && !st.seen,
+      dueTitle: 'הגיע ה-1 בחודש',
+      dueSub: 'זה הזמן לעדכן את עלויות הייצור',
+      dismiss: () => this.setState({ seen: true }),
+
+      cats: CATS.map((c) => {
+        const on = st.cat === c.id;
+        return {
+          name: c.n,
+          bg: on ? a(c.rgb, 0.13) : 'rgba(255,255,255,0.7)',
+          bd: on ? a(c.rgb, 0.42) : 'rgba(130,112,162,0.16)',
+          fg: on ? c.deep : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setState({ cat: c.id })
+        };
+      }),
+
+      partsLabel: 'מה נקנה החודש',
+      partPh: 'שם המצרך',
+      addPartLabel: 'עוד מצרך',
+      soldLabel: 'מנות שנמכרו',
+      priceLabel: 'מחיר מכירה ₪',
+
+      dishes: list.map((d) => {
+        const batch = this.batchCost(d);
+        const unit = this.unitCost(d);
+        const price = num(d.price);
+        const profit = price - unit;
+        const pct = price > 0 ? Math.round(profit / price * 100) : 0;
+        const thin = pct < 40;
+        const isOpen = st.open === d.id;
+        return {
+          name: d.name,
+          summary: unit > 0 ? 'עלות למנה ' + unit.toFixed(1) + ' ₪ · רווחיות ' + pct + '%' : 'טרם עודכן',
+          edge: cat.hue,
+          open: isOpen,
+          spin: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          toggle: () => this.setState({ open: isOpen ? -1 : d.id }),
+          price: d.price,
+          sold: d.sold,
+          setPrice: (e) => this.patch(d.id, { price: e.target.value }),
+          setSold: (e) => this.patch(d.id, { sold: e.target.value }),
+          addPart: () => this.addPart(d.id),
+          parts: d.parts.map((p) => ({
+            name: p.name, cost: p.cost,
+            setName: (e) => this.patchPart(d.id, p.id, { name: e.target.value }),
+            setCost: (e) => this.patchPart(d.id, p.id, { cost: e.target.value }),
+            remove: () => this.removePart(d.id, p.id)
+          })),
+          rows: [
+            { k: 'סה״כ קניות', v: nf(batch) + ' ₪', w: '400', fg: '#4A4254', size: '12.5px' },
+            { k: 'עלות למנה', v: unit.toFixed(1) + ' ₪', w: '700', fg: '#A65E2A', size: '15px' },
+            { k: 'רווח למנה', v: profit.toFixed(1) + ' ₪', w: '700', fg: thin ? '#A65E2A' : '#4E8A64', size: '15px' },
+            { k: 'רווחיות', v: pct + '%', w: '600', fg: thin ? '#A65E2A' : '#4E8A64', size: '13px' }
+          ]
+        };
+      }),
+
+      note: 'עלות המנה מחושבת כאן ועוברת אוטומטית למסך התפריט. שם אין מה לערוך.'
+    };
+  }
+}
+</script>
+</body>
+</html>

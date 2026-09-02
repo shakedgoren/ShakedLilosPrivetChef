@@ -68,6 +68,21 @@
               <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ s.soldLabel }}</div>
               <div style="font-size: 11.5px; font-weight: 600; color: {{ s.fg }};">{{ s.state }}</div>
             </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 9px; border-top: 1px solid rgba(130,112,162,0.14);">
+              <div style="flex-grow: 1; min-width: 0;">
+                <div style="font-size: 12px; font-weight: 500; color: #4A4254;">{{ dropLabel }}</div>
+                <div style="font-size: 10.5px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ s.dropSub }}</div>
+              </div>
+              <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+                <div onClick="{{ s.less }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.lessOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                </div>
+                <div style="min-width: 18px; text-align: center; font-size: 15px; font-weight: {{ s.dropW }}; color: {{ s.dropFg }}; font-variant-numeric: tabular-nums;">{{ s.waste }}</div>
+                <div onClick="{{ s.more }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.moreOp }}; background: rgba(199,125,62,0.14); display: flex; align-items: center; justify-content: center;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                </div>
+              </div>
+            </div>
           </div>
         </sc-for>
 
@@ -103,21 +118,26 @@
                   <div style="font-size: 11px; font-weight: 300; color: {{ it.subFg }}; margin-top: 1px;">{{ it.sub }}</div>
                 </div>
                 <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 9px;">
-                  <div onClick="{{ it.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; justify-content: center;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                  <div onClick="{{ it.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ it.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
                   </div>
                   <div style="min-width: 42px; text-align: center;">
                     <div style="font-size: 16px; font-weight: 700; color: {{ it.fg }}; font-variant-numeric: tabular-nums;">{{ it.n }}</div>
                     <div style="font-size: 10px; font-weight: 400; color: #A79FB2;">{{ it.unit }}</div>
                   </div>
-                  <div onClick="{{ it.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ it.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                  <div onClick="{{ it.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; justify-content: center;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
                   </div>
                 </div>
               </div>
             </sc-for>
           </div>
         </sc-for>
+
+        <div onClick="{{ openAdd }}" class="press" style="flex-shrink: 0; align-self: center; height: 40px; padding: 0 18px; border-radius: 999px; cursor: pointer; background: rgba(123,92,188,0.1); border: 1.5px solid rgba(123,92,188,0.3); display: flex; align-items: center; gap: 7px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          <div style="font-size: 13px; font-weight: 600; color: #43307A;">{{ addLabel }}</div>
+        </div>
 
         <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ supplyNote }}</div>
       </div></sc-if>
@@ -126,6 +146,60 @@
     </div>
 
   </div>
+
+  <!-- ═══ הוספת פריט למלאי ═══ -->
+  <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeAdd }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 150px; right: 16px; left: 16px; border-radius: 28px; padding: 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ addTitle }}</div>
+        <div style="font-size: 11.5px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ addSub }}</div>
+      </div>
+      <div onClick="{{ closeAdd }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ nameLabel }}</div>
+      <input type="text" value="{{ nName }}" onInput="{{ setName }}" placeholder="{{ namePh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ groupLabel }}</div>
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ addGroups }}" as="g" hint-placeholder-count="3">
+          <div onClick="{{ g.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ g.bg }}; border: 1.5px solid {{ g.bd }}; display: flex; align-items: center; justify-content: center;">
+            <div style="font-size: 12.5px; font-weight: {{ g.w }}; color: {{ g.fg }}; white-space: nowrap;">{{ g.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ unitLabel }}</div>
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ addUnits }}" as="u" hint-placeholder-count="4">
+          <div onClick="{{ u.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ u.bg }}; border: 1.5px solid {{ u.bd }}; display: flex; align-items: center; justify-content: center;">
+            <div style="font-size: 12px; font-weight: {{ u.w }}; color: {{ u.fg }}; white-space: nowrap;">{{ u.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 9px;">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ qtyLabel }}</div>
+        <input type="text" value="{{ nQty }}" onInput="{{ setQty }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; text-align: center; font-size: 14px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ minLabel }}</div>
+        <input type="text" value="{{ nMin }}" onInput="{{ setMin }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; text-align: center; font-size: 14px; font-weight: 600; color: #A65E2A; background: #FFFFFF; border: 1.5px solid rgba(199,125,62,0.24); outline: none;">
+      </div>
+    </div>
+
+    <div onClick="{{ saveAdd }}" class="press" style="align-self: center; height: 48px; padding: 0 30px; border-radius: 999px; cursor: {{ addCur }}; background: {{ addBg }}; box-shadow: {{ addShadow }}; display: flex; align-items: center; justify-content: center;">
+      <div style="font-size: 15px; font-weight: 600; color: {{ addFg }};">{{ addCta }}</div>
+    </div>
+  </div></sc-if>
 
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
@@ -171,14 +245,23 @@ const SUPPLY = [
   { g: 'ציוד',   name: 'גז לטאבון',       n: 2,   unit: 'בלונים', min: 2 }
 ];
 const SUP_GROUPS = ['אריזות', 'יבשים', 'ציוד'];
+const SUP_UNITS = ['יח׳', 'ק״ג', 'ל׳', 'בלונים'];
+
+const num = (v) => { const n = parseFloat(String(v).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
+const trim = (v) => String(v || '').trim();
 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
       tab: 'sale',
+      /* waste · מנות שירדו מהמכירה אחרי שנפתחה · נפילה, שריפה, טעות */
+      waste: SALE.map(() => 0),
       supply: SUPPLY.map((x, i) => Object.assign({}, x, { id: i })),
-      sent: false
+      nextId: SUPPLY.length,
+      sent: false,
+      addOpen: false,
+      nw: { name: '', g: 'אריזות', unit: 'יח׳', qty: '', min: '' }
     };
   }
 
@@ -188,27 +271,63 @@ class Component extends DCLogic {
     this.setState({ supply: supply, sent: false });
   }
 
+  /* תיקון מלאי המכירה · לא נוגעים במכסה ולא בהזמנות, רושמים מה ירד */
+  bumpWaste(i, d) {
+    const room = SALE[i].quota - SALE[i].sold;
+    this.setState({ waste: this.state.waste.map((v, j) =>
+      j === i ? Math.min(room, Math.max(0, v + d)) : v) });
+  }
+
+  setNw(k, v) {
+    const nw = Object.assign({}, this.state.nw);
+    nw[k] = v;
+    this.setState({ nw: nw });
+  }
+  addReady() { return trim(this.state.nw.name) !== '' && trim(this.state.nw.min) !== ''; }
+  saveAdd() {
+    if (!this.addReady()) return;
+    const n = this.state.nw;
+    const item = { id: this.state.nextId, g: n.g, name: trim(n.name), unit: n.unit,
+                   n: Math.round(num(n.qty)), min: Math.round(num(n.min)) };
+    this.setState({
+      supply: this.state.supply.concat([item]),
+      nextId: this.state.nextId + 1,
+      addOpen: false,
+      nw: { name: '', g: n.g, unit: n.unit, qty: '', min: '' },
+      sent: false
+    });
+  }
+
   renderVals() {
     const st = this.state;
     const isSale = st.tab === 'sale';
 
     /* ── מלאי מכירה ── */
-    const sale = SALE.map((s) => {
-      const left = s.quota - s.sold;
+    const sale = SALE.map((s, i) => {
+      const waste = st.waste[i];
+      const left = s.quota - s.sold - waste;
       const out = left <= 0;
       const low = !out && left <= 5;
       const fg = out ? '#B95349' : low ? '#A65E2A' : '#43307A';
       return {
         name: s.name, left: left, leftTag: 'נותרו',
-        soldLabel: 'נמכרו ' + s.sold + ' מתוך ' + s.quota,
+        soldLabel: 'נמכרו ' + s.sold + ' מתוך ' + s.quota + (waste > 0 ? ' · ירדו ' + waste : ''),
+        waste: waste,
+        dropSub: waste > 0 ? 'ירדו מהמכירה היום' : 'נפילה, שריפה או טעות',
+        dropW: waste > 0 ? '700' : '400',
+        dropFg: waste > 0 ? '#A65E2A' : '#C4BDCE',
+        lessOp: waste > 0 ? '1' : '0.35',
+        moreOp: left > 0 ? '1' : '0.35',
+        less: () => this.bumpWaste(i, -1),
+        more: () => this.bumpWaste(i, 1),
         state: out ? 'אזל' : low ? 'כמעט אזל' : 'זמין',
         fg: fg,
         bd: out ? 'rgba(185,83,73,0.3)' : low ? 'rgba(199,125,62,0.32)' : 'rgba(255,255,255,0.8)',
-        w: Math.round(s.sold / s.quota * 100) + '%',
+        w: Math.round((s.sold + waste) / s.quota * 100) + '%',
         barBg: out ? '#B95349' : low ? '#C77D3E' : 'linear-gradient(90deg, #B9A4E4, #7B5CBC)'
       };
     });
-    const leftAll = SALE.reduce((s, x) => s + Math.max(0, x.quota - x.sold), 0);
+    const leftAll = SALE.reduce((s, x, i) => s + Math.max(0, x.quota - x.sold - st.waste[i]), 0);
 
     /* ── מלאי לוגיסטי ── */
     const low = st.supply.filter((x) => x.n < x.min);
@@ -229,6 +348,8 @@ class Component extends DCLogic {
         };
       })
     })).filter((g) => g.items.length > 0);
+
+    const n = st.nw;
 
     return {
       sub: isSale ? 'מנות מוכנות למכירה' : 'אריזות, יבשים וציוד',
@@ -253,7 +374,8 @@ class Component extends DCLogic {
       leftAll: leftAll,
       leftTag: 'מנות נותרו',
       sale: sale,
-      saleNote: 'המכסות נקבעות בפתיחת יום המכירה ויורדות עם כל הזמנה. לשינוי — במסך ימי מכירה.',
+      dropLabel: 'ירדו מהמכירה',
+      saleNote: 'המכסה נקבעת בפתיחת יום המכירה ויורדת עם כל הזמנה. כאן רק מורידים מנות שהתקלקלו או נפלו — לשינוי המכסה עצמה, במסך ימי מכירה.',
 
       hasLow: low.length > 0,
       lowTitle: low.length + ' פריטים מתחת למינימום',
@@ -264,6 +386,53 @@ class Component extends DCLogic {
       sentLabel: 'נוספו ' + low.length + ' פריטים לרשימת הקניות',
 
       groups: groups,
+      addLabel: 'פריט למלאי',
+      addOpen: st.addOpen,
+      openAdd: () => this.setState({ addOpen: true }),
+      closeAdd: () => this.setState({ addOpen: false }),
+      addTitle: 'פריט חדש למלאי',
+      addSub: 'למשל אחרי שינוי מתכון',
+      nameLabel: 'שם הפריט',
+      namePh: 'למשל: קמח טמפורה',
+      nName: n.name,
+      setName: (e) => this.setNw('name', e.target.value),
+      groupLabel: 'קבוצה',
+      addGroups: SUP_GROUPS.map((g) => {
+        const on = n.g === g;
+        return {
+          name: g,
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('g', g)
+        };
+      }),
+      unitLabel: 'יחידה',
+      addUnits: SUP_UNITS.map((u) => {
+        const on = n.unit === u;
+        return {
+          name: u,
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('unit', u)
+        };
+      }),
+      qtyLabel: 'יש עכשיו',
+      nQty: n.qty,
+      setQty: (e) => this.setNw('qty', e.target.value),
+      minLabel: 'מינימום',
+      nMin: n.min,
+      setMin: (e) => this.setNw('min', e.target.value),
+      addCta: 'הוספה למלאי',
+      addBg: this.addReady() ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
+      addFg: this.addReady() ? '#43307A' : '#A79FB2',
+      addShadow: this.addReady() ? 'inset 0 1.5px 0 rgba(255,255,255,0.6), 0 12px 24px -16px rgba(96,80,132,0.9)' : 'none',
+      addCur: this.addReady() ? 'pointer' : 'default',
+      saveAdd: () => this.saveAdd(),
+
       supplyNote: 'המלאי הזה מתעדכן ידנית בלבד ואינו קשור למכירות.'
     };
   }

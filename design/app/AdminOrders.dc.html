@@ -223,17 +223,34 @@
               <div style="font-size: 11px; font-weight: 300; color: #A79FB2;">{{ m.price }} ₪</div>
             </div>
             <div style="flex-shrink: 0; display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;">
-              <div onClick="{{ m.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: {{ m.plusBg }}; display: flex; align-items: center; justify-content: center;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ m.plusInk }}" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-              </div>
-              <div style="min-width: 20px; text-align: center; font-size: 15.5px; font-weight: {{ m.w }}; color: {{ m.fg }}; font-variant-numeric: tabular-nums;">{{ m.n }}</div>
               <div onClick="{{ m.dec }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; opacity: {{ m.decOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+              </div>
+              <div style="min-width: 20px; text-align: center; font-size: 15.5px; font-weight: {{ m.w }}; color: {{ m.fg }}; font-variant-numeric: tabular-nums;">{{ m.n }}</div>
+              <div onClick="{{ m.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: {{ m.plusBg }}; display: flex; align-items: center; justify-content: center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ m.plusInk }}" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
               </div>
             </div>
           </div>
         </sc-for>
       </div>
+
+      <!-- מה נכנס לחלה · מוצג רק לסוגים שנמצאים בהזמנה -->
+      <sc-if value="{{ hasTops }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ topsLabel }}</div>
+        <sc-for list="{{ topGroups }}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 12px; font-weight: 600; color: #2B4A6E;">{{ g.title }}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="5">
+                <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 34px; padding: 0 13px; border-radius: 999px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+                  <div style="font-size: 12px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div></sc-if>
 
       <!-- איסוף או משלוח -->
       <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
@@ -355,10 +372,20 @@ const MENU = {
     { id: 'aMafr',  n: 'תוספת מפרום',     price: 20 }
   ],
   schn: [
-    { id: 'thin',   n: 'שניצל דק · חלה',       s: 'שניצל דק',  price: 50 },
-    { id: 'temp',   n: 'פילה עוף טמפורה · חלה', s: 'פילה עוף',  price: 60 },
-    { id: 'cocotte',n: 'קוקוט רוטב',            price: 3 }
+    { id: 'thin',    n: 'חלת שניצל דק',           s: 'שניצל דק',      price: 50,  type: 'thin' },
+    { id: 'temp',    n: 'חלת פילה עוף טמפורה',    s: 'פילה עוף',      price: 60,  type: 'temp' },
+    { id: 'boxThin', n: 'מארז שניצל דק',          s: 'מארז שניצל דק', price: 200, type: 'thin' },
+    { id: 'boxTemp', n: 'מארז פילה עוף טמפורה',   s: 'מארז פילה עוף', price: 250, type: 'temp' },
+    { id: 'cocAmba', n: 'קוקוט איולי עמבה',       s: 'קוקוט עמבה',    price: 3 },
+    { id: 'cocCsbr', n: 'קוקוט איולי כוסברה',     s: 'קוקוט כוסברה',  price: 3 },
+    { id: 'cocTahn', n: 'קוקוט טחינה',            s: 'קוקוט טחינה',   price: 3 }
   ]
+};
+
+/* התוספות שנכנסות לחלה · בדיוק הרשימות ממסך השישניצל, לכל סוג משלו */
+const SCH_TOPS = {
+  thin: { title: 'שניצל דק', list: ['מטבוחה', 'טחינה', 'חציל בטמפורה', 'כרוב סגול', 'פלפל חריף'] },
+  temp: { title: 'פילה עוף', list: ['איולי עמבה', 'איולי עשבי תיבול', 'עלי רוקט', 'מלפפון חמוץ'] }
 };
 
 /* משלוח · לפי מסך הקוסקוס */
@@ -408,7 +435,7 @@ class Component extends DCLogic {
       open: -1,
       moved: {},                 /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
       newOpen: false,
-      nw: { name: '', phone: '', cat: 'cous', qty: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' },
+      nw: { name: '', phone: '', cat: 'cous', qty: {}, tops: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' },
       cancelling: -1,                /* איזו הזמנה בתהליך ביטול · -1 = אין */
       cx: { reason: '', note: '' }
     };
@@ -465,7 +492,7 @@ class Component extends DCLogic {
 
   /* החלפת קטגוריה מאפסת את הפריטים · הרשימות לא חופפות */
   setCat(cat) {
-    this.setState({ nw: Object.assign({}, this.state.nw, { cat: cat, qty: {} }) });
+    this.setState({ nw: Object.assign({}, this.state.nw, { cat: cat, qty: {}, tops: {} }) });
   }
 
   bumpItem(id, d) {
@@ -474,6 +501,25 @@ class Component extends DCLogic {
     qty[id] = Math.max(0, (qty[id] || 0) + d);
     if (qty[id] === 0) delete qty[id];
     this.setState({ nw: Object.assign({}, n, { qty: qty }) });
+  }
+
+  /* תוספת בחלה · נבחרת לסוג ולא לחלה בודדת, כמו שמכתיבים בטלפון */
+  toggleTop(type, name) {
+    const n = this.state.nw;
+    const cur = (n.tops[type] || []);
+    const on = cur.indexOf(name) !== -1;
+    const tops = Object.assign({}, n.tops);
+    tops[type] = on ? cur.filter((x) => x !== name) : cur.concat([name]);
+    if (tops[type].length === 0) delete tops[type];
+    this.setState({ nw: Object.assign({}, n, { tops: tops }) });
+  }
+
+  /* אילו סוגים נמצאים בהזמנה · רק להם מוצגות תוספות */
+  activeTypes() {
+    const n = this.state.nw;
+    if (n.cat !== 'schn') return [];
+    return ['thin', 'temp'].filter((t) =>
+      MENU.schn.some((it) => it.type === t && (n.qty[it.id] || 0) > 0));
   }
 
   /* הסכום נגזר מהפריטים · אף פעם לא מוקלד */
@@ -511,10 +557,15 @@ class Component extends DCLogic {
   /* שורת הפריטים · בדיוק בניסוח של הזמנה שהלקוחה שלחה */
   newItemsLine() {
     const n = this.state.nw;
-    return (MENU[n.cat] || [])
+    const items = (MENU[n.cat] || [])
       .filter((it) => (n.qty[it.id] || 0) > 0)
       .map((it) => n.qty[it.id] + ' × ' + (it.s || it.n))
       .join(' · ');
+    const tops = this.activeTypes()
+      .filter((t) => (n.tops[t] || []).length > 0)
+      .map((t) => SCH_TOPS[t].title + ': ' + n.tops[t].join(', '))
+      .join(' · ');
+    return tops === '' ? items : items + ' · תוספות · ' + tops;
   }
 
   /* השמירה מוסיפה את ההזמנה לרשימה · לקוחה שאינה בפנקס נפתחת עם ההזמנה */
@@ -534,7 +585,7 @@ class Component extends DCLogic {
       via: '',
       status: FLOW[0]
     }]);
-    this.setState({ extra: extra, newOpen: false, nw: { name: '', phone: '', cat: 'cous', qty: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' } });
+    this.setState({ extra: extra, newOpen: false, nw: { name: '', phone: '', cat: 'cous', qty: {}, tops: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' } });
   }
 
   renderVals() {
@@ -729,6 +780,23 @@ class Component extends DCLogic {
           dec: () => this.bumpItem(it.id, -1)
         };
       }),
+
+      hasTops: this.activeTypes().length > 0,
+      topsLabel: 'מה נכנס לחלה',
+      topGroups: this.activeTypes().map((t) => ({
+        title: SCH_TOPS[t].title,
+        chips: SCH_TOPS[t].list.map((name) => {
+          const on = (n.tops[t] || []).indexOf(name) !== -1;
+          return {
+            name: name,
+            bg: on ? 'rgba(65,109,158,0.1)' : 'rgba(255,255,255,0.7)',
+            bd: on ? 'rgba(65,109,158,0.42)' : 'rgba(130,112,162,0.16)',
+            fg: on ? '#2B4A6E' : '#4A4254',
+            w: on ? '600' : '400',
+            pick: () => this.toggleTop(t, name)
+          };
+        })
+      })),
 
       shipLabel: 'איך מגיע',
       ships: [{ id: 'pickup', n: 'איסוף' }, { id: 'deliv', n: 'משלוח' }].map((x) => {

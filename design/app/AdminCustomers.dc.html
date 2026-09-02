@@ -54,9 +54,9 @@
       </div></sc-if>
 
       <sc-for list="{{ rows }}" as="c" hint-placeholder-count="5">
-        <div onClick="{{ c.toggle }}" class="press" style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 13px 15px; cursor: pointer; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 11px;">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 11px;">
 
-          <div style="display: flex; align-items: center; gap: 11px;">
+          <div onClick="{{ c.toggle }}" class="press" style="cursor: pointer; display: flex; align-items: center; gap: 11px;">
             <div style="flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: {{ c.avBg }}; display: flex; align-items: center; justify-content: center;">
               <div style="font-size: 15px; font-weight: 700; color: {{ c.avFg }};">{{ c.initial }}</div>
             </div>
@@ -68,6 +68,10 @@
                 </div>
               </div>
               <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 2px;">{{ c.line }}</div>
+              <sc-if value="{{ c.hasNote }}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; gap: 5px; margin-top: 4px;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M6 3h9l5 5v13H6z"></path><path d="M9 12h7M9 16h5"></path></svg>
+                <div style="font-size: 11px; font-weight: 500; color: #A65E2A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.noteFlag }}</div>
+              </div></sc-if>
             </div>
             <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
               <div style="text-align: left;">
@@ -96,6 +100,18 @@
               </sc-for>
             </div>
 
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <div style="font-size: 11px; font-weight: 500; color: #8A8194;">{{ noteLabel }}</div>
+              <input type="text" value="{{ c.note }}" onInput="{{ c.setNote }}" placeholder="{{ notePh }}" style="width: 100%; box-sizing: border-box; height: 42px; border-radius: 13px; padding: 0 12px; font-size: 12.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+            </div>
+
+            <div style="display: flex; gap: 7px;">
+              <div onClick="{{ c.openHist }}" class="press" style="flex: 1; height: 38px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.08); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A4254" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+                <div style="font-size: 12.5px; font-weight: 600; color: #4A4254; white-space: nowrap;">{{ histLabel }}</div>
+              </div>
+            </div>
+
             <div style="display: flex; gap: 7px;">
               <div onClick="{{ c.call }}" class="press" style="flex: 1; height: 38px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.08); display: flex; align-items: center; justify-content: center; gap: 6px;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A4254" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a1.5 1.5 0 0 1-1.7 1.5A16.5 16.5 0 0 1 3.5 5.7 1.5 1.5 0 0 1 5 4z"></path></svg>
@@ -114,6 +130,37 @@
     </div>
 
   </div>
+
+  <!-- ═══ ההזמנות הקודמות ═══ -->
+  <sc-if value="{{ histOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeHist }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 96px; bottom: 34px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column;">
+    <div style="flex-shrink: 0; display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ histTitle }}</div>
+        <div style="font-size: 12px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ histSub }}</div>
+      </div>
+      <div onClick="{{ closeHist }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; margin-top: 13px; display: flex; flex-direction: column; gap: 9px;">
+      <sc-for list="{{ histRows }}" as="h" hint-placeholder-count="4">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 16px; padding: 12px 14px; background: rgba(255,255,255,0.8); border-right: 3px solid {{ h.hue }}; border-top: 1.5px solid rgba(130,112,162,0.1); border-bottom: 1.5px solid rgba(130,112,162,0.1); border-left: 1.5px solid rgba(130,112,162,0.1); display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="font-size: 12px; font-weight: 600; color: {{ h.deep }};">{{ h.cat }}</div>
+            <div style="font-size: 11.5px; font-weight: 300; color: #A79FB2;">{{ h.d }}</div>
+            <div style="flex-grow: 1;"></div>
+            <div style="border-radius: 7px; padding: 2px 8px; background: {{ h.chipBg }};">
+              <div style="font-size: 10.5px; font-weight: 700; color: {{ h.chipFg }}; white-space: nowrap;">{{ h.s }}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0; font-size: 12.5px; font-weight: 400; color: #4A4254; line-height: 1.5;">{{ h.t }}</div>
+            <div style="flex-shrink: 0; font-size: 14px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ h.v }} ₪</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div></sc-if>
 
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
@@ -163,6 +210,48 @@ const PEOPLE = [
     addr: 'הפרחים 9, יבנה',  last: 'שלישי, 25.8 · 4 מנות קוסקוס', likes: ['cous'], note: '' }
 ];
 
+/* ⚠ היסטוריית ההזמנות · נתוני הדגמה שנכתבו על ידי Claude */
+const HISTORY = {
+  'דנה כהן': [
+    { d: '1.9.26',  k: 'cous', t: '3 מנות קוסקוס · 2 צמחוני, 1 עם עוף', v: 155, s: 'נמסרה' },
+    { d: '25.8.26', k: 'cous', t: '2 מנות קוסקוס עם עוף',               v: 110, s: 'נמסרה' },
+    { d: '21.8.26', k: 'schn', t: '2 חלות שניצל דק · קוקוט טחינה',      v: 103, s: 'נמסרה' },
+    { d: '11.8.26', k: 'cous', t: '3 מנות קוסקוס · תוספת ירקות',        v: 175, s: 'בוטלה' }
+  ],
+  'מיכל אברהם': [
+    { d: '1.9.26',  k: 'cous',  t: '4 מנות קוסקוס עם מפרום',   v: 260, s: 'נמסרה' },
+    { d: '28.8.26', k: 'fruit', t: 'מגש פירות גדול',           v: 400, s: 'נמסרה' },
+    { d: '18.8.26', k: 'box',   t: '10 חלות לכל אירוע · סלטים', v: 229, s: 'נמסרה' }
+  ],
+  'יעל לוי': [
+    { d: '4.9.26',  k: 'schn', t: '2 חלות שישניצל',          v: 110, s: 'נמסרה' },
+    { d: '21.8.26', k: 'schn', t: 'חלת פילה עוף · קוקוט עמבה', v: 63,  s: 'נמסרה' }
+  ],
+  'רונית שגב': [
+    { d: '27.8.26', k: 'fruit', t: 'מגש פירות בינוני',   v: 300, s: 'נמסרה' },
+    { d: '14.8.26', k: 'box',   t: 'מארז ספיישל לאירוע',  v: 890, s: 'נמסרה' },
+    { d: '2.8.26',  k: 'fruit', t: 'מגש פירות גדול',      v: 400, s: 'נמסרה' }
+  ],
+  'אורית ברק': [
+    { d: '25.8.26', k: 'cous', t: '2 מנות קוסקוס צמחוני', v: 115, s: 'נמסרה' }
+  ],
+  'שירה מזרחי': [
+    { d: '1.9.26',  k: 'cous', t: '4 מנות קוסקוס · 2 עם מפרום', v: 240, s: 'נמסרה' },
+    { d: '29.8.26', k: 'chef', t: 'ארוחת שף · 8 סועדים',        v: 2000, s: 'נמסרה' },
+    { d: '25.8.26', k: 'cous', t: '3 מנות קוסקוס עם עוף',       v: 165, s: 'נמסרה' },
+    { d: '18.8.26', k: 'schn', t: 'מארז שניצל דק',              v: 200, s: 'נמסרה' }
+  ],
+  'טל אבידן': [
+    { d: '25.8.26', k: 'cous', t: '4 מנות קוסקוס צמחוני', v: 180, s: 'נמסרה' },
+    { d: '11.8.26', k: 'cous', t: '2 מנות קוסקוס עם עוף',  v: 110, s: 'נמסרה' }
+  ]
+};
+
+const STATE_TONE = {
+  'נמסרה': { bg: 'rgba(130,112,162,0.10)', fg: '#8A8194' },
+  'בוטלה': { bg: 'rgba(185,83,73,0.12)',  fg: '#B95349' }
+};
+
 const REGULAR = 5;   /* מכאן ומעלה נחשבת קבועה */
 const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const norm = (v) => String(v || '').replace(/[-\s]/g, '').replace(/^\+972/, '0');
@@ -171,7 +260,19 @@ const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { q: '', filter: 'all', open: -1 };
+    this.state = {
+      q: '', filter: 'all', open: -1,
+      /* ההערות ניתנות לעריכה · פיצוי, אלרגיה, כל דבר ששווה לזכור */
+      notes: PEOPLE.reduce((m, p) => { m[p.name] = p.note; return m; }, {}),
+      editing: null,   /* שם הלקוחה שההערה שלה נערכת */
+      hist: null       /* שם הלקוחה שההזמנות שלה פתוחות */
+    };
+  }
+
+  setNote(name, v) {
+    const notes = Object.assign({}, this.state.notes);
+    notes[name] = v;
+    this.setState({ notes: notes });
   }
 
   renderVals() {
@@ -179,7 +280,9 @@ class Component extends DCLogic {
     const q = String(st.q || '').trim();
 
     const isReg = (p) => p.orders >= REGULAR;
-    const byFilter = PEOPLE.filter((p) =>
+    /* אנשי הקשר מסודרים לפי א־ב · localeCompare מטפל בעברית */
+    const SORTED = PEOPLE.slice().sort((x, y) => x.name.localeCompare(y.name, 'he'));
+    const byFilter = SORTED.filter((p) =>
       st.filter === 'all' ? true : st.filter === 'reg' ? isReg(p) : !isReg(p));
 
     /* חיפוש · שם או טלפון, עם נרמול פורמטים */
@@ -208,7 +311,12 @@ class Component extends DCLogic {
           { k: 'כתובת', v: p.addr },
           { k: 'הזמנה אחרונה', v: p.last },
           { k: 'ממוצע להזמנה', v: nf(p.spent / p.orders) + ' ₪' }
-        ].concat(p.note ? [{ k: 'הערה', v: p.note }] : []),
+        ],
+        note: st.notes[p.name] || '',
+        setNote: (e) => this.setNote(p.name, e.target.value),
+        hasNote: (st.notes[p.name] || '') !== '',
+        noteFlag: st.notes[p.name] || '',
+        openHist: () => this.setState({ hist: p.name }),
         likes: p.likes.map((k) => ({
           t: HUES[k].n, bg: a(HUES[k].rgb, 0.12), fg: HUES[k].deep
         })),
@@ -244,7 +352,26 @@ class Component extends DCLogic {
       isEmpty: rows.length === 0,
       emptyLabel: 'לא נמצאה לקוחה',
       callLabel: 'חיוג',
-      orderLabel: 'הזמנה ידנית'
+      histLabel: 'הזמנות קודמות',
+      orderLabel: 'הזמנה ידנית',
+
+      noteLabel: 'הערה',
+      notePh: 'למשל: מגיע פיצוי על ההזמנה שבוטלה',
+
+      /* ── חלונית ההזמנות הקודמות ── */
+      histOpen: st.hist !== null,
+      closeHist: () => this.setState({ hist: null }),
+      histTitle: st.hist === null ? '' : 'ההזמנות של ' + st.hist,
+      histSub: st.hist === null ? '' : (HISTORY[st.hist] || []).length + ' הזמנות',
+      histRows: st.hist === null ? [] : (HISTORY[st.hist] || []).map((o) => {
+        const h = HUES[o.k];
+        const t = STATE_TONE[o.s] || STATE_TONE['נמסרה'];
+        return {
+          d: o.d, t: o.t, v: nf(o.v), s: o.s,
+          hue: h.hue, deep: h.deep, cat: h.n,
+          chipBg: t.bg, chipFg: t.fg
+        };
+      })
     };
   }
 }

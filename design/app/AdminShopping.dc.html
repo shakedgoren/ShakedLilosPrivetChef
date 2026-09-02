@@ -97,7 +97,22 @@
       <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}"><div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding-bottom: 140px;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9C2D2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h16l-1.6 9H7z"></path><path d="M5 6L4 3H2"></path><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle></svg>
         <div style="font-size: 14px; font-weight: 500; color: #A79FB2;">{{ emptyLabel }}</div>
+        <div style="font-size: 12px; font-weight: 300; color: #C4BDCE;">{{ emptySub }}</div>
       </div></sc-if>
+
+      <!-- ═══ קניות קודמות ═══ -->
+      <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 20px; padding: 14px 16px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 9px;">
+        <div style="font-size: 13px; font-weight: 600;">{{ pastTitle }}</div>
+        <sc-for list="{{ past }}" as="h" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-size: 12.5px; font-weight: 500;">{{ h.d }}</div>
+              <div style="font-size: 11px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ h.n }}</div>
+            </div>
+            <div style="flex-shrink: 0; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ h.sum }} ₪</div>
+          </div>
+        </sc-for>
+      </div>
 
       <div style="flex-shrink: 0; height: 178px;"></div>
     </div>
@@ -126,8 +141,16 @@
       <div onClick="{{ closeAdd }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 5px;">
       <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ nameLabel }}</div>
+      <sc-if value="{{ hasHits }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 5; top: 76px; right: 0; left: 0; border-radius: 14px; overflow: hidden; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); box-shadow: 0 16px 32px -18px rgba(96,80,132,0.6);">
+        <sc-for list="{{ hits }}" as="h" hint-placeholder-count="3">
+          <div onClick="{{ h.pick }}" class="press" style="padding: 9px 12px; cursor: pointer; border-bottom: 1px solid rgba(130,112,162,0.1);">
+            <div style="font-size: 13px; font-weight: 500; color: #2A2430;">{{ h.name }}</div>
+            <div style="font-size: 11px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ h.sub }}</div>
+          </div>
+        </sc-for>
+      </div></sc-if>
       <input type="text" value="{{ nName }}" onInput="{{ setName }}" placeholder="{{ namePh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
     </div>
 
@@ -142,15 +165,31 @@
       </div>
     </div>
 
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ unitLabel }}</div>
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ units }}" as="u" hint-placeholder-count="3">
+          <div onClick="{{ u.pick }}" class="press" style="flex: 1; box-sizing: border-box; height: 38px; border-radius: 12px; cursor: pointer; background: {{ u.bg }}; border: 1.5px solid {{ u.bd }}; display: flex; align-items: center; justify-content: center;">
+            <div style="font-size: 12.5px; font-weight: {{ u.w }}; color: {{ u.fg }}; white-space: nowrap;">{{ u.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
     <div style="display: flex; gap: 9px;">
       <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
         <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ qtyLabel }}</div>
-        <input type="text" value="{{ nQty }}" onInput="{{ setQty }}" placeholder="{{ qtyPh }}" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        <input type="text" value="{{ nQty }}" onInput="{{ setQty }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; text-align: center; font-size: 14px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
       </div>
       <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ estLabel }}</div>
-        <input type="text" value="{{ nEst }}" onInput="{{ setEst }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; font-size: 13.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ priceLabel }}</div>
+        <input type="text" value="{{ nPrice }}" onInput="{{ setPrice }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 48px; border-radius: 15px; padding: 0 13px; text-align: center; font-size: 14px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
       </div>
+    </div>
+
+    <div style="box-sizing: border-box; border-radius: 15px; padding: 11px 14px; background: rgba(123,92,188,0.07); display: flex; align-items: baseline; justify-content: space-between;">
+      <div style="font-size: 13px; font-weight: 500; color: #4A4254;">{{ totalLabel }}</div>
+      <div style="font-size: 18px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ lineTotal }} ₪</div>
     </div>
 
     <div onClick="{{ saveAdd }}" class="press" style="align-self: center; height: 48px; padding: 0 30px; border-radius: 999px; cursor: {{ addCur }}; background: {{ addBg }}; box-shadow: {{ addShadow }}; display: flex; align-items: center; justify-content: center;">
@@ -181,21 +220,56 @@
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 const GROUPS = ['ירקות ופירות', 'בשר ועוף', 'יבשים', 'חלב וגבינות', 'אריזות'];
+const UNITS = ['ק״ג', 'יח׳', 'צרורות'];
+
+/* ⚠ פנקס המצרכים · נבנה מהקניות הקודמות. מה שנקנה פעם אחת
+   חוזר כאן עם הקבוצה, היחידה והמחיר האחרון ששולם עליו. */
+const PANTRY = [
+  { name: 'עגבניות',        g: 'ירקות ופירות', unit: 'ק״ג',    price: 9 },
+  { name: 'בצל',            g: 'ירקות ופירות', unit: 'ק״ג',    price: 6 },
+  { name: 'גזר',            g: 'ירקות ופירות', unit: 'ק״ג',    price: 6 },
+  { name: 'כוסברה',         g: 'ירקות ופירות', unit: 'צרורות', price: 4 },
+  { name: 'פטרוזיליה',      g: 'ירקות ופירות', unit: 'צרורות', price: 4 },
+  { name: 'קישואים',        g: 'ירקות ופירות', unit: 'ק״ג',    price: 8 },
+  { name: 'תפוחי אדמה',     g: 'ירקות ופירות', unit: 'ק״ג',    price: 5 },
+  { name: 'ירך עוף',        g: 'בשר ועוף',     unit: 'ק״ג',    price: 40 },
+  { name: 'חזה עוף',        g: 'בשר ועוף',     unit: 'ק״ג',    price: 46 },
+  { name: 'פילה עוף',       g: 'בשר ועוף',     unit: 'ק״ג',    price: 58 },
+  { name: 'בשר טחון למפרום', g: 'בשר ועוף',    unit: 'ק״ג',    price: 65 },
+  { name: 'קוסקוס',         g: 'יבשים',        unit: 'ק״ג',    price: 16 },
+  { name: 'חומוס יבש',      g: 'יבשים',        unit: 'ק״ג',    price: 15 },
+  { name: 'פירורי לחם',     g: 'יבשים',        unit: 'ק״ג',    price: 12 },
+  { name: 'קמח טמפורה',     g: 'יבשים',        unit: 'ק״ג',    price: 18 },
+  { name: 'חמאה',           g: 'חלב וגבינות',  unit: 'ק״ג',    price: 45 },
+  { name: 'גבינת פטה',      g: 'חלב וגבינות',  unit: 'ק״ג',    price: 38 },
+  { name: 'מגשי אלומיניום', g: 'אריזות',       unit: 'יח׳',    price: 1.8 },
+  { name: 'קופסאות אישיות', g: 'אריזות',       unit: 'יח׳',    price: 1.5 },
+  { name: 'קוקוטים',        g: 'אריזות',       unit: 'יח׳',    price: 0.6 }
+];
 
 /* ⚠ רשימת הדגמה · נכתבה על ידי Claude */
 const SEED = [
-  { g: 'ירקות ופירות', name: 'עגבניות',        qty: '8 ק״ג',   est: 72,  done: true,  actual: '68' },
-  { g: 'ירקות ופירות', name: 'בצל',            qty: '5 ק״ג',   est: 30,  done: true,  actual: '34' },
-  { g: 'ירקות ופירות', name: 'גזר',            qty: '4 ק״ג',   est: 24,  done: false, actual: '' },
-  { g: 'ירקות ופירות', name: 'כוסברה',         qty: '10 צרורות', est: 40, done: false, actual: '' },
-  { g: 'בשר ועוף',    name: 'ירך עוף',        qty: '12 ק״ג',  est: 480, done: true,  actual: '505' },
-  { g: 'בשר ועוף',    name: 'בשר טחון למפרום', qty: '6 ק״ג',   est: 390, done: false, actual: '' },
-  { g: 'יבשים',       name: 'קוסקוס',          qty: '10 ק״ג',  est: 160, done: true,  actual: '160' },
-  { g: 'יבשים',       name: 'חומוס יבש',       qty: '3 ק״ג',   est: 45,  done: false, actual: '' },
-  { g: 'חלב וגבינות', name: 'חמאה',            qty: '2 ק״ג',   est: 90,  done: false, actual: '' },
-  { g: 'אריזות',      name: 'מגשי אלומיניום',  qty: '100 יח׳', est: 180, done: false, actual: '' },
-  { g: 'אריזות',      name: 'קופסאות אישיות',  qty: '150 יח׳', est: 225, done: false, actual: '' }
+  { g: 'ירקות ופירות', name: 'עגבניות',        unit: 'ק״ג',    qty: '8',   price: '9',   done: true,  actual: '68' },
+  { g: 'ירקות ופירות', name: 'בצל',            unit: 'ק״ג',    qty: '5',   price: '6',   done: true,  actual: '34' },
+  { g: 'ירקות ופירות', name: 'גזר',            unit: 'ק״ג',    qty: '4',   price: '6',   done: false, actual: '' },
+  { g: 'ירקות ופירות', name: 'כוסברה',         unit: 'צרורות', qty: '10',  price: '4',   done: false, actual: '' },
+  { g: 'בשר ועוף',    name: 'ירך עוף',         unit: 'ק״ג',    qty: '12',  price: '40',  done: true,  actual: '505' },
+  { g: 'בשר ועוף',    name: 'בשר טחון למפרום', unit: 'ק״ג',    qty: '6',   price: '65',  done: false, actual: '' },
+  { g: 'יבשים',       name: 'קוסקוס',          unit: 'ק״ג',    qty: '10',  price: '16',  done: true,  actual: '160' },
+  { g: 'יבשים',       name: 'חומוס יבש',       unit: 'ק״ג',    qty: '3',   price: '15',  done: false, actual: '' },
+  { g: 'חלב וגבינות', name: 'חמאה',            unit: 'ק״ג',    qty: '2',   price: '45',  done: false, actual: '' },
+  { g: 'אריזות',      name: 'מגשי אלומיניום',  unit: 'יח׳',    qty: '100', price: '1.8', done: false, actual: '' },
+  { g: 'אריזות',      name: 'קופסאות אישיות',  unit: 'יח׳',    qty: '150', price: '1.5', done: false, actual: '' }
 ];
+
+/* ⚠ היסטוריית קניות להדגמה · כל רשימה שנסגרת נכנסת לכאן */
+const PAST = [
+  { d: '25 באוגוסט', n: 14, sum: 1780 },
+  { d: '18 באוגוסט', n: 11, sum: 1420 },
+  { d: '11 באוגוסט', n: 16, sum: 2050 }
+];
+
+const DATES = ['8 בספטמבר', '15 בספטמבר', '22 בספטמבר', '29 בספטמבר'];
 
 const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const num = (v) => { const n = parseFloat(String(v).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
@@ -207,11 +281,16 @@ class Component extends DCLogic {
     this.state = {
       items: SEED.map((x, i) => Object.assign({}, x, { id: i })),
       nextId: SEED.length,
+      round: 0,
+      past: PAST.slice(),
       closed: false,
       addOpen: false,
-      nw: { name: '', g: 'ירקות ופירות', qty: '', est: '' }
+      nw: { name: '', g: 'ירקות ופירות', unit: 'ק״ג', qty: '', price: '' }
     };
   }
+
+  /* סה״כ לשורה · כמות כפול מחיר ליחידה */
+  lineSum(x) { return num(x.qty) * num(x.price); }
 
   patch(id, p) {
     const items = this.state.items.map((x) => x.id === id ? Object.assign({}, x, p) : x);
@@ -230,34 +309,60 @@ class Component extends DCLogic {
     nw[k] = v;
     this.setState({ nw: nw });
   }
-  addReady() { return trim(this.state.nw.name) !== ''; }
+
+  /* בחירה מהפנקס · הקבוצה, היחידה והמחיר האחרון נמשכים איתה */
+  pickPantry(x) {
+    this.setState({ nw: Object.assign({}, this.state.nw, {
+      name: x.name, g: x.g, unit: x.unit, price: String(x.price)
+    }) });
+  }
+
+  /* השלמה מהפנקס · לפי האותיות שהוקלדו */
+  matches() {
+    const q = trim(this.state.nw.name);
+    if (q === '') return [];
+    if (PANTRY.some((x) => x.name === q)) return [];
+    return PANTRY.filter((x) => x.name.indexOf(q) !== -1).slice(0, 4);
+  }
+
+  addReady() { return trim(this.state.nw.name) !== '' && num(this.state.nw.qty) > 0; }
   saveAdd() {
     if (!this.addReady()) return;
     const n = this.state.nw;
-    const item = { id: this.state.nextId, g: n.g, name: trim(n.name),
-                   qty: trim(n.qty), est: num(n.est), done: false, actual: '' };
+    const item = { id: this.state.nextId, g: n.g, name: trim(n.name), unit: n.unit,
+                   qty: trim(n.qty), price: trim(n.price), done: false, actual: '' };
     this.setState({
       items: this.state.items.concat([item]),
       nextId: this.state.nextId + 1,
       addOpen: false,
-      nw: { name: '', g: n.g, qty: '', est: '' },
+      nw: { name: '', g: n.g, unit: n.unit, qty: '', price: '' },
       closed: false
     });
   }
 
-  /* מה שנקנה בפועל · אם לא הוזן מחיר, נופלים למשוער */
-  paid(x) { return x.done ? (trim(x.actual) !== '' ? num(x.actual) : x.est) : 0; }
+  /* מה שנקנה בפועל · אם לא הוזן מחיר, נופלים למחושב */
+  paid(x) { return x.done ? (trim(x.actual) !== '' ? num(x.actual) : this.lineSum(x)) : 0; }
 
+  /* סגירת הרשימה · נרשמת הוצאה, הרשימה נכנסת להיסטוריה ונפתחת רשימה ריקה */
   closeList() {
-    const done = this.state.items.filter((x) => x.done).length;
-    if (done === 0) return;
-    this.setState({ closed: true });
+    const st = this.state;
+    const done = st.items.filter((x) => x.done);
+    if (done.length === 0) return;
+    const sum = Math.round(st.items.reduce((s, x) => s + this.paid(x), 0));
+    const entry = { d: DATES[st.round % DATES.length], n: done.length, sum: sum };
+    this.setState({
+      past: [entry].concat(st.past),
+      items: [],
+      round: st.round + 1,
+      closed: true
+    });
   }
 
   renderVals() {
-    const items = this.state.items;
+    const st = this.state;
+    const items = st.items;
     const doneN = items.filter((x) => x.done).length;
-    const estSum = items.reduce((s, x) => s + x.est, 0);
+    const estSum = items.reduce((s, x) => s + this.lineSum(x), 0);
     const actSum = items.reduce((s, x) => s + this.paid(x), 0);
     const pct = items.length ? Math.round(doneN / items.length * 100) : 0;
     const canClose = doneN > 0;
@@ -268,7 +373,9 @@ class Component extends DCLogic {
         name: g,
         count: list.filter((x) => x.done).length + '/' + list.length,
         items: list.map((x) => ({
-          name: x.name, qty: x.qty, est: nf(x.est),
+          name: x.name,
+          qty: x.qty + ' ' + x.unit + ' × ' + x.price + ' ₪',
+          est: nf(this.lineSum(x)),
           actual: x.actual, done: x.done, todo: !x.done,
           bg: x.done ? 'rgba(123,92,188,0.06)' : 'rgba(255,255,255,0.7)',
           bd: x.done ? 'rgba(123,92,188,0.22)' : 'rgba(130,112,162,0.14)',
@@ -283,16 +390,18 @@ class Component extends DCLogic {
       };
     }).filter((g) => g.items.length > 0);
 
-    const n = this.state.nw;
+    const n = st.nw;
+    const hits = this.matches();
+    const lineTotal = num(n.qty) * num(n.price);
 
     return {
-      sub: 'לשלישי · 8 בספטמבר',
+      sub: 'לשלישי · ' + DATES[st.round % DATES.length],
       addLabel: 'פריט',
 
       progLabel: 'התקדמות הקנייה',
       progCount: doneN + ' מתוך ' + items.length,
       progPct: pct + '%',
-      estTag: 'משוער',
+      estTag: 'מחושב',
       estSum: nf(estSum),
       actTag: 'שולם בפועל',
       actSum: nf(actSum),
@@ -300,20 +409,24 @@ class Component extends DCLogic {
       groups: groups,
       isEmpty: items.length === 0,
       emptyLabel: 'הרשימה ריקה',
+      emptySub: 'הוסיפי פריט ראשון לרשימה הבאה',
+
+      pastTitle: 'קניות קודמות',
+      past: st.past.map((x) => ({ d: x.d, n: x.n + ' פריטים', sum: nf(x.sum) })),
 
       closeLabel: 'סגירת הרשימה',
-      closeSub: canClose ? 'תיווצר הוצאה על ' + nf(actSum) + ' ₪' : 'צריך לסמן לפחות פריט אחד',
+      closeSub: canClose ? 'תיווצר הוצאה על ' + nf(actSum) + ' ₪ ותיפתח רשימה ריקה' : 'צריך לסמן לפחות פריט אחד',
       closeBg: canClose ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
       closeFg: canClose ? '#43307A' : '#A79FB2',
       closeSubFg: canClose ? '#5B4794' : '#A79FB2',
       closeShadow: canClose ? 'inset 0 1.5px 0 rgba(255,255,255,0.6), 0 14px 28px -18px rgba(96,80,132,0.9)' : 'none',
       closeCur: canClose ? 'pointer' : 'default',
       closeList: () => this.closeList(),
-      closed: this.state.closed,
-      closedLabel: 'נרשמה הוצאה על ' + nf(actSum) + ' ₪',
+      closed: st.closed,
+      closedLabel: st.past.length ? 'נרשמה הוצאה על ' + nf(st.past[0].sum) + ' ₪' : '',
 
       /* ── הוספת פריט ── */
-      addOpen: this.state.addOpen,
+      addOpen: st.addOpen,
       openAdd:  () => this.setState({ addOpen: true }),
       closeAdd: () => this.setState({ addOpen: false }),
       addTitle: 'הוספת פריט',
@@ -321,6 +434,12 @@ class Component extends DCLogic {
       namePh: 'למשל: פטרוזיליה',
       nName: n.name,
       setName: (e) => this.setNw('name', e.target.value),
+      hasHits: hits.length > 0,
+      hits: hits.map((x) => ({
+        name: x.name,
+        sub: x.g + ' · ' + x.price + ' ₪ ל' + x.unit,
+        pick: () => this.pickPantry(x)
+      })),
       groupLabel: 'קבוצה',
       addGroups: GROUPS.map((g) => {
         const on = n.g === g;
@@ -333,13 +452,27 @@ class Component extends DCLogic {
           pick: () => this.setNw('g', g)
         };
       }),
+      unitLabel: 'יחידת מידה',
+      units: UNITS.map((u) => {
+        const on = n.unit === u;
+        return {
+          name: u,
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setNw('unit', u)
+        };
+      }),
       qtyLabel: 'כמות',
-      qtyPh: '2 ק״ג',
       nQty: n.qty,
       setQty: (e) => this.setNw('qty', e.target.value),
-      estLabel: 'מחיר משוער ₪',
-      nEst: n.est,
-      setEst: (e) => this.setNw('est', e.target.value),
+      priceLabel: 'מחיר ל' + n.unit + ' ₪',
+      nPrice: n.price,
+      setPrice: (e) => this.setNw('price', e.target.value),
+      totalLabel: 'סה״כ לשורה',
+      lineTotal: nf(lineTotal),
+
       addCta: 'הוספה לרשימה',
       addBg: this.addReady() ? 'linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%)' : 'rgba(130,112,162,0.11)',
       addFg: this.addReady() ? '#43307A' : '#A79FB2',
