@@ -7,7 +7,7 @@
 <body>
 <x-dc>
 <helmet>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;family=Anton&amp;display=swap">
   <style>
     body { margin: 0; }
     a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
@@ -32,6 +32,27 @@
     .lg-a { animation: lgDriftA 22s ease-in-out infinite; }
     .lg-b { animation: lgDriftB 28s ease-in-out infinite; }
     .lg-sheen { animation: lgSheen 9s ease-in-out infinite; }
+
+
+    /* ── מסטהד · פס בשחור־זהב של הלוגו ── */
+    .band {
+      margin: 0 -18px;
+      padding: 9px 18px 10px;
+      background: linear-gradient(178deg, #1B1714 0%, #12100E 100%);
+      box-shadow: inset 0 -1px 0 rgba(226,192,111,0.28), 0 8px 20px -16px rgba(20,16,12,0.9);
+      display: flex; align-items: center; gap: 10px; position: relative;
+    }
+    .band-mark {
+      font-family: 'Anton', 'Assistant', system-ui, sans-serif;
+      font-size: 25px; line-height: 1; letter-spacing: 0.045em;
+      background: linear-gradient(96deg, #B98F32 0%, #F0D68C 38%, #D4AF37 62%, #B98F32 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: #D4AF37;
+    }
+    .band-sub {
+      font-size: 10.5px; font-weight: 400; letter-spacing: 0.09em;
+      color: rgba(232,214,168,0.72); margin-top: 3px;
+    }
 
     /* השורה שמוקלדת כרגע · הסמן מהבהב */
     @keyframes caret { 50% { opacity: 0.25; } }
@@ -59,20 +80,19 @@
 
   
 
-  <sc-if value="{{ aboutOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAbout }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"></div><div style="position: absolute; z-index: 41; top: 60px; bottom: 60px; right: 16px; left: 16px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; text-align: right; background: {{ popBg }}; border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 2px 0 rgba(255,255,255,0.95), 0 30px 60px -28px rgba(60,48,84,0.7);"><div style="flex-shrink: 0; padding: 20px 22px 14px; display: flex; align-items: flex-start; gap: 12px;"><div style="flex-grow: 1; font-weight: 600; font-size: 19px; line-height: 1.25; text-align: center; padding-right: 32px;">נעים להכיר, אני שקד לילוז 👋</div><div onClick="{{ closeAbout }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); box-shadow: 0 2px 6px -3px rgba(90,74,120,0.5);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div class="story" onClick="{{ finishType }}" style="flex-grow: 1; overflow-y: auto; padding: 0 22px 24px; display: flex; flex-direction: column; gap: 15px; text-align: center; cursor: default;"><sc-for list="{{ blocks }}" as="b" hint-placeholder-count="8"><sc-if value="{{ b.isRule }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: {{ popRule }};"></div></sc-if><sc-if value="{{ b.isText }}" hint-placeholder-val="{{ true }}"><div style="font-weight: {{ b.w }}; font-size: {{ b.size }}; color: {{ b.fg }};"><sc-for list="{{ b.lines }}" as="l" hint-placeholder-count="4"><div style="min-height: {{ l.lh }}; line-height: {{ l.lh }};">{{ l.t }}{{ l.cursor }}</div></sc-for></div></sc-if></sc-for></div></div></sc-if>
+  <sc-if value="{{ aboutOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAbout }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"></div><div style="position: absolute; z-index: 41; top: 60px; bottom: 60px; right: 16px; left: 16px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; text-align: right; background: {{ popBg }}; border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 2px 0 rgba(255,255,255,0.95), 0 30px 60px -28px rgba(60,48,84,0.7);"><div style="flex-shrink: 0; padding: 20px 22px 14px; display: flex; align-items: flex-start; gap: 12px;"><div style="flex-grow: 1; font-weight: 600; font-size: 19px; line-height: 1.25; text-align: center; padding-right: 32px;">נעים להכיר, אני שקד לילוז 👋</div><div onClick="{{ closeAbout }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); box-shadow: 0 2px 6px -3px rgba(90,74,120,0.5);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div class="story" onClick="{{ finishType }}" style="flex-grow: 1; overflow-y: auto; padding: 0 22px 24px; display: flex; flex-direction: column; gap: 15px; text-align: center; cursor: default;"><sc-for list="{{ blocks }}" as="b" hint-placeholder-count="8"><sc-if value="{{ b.isRule }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: {{ popRule }};"></div></sc-if><sc-if value="{{ b.isText }}" hint-placeholder-val="{{ true }}"><div style="font-weight: {{ b.w }}; font-size: {{ b.size }}; color: {{ b.fg }};"><sc-for list="{{ b.lines }}" as="l" hint-placeholder-count="4"><div style="min-height: {{ l.lh }}; line-height: {{ l.lh }};">{{ l.t }}{{ l.cursor }}</div></sc-for></div></sc-if></sc-for><sc-if value="{{ typing }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; font-weight: 400; letter-spacing: 0.05em; color: #C4BDCE; padding-top: 4px;">{{ skipLabel }}</div></sc-if></div></div></sc-if>
 
 <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0;">
 
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 6px 18px; position: relative">
-      <div style="display: flex; flex-direction: column; gap: 3px;">
-        <div style="font-weight: 600; font-size: 21px; letter-spacing: 0.06em;">BITE &amp; TELL</div>
-        <div style="font-weight: 300; font-size: 13px; color: #8A8194;">שף פרטית · יבנה והשפלה</div>
+    <div style="padding: 0 0 4px; position: relative">
+      <div class="band">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 36px;">
+        <div class="band-mark">BITE &amp; TELL</div>
+        <div class="band-sub">אוכל ביתי · ארוחות שף · עמדת טאבון</div>
       </div>
-      <div onClick="{{ goLogin }}" class="press" style="position: relative; width: 44px; height: 44px; flex-shrink: 0; cursor: pointer;">
-        <div style="position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #FFFFFF 0%, #FAF7FD 45%, #EFEAF7 100%); box-shadow: inset -3px -4px 8px rgba(150,125,190,0.16), inset 2px 3px 6px rgba(255,255,255,0.95), 0 6px 13px -9px rgba(120,95,170,0.4);"></div>
-        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A8194" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </div>
+      <div onClick="{{ goLogin }}" class="press" style="position: absolute; left: 18px; top: 50%; margin-top: -18px; width: 36px; height: 36px; cursor: pointer; border-radius: 50%; background: rgba(226,192,111,0.12); border: 1px solid rgba(226,192,111,0.34); display: flex; align-items: center; justify-content: center;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E2C06F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
       </div>
     <div style="position: absolute; left: 1px; top: 64px; width: 344px; height: 161px; box-sizing: border-box; border-radius: 24px; padding: 18px 20px; backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); transition: background 560ms ease, box-shadow 560ms ease; background: {{ aboutBg }}; border: 1px solid rgba(255,255,255,0.62); box-shadow: {{ aboutShadow }}; display: flex; flex-direction: column; text-align: right"><div style="font-weight: 600; font-size: 16px; line-height: 1.3; text-align: center; margin-top: 5px">נעים להכיר, אני שקד לילוז&nbsp;</div><div style="font-weight: 300; font-size: 13px; line-height: 1.6; margin-top: 8px; color: #7D7488; text-align: center; text-decoration-line: none">שף, קונדיטורית ~ יוצרת רגעים בלתי נשכחים דרך אוכל, אירוח ותשומת לב לכל פרט 👩🏼‍🍳</div><div style="flex-grow: 1;"></div><div onClick="{{ openAbout }}" style="align-self: center; cursor: pointer; border-radius: 999px; padding: 11px 16px; min-height: 30px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; transition: background 560ms ease; background: {{ aboutBtnBg }}; width: 119px; height: 30px"><div style="font-size: 13px; font-weight: 600; white-space: nowrap; transition: color 560ms ease; color: {{ hue }};">לסיפור המלא</div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke="{{ hue }}"><path d="M15 18l-6-6 6-6"></path></svg></div></div>
 </div>
@@ -230,9 +250,11 @@ const STORY = [
 /* אורך הסיפור · לפיו יודעים מתי ההקלדה נגמרה */
 const STORY_LEN = STORY.reduce((s, b) => s + b.lines.reduce((n, l) => n + l.length, 0), 0);
 
-/* קצב ההקלדה · שלוש אותיות בכל פעימה */
-const TYPE_MS = 16;
-const TYPE_STEP = 3;
+/* קצב ההקלדה · אות אחת כל 20ms, כ-16 שניות לסיפור המלא.
+   הנקישה מושמעת כל אות רביעית · אחרת זה זמזום ולא הקלדה. */
+const TYPE_MS = 20;
+const TYPE_STEP = 1;
+const TICK_EVERY = 4;
 
 const TYPE_STYLE = {
   lead:   { w: '300', size: '13.5px', lh: '23px', fg: '#6E6478' },
@@ -298,7 +320,7 @@ class Component extends DCLogic {
       const n = this.state.typed + TYPE_STEP;
       if (n >= STORY_LEN) { clearInterval(this._type); this.setState({ typed: STORY_LEN }); return; }
       this.setState({ typed: n });
-      this.tick();
+      if (n % TICK_EVERY === 0) this.tick();
     }, TYPE_MS);
   }
   closeAbout() {
@@ -310,7 +332,17 @@ class Component extends DCLogic {
     clearInterval(this._type);
     this.setState({ typed: STORY_LEN });
   }
-  /* קליק קצר · מסונתז, בלי קובץ קול */
+  /* מכת מקש · פרץ רעש קצר דרך מסנן, ומתחתיו החבטה הנמוכה של הפטיש.
+     זה מה שנשמע כמו מכונת כתיבה · אוסילטור לבדו נשמע כמו ציוץ. */
+  noise(ac) {
+    if (this._buf) return this._buf;
+    const len = Math.floor(ac.sampleRate * 0.06);
+    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    this._buf = buf;
+    return buf;
+  }
   tick() {
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -319,15 +351,30 @@ class Component extends DCLogic {
       const ac = this._ac;
       if (ac.state === 'suspended') ac.resume();
       const t = ac.currentTime;
+
+      /* הנקישה · רעש מסונן שנחתך תוך 28 מילישניות */
+      const src = ac.createBufferSource();
+      src.buffer = this.noise(ac);
+      const bp = ac.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(1900 + Math.random() * 900, t);
+      bp.Q.setValueAtTime(1.4, t);
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.16, t);
+      ng.gain.exponentialRampToValueAtTime(0.0002, t + 0.028);
+      src.connect(bp); bp.connect(ng); ng.connect(ac.destination);
+      src.start(t); src.stop(t + 0.06);
+
+      /* החבטה · הגוף הנמוך של המקש בנייר */
       const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(1400 + Math.random() * 600, t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.045, t + 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-      o.connect(g); g.connect(ac.destination);
-      o.start(t); o.stop(t + 0.06);
+      const og = ac.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(150 + Math.random() * 40, t);
+      o.frequency.exponentialRampToValueAtTime(72, t + 0.05);
+      og.gain.setValueAtTime(0.09, t);
+      og.gain.exponentialRampToValueAtTime(0.0002, t + 0.055);
+      o.connect(og); og.connect(ac.destination);
+      o.start(t); o.stop(t + 0.07);
     } catch (e) { /* דפדפן שחוסם קול · ההקלדה ממשיכה בלעדיו */ }
   }
 
@@ -377,6 +424,8 @@ class Component extends DCLogic {
       closeAbout: () => this.closeAbout(),
       finishType: () => this.finishType(),
       blocks: this.storyBlocks(),
+      typing: this.state.aboutOpen && this.state.typed < STORY_LEN,
+      skipLabel: 'לחצי לדילוג',
       aboutBg: 'linear-gradient(150deg, rgba(255,255,255,0.52) 0%, ' + a(cur.rgb, 0.1) + ' 100%)',
       aboutShadow: 'inset 0 1px 0 rgba(255,255,255,0.82), 0 12px 28px -22px ' + a(cur.rgb, 0.5),
       aboutBtnBg: a(cur.rgb, 0.15),

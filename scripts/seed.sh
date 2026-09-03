@@ -10,6 +10,8 @@ BOARDS=(Main Guest Login Admin AdminOrders AdminBoard AdminDays AdminMoney
 
 args=()
 for f in "${BOARDS[@]}"; do args+=(--artboard "design/app/$f.dc.html"); done
+"$(dirname "$0")/optimize-assets.sh"
+
 shopt -s nullglob
 for img in design/app/assets/*.png design/app/assets/*.jpg design/app/assets/*.jpeg design/app/assets/*.webp design/app/assets/*.svg; do args+=(--image "$img"); done
 shopt -u nullglob
