@@ -13,6 +13,7 @@
     a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
     .press { transition: transform 150ms ease; }
     .press:active { transform: scale(0.97); }
+    .chev { transition: transform 240ms cubic-bezier(.22,.9,.28,1); }
     input { font-family: 'Assistant', system-ui, sans-serif; }
     input::placeholder { color: #C4BDCE; }
   </style>
@@ -22,15 +23,14 @@
 
   <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%);"></div>
 
-  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 11px; padding: 30px 18px 0;">
 
     <div style="flex-shrink: 0;">
       <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">עלויות ייצור</div>
       <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
     </div>
 
-    <!-- ═══ תזכורת ה-1 בחודש ═══ -->
-    <sc-if value="{{ due }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.3); display: flex; align-items: center; gap: 11px;">
+    <sc-if value="{{ due }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 12px 14px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.3); display: flex; align-items: center; gap: 11px;">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
       <div style="flex-grow: 1; min-width: 0;">
         <div style="font-size: 13px; font-weight: 600; color: #A65E2A;">{{ dueTitle }}</div>
@@ -42,52 +42,103 @@
     <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ cats }}" as="c" hint-placeholder-count="4">
-          <div onClick="{{ c.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 36px; border-radius: 12px; padding: 0 13px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
+          <div onClick="{{ c.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 34px; border-radius: 12px; padding: 0 13px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
             <div style="font-size: 12.5px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
           </div>
         </sc-for>
       </div>
     </div>
 
-    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px;">
+    <sc-if value="{{ hasSubs }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ subs }}" as="b" hint-placeholder-count="3">
+          <div onClick="{{ b.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 30px; border-radius: 999px; padding: 0 13px; cursor: pointer; background: {{ b.bg }}; border: 1.5px solid {{ b.bd }}; display: flex; align-items: center;">
+            <div style="font-size: 11.5px; font-weight: {{ b.w }}; color: {{ b.fg }}; white-space: nowrap;">{{ b.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div></sc-if>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px;">
 
       <sc-for list="{{ dishes }}" as="d" hint-placeholder-count="4">
-        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 14px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border-right: 3px solid {{ d.edge }}; border-top: 1.5px solid rgba(255,255,255,0.8); border-bottom: 1.5px solid rgba(255,255,255,0.8); border-left: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 11px;">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.46) 100%); border-right: 3px solid {{ d.edge }}; border-top: 1.5px solid rgba(255,255,255,0.8); border-bottom: 1.5px solid rgba(255,255,255,0.8); border-left: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 11px;">
 
-          <div onClick="{{ d.toggle }}" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+          <div onClick="{{ d.toggle }}" class="press" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
             <div style="flex-grow: 1; min-width: 0;">
-              <div style="font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;">{{ d.name }}</div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="font-size: 14px; font-weight: 600; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ d.name }}</div>
+                <sc-if value="{{ d.isAuto }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; border-radius: 6px; padding: 1px 6px; background: rgba(78,138,100,0.14);">
+                  <div style="font-size: 9.5px; font-weight: 700; color: #4E8A64; white-space: nowrap;">{{ autoTag }}</div>
+                </div></sc-if>
+              </div>
               <div style="font-size: 11.5px; font-weight: 300; color: #8A8194; margin-top: 2px;">{{ d.summary }}</div>
             </div>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ d.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ d.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
           </div>
 
-          <sc-if value="{{ d.open }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 11px;">
-
+          <sc-if value="{{ d.open }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
 
-            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ partsLabel }}</div>
-            <sc-for list="{{ d.parts }}" as="p" hint-placeholder-count="3">
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <input type="text" value="{{ p.name }}" onInput="{{ p.setName }}" placeholder="{{ partPh }}" style="flex: 1; min-width: 0; box-sizing: border-box; height: 40px; border-radius: 12px; padding: 0 11px; font-size: 13px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
-                <input type="text" value="{{ p.cost }}" onInput="{{ p.setCost }}" placeholder="0" style="flex-shrink: 0; width: 74px; box-sizing: border-box; height: 40px; border-radius: 12px; padding: 0 9px; text-align: center; font-size: 13.5px; font-weight: 600; color: #A65E2A; background: #FFFFFF; border: 1.5px solid rgba(199,125,62,0.24); outline: none;">
-                <div onClick="{{ p.remove }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
-              </div>
-            </sc-for>
+            <sc-if value="{{ d.hasNote }}" hint-placeholder-val="{{ true }}"><div style="box-sizing: border-box; border-radius: 12px; padding: 9px 12px; background: rgba(123,92,188,0.06);">
+              <div style="font-size: 11.5px; font-weight: 400; line-height: 1.5; color: #6E6478;">{{ d.note }}</div>
+            </div></sc-if>
 
-            <div onClick="{{ d.addPart }}" class="press" style="align-self: flex-start; height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; gap: 6px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-              <div style="font-size: 12px; font-weight: 500; color: #4A4254;">{{ addPartLabel }}</div>
-            </div>
+            <sc-if value="{{ d.hasFrom }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ fromLabel }}</div>
+              <sc-for list="{{ d.from }}" as="f" hint-placeholder-count="2">
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                  <div style="flex-grow: 1; min-width: 0; font-size: 12.5px; font-weight: 500; color: #4E8A64;">{{ f.name }}</div>
+                  <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 400; color: #A79FB2; font-variant-numeric: tabular-nums;">{{ f.mult }}</div>
+                  <div style="width: 56px; flex-shrink: 0; text-align: left; font-size: 12.5px; font-weight: 700; color: #4E8A64; font-variant-numeric: tabular-nums;">{{ f.sum }}</div>
+                </div>
+              </sc-for>
+            </div></sc-if>
+
+            <sc-if value="{{ d.hasParts }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
+              <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ partsLabel }}</div>
+
+              <div style="display: flex; align-items: baseline; gap: 6px;">
+                <div style="flex-grow: 1; min-width: 0; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colName }}</div>
+                <div style="width: 52px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colPrice }}</div>
+                <div style="width: 46px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colQty }}</div>
+                <div style="width: 50px; flex-shrink: 0; text-align: left; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colSum }}</div>
+                <div style="width: 22px; flex-shrink: 0;"></div>
+              </div>
+
+              <sc-for list="{{ d.parts }}" as="p" hint-placeholder-count="3">
+                <div style="position: relative; display: flex; align-items: center; gap: 6px;">
+                  <input type="text" value="{{ p.name }}" onInput="{{ p.setName }}" placeholder="{{ partPh }}" style="flex-grow: 1; min-width: 0; box-sizing: border-box; height: 36px; border-radius: 11px; padding: 0 10px; font-size: 12.5px; font-weight: 400; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+                  <input type="text" value="{{ p.price }}" onInput="{{ p.setPrice }}" placeholder="0" style="width: 52px; flex-shrink: 0; box-sizing: border-box; height: 36px; border-radius: 11px; padding: 0 6px; text-align: center; font-size: 12.5px; font-weight: 600; color: #A65E2A; background: #FFFFFF; border: 1.5px solid rgba(199,125,62,0.24); outline: none;">
+                  <input type="text" value="{{ p.qty }}" onInput="{{ p.setQty }}" placeholder="0" style="width: 46px; flex-shrink: 0; box-sizing: border-box; height: 36px; border-radius: 11px; padding: 0 6px; text-align: center; font-size: 12.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+                  <div style="width: 50px; flex-shrink: 0; text-align: left; font-size: 12.5px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ p.sum }}</div>
+                  <div onClick="{{ p.remove }}" class="press" style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C4BDCE" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                  </div>
+                  <sc-if value="{{ p.hasHits }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; z-index: 5; top: 40px; right: 0; left: 80px; border-radius: 12px; overflow: hidden; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); box-shadow: 0 16px 32px -18px rgba(96,80,132,0.6);">
+                    <sc-for list="{{ p.hits }}" as="h" hint-placeholder-count="3">
+                      <div onClick="{{ h.pick }}" class="press" style="padding: 8px 11px; cursor: pointer; border-bottom: 1px solid rgba(130,112,162,0.1);">
+                        <div style="font-size: 12.5px; font-weight: 500; color: #2A2430;">{{ h.name }}</div>
+                        <div style="font-size: 10.5px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ h.sub }}</div>
+                      </div>
+                    </sc-for>
+                  </div></sc-if>
+                </div>
+              </sc-for>
+
+              <div onClick="{{ d.addPart }}" class="press" style="align-self: flex-start; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4A4254" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+              </div>
+            </div></sc-if>
 
             <div style="display: flex; align-items: flex-end; gap: 8px;">
+              <sc-if value="{{ d.hasYield }}" hint-placeholder-val="{{ true }}"><div style="flex: 1; min-width: 0;">
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ d.yieldLabel }}</div>
+                <input type="text" value="{{ d.yield }}" onInput="{{ d.setYield }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+              </div></sc-if>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ soldLabel }}</div>
-                <input type="text" value="{{ d.sold }}" onInput="{{ d.setSold }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ priceLabel }}</div>
-                <input type="text" value="{{ d.price }}" onInput="{{ d.setPrice }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ d.priceLabel }}</div>
+                <input type="text" value="{{ d.price }}" onInput="{{ d.setPrice }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 700; color: #43307A; background: #FFFFFF; border: 1.5px solid rgba(123,92,188,0.3); outline: none;">
               </div>
             </div>
 
@@ -133,46 +184,144 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
-/* מגשי הפירות אינם כאן · הם לא בניהול הכספי של שקד */
+/* ═══ עלויות ייצור · המקור היחיד למחירים ולעלויות ═══
+   מגשי הפירות אינם כאן — הם לא בניהול הכספי של שקד.
+   ⚠ המחיר שנקבע כאן הוא המחיר של כל האפליקציה, כולל צד הלקוחה.
+   בקנבס כל ארטבורד עומד בפני עצמו, ולכן ההעברה מוצגת ולא מחווטת. */
+
 const CATS = [
-  { id: 'cous', n: 'קוסקוס',  hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188' },
-  { id: 'schn', n: 'שישניצל', hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158' },
-  { id: 'box',  n: 'ספיישל',  hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89'  },
-  { id: 'chef', n: 'שף',      hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40'  }
+  { id: 'cous', n: 'קוסקוס',  hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188', subs: null },
+  { id: 'schn', n: 'שישניצל', hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158', subs: null },
+  { id: 'box',  n: 'ספיישל',  hue: '#437C59', deep: '#2C5A3E', rgb: '67,124,89',
+    subs: [{ id: 'salads', n: 'סלטים' }, { id: 'challah', n: 'חלות' }, { id: 'packs', n: 'מארזים מוכנים' }] },
+  { id: 'chef', n: 'שף',      hue: '#A85A28', deep: '#7A3D18', rgb: '168,90,40', subs: null }
 ];
 
-/* ⚠ נתוני הדגמה · הפריטים והעלויות נכתבו על ידי Claude.
-   כל אחד מהם הוא אצווה חודשית: מה נקנה, כמה עלה, וכמה מנות יצאו ממנו. */
+/* פנקס המצרכים · אותו פנקס של מסך הקניות */
+const PANTRY = [
+  { name: 'עגבניות', unit: 'ק״ג', price: 9 },     { name: 'בצל', unit: 'ק״ג', price: 6 },
+  { name: 'גזר', unit: 'ק״ג', price: 6 },          { name: 'כוסברה', unit: 'יח׳', price: 4 },
+  { name: 'פטרוזיליה', unit: 'יח׳', price: 4 },    { name: 'קישואים', unit: 'ק״ג', price: 8 },
+  { name: 'תפוחי אדמה', unit: 'ק״ג', price: 5 },   { name: 'ירך עוף', unit: 'ק״ג', price: 40 },
+  { name: 'חזה עוף', unit: 'ק״ג', price: 46 },     { name: 'פילה עוף', unit: 'ק״ג', price: 58 },
+  { name: 'בשר טחון למפרום', unit: 'ק״ג', price: 65 }, { name: 'קוסקוס', unit: 'ק״ג', price: 16 },
+  { name: 'חומוס יבש', unit: 'ק״ג', price: 15 },   { name: 'פירורי לחם', unit: 'ק״ג', price: 12 },
+  { name: 'קמח טמפורה', unit: 'ק״ג', price: 18 },  { name: 'קמח', unit: 'ק״ג', price: 5 },
+  { name: 'שמרים', unit: 'ק״ג', price: 22 },       { name: 'שומשום', unit: 'ק״ג', price: 18 },
+  { name: 'חמאה', unit: 'ק״ג', price: 45 },        { name: 'גבינת פטה', unit: 'ק״ג', price: 38 },
+  { name: 'שמן זית', unit: 'ק״ג', price: 48 },     { name: 'חציל', unit: 'ק״ג', price: 7 },
+  { name: 'פלפל אדום', unit: 'ק״ג', price: 11 },   { name: 'כרוב סגול', unit: 'ק״ג', price: 6 },
+  { name: 'כרוב לבן', unit: 'ק״ג', price: 5 },     { name: 'סלק', unit: 'ק״ג', price: 6 },
+  { name: 'מיונז', unit: 'ק״ג', price: 18 },       { name: 'ביצים', unit: 'יח׳', price: 0.8 },
+  { name: 'מגשי אלומיניום', unit: 'קרטון', price: 90 }, { name: 'קופסאות אישיות', unit: 'קרטון', price: 75 },
+  { name: 'צנצנות', unit: 'קרטון', price: 110 },   { name: 'קוקוטים', unit: 'קרטון', price: 60 },
+  { name: 'דבש', unit: 'ק״ג', price: 42 },         { name: 'נרות', unit: 'קרטון', price: 65 },
+  { name: 'נוטלה', unit: 'ק״ג', price: 34 }
+];
+
+/* מצבי חישוב:
+   unit   · עלות ליחידה  = סה״כ המצרכים ÷ כמה יצא
+   weight · עלות ל-100 גרם = סה״כ המצרכים ÷ (גרמים ÷ 100)
+   auto   · העלות נשאבת ממנות אחרות · אין מה למלא חוץ מהמחיר */
+const P = (n, price, qty) => ({ n: n, price: price, qty: qty });
+
+/* ⚠ נתוני הדגמה · המצרכים והכמויות נכתבו על ידי Claude.
+   המחירים למכירה נלקחו מהמסכים של הלקוחה. */
 const DISHES = [
-  { c: 'cous', name: 'קוסקוס צמחוני', price: 45, sold: 120,
-    parts: [ { n: 'סולת קוסקוס', v: 420 }, { n: 'ירקות שורש', v: 890 }, { n: 'חומוס ותבלינים', v: 210 }, { n: 'אריזות', v: 180 } ] },
-  { c: 'cous', name: 'קוסקוס עם עוף', price: 55, sold: 95,
-    parts: [ { n: 'סולת קוסקוס', v: 330 }, { n: 'ירקות שורש', v: 700 }, { n: 'שוקיים עוף', v: 980 }, { n: 'אריזות', v: 145 } ] },
-  { c: 'cous', name: 'קוסקוס עם מפרום', price: 65, sold: 70,
-    parts: [ { n: 'סולת קוסקוס', v: 245 }, { n: 'ירקות שורש', v: 520 }, { n: 'מפרום', v: 1240 }, { n: 'אריזות', v: 105 } ] },
-  { c: 'cous', name: 'תוספת ירקות', price: 10, sold: 60, parts: [ { n: 'ירקות שורש', v: 180 } ] },
-  { c: 'cous', name: 'תוספת עוף', price: 15, sold: 45, parts: [ { n: 'שוקיים עוף', v: 310 } ] },
-  { c: 'cous', name: 'תוספת מפרום', price: 20, sold: 30, parts: [ { n: 'מפרום', v: 330 } ] },
+  /* ── קוסקוס ── */
+  { id: 'cousVeg', c: 'cous', name: 'קוסקוס צמחוני', mode: 'unit', price: 45, yld: 120,
+    parts: [P('קוסקוס', 16, 36), P('גזר', 6, 42), P('קישואים', 8, 30), P('חומוס יבש', 15, 9), P('קופסאות אישיות', 75, 6)] },
+  { id: 'cousChick', c: 'cous', name: 'קוסקוס עם עוף', mode: 'unit', price: 55, yld: 95,
+    parts: [P('קוסקוס', 16, 15), P('גזר', 6, 19), P('קישואים', 8, 14), P('ירך עוף', 40, 37), P('קופסאות אישיות', 75, 3)] },
+  { id: 'cousMafr', c: 'cous', name: 'קוסקוס עם מפרום', mode: 'unit', price: 65, yld: 70,
+    parts: [P('קוסקוס', 16, 11), P('גזר', 6, 12), P('תפוחי אדמה', 5, 14), P('בשר טחון למפרום', 65, 26), P('קופסאות אישיות', 75, 2)] },
+  { id: 'addVeg', c: 'cous', name: 'תוספת ירקות', mode: 'unit', price: 10, yld: 60,
+    parts: [P('גזר', 6, 12), P('קישואים', 8, 10)] },
+  { id: 'addChick', c: 'cous', name: 'תוספת עוף', mode: 'unit', price: 15, yld: 45,
+    parts: [P('ירך עוף', 40, 8)] },
+  { id: 'addMafr', c: 'cous', name: 'תוספת מפרום', mode: 'unit', price: 20, yld: 30,
+    parts: [P('בשר טחון למפרום', 65, 5)] },
 
-  { c: 'schn', name: 'חלת שניצל דק', price: 50, sold: 110,
-    parts: [ { n: 'חזה עוף', v: 1180 }, { n: 'פירורי לחם וביצים', v: 240 }, { n: 'חלות', v: 420 }, { n: 'תוספות וסלטים', v: 310 } ] },
-  { c: 'schn', name: 'חלת פילה עוף טמפורה', price: 60, sold: 65,
-    parts: [ { n: 'פילה עוף', v: 980 }, { n: 'קמח טמפורה', v: 160 }, { n: 'חלות', v: 250 }, { n: 'תוספות וסלטים', v: 220 } ] },
-  { c: 'schn', name: 'מארז שניצל דק', price: 200, sold: 22,
-    parts: [ { n: 'חזה עוף', v: 1080 }, { n: 'פירורי לחם וביצים', v: 190 }, { n: 'חלות אישיות', v: 380 }, { n: 'מארזים', v: 165 } ] },
-  { c: 'schn', name: 'מארז פילה עוף טמפורה', price: 250, sold: 14,
-    parts: [ { n: 'פילה עוף', v: 860 }, { n: 'קמח טמפורה', v: 90 }, { n: 'חלות אישיות', v: 240 }, { n: 'מארזים', v: 105 } ] },
-  { c: 'schn', name: 'קוקוט רוטב', price: 3, sold: 140, parts: [ { n: 'רטבים וקוקוטים', v: 190 } ] },
+  /* ── שישניצל ── */
+  { id: 'schThin', c: 'schn', name: 'חלת שניצל דק', mode: 'unit', price: 50, yld: 110,
+    parts: [P('חזה עוף', 46, 38), P('פירורי לחם', 12, 9), P('ביצים', 0.8, 90), P('קמח', 5, 38), P('שומשום', 18, 3)] },
+  { id: 'schTemp', c: 'schn', name: 'חלת פילה עוף טמפורה', mode: 'unit', price: 60, yld: 65,
+    parts: [P('פילה עוף', 58, 26), P('קמח טמפורה', 18, 8), P('קמח', 5, 22), P('שמרים', 22, 1.5)] },
+  { id: 'boxThin', c: 'schn', name: 'מארז שניצל דק', mode: 'unit', price: 200, yld: 22,
+    parts: [P('חזה עוף', 46, 24), P('פירורי לחם', 12, 5), P('קמח', 5, 22), P('קופסאות אישיות', 75, 2)] },
+  { id: 'boxTemp', c: 'schn', name: 'מארז פילה עוף טמפורה', mode: 'unit', price: 250, yld: 14,
+    parts: [P('פילה עוף', 58, 15), P('קמח טמפורה', 18, 3), P('קמח', 5, 14), P('קופסאות אישיות', 75, 1.5)] },
+  { id: 'cocotte', c: 'schn', name: 'קוקוט רוטב', mode: 'unit', price: 3, yld: 140,
+    parts: [P('מיונז', 18, 6), P('קוקוטים', 60, 1.5)] },
 
-  { c: 'box', name: 'חלה לכל אירוע', price: 14, sold: 260,
-    parts: [ { n: 'קמח ושמרים', v: 640 }, { n: 'שומשום וזעתר', v: 180 }, { n: 'אריזות', v: 220 } ] },
-  { c: 'box', name: 'סלטים · ק״ג', price: 89, sold: 48,
-    parts: [ { n: 'ירקות טריים', v: 1420 }, { n: 'שמן, לימון ותבלינים', v: 260 }, { n: 'קופסאות', v: 190 } ] },
+  /* ── ספיישל · סלטים · נמכרים לפי משקל, 89 ₪ לק״ג ── */
+  { id: 'salMat',  c: 'box', sub: 'salads', name: 'מטבוחה של בית', mode: 'weight', price: 89, yld: 6000,
+    parts: [P('עגבניות', 9, 7), P('פלפל אדום', 11, 3), P('שמן זית', 48, 0.8)] },
+  { id: 'salEgg',  c: 'box', sub: 'salads', name: 'סלט ביצים קלאסי', mode: 'weight', price: 89, yld: 3200,
+    parts: [P('ביצים', 0.8, 60), P('מיונז', 18, 1.4)] },
+  { id: 'salEggp', c: 'box', sub: 'salads', name: 'חציל במיונז', mode: 'weight', price: 89, yld: 3200,
+    parts: [P('חציל', 7, 6), P('מיונז', 18, 1.6)] },
+  { id: 'salMor',  c: 'box', sub: 'salads', name: 'חציל מרוקאי', mode: 'weight', price: 89, yld: 4500,
+    parts: [P('חציל', 7, 6), P('פלפל אדום', 11, 1.5), P('שמן זית', 48, 0.5)] },
+  { id: 'salCar',  c: 'box', sub: 'salads', name: 'סלט גזר מרוקאי', mode: 'weight', price: 89, yld: 3000,
+    parts: [P('גזר', 6, 6), P('שמן זית', 48, 0.5)] },
+  { id: 'salMash', c: 'box', sub: 'salads', name: 'סלט מאשוויה', mode: 'weight', price: 89, yld: 4500,
+    parts: [P('פלפל אדום', 11, 4), P('עגבניות', 9, 2), P('שמן זית', 48, 0.5)] },
+  { id: 'salPurp', c: 'box', sub: 'salads', name: 'סלט כרוב סגול במיונז', mode: 'weight', price: 89, yld: 3000,
+    parts: [P('כרוב סגול', 6, 5), P('מיונז', 18, 1.2)] },
+  { id: 'salWhite',c: 'box', sub: 'salads', name: 'סלט כרוב לבן חמוץ', mode: 'weight', price: 89, yld: 2600,
+    parts: [P('כרוב לבן', 5, 5), P('שמן זית', 48, 0.3)] },
+  { id: 'salChin', c: 'box', sub: 'salads', name: 'כרוב לבן סיני', mode: 'weight', price: 89, yld: 2500,
+    parts: [P('כרוב לבן', 5, 4.5), P('שמן זית', 48, 0.3)] },
+  { id: 'salBeet', c: 'box', sub: 'salads', name: 'סלק', mode: 'weight', price: 89, yld: 2800,
+    parts: [P('סלק', 6, 6), P('שמן זית', 48, 0.3)] },
+  { id: 'salTab',  c: 'box', sub: 'salads', name: 'טאבולה', mode: 'weight', price: 89, yld: 4000,
+    parts: [P('פטרוזיליה', 4, 20), P('עגבניות', 9, 2), P('שמן זית', 48, 0.4)] },
+  { id: 'salHerb', c: 'box', sub: 'salads', name: 'עשבים', mode: 'weight', price: 89, yld: 3000,
+    parts: [P('פטרוזיליה', 4, 16), P('כוסברה', 4, 10), P('שמן זית', 48, 0.4)] },
+  { id: 'salSwt',  c: 'box', sub: 'salads', name: 'פלפלים מתוקים', mode: 'weight', price: 89, yld: 4000,
+    parts: [P('פלפל אדום', 11, 5), P('שמן זית', 48, 0.5)] },
+  { id: 'salHot',  c: 'box', sub: 'salads', name: 'פלפלים חריפים', mode: 'weight', price: 89, yld: 3500,
+    parts: [P('פלפל אדום', 11, 4), P('שמן זית', 48, 0.4)] },
 
-  { c: 'chef', name: 'ארוחת שף · לסועד', price: 250, sold: 34,
-    parts: [ { n: 'חומרי גלם לאירוע', v: 4200 }, { n: 'כלים חד־פעמיים מעוצבים', v: 620 }, { n: 'עזרה במטבח', v: 1100 } ] },
-  { c: 'chef', name: 'עמדת טאבון · לסועד', price: 220, sold: 52,
-    parts: [ { n: 'בצק, גבינות ומילויים', v: 3900 }, { n: 'גז ועצים לטאבון', v: 480 }, { n: 'עזרה בעמדה', v: 900 } ] }
+  /* ── ספיישל · חלות ── */
+  { id: 'chFri', c: 'box', sub: 'challah', name: 'חלת שישי משפחתית', mode: 'unit', price: 25, yld: 40,
+    note: 'שומשום, קמח וקלאסית הן אותה חלה ואותו מחיר — מספיק חישוב אחד.',
+    parts: [P('קמח', 5, 12), P('שמרים', 22, 0.4), P('שומשום', 18, 0.5), P('ביצים', 0.8, 8)] },
+  { id: 'chBase', c: 'box', sub: 'challah', name: 'חלה לכל אירוע · הבסיס', mode: 'unit', price: 12, yld: 90,
+    note: 'העלות הזאת נכנסת אוטומטית לכל ארבעת סוגי האירוע שמתחתיה.',
+    parts: [P('קמח', 5, 14), P('שמרים', 22, 0.5), P('ביצים', 0.8, 10)] },
+  { id: 'chRosh', c: 'box', sub: 'challah', name: 'ראש השנה', mode: 'auto', price: 18,
+    from: [{ id: 'chBase', m: 1 }],
+    parts: [P('דבש', 42, 3), P('צנצנות', 110, 1)], yld: 90 },
+  { id: 'chHafr', c: 'box', sub: 'challah', name: 'הפרשת חלה', mode: 'auto', price: 18,
+    from: [{ id: 'chBase', m: 1 }],
+    parts: [P('נרות', 65, 1)], yld: 60 },
+  { id: 'chEvent', c: 'box', sub: 'challah', name: 'ימי הולדת ואירועים', mode: 'auto', price: 12,
+    from: [{ id: 'chBase', m: 1 }], parts: [], yld: 0 },
+  { id: 'chKids', c: 'box', sub: 'challah', name: 'פינוק לגן ולכיתה', mode: 'auto', price: 16,
+    from: [{ id: 'chBase', m: 1 }],
+    parts: [P('נוטלה', 34, 2), P('קוקוטים', 60, 1)], yld: 120 },
+
+  /* ── ספיישל · מארזים מוכנים ── */
+  { id: 'pkSalads', c: 'box', sub: 'packs', name: 'חגיגה בשולחן · סלטים', mode: 'auto', price: 179,
+    note: 'החלות והסלטים נשאבים מהקטגוריות שמעל. אין מה לעדכן כאן חוץ מהמחיר.',
+    from: [{ id: 'chFri', m: 2 }, { id: 'salads:avg', m: 12.5 }], parts: [], yld: 0 },
+  { id: 'pkMain', c: 'box', sub: 'packs', name: 'חגיגה בשולחן · עיקרית', mode: 'unit', price: 339, yld: 1,
+    note: 'העיקריות כאן נמכרות לפי משקל ולא לפי מנה, ולכן אינן נשאבות מהקוסקוס — מעדכנים אותן ידנית.',
+    parts: [P('ירך עוף', 40, 2.2), P('בשר טחון למפרום', 65, 1.2), P('תפוחי אדמה', 5, 1.5), P('מגשי אלומיניום', 90, 0.1)] },
+  { id: 'pkAll', c: 'box', sub: 'packs', name: 'הכל עלינו', mode: 'auto', price: 499,
+    note: 'מורכב במלואו משני המארזים שמעל. הדבר היחיד שנקבע כאן הוא המחיר הסופי.',
+    from: [{ id: 'pkSalads', m: 1 }, { id: 'pkMain', m: 1 }], parts: [], yld: 0 },
+  { id: 'pkShana', c: 'box', sub: 'packs', name: 'טעם של שנה טובה', mode: 'unit', price: 49, yld: 30,
+    note: 'מארז עצמאי · מתעדכן ידנית.',
+    parts: [P('דבש', 42, 4), P('צנצנות', 110, 1), P('קמח', 5, 6), P('שמרים', 22, 0.3)] },
+
+  /* ── שף וטאבון ── */
+  { id: 'chefMeal', c: 'chef', name: 'ארוחת שף · לסועד', mode: 'unit', price: 250, yld: 34,
+    parts: [P('פילה עוף', 58, 38), P('ירך עוף', 40, 32), P('קישואים', 8, 45), P('שמן זית', 48, 6), P('מגשי אלומיניום', 90, 10)] },
+  { id: 'tabun', c: 'chef', name: 'עמדת טאבון · לסועד', mode: 'unit', price: 220, yld: 52,
+    parts: [P('קמח', 5, 310), P('שמרים', 22, 12), P('גבינת פטה', 38, 62), P('שמן זית', 48, 16)] }
 ];
 
 /* ⚠ תאריך ההדגמה · ב-1 בחודש התזכורת נדלקת מעצמה */
@@ -180,7 +329,9 @@ const TODAY = new Date(2026, 9, 1);
 const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const num = (v) => { const n = parseFloat(String(v).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
+const trim = (v) => String(v || '').trim();
 const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const money = (n) => (Math.round(n * 10) / 10).toFixed(1);
 const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
 
 class Component extends DCLogic {
@@ -188,44 +339,79 @@ class Component extends DCLogic {
     super(props);
     this.state = {
       cat: 'cous',
+      sub: 'salads',
       open: -1,
       seen: false,
       dishes: DISHES.map((d, i) => ({
-        id: i, c: d.c, name: d.name,
+        id: d.id, c: d.c, sub: d.sub || null, name: d.name, mode: d.mode,
+        note: d.note || '', from: d.from || [],
         price: String(d.price),
-        sold: String(d.sold),
-        parts: d.parts.map((p, j) => ({ id: j, name: p.n, cost: String(p.v) }))
+        yld: String(d.yld === undefined ? 0 : d.yld),
+        parts: (d.parts || []).map((p, j) => ({ id: j, name: p.n, price: String(p.price), qty: String(p.qty) }))
       }))
     };
   }
 
+  byId(id) { return this.state.dishes.filter((d) => d.id === id)[0]; }
   patch(id, p) {
     this.setState({ dishes: this.state.dishes.map((d) => d.id === id ? Object.assign({}, d, p) : d) });
   }
 
-  /* עלות האצווה · סכום כל מה שנקנה עבור המנה החודש */
-  batchCost(d) { return d.parts.reduce((s, p) => s + num(p.cost), 0); }
-  /* עלות למנה · האצווה חלקי כמות המנות שנמכרו */
-  unitCost(d) { const q = num(d.sold); return q > 0 ? this.batchCost(d) / q : 0; }
+  /* סה״כ המצרכים · מחיר כפול כמות בכל שורה */
+  partsSum(d) { return d.parts.reduce((s, p) => s + num(p.price) * num(p.qty), 0); }
+
+  /* העלות ליחידה · לפי מצב החישוב */
+  unitCost(d, depth) {
+    const lvl = depth || 0;
+    if (lvl > 4) return 0;
+    let base = 0;
+    d.from.forEach((f) => {
+      if (f.id === 'salads:avg') { base += this.saladAvg100() * f.m; return; }
+      const src = this.byId(f.id);
+      if (src) base += this.unitCost(src, lvl + 1) * f.m;
+    });
+    const own = this.partsSum(d);
+    const y = num(d.yld);
+    if (d.mode === 'weight') return y > 0 ? own / (y / 100) : 0;
+    if (own > 0 && y > 0) base += own / y;
+    else if (own > 0 && y === 0) base += own;
+    return base;
+  }
+
+  /* עלות ממוצעת ל-100 גרם סלט · ממנה נגזרים המארזים */
+  saladAvg100() {
+    const list = this.state.dishes.filter((d) => d.sub === 'salads');
+    if (!list.length) return 0;
+    return list.reduce((s, d) => s + this.unitCost(d, 3), 0) / list.length;
+  }
 
   addPart(id) {
-    const d = this.state.dishes.filter((x) => x.id === id)[0];
+    const d = this.byId(id);
     const next = d.parts.reduce((m, p) => Math.max(m, p.id + 1), 0);
-    this.patch(id, { parts: d.parts.concat([{ id: next, name: '', cost: '' }]) });
+    this.patch(id, { parts: d.parts.concat([{ id: next, name: '', price: '', qty: '' }]) });
   }
   removePart(id, pid) {
-    const d = this.state.dishes.filter((x) => x.id === id)[0];
-    this.patch(id, { parts: d.parts.filter((p) => p.id !== pid) });
+    this.patch(id, { parts: this.byId(id).parts.filter((p) => p.id !== pid) });
   }
   patchPart(id, pid, p) {
-    const d = this.state.dishes.filter((x) => x.id === id)[0];
-    this.patch(id, { parts: d.parts.map((x) => x.id === pid ? Object.assign({}, x, p) : x) });
+    this.patch(id, { parts: this.byId(id).parts.map((x) => x.id === pid ? Object.assign({}, x, p) : x) });
+  }
+  /* השלמה מפנקס המצרכים · המחיר האחרון נמשך איתה */
+  pickPantry(id, pid, x) {
+    this.patchPart(id, pid, { name: x.name, price: String(x.price) });
+  }
+  hitsFor(q) {
+    const t = trim(q);
+    if (t === '') return [];
+    if (PANTRY.some((x) => x.name === t)) return [];
+    return PANTRY.filter((x) => x.name.indexOf(t) !== -1).slice(0, 3);
   }
 
   renderVals() {
     const st = this.state;
     const cat = CATS.filter((c) => c.id === st.cat)[0];
-    const list = st.dishes.filter((d) => d.c === st.cat);
+    const list = st.dishes.filter((d) =>
+      d.c === st.cat && (!cat.subs || d.sub === st.sub));
 
     return {
       sub: 'עדכון חודשי · ' + MONTHS[TODAY.getMonth()] + ' ' + TODAY.getFullYear(),
@@ -243,52 +429,102 @@ class Component extends DCLogic {
           bd: on ? a(c.rgb, 0.42) : 'rgba(130,112,162,0.16)',
           fg: on ? c.deep : '#4A4254',
           w: on ? '600' : '400',
-          pick: () => this.setState({ cat: c.id })
+          pick: () => this.setState({ cat: c.id, open: -1 })
         };
       }),
 
-      partsLabel: 'מה נקנה החודש',
-      partPh: 'שם המצרך',
-      addPartLabel: 'עוד מצרך',
-      soldLabel: 'מנות שנמכרו',
-      priceLabel: 'מחיר מכירה ₪',
+      hasSubs: !!cat.subs,
+      subs: (cat.subs || []).map((b) => {
+        const on = st.sub === b.id;
+        return {
+          name: b.n,
+          bg: on ? a(cat.rgb, 0.13) : 'rgba(255,255,255,0.7)',
+          bd: on ? a(cat.rgb, 0.42) : 'rgba(130,112,162,0.16)',
+          fg: on ? cat.deep : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setState({ sub: b.id, open: -1 })
+        };
+      }),
 
-      dishes: list.map((d) => {
-        const batch = this.batchCost(d);
+      autoTag: 'אוטומטי',
+      fromLabel: 'נשאב מקטגוריות אחרות',
+      partsLabel: 'חישוב עלות למנה אחת',
+      partPh: 'שם המצרך',
+      colName: 'מוצר',
+      colPrice: 'מחיר',
+      colQty: 'כמות',
+      colSum: 'סה״כ',
+
+      dishes: list.map((d, i) => {
+        const isWeight = d.mode === 'weight';
+        const isAuto = d.mode === 'auto';
         const unit = this.unitCost(d);
         const price = num(d.price);
-        const profit = price - unit;
+        /* בסלטים העלות היא ל-100 גרם והמחיר לק״ג · משווים באותה יחידה */
+        const costCmp = isWeight ? unit * 10 : unit;
+        const profit = price - costCmp;
         const pct = price > 0 ? Math.round(profit / price * 100) : 0;
         const thin = pct < 40;
-        const isOpen = st.open === d.id;
+        const open = st.open === i;
+        const rows = [];
+        if (d.parts.length) rows.push({ k: 'סה״כ מצרכים', v: nf(this.partsSum(d)) + ' ₪', w: '400', fg: '#4A4254', size: '12.5px' });
+        rows.push({ k: isWeight ? 'עלות ל-100 גרם' : 'עלות ליחידה', v: money(unit) + ' ₪', w: '700', fg: '#A65E2A', size: '15px' });
+        if (isWeight) rows.push({ k: 'עלות לק״ג', v: money(costCmp) + ' ₪', w: '600', fg: '#A65E2A', size: '13px' });
+        rows.push({ k: isWeight ? 'רווח לק״ג' : 'רווח ליחידה', v: money(profit) + ' ₪', w: '700', fg: thin ? '#A65E2A' : '#4E8A64', size: '15px' });
+        rows.push({ k: 'רווחיות', v: pct + '%', w: '600', fg: thin ? '#A65E2A' : '#4E8A64', size: '13px' });
+
         return {
           name: d.name,
-          summary: unit > 0 ? 'עלות למנה ' + unit.toFixed(1) + ' ₪ · רווחיות ' + pct + '%' : 'טרם עודכן',
+          summary: (isWeight ? 'עלות לק״ג ' : 'עלות ליחידה ') + money(costCmp) + ' ₪ · רווחיות ' + pct + '%',
           edge: cat.hue,
-          open: isOpen,
-          spin: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          toggle: () => this.setState({ open: isOpen ? -1 : d.id }),
-          price: d.price,
-          sold: d.sold,
-          setPrice: (e) => this.patch(d.id, { price: e.target.value }),
-          setSold: (e) => this.patch(d.id, { sold: e.target.value }),
+          isAuto: isAuto,
+          open: open,
+          spin: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          toggle: () => this.setState({ open: open ? -1 : i }),
+
+          hasNote: d.note !== '',
+          note: d.note,
+
+          hasFrom: d.from.length > 0,
+          from: d.from.map((f) => {
+            const nm = f.id === 'salads:avg' ? 'ממוצע הסלטים' : (this.byId(f.id) || {}).name;
+            const c1 = f.id === 'salads:avg' ? this.saladAvg100() : this.unitCost(this.byId(f.id), 1);
+            return { name: nm, mult: '× ' + f.m, sum: money(c1 * f.m) + ' ₪' };
+          }),
+
+          hasParts: !isAuto || d.parts.length > 0,
+          parts: d.parts.map((p) => {
+            const hits = this.hitsFor(p.name);
+            return {
+              name: p.name, price: p.price, qty: p.qty,
+              sum: nf(num(p.price) * num(p.qty)),
+              setName: (e) => this.patchPart(d.id, p.id, { name: e.target.value }),
+              setPrice: (e) => this.patchPart(d.id, p.id, { price: e.target.value }),
+              setQty: (e) => this.patchPart(d.id, p.id, { qty: e.target.value }),
+              remove: () => this.removePart(d.id, p.id),
+              hasHits: hits.length > 0,
+              hits: hits.map((x) => ({
+                name: x.name, sub: x.price + ' ₪ ל' + x.unit,
+                pick: () => this.pickPantry(d.id, p.id, x)
+              }))
+            };
+          }),
           addPart: () => this.addPart(d.id),
-          parts: d.parts.map((p) => ({
-            name: p.name, cost: p.cost,
-            setName: (e) => this.patchPart(d.id, p.id, { name: e.target.value }),
-            setCost: (e) => this.patchPart(d.id, p.id, { cost: e.target.value }),
-            remove: () => this.removePart(d.id, p.id)
-          })),
-          rows: [
-            { k: 'סה״כ קניות', v: nf(batch) + ' ₪', w: '400', fg: '#4A4254', size: '12.5px' },
-            { k: 'עלות למנה', v: unit.toFixed(1) + ' ₪', w: '700', fg: '#A65E2A', size: '15px' },
-            { k: 'רווח למנה', v: profit.toFixed(1) + ' ₪', w: '700', fg: thin ? '#A65E2A' : '#4E8A64', size: '15px' },
-            { k: 'רווחיות', v: pct + '%', w: '600', fg: thin ? '#A65E2A' : '#4E8A64', size: '13px' }
-          ]
+
+          hasYield: !isAuto || d.parts.length > 0,
+          yieldLabel: isWeight ? 'כמה גרם יצאו' : 'כמה יחידות יצאו',
+          yield: d.yld,
+          setYield: (e) => this.patch(d.id, { yld: e.target.value }),
+
+          priceLabel: isWeight ? 'מחיר מכירה לק״ג ₪' : 'מחיר מכירה ₪',
+          price: d.price,
+          setPrice: (e) => this.patch(d.id, { price: e.target.value }),
+
+          rows: rows
         };
       }),
 
-      note: 'עלות המנה מחושבת כאן ועוברת אוטומטית למסך התפריט. שם אין מה לערוך.'
+      note: 'המחיר שנקבע כאן הוא המחיר בכל האפליקציה, כולל אצל הלקוחה. העלות עוברת אוטומטית למסך התפריט.'
     };
   }
 }

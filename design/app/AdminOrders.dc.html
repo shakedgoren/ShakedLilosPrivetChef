@@ -213,6 +213,33 @@
         </div>
       </div>
 
+      <!-- החלות · כל אחת נפתחת בחלונית עם התוספות שלה -->
+      <sc-if value="{{ isSchn }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 7px;">
+        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ rollsLabel }}</div>
+        <sc-if value="{{ hasRolls }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 6px;">
+          <sc-for list="{{ rolls }}" as="r" hint-placeholder-count="3">
+            <div style="box-sizing: border-box; border-radius: 14px; padding: 9px 12px; background: rgba(65,109,158,0.07); border: 1.5px solid rgba(65,109,158,0.2); display: flex; align-items: center; gap: 9px;">
+              <div onClick="{{ r.edit }}" style="flex-grow: 1; min-width: 0; cursor: pointer;">
+                <div style="font-size: 12.5px; font-weight: 600; color: #2B4A6E;">{{ r.name }}</div>
+                <div style="font-size: 11px; font-weight: 300; color: #7D7488; margin-top: 1px;">{{ r.tops }}</div>
+              </div>
+              <div style="flex-shrink: 0; font-size: 12.5px; font-weight: 600; color: #2B4A6E; font-variant-numeric: tabular-nums;">{{ r.price }}</div>
+              <div onClick="{{ r.drop }}" class="press" style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+              </div>
+            </div>
+          </sc-for>
+        </div></sc-if>
+        <div style="display: flex; gap: 6px;">
+          <sc-for list="{{ addRolls }}" as="b" hint-placeholder-count="2">
+            <div onClick="{{ b.add }}" class="press" style="flex: 1; box-sizing: border-box; height: 44px; border-radius: 13px; cursor: pointer; background: rgba(65,109,158,0.08); border: 1.5px dashed rgba(65,109,158,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="font-size: 12px; font-weight: 600; color: #2B4A6E; white-space: nowrap;">{{ b.name }}</div>
+              <div style="font-size: 10.5px; font-weight: 400; color: #7D7488;">{{ b.price }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div></sc-if>
+
       <!-- הפריטים · בדיוק כמו שהלקוחה בוחרת -->
       <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 7px;">
         <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ itemsLabel }}</div>
@@ -235,22 +262,6 @@
         </sc-for>
       </div>
 
-      <!-- מה נכנס לחלה · מוצג רק לסוגים שנמצאים בהזמנה -->
-      <sc-if value="{{ hasTops }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
-        <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ topsLabel }}</div>
-        <sc-for list="{{ topGroups }}" as="g" hint-placeholder-count="2">
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div style="font-size: 12px; font-weight: 600; color: #2B4A6E;">{{ g.title }}</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="5">
-                <div onClick="{{ c.pick }}" class="press" style="box-sizing: border-box; height: 34px; padding: 0 13px; border-radius: 999px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
-                  <div style="font-size: 12px; font-weight: {{ c.w }}; color: {{ c.fg }}; white-space: nowrap;">{{ c.name }}</div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-        </sc-for>
-      </div></sc-if>
 
       <!-- איסוף או משלוח -->
       <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 5px;">
@@ -316,6 +327,30 @@
     </div>
   </div></sc-if>
 
+  <!-- ── חלונית החלה ── -->
+  <sc-if value="{{ popOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeRoll }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.44); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 41; top: 190px; right: 22px; left: 22px; border-radius: 26px; padding: 18px; background: #FEFCFB; box-shadow: 0 30px 64px -22px rgba(60,48,84,0.78); display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 16.5px;">{{ popTitle }}</div>
+        <div style="font-size: 11.5px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ popSub }}</div>
+      </div>
+      <div onClick="{{ closeRoll }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <sc-for list="{{ popTops }}" as="t" hint-placeholder-count="5">
+        <div onClick="{{ t.pick }}" class="press" style="box-sizing: border-box; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }}; display: flex; align-items: center;">
+          <div style="font-size: 12.5px; font-weight: {{ t.w }}; color: {{ t.fg }}; white-space: nowrap;">{{ t.name }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div onClick="{{ saveRoll }}" class="press" style="align-self: center; height: 46px; padding: 0 28px; border-radius: 999px; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), 0 12px 24px -16px rgba(96,80,132,0.9); display: flex; align-items: center; justify-content: center;">
+      <div style="font-size: 14.5px; font-weight: 600; color: #43307A;">{{ popCta }}</div>
+    </div>
+  </div></sc-if>
+
   <!-- ── נאב בר ── -->
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
@@ -372,21 +407,24 @@ const MENU = {
     { id: 'aMafr',  n: 'תוספת מפרום',     price: 20 }
   ],
   schn: [
-    { id: 'thin',    n: 'חלת שניצל דק',           s: 'שניצל דק',      price: 50,  type: 'thin' },
-    { id: 'temp',    n: 'חלת פילה עוף טמפורה',    s: 'פילה עוף',      price: 60,  type: 'temp' },
-    { id: 'boxThin', n: 'מארז שניצל דק',          s: 'מארז שניצל דק', price: 200, type: 'thin' },
-    { id: 'boxTemp', n: 'מארז פילה עוף טמפורה',   s: 'מארז פילה עוף', price: 250, type: 'temp' },
+    { id: 'boxThin', n: 'מארז שניצל דק',          s: 'מארז שניצל דק', price: 200 },
+    { id: 'boxTemp', n: 'מארז פילה עוף טמפורה',   s: 'מארז פילה עוף', price: 250 },
     { id: 'cocAmba', n: 'קוקוט איולי עמבה',       s: 'קוקוט עמבה',    price: 3 },
     { id: 'cocCsbr', n: 'קוקוט איולי כוסברה',     s: 'קוקוט כוסברה',  price: 3 },
     { id: 'cocTahn', n: 'קוקוט טחינה',            s: 'קוקוט טחינה',   price: 3 }
   ]
 };
 
-/* התוספות שנכנסות לחלה · בדיוק הרשימות ממסך השישניצל, לכל סוג משלו */
-const SCH_TOPS = {
-  thin: { title: 'שניצל דק', list: ['מטבוחה', 'טחינה', 'חציל בטמפורה', 'כרוב סגול', 'פלפל חריף'] },
-  temp: { title: 'פילה עוף', list: ['איולי עמבה', 'איולי עשבי תיבול', 'עלי רוקט', 'מלפפון חמוץ'] }
-};
+/* החלות נבחרות אחת־אחת · לכל חלה התוספות שלה, כי כל אחד רוצה משהו אחר.
+   השמות, המחירים והתוספות מגיעים ממסך השישניצל של הלקוחה. */
+const SCH_ROLLS = [
+  { type: 'thin', n: 'חלת שניצל דק',        s: 'שניצל דק', price: 50,
+    tops: ['מטבוחה', 'טחינה', 'חציל בטמפורה', 'כרוב סגול', 'פלפל חריף'] },
+  { type: 'temp', n: 'חלת פילה עוף טמפורה', s: 'פילה עוף', price: 60,
+    tops: ['איולי עמבה', 'איולי עשבי תיבול', 'עלי רוקט', 'מלפפון חמוץ'] }
+];
+const ROLL = {};
+SCH_ROLLS.forEach((r) => { ROLL[r.type] = r; });
 
 /* משלוח · לפי מסך הקוסקוס */
 const SHIP_FEE = { 'יבנה': 20, 'אחר': 60 };
@@ -435,7 +473,7 @@ class Component extends DCLogic {
       open: -1,
       moved: {},                 /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
       newOpen: false,
-      nw: { name: '', phone: '', cat: 'cous', qty: {}, tops: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' },
+      nw: { name: '', phone: '', cat: 'cous', qty: {}, rolls: [], ship: 'pickup', area: 'יבנה', addr: '', time: '' },
       cancelling: -1,                /* איזו הזמנה בתהליך ביטול · -1 = אין */
       cx: { reason: '', note: '' }
     };
@@ -492,7 +530,7 @@ class Component extends DCLogic {
 
   /* החלפת קטגוריה מאפסת את הפריטים · הרשימות לא חופפות */
   setCat(cat) {
-    this.setState({ nw: Object.assign({}, this.state.nw, { cat: cat, qty: {}, tops: {} }) });
+    this.setState({ nw: Object.assign({}, this.state.nw, { cat: cat, qty: {}, rolls: [] }) });
   }
 
   bumpItem(id, d) {
@@ -503,29 +541,43 @@ class Component extends DCLogic {
     this.setState({ nw: Object.assign({}, n, { qty: qty }) });
   }
 
-  /* תוספת בחלה · נבחרת לסוג ולא לחלה בודדת, כמו שמכתיבים בטלפון */
-  toggleTop(type, name) {
-    const n = this.state.nw;
-    const cur = (n.tops[type] || []);
-    const on = cur.indexOf(name) !== -1;
-    const tops = Object.assign({}, n.tops);
-    tops[type] = on ? cur.filter((x) => x !== name) : cur.concat([name]);
-    if (tops[type].length === 0) delete tops[type];
-    this.setState({ nw: Object.assign({}, n, { tops: tops }) });
+  /* ── חלה בודדת · נפתחת בחלונית, נשמרת עם התוספות שלה ── */
+  openRoll(type) { this.setState({ pop: { type: type, tops: [], edit: -1 } }); }
+  editRoll(i) {
+    const r = this.state.nw.rolls[i];
+    this.setState({ pop: { type: r.type, tops: r.tops.slice(), edit: i } });
   }
-
-  /* אילו סוגים נמצאים בהזמנה · רק להם מוצגות תוספות */
-  activeTypes() {
+  closeRoll() { this.setState({ pop: null }); }
+  togglePopTop(name) {
+    const p = this.state.pop;
+    if (!p) return;
+    const on = p.tops.indexOf(name) !== -1;
+    this.setState({ pop: { type: p.type, edit: p.edit,
+      tops: on ? p.tops.filter((x) => x !== name) : p.tops.concat([name]) } });
+  }
+  saveRoll() {
+    const p = this.state.pop;
+    if (!p) return;
+    const row = { type: p.type, tops: p.tops.slice() };
+    const cur = this.state.nw.rolls;
+    const rolls = p.edit < 0 ? cur.concat([row]) : cur.map((x, j) => (j === p.edit ? row : x));
+    this.setState({ nw: Object.assign({}, this.state.nw, { rolls: rolls }), pop: null });
+  }
+  dropRoll(i) {
+    this.setState({ nw: Object.assign({}, this.state.nw,
+      { rolls: this.state.nw.rolls.filter((x, j) => j !== i) }) });
+  }
+  rollsSum() {
     const n = this.state.nw;
-    if (n.cat !== 'schn') return [];
-    return ['thin', 'temp'].filter((t) =>
-      MENU.schn.some((it) => it.type === t && (n.qty[it.id] || 0) > 0));
+    if (n.cat !== 'schn') return 0;
+    return n.rolls.reduce((s, r) => s + ROLL[r.type].price, 0);
   }
 
   /* הסכום נגזר מהפריטים · אף פעם לא מוקלד */
   newItemsSum() {
     const n = this.state.nw;
-    return (MENU[n.cat] || []).reduce((s, it) => s + (n.qty[it.id] || 0) * it.price, 0);
+    return (MENU[n.cat] || []).reduce((s, it) => s + (n.qty[it.id] || 0) * it.price, 0)
+      + this.rollsSum();
   }
   newShipFee() {
     const n = this.state.nw;
@@ -557,15 +609,12 @@ class Component extends DCLogic {
   /* שורת הפריטים · בדיוק בניסוח של הזמנה שהלקוחה שלחה */
   newItemsLine() {
     const n = this.state.nw;
+    const rolls = n.cat !== 'schn' ? [] : n.rolls.map((r) =>
+      ROLL[r.type].s + (r.tops.length ? ' (' + r.tops.join(', ') + ')' : ' (בלי תוספות)'));
     const items = (MENU[n.cat] || [])
       .filter((it) => (n.qty[it.id] || 0) > 0)
-      .map((it) => n.qty[it.id] + ' × ' + (it.s || it.n))
-      .join(' · ');
-    const tops = this.activeTypes()
-      .filter((t) => (n.tops[t] || []).length > 0)
-      .map((t) => SCH_TOPS[t].title + ': ' + n.tops[t].join(', '))
-      .join(' · ');
-    return tops === '' ? items : items + ' · תוספות · ' + tops;
+      .map((it) => n.qty[it.id] + ' × ' + (it.s || it.n));
+    return rolls.concat(items).join(' · ');
   }
 
   /* השמירה מוסיפה את ההזמנה לרשימה · לקוחה שאינה בפנקס נפתחת עם ההזמנה */
@@ -585,7 +634,7 @@ class Component extends DCLogic {
       via: '',
       status: FLOW[0]
     }]);
-    this.setState({ extra: extra, newOpen: false, nw: { name: '', phone: '', cat: 'cous', qty: {}, tops: {}, ship: 'pickup', area: 'יבנה', addr: '', time: '' } });
+    this.setState({ extra: extra, newOpen: false, nw: { name: '', phone: '', cat: 'cous', qty: {}, rolls: [], ship: 'pickup', area: 'יבנה', addr: '', time: '' } });
   }
 
   renderVals() {
@@ -659,6 +708,7 @@ class Component extends DCLogic {
     const phoneTyped = trim(n.phone) !== '';
     const phoneOk = okPhone(n.phone);
     const known = phoneOk && this.isKnown();
+    const pop = st.pop || null;
 
     return {
       subLabel: 'שלישי · 25 באוגוסט',
@@ -781,22 +831,39 @@ class Component extends DCLogic {
         };
       }),
 
-      hasTops: this.activeTypes().length > 0,
-      topsLabel: 'מה נכנס לחלה',
-      topGroups: this.activeTypes().map((t) => ({
-        title: SCH_TOPS[t].title,
-        chips: SCH_TOPS[t].list.map((name) => {
-          const on = (n.tops[t] || []).indexOf(name) !== -1;
-          return {
-            name: name,
-            bg: on ? 'rgba(65,109,158,0.1)' : 'rgba(255,255,255,0.7)',
-            bd: on ? 'rgba(65,109,158,0.42)' : 'rgba(130,112,162,0.16)',
-            fg: on ? '#2B4A6E' : '#4A4254',
-            w: on ? '600' : '400',
-            pick: () => this.toggleTop(t, name)
-          };
-        })
+      isSchn: n.cat === 'schn',
+      rollsLabel: 'החלות',
+      addRolls: SCH_ROLLS.map((r) => ({
+        name: '+ ' + r.n, price: r.price + ' ₪',
+        add: () => this.openRoll(r.type)
       })),
+      hasRolls: n.cat === 'schn' && n.rolls.length > 0,
+      rolls: (n.cat !== 'schn' ? [] : n.rolls).map((r, j) => ({
+        name: ROLL[r.type].n,
+        tops: r.tops.length ? r.tops.join(' · ') : 'בלי תוספות',
+        price: ROLL[r.type].price + ' ₪',
+        edit: () => this.editRoll(j),
+        drop: () => this.dropRoll(j)
+      })),
+
+      /* ── חלונית החלה ── */
+      popOpen: pop !== null,
+      popTitle: pop ? ROLL[pop.type].n : '',
+      popSub: 'מה נכנס לחלה הזאת',
+      closeRoll: () => this.closeRoll(),
+      popTops: (pop ? ROLL[pop.type].tops : []).map((name) => {
+        const on = pop.tops.indexOf(name) !== -1;
+        return {
+          name: name,
+          bg: on ? 'rgba(65,109,158,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(65,109,158,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#2B4A6E' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.togglePopTop(name)
+        };
+      }),
+      popCta: pop && pop.edit >= 0 ? 'עדכון החלה' : 'הוספת החלה',
+      saveRoll: () => this.saveRoll(),
 
       shipLabel: 'איך מגיע',
       ships: [{ id: 'pickup', n: 'איסוף' }, { id: 'deliv', n: 'משלוח' }].map((x) => {

@@ -52,37 +52,54 @@
           </div>
         </div>
 
-        <sc-for list="{{ sale }}" as="s" hint-placeholder-count="3">
-          <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1.5px solid {{ s.bd }}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
-              <div style="font-size: 13.5px; font-weight: 600;">{{ s.name }}</div>
-              <div style="display: flex; align-items: baseline; gap: 5px;">
-                <div style="font-size: 19px; font-weight: 700; color: {{ s.fg }}; font-variant-numeric: tabular-nums;">{{ s.left }}</div>
-                <div style="font-size: 11.5px; font-weight: 400; color: #A79FB2;">{{ s.leftTag }}</div>
+        <sc-if value="{{ noDay }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 0;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9C2D2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4z"></path><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+          <div style="font-size: 14px; font-weight: 500; color: #A79FB2;">{{ noDayLabel }}</div>
+          <div style="font-size: 11.5px; font-weight: 300; color: #C4BDCE; text-align: center;">{{ noDaySub }}</div>
+        </div></sc-if>
+
+        <sc-for list="{{ days }}" as="d" hint-placeholder-count="1">
+          <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 9px;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 0 4px;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: {{ d.deep }};">{{ d.name }}</div>
+              <div style="border-radius: 7px; padding: 2px 8px; background: {{ d.pill }};">
+                <div style="font-size: 10.5px; font-weight: 600; color: {{ d.deep }}; white-space: nowrap;">{{ d.day }}</div>
               </div>
             </div>
-            <div style="height: 7px; border-radius: 999px; background: rgba(130,112,162,0.1); overflow: hidden;">
-              <div class="bar" style="height: 100%; border-radius: 999px; width: {{ s.w }}; background: {{ s.barBg }};"></div>
-            </div>
-            <div style="display: flex; align-items: baseline; justify-content: space-between;">
-              <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ s.soldLabel }}</div>
-              <div style="font-size: 11.5px; font-weight: 600; color: {{ s.fg }};">{{ s.state }}</div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; padding-top: 9px; border-top: 1px solid rgba(130,112,162,0.14);">
-              <div style="flex-grow: 1; min-width: 0;">
-                <div style="font-size: 12px; font-weight: 500; color: #4A4254;">{{ dropLabel }}</div>
-                <div style="font-size: 10.5px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ s.dropSub }}</div>
-              </div>
-              <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
-                <div onClick="{{ s.less }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.lessOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+
+            <sc-for list="{{ d.rows }}" as="s" hint-placeholder-count="6">
+              <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border: 1.5px solid {{ s.bd }}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 9px;">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+                  <div style="font-size: 13.5px; font-weight: 600;">{{ s.name }}</div>
+                  <div style="display: flex; align-items: baseline; gap: 5px;">
+                    <div style="font-size: 19px; font-weight: 700; color: {{ s.fg }}; font-variant-numeric: tabular-nums;">{{ s.left }}</div>
+                    <div style="font-size: 11.5px; font-weight: 400; color: #A79FB2;">{{ s.leftTag }}</div>
+                  </div>
                 </div>
-                <div style="min-width: 18px; text-align: center; font-size: 15px; font-weight: {{ s.dropW }}; color: {{ s.dropFg }}; font-variant-numeric: tabular-nums;">{{ s.waste }}</div>
-                <div onClick="{{ s.more }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.moreOp }}; background: rgba(199,125,62,0.14); display: flex; align-items: center; justify-content: center;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                <div style="height: 7px; border-radius: 999px; background: rgba(130,112,162,0.1); overflow: hidden;">
+                  <div class="bar" style="height: 100%; border-radius: 999px; width: {{ s.w }}; background: {{ s.barBg }};"></div>
+                </div>
+                <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                  <div style="font-size: 11.5px; font-weight: 300; color: #8A8194;">{{ s.soldLabel }}</div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: {{ s.fg }};">{{ s.state }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding-top: 9px; border-top: 1px solid rgba(130,112,162,0.14);">
+                  <div style="flex-grow: 1; min-width: 0;">
+                    <div style="font-size: 12px; font-weight: 500; color: #4A4254;">{{ dropLabel }}</div>
+                    <div style="font-size: 10.5px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ s.dropSub }}</div>
+                  </div>
+                  <div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px;">
+                    <div onClick="{{ s.more }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.moreOp }}; background: rgba(199,125,62,0.14); display: flex; align-items: center; justify-content: center;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                    </div>
+                    <div style="min-width: 18px; text-align: center; font-size: 15px; font-weight: {{ s.dropW }}; color: {{ s.dropFg }}; font-variant-numeric: tabular-nums;">{{ s.waste }}</div>
+                    <div onClick="{{ s.less }}" class="press" style="width: 30px; height: 30px; border-radius: 50%; cursor: pointer; opacity: {{ s.lessOp }}; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14"></path></svg>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </sc-for>
           </div>
         </sc-for>
 
@@ -128,6 +145,9 @@
                   <div onClick="{{ it.inc }}" class="press" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; justify-content: center;">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
                   </div>
+                </div>
+                <div onClick="{{ it.drop }}" class="press" style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C4BDCE" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
                 </div>
               </div>
             </sc-for>
@@ -227,12 +247,30 @@
    מלאי מכירה  · נקבע בפתיחת יום המכירה ויורד עם כל הזמנה. לקריאה בלבד כאן.
    מלאי לוגיסטי · אריזות, יבשים וציוד. מתעדכן ידנית בלבד ואינו קשור למכירות. */
 
-/* ⚠ נתוני הדגמה · נכתבו על ידי Claude. המכסות תואמות את ימי המכירה. */
-const SALE = [
-  { name: 'קוסקוס צמחוני',  quota: 40, sold: 28 },
-  { name: 'קוסקוס עם עוף',   quota: 30, sold: 30 },
-  { name: 'קוסקוס עם מפרום', quota: 30, sold: 22 }
+/* ⚠ נתוני הדגמה · נכתבו על ידי Claude. המכסות תואמות את ימי המכירה.
+   המסך מציג את ימי המכירה שפתוחים כרגע ב-AdminDays — כל יום בקטגוריה
+   שלו. פתוחים שניים? מוצגים שניהם, אחד מתחת לשני. אין פתוח? הודעה. */
+const SALE_DAYS = [
+  { cat: 'cous', name: 'שלישי של קוסקוס', day: 'שלישי · 1 בספטמבר',
+    hue: '#7B5CBC', deep: '#43307A', rgb: '123,92,188', open: true,
+    items: [
+      { name: 'קוסקוס צמחוני',  quota: 40, sold: 28 },
+      { name: 'קוסקוס עם עוף',   quota: 30, sold: 30 },
+      { name: 'קוסקוס עם מפרום', quota: 30, sold: 22 },
+      { name: 'תוספת ירקות',     quota: 20, sold: 9 },
+      { name: 'תוספת עוף',       quota: 15, sold: 11 },
+      { name: 'תוספת מפרום',     quota: 15, sold: 6 }
+    ] },
+  { cat: 'schn', name: 'שישי של מטעמים', day: 'שישי · 4 בספטמבר',
+    hue: '#416D9E', deep: '#2B4A6E', rgb: '65,109,158', open: false,
+    items: [
+      { name: 'שניצל דק בציפוי פירורי לחם', quota: 30, sold: 26 },
+      { name: 'פילה עוף בציפוי טמפורה',     quota: 20, sold: 15 },
+      { name: 'מארז שניצל דק',              quota: 10, sold: 7 },
+      { name: 'מארז פילה עוף טמפורה',       quota: 8,  sold: 3 }
+    ] }
 ];
+const OPEN_DAYS = SALE_DAYS.filter((d) => d.open);
 
 const SUPPLY = [
   { g: 'אריזות', name: 'מגשי אלומיניום',  n: 40,  unit: 'יח׳', min: 60 },
@@ -255,8 +293,9 @@ class Component extends DCLogic {
     super(props);
     this.state = {
       tab: 'sale',
-      /* waste · מנות שירדו מהמכירה אחרי שנפתחה · נפילה, שריפה, טעות */
-      waste: SALE.map(() => 0),
+      /* waste · מנות שירדו מהמכירה אחרי שנפתחה · נפילה, שריפה, טעות.
+         מפתח: <cat>:<index> כדי שיעבוד גם כששני ימים פתוחים יחד */
+      waste: {},
       supply: SUPPLY.map((x, i) => Object.assign({}, x, { id: i })),
       nextId: SUPPLY.length,
       sent: false,
@@ -272,16 +311,20 @@ class Component extends DCLogic {
   }
 
   /* תיקון מלאי המכירה · לא נוגעים במכסה ולא בהזמנות, רושמים מה ירד */
-  bumpWaste(i, d) {
-    const room = SALE[i].quota - SALE[i].sold;
-    this.setState({ waste: this.state.waste.map((v, j) =>
-      j === i ? Math.min(room, Math.max(0, v + d)) : v) });
+  wasteOf(key) { return this.state.waste[key] || 0; }
+  bumpWaste(key, room, d) {
+    const w = Object.assign({}, this.state.waste);
+    w[key] = Math.min(room, Math.max(0, (w[key] || 0) + d));
+    this.setState({ waste: w });
   }
 
   setNw(k, v) {
     const nw = Object.assign({}, this.state.nw);
     nw[k] = v;
     this.setState({ nw: nw });
+  }
+  dropItem(id) {
+    this.setState({ supply: this.state.supply.filter((x) => x.id !== id), sent: false });
   }
   addReady() { return trim(this.state.nw.name) !== '' && trim(this.state.nw.min) !== ''; }
   saveAdd() {
@@ -302,32 +345,42 @@ class Component extends DCLogic {
     const st = this.state;
     const isSale = st.tab === 'sale';
 
-    /* ── מלאי מכירה ── */
-    const sale = SALE.map((s, i) => {
-      const waste = st.waste[i];
-      const left = s.quota - s.sold - waste;
-      const out = left <= 0;
-      const low = !out && left <= 5;
-      const fg = out ? '#B95349' : low ? '#A65E2A' : '#43307A';
+    /* ── מלאי מכירה · יום אחד או יותר, לפי מה שפתוח ── */
+    const days = OPEN_DAYS.map((d) => {
+      const rows = d.items.map((it, i) => {
+        const key = d.cat + ':' + i;
+        const waste = this.wasteOf(key);
+        const left = it.quota - it.sold - waste;
+        const room = it.quota - it.sold;
+        const out = left <= 0;
+        const low = !out && left <= 5;
+        const fg = out ? '#B95349' : low ? '#A65E2A' : d.deep;
+        return {
+          name: it.name, left: left, leftTag: 'נותרו',
+          soldLabel: 'נמכרו ' + it.sold + ' מתוך ' + it.quota + (waste > 0 ? ' · ירדו ' + waste : ''),
+          state: out ? 'אזל' : low ? 'כמעט אזל' : 'זמין',
+          fg: fg,
+          bd: out ? 'rgba(185,83,73,0.3)' : low ? 'rgba(199,125,62,0.32)' : 'rgba(255,255,255,0.8)',
+          w: Math.round((it.sold + waste) / it.quota * 100) + '%',
+          barBg: out ? '#B95349' : low ? '#C77D3E' : 'linear-gradient(90deg, #B9A4E4, ' + d.hue + ')',
+          waste: waste,
+          dropSub: waste > 0 ? 'ירדו מהמכירה היום' : 'נפילה, שריפה או טעות',
+          dropW: waste > 0 ? '700' : '400',
+          dropFg: waste > 0 ? '#A65E2A' : '#C4BDCE',
+          lessOp: waste > 0 ? '1' : '0.35',
+          moreOp: left > 0 ? '1' : '0.35',
+          less: () => this.bumpWaste(key, room, -1),
+          more: () => this.bumpWaste(key, room, 1)
+        };
+      });
       return {
-        name: s.name, left: left, leftTag: 'נותרו',
-        soldLabel: 'נמכרו ' + s.sold + ' מתוך ' + s.quota + (waste > 0 ? ' · ירדו ' + waste : ''),
-        waste: waste,
-        dropSub: waste > 0 ? 'ירדו מהמכירה היום' : 'נפילה, שריפה או טעות',
-        dropW: waste > 0 ? '700' : '400',
-        dropFg: waste > 0 ? '#A65E2A' : '#C4BDCE',
-        lessOp: waste > 0 ? '1' : '0.35',
-        moreOp: left > 0 ? '1' : '0.35',
-        less: () => this.bumpWaste(i, -1),
-        more: () => this.bumpWaste(i, 1),
-        state: out ? 'אזל' : low ? 'כמעט אזל' : 'זמין',
-        fg: fg,
-        bd: out ? 'rgba(185,83,73,0.3)' : low ? 'rgba(199,125,62,0.32)' : 'rgba(255,255,255,0.8)',
-        w: Math.round((s.sold + waste) / s.quota * 100) + '%',
-        barBg: out ? '#B95349' : low ? '#C77D3E' : 'linear-gradient(90deg, #B9A4E4, #7B5CBC)'
+        name: d.name, day: d.day, deep: d.deep,
+        pill: 'rgba(' + d.rgb + ',0.12)',
+        left: rows.reduce((s, r) => s + Math.max(0, r.left), 0),
+        rows: rows
       };
     });
-    const leftAll = SALE.reduce((s, x, i) => s + Math.max(0, x.quota - x.sold - st.waste[i]), 0);
+    const leftAll = days.reduce((s, d) => s + d.left, 0);
 
     /* ── מלאי לוגיסטי ── */
     const low = st.supply.filter((x) => x.n < x.min);
@@ -344,7 +397,8 @@ class Component extends DCLogic {
           bd: isLow ? 'rgba(199,125,62,0.28)' : 'rgba(130,112,162,0.14)',
           decOp: x.n > 0 ? '1' : '0.4',
           inc: () => this.bump(x.id, 1),
-          dec: () => this.bump(x.id, -1)
+          dec: () => this.bump(x.id, -1),
+          drop: () => this.dropItem(x.id)
         };
       })
     })).filter((g) => g.items.length > 0);
@@ -369,13 +423,16 @@ class Component extends DCLogic {
       isSale: isSale,
       isSupply: !isSale,
 
-      dayTag: 'יום המכירה הפעיל',
-      dayName: 'שלישי · 1 בספטמבר',
+      dayTag: days.length > 1 ? 'ימי המכירה הפתוחים' : 'יום המכירה הפעיל',
+      dayName: days.length ? days.map((d) => d.day).join(' · ') : 'אין יום מכירה פתוח',
       leftAll: leftAll,
       leftTag: 'מנות נותרו',
-      sale: sale,
+      days: days,
+      noDay: days.length === 0,
+      noDayLabel: 'אין כרגע יום מכירה פתוח',
+      noDaySub: 'המלאי נפתח כשפותחים יום מכירה במסך ימי מכירה',
       dropLabel: 'ירדו מהמכירה',
-      saleNote: 'המכסה נקבעת בפתיחת יום המכירה ויורדת עם כל הזמנה. כאן רק מורידים מנות שהתקלקלו או נפלו — לשינוי המכסה עצמה, במסך ימי מכירה.',
+      saleNote: 'המסך מציג את ימי המכירה שפתוחים כרגע · פתוחים שניים, מוצגים שניהם. המכסה נקבעת בפתיחת היום ויורדת עם כל הזמנה; כאן רק מורידים מנות שהתקלקלו או נפלו.',
 
       hasLow: low.length > 0,
       lowTitle: low.length + ' פריטים מתחת למינימום',

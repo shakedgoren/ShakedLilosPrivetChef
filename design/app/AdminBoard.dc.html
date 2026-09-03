@@ -71,8 +71,8 @@
 
       <!-- כותרות העמודות -->
       <div style="flex-shrink: 0; display: flex; align-items: stretch; background: rgba(255,255,255,0.9); border-bottom: 1.5px solid rgba(130,112,162,0.16);">
-        <sc-for list="{{ cols }}" as="c" hint-placeholder-count="10">
-          <div style="box-sizing: border-box; width: {{ c.w }}; flex-shrink: 0; padding: 11px 8px; text-align: {{ c.align }}; border-left: 1px solid rgba(130,112,162,0.09);">
+        <sc-for list="{{ cols }}" as="c" hint-placeholder-count="11">
+          <div style="box-sizing: border-box; width: {{ c.w }}; flex-shrink: 0; padding: 9px 6px; text-align: {{ c.align }}; border-left: 1px solid rgba(130,112,162,0.09);">
             <div style="font-size: 12.5px; font-weight: 600; color: #4A4254; line-height: 1.25;">{{ c.t }}</div>
             <sc-if value="{{ c.hasSub }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10.5px; font-weight: 400; color: #A79FB2; margin-top: 1px;">{{ c.sub }}</div></sc-if>
           </div>
@@ -84,34 +84,38 @@
         <sc-for list="{{ rows }}" as="r" hint-placeholder-count="9">
           <div style="display: flex; align-items: stretch; background: {{ r.rowBg }}; border-bottom: 1px solid rgba(130,112,162,0.09); border-right: 4px solid {{ r.edge }};">
 
-            <div style="box-sizing: border-box; width: 96px; flex-shrink: 0; padding: 10px 8px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; width: 92px; flex-shrink: 0; padding: 8px 6px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
               <div style="font-size: 15px; font-weight: 600; color: {{ r.ink }}; font-variant-numeric: tabular-nums;">{{ r.time }}</div>
             </div>
 
-            <div style="box-sizing: border-box; width: 230px; flex-shrink: 0; padding: 10px 12px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
+            <div style="box-sizing: border-box; width: 254px; flex-shrink: 0; padding: 8px 12px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
               <div style="font-size: 14.5px; font-weight: 600; color: {{ r.ink }}; line-height: 1.2;">{{ r.who }}</div>
               <div style="font-size: 11px; font-weight: 400; color: {{ r.muted }};">{{ r.note }}</div>
             </div>
 
             <sc-for list="{{ r.cells }}" as="q" hint-placeholder-count="6">
-              <div style="box-sizing: border-box; width: 68px; flex-shrink: 0; padding: 6px 5px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
-                <input type="text" value="{{ q.n }}" onInput="{{ q.setN }}" style="width: 100%; box-sizing: border-box; height: 34px; border-radius: 9px; padding: 0; text-align: center; font-size: 16px; font-weight: {{ q.w }}; color: {{ q.fg }}; font-variant-numeric: tabular-nums; background: {{ q.cellBg }}; border: 1.5px solid {{ q.cellBd }}; outline: none;">
+              <div style="box-sizing: border-box; width: 68px; flex-shrink: 0; padding: 5px 5px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+                <input type="text" value="{{ q.n }}" onInput="{{ q.setN }}" style="width: 100%; box-sizing: border-box; height: 30px; border-radius: 9px; padding: 0; text-align: center; font-size: 15.5px; font-weight: {{ q.w }}; color: {{ q.fg }}; font-variant-numeric: tabular-nums; background: {{ q.cellBg }}; border: 1.5px solid {{ q.cellBd }}; outline: none;">
               </div>
             </sc-for>
 
-            <div style="box-sizing: border-box; width: 100px; flex-shrink: 0; padding: 10px 8px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; width: 96px; flex-shrink: 0; padding: 8px 6px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
               <div style="font-size: 15.5px; font-weight: 700; color: {{ r.ink }}; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ r.sum }} ₪</div>
             </div>
 
-            <div style="box-sizing: border-box; width: 104px; flex-shrink: 0; padding: 10px 8px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; width: 104px; flex-shrink: 0; padding: 8px 6px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; align-items: center; justify-content: center;">
               <div style="font-size: 13px; font-weight: 500; color: {{ r.muted }};">{{ r.pay }}</div>
             </div>
 
-            <div style="box-sizing: border-box; flex-grow: 1; min-width: 178px; padding: 8px 10px; display: flex; align-items: center; justify-content: flex-end; gap: 7px;">
-              <div onClick="{{ r.advance }}" class="press" style="flex-shrink: 0; height: 34px; padding: 0 15px; border-radius: 999px; cursor: {{ r.nextCur }}; background: {{ r.nextBg }}; border: 1.5px solid {{ r.nextBd }}; display: flex; align-items: center; justify-content: center;">
-                <div style="font-size: 12.5px; font-weight: 600; color: {{ r.nextFg }}; white-space: nowrap;">{{ r.nextLabel }}</div>
-              </div>
-              <sc-if value="{{ r.canCancel }}" hint-placeholder-val="{{ true }}"><div onClick="{{ r.askCancel }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.08); display: flex; align-items: center; justify-content: center;">
+            <div style="box-sizing: border-box; width: 172px; flex-shrink: 0; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <sc-for list="{{ r.steps }}" as="p" hint-placeholder-count="3">
+                <div onClick="{{ p.pick }}" class="press" style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 11px; cursor: pointer; background: {{ p.bg }}; border: 1.5px solid {{ p.bd }}; display: flex; align-items: center; justify-content: center;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <sc-for list="{{ p.paths }}" as="d" hint-placeholder-count="2"><path d="{{ d.d }}"></path></sc-for>
+                  </svg>
+                </div>
+              </sc-for>
+              <sc-if value="{{ r.canCancel }}" hint-placeholder-val="{{ true }}"><div onClick="{{ r.askCancel }}" class="press" style="flex-shrink: 0; width: 30px; height: 30px; margin-right: 4px; border-radius: 50%; cursor: pointer; background: rgba(185,83,73,0.08); display: flex; align-items: center; justify-content: center;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B95349" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
               </div></sc-if>
             </div>
@@ -202,8 +206,18 @@ const CATS = {
   }
 };
 
-/* מסלול המצבים · הצבע של השורה כולה נגזר ממנו */
+/* מסלול המצבים · הצבע של השורה כולה נגזר ממנו.
+   בלוח מסמנים ישירות באחד משלושת האייקונים, אין כפתורי טקסט. */
 const FLOW = ['חדשה', 'מוכנה', 'נמסרה'];
+const STEPS = [
+  { id: 'חדשה',  label: 'התקבלה',
+    paths: ['M3 13h5l1.8 2.6h4.4L16 13h5', 'M5.4 13L7.6 5h8.8l2.2 8v6H5.4z'] },
+  { id: 'מוכנה', label: 'מוכנה',
+    paths: ['M12 3.2a8.8 8.8 0 1 0 0 17.6a8.8 8.8 0 1 0 0-17.6', 'M8.1 12.3l2.6 2.6 5.2-5.4'] },
+  { id: 'נמסרה', label: 'נמסרה',
+    paths: ['M2.5 13.2l3.8 3.8 7.2-8.4', 'M11.4 15.4l2 2 8.1-9.4'] }
+];
+const P = (d) => ({ d: d });
 const BAND = {
   'חדשה':  { row: 'rgba(199,125,62,0.13)',  edge: '#C77D3E', ink: '#7A4A18', muted: '#9A6B3C' },
   'מוכנה': { row: 'rgba(78,138,100,0.13)',  edge: '#4E8A64', ink: '#2F5C42', muted: '#5C8A6E' },
@@ -269,12 +283,10 @@ class Component extends DCLogic {
     this.setState({ orders: orders });
   }
 
-  advance(i) {
-    const cur = this.state.orders[i].status;
-    const k = FLOW.indexOf(cur);
-    if (k < 0 || k >= FLOW.length - 1) return;
+  /* סימון ישיר · לוחצים על האייקון של המצב הרצוי, קדימה או אחורה */
+  setStatus(i, name) {
     const orders = this.state.orders.map((o, n) =>
-      n === i ? Object.assign({}, o, { status: FLOW[k + 1] }) : o);
+      n === i ? Object.assign({}, o, { status: name }) : o);
     this.setState({ orders: orders });
   }
 
@@ -315,11 +327,12 @@ class Component extends DCLogic {
         return g !== 0 ? g : toMin(a.o.time) - toMin(b.o.time);
       });
 
-    const cols = [{ t: 'שעת איסוף', w: '96px', align: 'center', hasSub: false, sub: '' },
-                  { t: 'שם מלא',    w: '230px', align: 'right',  hasSub: false, sub: '' }]
+    const cols = [{ t: 'שעת איסוף', w: '92px', align: 'center', hasSub: false, sub: '' },
+                  { t: 'שם מלא',    w: '254px', align: 'right',  hasSub: false, sub: '' }]
       .concat(cat.items.map((it) => ({ t: it.t, sub: it.sub, hasSub: true, w: '68px', align: 'center' })))
-      .concat([{ t: 'סה״כ', w: '100px', align: 'center', hasSub: false, sub: '' },
-               { t: 'תשלום', w: '104px', align: 'center', hasSub: false, sub: '' }]);
+      .concat([{ t: 'סה״כ',  w: '96px',  align: 'center', hasSub: false, sub: '' },
+               { t: 'תשלום', w: '104px', align: 'center', hasSub: false, sub: '' },
+               { t: 'סטטוס', w: '172px', align: 'center', hasSub: false, sub: '' }]);
 
     const rows = inMode.map((x) => {
       const o = x.o, i = x.i;
@@ -343,12 +356,16 @@ class Component extends DCLogic {
           };
         }),
         canCancel: !last,
-        nextLabel: last ? 'נמסרה' : 'סמני כ' + FLOW[k + 1],
-        nextBg: last ? 'transparent' : 'rgba(255,255,255,0.8)',
-        nextBd: last ? 'transparent' : 'rgba(130,112,162,0.28)',
-        nextFg: last ? '#A79FB2' : '#43307A',
-        nextCur: last ? 'default' : 'pointer',
-        advance: () => this.advance(i),
+        steps: STEPS.map((sp) => {
+          const on = sp.id === o.status;
+          return {
+            paths: sp.paths.map(P),
+            bg: on ? b.edge : 'rgba(255,255,255,0.72)',
+            bd: on ? b.edge : 'rgba(130,112,162,0.22)',
+            ink: on ? '#FFFFFF' : '#A79FB2',
+            pick: () => this.setStatus(i, sp.id)
+          };
+        }),
         askCancel: () => this.askCancel(i)
       };
     });

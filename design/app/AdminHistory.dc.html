@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
+    .press { transition: transform 150ms ease; }
+    .press:active { transform: scale(0.97); }
+    .chev { transition: transform 240ms cubic-bezier(.22,.9,.28,1); }
+    input { font-family: 'Assistant', system-ui, sans-serif; }
+  </style>
+</helmet>
+
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #FCFBFB; color: #2A2430; font-family: 'Assistant', system-ui, sans-serif; overflow: hidden;">
+
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(56% 36% at 10% 4%, rgba(186,166,228,0.08) 0%, rgba(186,166,228,0) 62%), radial-gradient(50% 32% at 92% 12%, rgba(246,180,172,0.05) 0%, rgba(246,180,172,0) 66%);"></div>
+
+  <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
+
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 12px;">
+      <div onClick="{{ goBack }}" class="press" style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+      </div>
+      <div style="flex-grow: 1; min-width: 0;">
+        <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">היסטוריית קניות</div>
+        <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+      </div>
+    </div>
+
+    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
+          <div onClick="{{ f.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 32px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ f.bg }}; border: 1.5px solid {{ f.bd }}; display: flex; align-items: center;">
+            <div style="font-size: 12px; font-weight: {{ f.w }}; color: {{ f.fg }}; white-space: nowrap;">{{ f.name }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px;">
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}"><div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; padding: 60px 0;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9C2D2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+        <div style="font-size: 14px; font-weight: 500; color: #A79FB2;">{{ emptyLabel }}</div>
+      </div></sc-if>
+
+      <sc-for list="{{ buys }}" as="b" hint-placeholder-count="5">
+        <div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 13px 15px; background: linear-gradient(150deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.48) 100%); border-right: 3px solid {{ b.hue }}; border-top: 1.5px solid rgba(255,255,255,0.85); border-bottom: 1.5px solid rgba(255,255,255,0.85); border-left: 1.5px solid rgba(255,255,255,0.85); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 26px -24px rgba(96,80,132,0.5); display: flex; flex-direction: column; gap: 10px;">
+
+          <div onClick="{{ b.toggle }}" class="press" style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-size: 14px; font-weight: 600; color: {{ b.deep }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ b.title }}</div>
+              <div style="font-size: 11.5px; font-weight: 300; color: #A79FB2; margin-top: 2px;">{{ b.count }}</div>
+            </div>
+            <div style="flex-shrink: 0; font-size: 15px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ b.sum }} ₪</div>
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A79FB2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{ b.spin }};"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+
+          <sc-if value="{{ b.open }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
+            <div style="height: 1px; background: rgba(130,112,162,0.14);"></div>
+
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <div style="flex-grow: 1; min-width: 0; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colName }}</div>
+              <div style="width: 40px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colPrice }}</div>
+              <div style="width: 52px; flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colQty }}</div>
+              <div style="width: 48px; flex-shrink: 0; text-align: left; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colSum }}</div>
+            </div>
+
+            <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="5">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="flex-grow: 1; min-width: 0; font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.name }}</div>
+                <div style="width: 40px; flex-shrink: 0; text-align: center; font-size: 12px; font-weight: 400; color: #8A8194; font-variant-numeric: tabular-nums;">{{ r.price }}</div>
+                <div style="width: 52px; flex-shrink: 0; text-align: center; font-size: 12px; font-weight: 400; color: #8A8194; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ r.qty }}</div>
+                <div style="width: 48px; flex-shrink: 0; text-align: left; font-size: 12.5px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ r.sum }}</div>
+              </div>
+            </sc-for>
+
+            <div style="height: 1px; background: rgba(130,112,162,0.14); margin-top: 2px;"></div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between;">
+              <div style="font-size: 12.5px; font-weight: 600; color: #4A4254;">{{ totalLabel }}</div>
+              <div style="font-size: 16px; font-weight: 700; color: #43307A; font-variant-numeric: tabular-nums;">{{ b.sum }} ₪</div>
+            </div>
+          </div></sc-if>
+        </div>
+      </sc-for>
+
+      <div style="flex-shrink: 0; height: 108px;"></div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4z"></path><path d="M4 11h16M9 7V4h6v3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">מלאי</div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M21 19H3"></path></svg>
+      <div style="font-size: 11px; color: #918A9E;">כספים</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* השיוכים · זהים למסך הקניות */
+const AREAS = [
+  { id: 'all',   n: 'הכל',      hue: '#7B5CBC', deep: '#43307A' },
+  { id: 'cous',  n: 'קוסקוס',   hue: '#7B5CBC', deep: '#43307A' },
+  { id: 'schn',  n: 'שניצלים',  hue: '#416D9E', deep: '#2B4A6E' },
+  { id: 'box',   n: 'מארזים',   hue: '#437C59', deep: '#2C5A3E' },
+  { id: 'chef',  n: 'שף',       hue: '#A85A28', deep: '#7A3D18' },
+  { id: 'tabun', n: 'טאבון',    hue: '#B04A76', deep: '#7A2E4E' },
+  { id: 'gen',   n: 'כללי',     hue: '#8A8194', deep: '#4A4254' }
+];
+const AREA = {};
+AREAS.forEach((a) => { AREA[a.id] = a; });
+
+/* ⚠ היסטוריית הדגמה · נכתבה על ידי Claude.
+   כל קנייה נשמרת עם השיוך, התאריך והשעה שבהם נסגרה. */
+const BUYS = [
+  { area: 'cous', d: '1 בספטמבר', t: '07:40', rows: [
+    { n: 'עגבניות', p: 9, q: 8, u: 'ק״ג' }, { n: 'בצל', p: 6, q: 5, u: 'ק״ג' },
+    { n: 'גזר', p: 6, q: 4, u: 'ק״ג' }, { n: 'ירך עוף', p: 40, q: 12, u: 'ק״ג' },
+    { n: 'קוסקוס', p: 16, q: 10, u: 'ק״ג' }, { n: 'חומוס יבש', p: 15, q: 3, u: 'ק״ג' } ] },
+  { area: 'schn', d: '30 באוגוסט', t: '08:15', rows: [
+    { n: 'חזה עוף', p: 46, q: 14, u: 'ק״ג' }, { n: 'פילה עוף', p: 58, q: 8, u: 'ק״ג' },
+    { n: 'פירורי לחם', p: 12, q: 4, u: 'ק״ג' }, { n: 'קמח טמפורה', p: 18, q: 3, u: 'ק״ג' },
+    { n: 'קוקוטים', p: 60, q: 1, u: 'קרטון' } ] },
+  { area: 'box', d: '28 באוגוסט', t: '09:00', rows: [
+    { n: 'קמח', p: 5, q: 25, u: 'ק״ג' }, { n: 'שמרים', p: 22, q: 2, u: 'ק״ג' },
+    { n: 'שומשום', p: 18, q: 2, u: 'ק״ג' }, { n: 'קופסאות אישיות', p: 75, q: 3, u: 'קרטון' } ] },
+  { area: 'chef', d: '26 באוגוסט', t: '11:20', rows: [
+    { n: 'סלמון', p: 89, q: 6, u: 'ק״ג' }, { n: 'ירקות שורש', p: 7, q: 12, u: 'ק״ג' },
+    { n: 'שמן זית', p: 48, q: 3, u: 'ק״ג' } ] },
+  { area: 'gen', d: '24 באוגוסט', t: '17:05', rows: [
+    { n: 'מגשי אלומיניום', p: 90, q: 2, u: 'קרטון' }, { n: 'שקיות נשיאה', p: 40, q: 1, u: 'קרטון' } ] },
+  { area: 'tabun', d: '20 באוגוסט', t: '10:30', rows: [
+    { n: 'גז לטאבון', p: 240, q: 2, u: 'יח׳' }, { n: 'גבינות', p: 55, q: 5, u: 'ק״ג' } ] }
+];
+
+const nf = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filter: 'all', open: -1 };
+  }
+
+  sumOf(b) { return b.rows.reduce((s, r) => s + r.p * r.q, 0); }
+
+  renderVals() {
+    const st = this.state;
+    const shown = BUYS.filter((b) => st.filter === 'all' || b.area === st.filter);
+    const total = BUYS.reduce((s, b) => s + this.sumOf(b), 0);
+
+    return {
+      sub: BUYS.length + ' קניות · ' + nf(total) + ' ₪ מצטבר',
+      goBack: () => {},
+
+      filters: AREAS.map((a) => {
+        const on = st.filter === a.id;
+        return {
+          name: a.n,
+          bg: on ? 'rgba(123,92,188,0.1)' : 'rgba(255,255,255,0.7)',
+          bd: on ? 'rgba(123,92,188,0.42)' : 'rgba(130,112,162,0.16)',
+          fg: on ? '#43307A' : '#4A4254',
+          w: on ? '600' : '400',
+          pick: () => this.setState({ filter: a.id, open: -1 })
+        };
+      }),
+
+      colName: 'מוצר',
+      colPrice: 'מחיר',
+      colQty: 'כמות',
+      colSum: 'סה״כ',
+      totalLabel: 'סה״כ הקנייה',
+
+      buys: shown.map((b) => {
+        const i = BUYS.indexOf(b);
+        const a = AREA[b.area];
+        const open = st.open === i;
+        return {
+          title: a.n + ' · ' + b.d + ' · ' + b.t,
+          hue: a.hue, deep: a.deep,
+          count: b.rows.length + ' פריטים',
+          sum: nf(this.sumOf(b)),
+          open: open,
+          spin: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          toggle: () => this.setState({ open: open ? -1 : i }),
+          rows: b.rows.map((r) => ({
+            name: r.n, price: r.p, qty: r.q + ' ' + r.u, sum: nf(r.p * r.q)
+          }))
+        };
+      }),
+      isEmpty: shown.length === 0,
+      emptyLabel: 'אין קניות בשיוך הזה'
+    };
+  }
+}
+</script>
+</body>
+</html>

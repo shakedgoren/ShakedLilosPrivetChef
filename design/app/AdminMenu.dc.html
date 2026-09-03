@@ -85,8 +85,6 @@
         </div>
       </sc-for>
 
-      <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ note }}</div>
-
       <div style="flex-shrink: 0; height: 108px;"></div>
     </div>
 
@@ -125,22 +123,28 @@ const CATS = [
 /* ⚠ המסך הזה לקריאה בלבד. המחיר והעלות מגיעים ממסך עלויות הייצור,
    ושם גם מעדכנים אותם פעם בחודש. כאן רק רואים מה יוצא מזה. */
 const MENU = [
-  { c: 'cous',  name: 'קוסקוס צמחוני',        price: 45,  cost: 14.2 },
-  { c: 'cous',  name: 'קוסקוס עם עוף',         price: 55,  cost: 22.7 },
-  { c: 'cous',  name: 'קוסקוס עם מפרום',       price: 65,  cost: 30.1 },
-  { c: 'cous',  name: 'תוספת ירקות',           price: 10,  cost: 3.0 },
-  { c: 'cous',  name: 'תוספת עוף',             price: 15,  cost: 6.9 },
-  { c: 'cous',  name: 'תוספת מפרום',           price: 20,  cost: 11.0 },
-  { c: 'schn',  name: 'חלת שניצל דק',          price: 50,  cost: 19.5 },
-  { c: 'schn',  name: 'חלת פילה עוף טמפורה',   price: 60,  cost: 24.8 },
-  { c: 'schn',  name: 'מארז שניצל דק',         price: 200, cost: 82.5 },
-  { c: 'schn',  name: 'מארז פילה עוף טמפורה',  price: 250, cost: 92.5 },
+  { c: 'cous',  name: 'קוסקוס צמחוני',        price: 45,  cost: 13.8 },
+  { c: 'cous',  name: 'קוסקוס עם עוף',         price: 55,  cost: 22.9 },
+  { c: 'cous',  name: 'קוסקוס עם מפרום',       price: 65,  cost: 30.8 },
+  { c: 'cous',  name: 'תוספת ירקות',           price: 10,  cost: 2.5 },
+  { c: 'cous',  name: 'תוספת עוף',             price: 15,  cost: 7.1 },
+  { c: 'cous',  name: 'תוספת מפרום',           price: 20,  cost: 10.8 },
+  { c: 'schn',  name: 'חלת שניצל דק',          price: 50,  cost: 19.7 },
+  { c: 'schn',  name: 'חלת פילה עוף טמפורה',   price: 60,  cost: 27.6 },
+  { c: 'schn',  name: 'מארז שניצל דק',         price: 200, cost: 64.7 },
+  { c: 'schn',  name: 'מארז פילה עוף טמפורה',  price: 250, cost: 79.0 },
   { c: 'schn',  name: 'קוקוט רוטב',            price: 3,   cost: 1.4 },
-  { c: 'box',   name: 'חלה לכל אירוע',         price: 14,  cost: 4.0 },
-  { c: 'box',   name: 'סלטים · ק״ג',           price: 89,  cost: 39.0 },
-  { c: 'chef',  name: 'ארוחת שף · לסועד',      price: 250, cost: 171.2 },
-  { c: 'chef',  name: 'עמדת טאבון · לסועד',    price: 220, cost: 100.4 }
+  { c: 'box',   name: 'חלת שישי משפחתית',      price: 25,  cost: 2.1 },
+  { c: 'box',   name: 'חלה לכל אירוע',         price: 12,  cost: 1.0 },
+  { c: 'box',   name: 'סלטים · ק״ג',           price: 89,  cost: 19.9 },
+  { c: 'box',   name: 'חגיגה בשולחן · סלטים',  price: 179, cost: 30.8 },
+  { c: 'box',   name: 'חגיגה בשולחן · עיקרית', price: 339, cost: 182.5 },
+  { c: 'box',   name: 'הכל עלינו',             price: 499, cost: 213.3 },
+  { c: 'box',   name: 'טעם של שנה טובה',       price: 49,  cost: 10.5 },
+  { c: 'chef',  name: 'ארוחת שף · לסועד',      price: 250, cost: 148.0 },
+  { c: 'chef',  name: 'עמדת טאבון · לסועד',    price: 220, cost: 95.0 }
 ];
+
 
 const num = (v) => { const n = parseFloat(String(v).replace(/[^\d.]/g, '')); return isNaN(n) ? 0 : n; };
 const a = (rgb, al) => 'rgba(' + rgb + ',' + al + ')';
@@ -202,8 +206,7 @@ class Component extends DCLogic {
       items: items,
       priceLabel: 'מחיר',
       costLabel: 'עלות',
-      profitLabel: 'רווח',
-      note: 'המסך הזה לקריאה בלבד. המחירים והעלויות מתעדכנים במסך עלויות הייצור, פעם בחודש.'
+      profitLabel: 'רווח'
     };
   }
 }
