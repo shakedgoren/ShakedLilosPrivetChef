@@ -35,7 +35,7 @@
 
       <!-- איסוף / משלוחים -->
       <div style="flex-shrink: 0; margin-right: 14px; box-sizing: border-box; height: 46px; border-radius: 999px; padding: 4px; background: rgba(130,112,162,0.08); display: flex; gap: 4px;">
-        <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+        <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
           <div onClick="{{ m.pick }}" class="press" style="box-sizing: border-box; height: 38px; padding: 0 22px; border-radius: 999px; cursor: pointer; background: {{ m.bg }}; box-shadow: {{ m.shadow }}; display: flex; align-items: center; gap: 8px;">
             <div style="font-size: 14.5px; font-weight: {{ m.w }}; color: {{ m.fg }}; white-space: nowrap;">{{ m.name }}</div>
             <div style="border-radius: 999px; padding: 1px 8px; background: {{ m.pillBg }};">
@@ -73,8 +73,8 @@
       <div style="flex-shrink: 0; display: flex; align-items: stretch; background: rgba(255,255,255,0.9); border-bottom: 1.5px solid rgba(130,112,162,0.16);">
         <sc-for list="{{ cols }}" as="c" hint-placeholder-count="11">
           <div style="box-sizing: border-box; width: {{ c.w }}; flex-shrink: 0; padding: 9px 6px; text-align: {{ c.align }}; border-left: 1px solid rgba(130,112,162,0.09);">
-            <div style="font-size: 12.5px; font-weight: 600; color: #4A4254; line-height: 1.25;">{{ c.t }}</div>
-            <sc-if value="{{ c.hasSub }}" hint-placeholder-val="{{ true }}"><div style="font-size: 10.5px; font-weight: 400; color: #A79FB2; margin-top: 1px;">{{ c.sub }}</div></sc-if>
+            <div style="font-size: 12.5px; font-weight: 700; color: #4A4254; line-height: 1.25;">{{ c.t }}</div>
+            <sc-if value="{{ c.hasSub }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; font-weight: 700; color: #4A4254; line-height: 1.25; margin-top: 1px;">{{ c.sub }}</div></sc-if>
           </div>
         </sc-for>
       </div>
@@ -88,7 +88,7 @@
               <div style="font-size: 15px; font-weight: 600; color: {{ r.ink }}; font-variant-numeric: tabular-nums;">{{ r.time }}</div>
             </div>
 
-            <div style="box-sizing: border-box; width: 254px; flex-shrink: 0; padding: 8px 12px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
+            <div style="box-sizing: border-box; width: 220px; flex-shrink: 0; padding: 8px 10px; border-left: 1px solid rgba(130,112,162,0.07); display: flex; flex-direction: column; justify-content: center; gap: 1px;">
               <div style="font-size: 14.5px; font-weight: 600; color: {{ r.ink }}; line-height: 1.2;">{{ r.who }}</div>
               <div style="font-size: 11px; font-weight: 400; color: {{ r.muted }};">{{ r.note }}</div>
             </div>
@@ -107,7 +107,7 @@
               <div style="font-size: 13px; font-weight: 500; color: {{ r.muted }};">{{ r.pay }}</div>
             </div>
 
-            <div style="box-sizing: border-box; width: 172px; flex-shrink: 0; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <div style="box-sizing: border-box; width: 206px; flex-shrink: 0; padding: 8px 16px 8px 10px; display: flex; align-items: center; justify-content: center; gap: 7px;">
               <sc-for list="{{ r.steps }}" as="p" hint-placeholder-count="3">
                 <div onClick="{{ p.pick }}" class="press" style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 11px; cursor: pointer; background: {{ p.bg }}; border: 1.5px solid {{ p.bd }}; display: flex; align-items: center; justify-content: center;">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ p.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -321,18 +321,18 @@ class Component extends DCLogic {
     /* מיון · קודם לפי קבוצת מצב, ובתוכה לפי שעת האיסוף */
     const inMode = live
       .map((o, i) => ({ o: o, i: st.orders.indexOf(o) }))
-      .filter((x) => x.o.ship === st.mode)
+      .filter((x) => st.mode === 'all' || x.o.ship === st.mode)
       .sort((a, b) => {
         const g = FLOW.indexOf(a.o.status) - FLOW.indexOf(b.o.status);
         return g !== 0 ? g : toMin(a.o.time) - toMin(b.o.time);
       });
 
     const cols = [{ t: 'שעת איסוף', w: '92px', align: 'center', hasSub: false, sub: '' },
-                  { t: 'שם מלא',    w: '254px', align: 'right',  hasSub: false, sub: '' }]
+                  { t: 'שם מלא',    w: '220px', align: 'right',  hasSub: false, sub: '' }]
       .concat(cat.items.map((it) => ({ t: it.t, sub: it.sub, hasSub: true, w: '68px', align: 'center' })))
       .concat([{ t: 'סה״כ',  w: '96px',  align: 'center', hasSub: false, sub: '' },
                { t: 'תשלום', w: '104px', align: 'center', hasSub: false, sub: '' },
-               { t: 'סטטוס', w: '172px', align: 'center', hasSub: false, sub: '' }]);
+               { t: 'סטטוס', w: '206px', align: 'center', hasSub: false, sub: '' }]);
 
     const rows = inMode.map((x) => {
       const o = x.o, i = x.i;
@@ -388,8 +388,8 @@ class Component extends DCLogic {
       };
     });
 
-    const count = (m) => live.filter((o) => o.ship === m).length;
-    const modes = [{ id: 'pickup', name: 'איסוף' }, { id: 'deliv', name: 'משלוחים' }].map((m) => {
+    const count = (m) => m === 'all' ? live.length : live.filter((o) => o.ship === m).length;
+    const modes = [{ id: 'all', name: 'הכל' }, { id: 'pickup', name: 'איסוף' }, { id: 'deliv', name: 'משלוחים' }].map((m) => {
       const on = st.mode === m.id;
       return {
         name: m.name, count: count(m.id),

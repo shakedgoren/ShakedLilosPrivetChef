@@ -25,10 +25,21 @@
 
   <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 11px; padding: 30px 18px 0;">
 
-    <div style="flex-shrink: 0;">
-      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">עלויות ייצור</div>
-      <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0;">
+        <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">עלויות ייצור</div>
+        <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+      </div>
+      <div onClick="{{ openImp }}" class="press" style="flex-shrink: 0; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"></path><path d="M8 10.5l4 4 4-4"></path><path d="M4 18v2h16v-2"></path></svg>
+        <div style="font-size: 12.5px; font-weight: 600; color: #43307A; white-space: nowrap;">{{ impLabel }}</div>
+      </div>
     </div>
+
+    <sc-if value="{{ hasImpDone }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; align-self: center; display: flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 13px; background: rgba(78,138,100,0.12);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4E8A64" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      <div style="font-size: 12.5px; font-weight: 600; color: #4E8A64;">{{ impDone }}</div>
+    </div></sc-if>
 
     <sc-if value="{{ due }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; box-sizing: border-box; border-radius: 18px; padding: 12px 14px; background: rgba(199,125,62,0.1); border: 1.5px solid rgba(199,125,62,0.3); display: flex; align-items: center; gap: 11px;">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
@@ -39,7 +50,7 @@
       <div onClick="{{ dismiss }}" class="press" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; background: rgba(199,125,62,0.16); display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A65E2A" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div></sc-if>
 
-    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow-x: auto; scrollbar-width: none;">
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ cats }}" as="c" hint-placeholder-count="4">
           <div onClick="{{ c.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 34px; border-radius: 12px; padding: 0 13px; cursor: pointer; background: {{ c.bg }}; border: 1.5px solid {{ c.bd }}; display: flex; align-items: center;">
@@ -49,7 +60,7 @@
       </div>
     </div>
 
-    <sc-if value="{{ hasSubs }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+    <sc-if value="{{ hasSubs }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow-x: auto; scrollbar-width: none;">
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ subs }}" as="b" hint-placeholder-count="3">
           <div onClick="{{ b.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 30px; border-radius: 999px; padding: 0 13px; cursor: pointer; background: {{ b.bg }}; border: 1.5px solid {{ b.bd }}; display: flex; align-items: center;">
@@ -96,7 +107,7 @@
             </div></sc-if>
 
             <sc-if value="{{ d.hasParts }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 7px;">
-              <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ partsLabel }}</div>
+              <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: #8A8194;">{{ d.partsTitle }}</div>
 
               <div style="display: flex; align-items: baseline; gap: 6px;">
                 <div style="flex-grow: 1; min-width: 0; font-size: 10px; font-weight: 500; color: #C4BDCE;">{{ colName }}</div>
@@ -133,11 +144,11 @@
 
             <div style="display: flex; align-items: flex-end; gap: 8px;">
               <sc-if value="{{ d.hasYield }}" hint-placeholder-val="{{ true }}"><div style="flex: 1; min-width: 0;">
-                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ d.yieldLabel }}</div>
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px; text-align: center;">{{ d.yieldLabel }}</div>
                 <input type="text" value="{{ d.yield }}" onInput="{{ d.setYield }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 600; color: #2A2430; background: #FFFFFF; border: 1.5px solid rgba(130,112,162,0.18); outline: none;">
               </div></sc-if>
               <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px;">{{ d.priceLabel }}</div>
+                <div style="font-size: 10.5px; font-weight: 500; color: #8A8194; margin-bottom: 3px; text-align: center;">{{ d.priceLabel }}</div>
                 <input type="text" value="{{ d.price }}" onInput="{{ d.setPrice }}" placeholder="0" style="width: 100%; box-sizing: border-box; height: 40px; border-radius: 13px; padding: 0 11px; text-align: center; font-size: 14.5px; font-weight: 700; color: #43307A; background: #FFFFFF; border: 1.5px solid rgba(123,92,188,0.3); outline: none;">
               </div>
             </div>
@@ -161,6 +172,30 @@
     </div>
 
   </div>
+
+  <!-- ═══ ייבוא מרשימת קניות ═══ -->
+  <sc-if value="{{ impOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeImp }}" style="position: absolute; inset: 0; z-index: 30; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 31; top: 180px; right: 16px; left: 16px; border-radius: 28px; padding: 18px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0; text-align: center; padding-right: 32px;">
+        <div style="font-weight: 600; font-size: 17px;">{{ impTitle }}</div>
+        <div style="font-size: 11.5px; font-weight: 300; color: #7D7488; margin-top: 2px;">{{ impSub }}</div>
+      </div>
+      <div onClick="{{ closeImp }}" class="press" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <sc-for list="{{ buys }}" as="b" hint-placeholder-count="4">
+        <div onClick="{{ b.pick }}" class="press" style="box-sizing: border-box; border-radius: 15px; padding: 11px 13px; cursor: pointer; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(130,112,162,0.18); display: flex; align-items: center; gap: 10px;">
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ b.title }}</div>
+            <div style="font-size: 11px; font-weight: 300; color: #A79FB2; margin-top: 1px;">{{ b.count }}</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M15 18l-6-6 6-6"></path></svg>
+        </div>
+      </sc-for>
+    </div>
+  </div></sc-if>
 
   <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 52px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
@@ -216,7 +251,10 @@ const PANTRY = [
   { name: 'מגשי אלומיניום', unit: 'קרטון', price: 90 }, { name: 'קופסאות אישיות', unit: 'קרטון', price: 75 },
   { name: 'צנצנות', unit: 'קרטון', price: 110 },   { name: 'קוקוטים', unit: 'קרטון', price: 60 },
   { name: 'דבש', unit: 'ק״ג', price: 42 },         { name: 'נרות', unit: 'קרטון', price: 65 },
-  { name: 'נוטלה', unit: 'ק״ג', price: 34 }
+  { name: 'נוטלה', unit: 'ק״ג', price: 34 },
+  { name: 'מארז', unit: 'יח׳', price: 9 },        { name: 'מארז גדול', unit: 'יח׳', price: 14 },
+  { name: 'שקית נשיאה', unit: 'יח׳', price: 2.5 }, { name: 'כרטיס ברכה', unit: 'יח׳', price: 1.5 },
+  { name: 'סרט', unit: 'יח׳', price: 0.8 }
 ];
 
 /* מצבי חישוב:
@@ -298,21 +336,24 @@ const DISHES = [
     from: [{ id: 'chBase', m: 1 }],
     parts: [P('נרות', 65, 1)], yld: 60 },
   { id: 'chEvent', c: 'box', sub: 'challah', name: 'ימי הולדת ואירועים', mode: 'auto', price: 12,
-    from: [{ id: 'chBase', m: 1 }], parts: [], yld: 0 },
+    from: [{ id: 'chBase', m: 1 }], yld: 0,
+    parts: [P('שקית נשיאה', 2.5, 1), P('כרטיס ברכה', 1.5, 1)] },
   { id: 'chKids', c: 'box', sub: 'challah', name: 'פינוק לגן ולכיתה', mode: 'auto', price: 16,
     from: [{ id: 'chBase', m: 1 }],
     parts: [P('נוטלה', 34, 2), P('קוקוטים', 60, 1)], yld: 120 },
 
   /* ── ספיישל · מארזים מוכנים ── */
   { id: 'pkSalads', c: 'box', sub: 'packs', name: 'חגיגה בשולחן · סלטים', mode: 'auto', price: 179,
-    note: 'החלות והסלטים נשאבים מהקטגוריות שמעל. אין מה לעדכן כאן חוץ מהמחיר.',
-    from: [{ id: 'chFri', m: 2 }, { id: 'salads:avg', m: 12.5 }], parts: [], yld: 0 },
+    note: 'החלות והסלטים נשאבים מהקטגוריות שמעל · כאן רק האריזה והתוספות.',
+    from: [{ id: 'chFri', m: 2 }, { id: 'salads:avg', m: 12.5 }], yld: 0,
+    parts: [P('מארז', 9, 1), P('שקית נשיאה', 2.5, 1), P('כרטיס ברכה', 1.5, 1)] },
   { id: 'pkMain', c: 'box', sub: 'packs', name: 'חגיגה בשולחן · עיקרית', mode: 'unit', price: 339, yld: 1,
     note: 'העיקריות כאן נמכרות לפי משקל ולא לפי מנה, ולכן אינן נשאבות מהקוסקוס — מעדכנים אותן ידנית.',
     parts: [P('ירך עוף', 40, 2.2), P('בשר טחון למפרום', 65, 1.2), P('תפוחי אדמה', 5, 1.5), P('מגשי אלומיניום', 90, 0.1)] },
   { id: 'pkAll', c: 'box', sub: 'packs', name: 'הכל עלינו', mode: 'auto', price: 499,
-    note: 'מורכב במלואו משני המארזים שמעל. הדבר היחיד שנקבע כאן הוא המחיר הסופי.',
-    from: [{ id: 'pkSalads', m: 1 }, { id: 'pkMain', m: 1 }], parts: [], yld: 0 },
+    note: 'מורכב במלואו משני המארזים שמעל · כאן רק האריזה והתוספות והמחיר הסופי.',
+    from: [{ id: 'pkSalads', m: 1 }, { id: 'pkMain', m: 1 }], yld: 0,
+    parts: [P('מארז גדול', 14, 1), P('שקית נשיאה', 2.5, 1), P('כרטיס ברכה', 1.5, 1)] },
   { id: 'pkShana', c: 'box', sub: 'packs', name: 'טעם של שנה טובה', mode: 'unit', price: 49, yld: 30,
     note: 'מארז עצמאי · מתעדכן ידנית.',
     parts: [P('דבש', 42, 4), P('צנצנות', 110, 1), P('קמח', 5, 6), P('שמרים', 22, 0.3)] },
@@ -322,6 +363,23 @@ const DISHES = [
     parts: [P('פילה עוף', 58, 38), P('ירך עוף', 40, 32), P('קישואים', 8, 45), P('שמן זית', 48, 6), P('מגשי אלומיניום', 90, 10)] },
   { id: 'tabun', c: 'chef', name: 'עמדת טאבון · לסועד', mode: 'unit', price: 220, yld: 52,
     parts: [P('קמח', 5, 310), P('שמרים', 22, 12), P('גבינת פטה', 38, 62), P('שמן זית', 48, 16)] }
+];
+
+/* ⚠ הקניות · אותה רשימה שמופיעה במסך היסטוריית הקניות.
+   הייבוא מושך מכאן את המחיר ששולם בפועל ומעדכן בו כל מצרך תואם. */
+const BUYS = [
+  { area: 'קוסקוס', d: '1 בספטמבר', t: '07:40', rows: [
+    { n: 'עגבניות', p: 9, q: 8 }, { n: 'בצל', p: 6, q: 5 }, { n: 'גזר', p: 6.5, q: 4 },
+    { n: 'ירך עוף', p: 43, q: 12 }, { n: 'קוסקוס', p: 17, q: 10 }, { n: 'חומוס יבש', p: 15, q: 3 } ] },
+  { area: 'שניצלים', d: '30 באוגוסט', t: '08:15', rows: [
+    { n: 'חזה עוף', p: 49, q: 14 }, { n: 'פילה עוף', p: 61, q: 8 },
+    { n: 'פירורי לחם', p: 13, q: 4 }, { n: 'קמח טמפורה', p: 18, q: 3 }, { n: 'קוקוטים', p: 62, q: 1 } ] },
+  { area: 'מארזים', d: '28 באוגוסט', t: '09:00', rows: [
+    { n: 'קמח', p: 5.5, q: 25 }, { n: 'שמרים', p: 23, q: 2 },
+    { n: 'שומשום', p: 19, q: 2 }, { n: 'קופסאות אישיות', p: 78, q: 3 } ] },
+  { area: 'כללי', d: '24 באוגוסט', t: '17:05', rows: [
+    { n: 'מגשי אלומיניום', p: 94, q: 2 }, { n: 'שקית נשיאה', p: 2.8, q: 200 },
+    { n: 'כרטיס ברכה', p: 1.7, q: 150 } ] }
 ];
 
 /* ⚠ תאריך ההדגמה · ב-1 בחודש התזכורת נדלקת מעצמה */
@@ -342,6 +400,8 @@ class Component extends DCLogic {
       sub: 'salads',
       open: -1,
       seen: false,
+      impOpen: false,
+      impDone: '',
       dishes: DISHES.map((d, i) => ({
         id: d.id, c: d.c, sub: d.sub || null, name: d.name, mode: d.mode,
         note: d.note || '', from: d.from || [],
@@ -383,6 +443,27 @@ class Component extends DCLogic {
     const list = this.state.dishes.filter((d) => d.sub === 'salads');
     if (!list.length) return 0;
     return list.reduce((s, d) => s + this.unitCost(d, 3), 0) / list.length;
+  }
+
+  /* ייבוא מרשימת קניות · כל מצרך ששמו תואם מקבל את המחיר ששולם.
+     הכמות נשארת כפי שהיא — קנייה אחת מזינה כמה מנות, והכמות היא של המתכון. */
+  importBuy(b) {
+    const price = {};
+    b.rows.forEach((r) => { price[r.n] = r.p; });
+    let hit = 0;
+    const dishes = this.state.dishes.map((d) => ({
+      ...d,
+      parts: d.parts.map((p) => {
+        const v = price[trim(p.name)];
+        if (v === undefined) return p;
+        hit++;
+        return Object.assign({}, p, { price: String(v) });
+      })
+    }));
+    this.setState({
+      dishes: dishes, impOpen: false,
+      impDone: hit === 0 ? 'לא נמצאו מצרכים תואמים' : 'עודכנו ' + hit + ' שורות מצרכים'
+    });
   }
 
   addPart(id) {
@@ -446,9 +527,22 @@ class Component extends DCLogic {
         };
       }),
 
+      impLabel: 'ייבוא',
+      impOpen: st.impOpen,
+      openImp: () => this.setState({ impOpen: true, impDone: '' }),
+      closeImp: () => this.setState({ impOpen: false }),
+      impTitle: 'ייבוא מרשימת קניות',
+      impSub: 'המחירים ששולמו בפועל יעדכנו כל מצרך תואם',
+      buys: BUYS.map((b) => ({
+        title: b.area + ' · ' + b.d + ' · ' + b.t,
+        count: b.rows.length + ' פריטים',
+        pick: () => this.importBuy(b)
+      })),
+      hasImpDone: st.impDone !== '',
+      impDone: st.impDone,
+
       autoTag: 'אוטומטי',
       fromLabel: 'נשאב מקטגוריות אחרות',
-      partsLabel: 'חישוב עלות למנה אחת',
       partPh: 'שם המצרך',
       colName: 'מוצר',
       colPrice: 'מחיר',
@@ -492,7 +586,8 @@ class Component extends DCLogic {
             return { name: nm, mult: '× ' + f.m, sum: money(c1 * f.m) + ' ₪' };
           }),
 
-          hasParts: !isAuto || d.parts.length > 0,
+          partsTitle: isAuto ? 'האריזה והתוספות' : 'חישוב עלות למנה אחת',
+          hasParts: true,
           parts: d.parts.map((p) => {
             const hits = this.hitsFor(p.name);
             return {
@@ -511,12 +606,12 @@ class Component extends DCLogic {
           }),
           addPart: () => this.addPart(d.id),
 
-          hasYield: !isAuto || d.parts.length > 0,
-          yieldLabel: isWeight ? 'כמה גרם יצאו' : 'כמה יחידות יצאו',
+          hasYield: !isAuto,
+          yieldLabel: isWeight ? 'כמות (גרם)' : 'כמות (יח׳)',
           yield: d.yld,
           setYield: (e) => this.patch(d.id, { yld: e.target.value }),
 
-          priceLabel: isWeight ? 'מחיר מכירה לק״ג ₪' : 'מחיר מכירה ₪',
+          priceLabel: isWeight ? 'מחיר לק״ג' : 'מחיר ליח׳',
           price: d.price,
           setPrice: (e) => this.patch(d.id, { price: e.target.value }),
 

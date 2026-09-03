@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow-x: auto; scrollbar-width: none;">
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
           <div onClick="{{ f.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 32px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ f.bg }}; border: 1.5px solid {{ f.bd }}; display: flex; align-items: center;">

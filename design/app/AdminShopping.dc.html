@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow: hidden;">
+    <div style="flex-shrink: 0; margin: 0 -18px; padding: 0 18px; overflow-x: auto; scrollbar-width: none;">
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ areas }}" as="a" hint-placeholder-count="6">
           <div onClick="{{ a.pick }}" class="press" style="flex-shrink: 0; box-sizing: border-box; height: 32px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ a.bg }}; border: 1.5px solid {{ a.bd }}; display: flex; align-items: center;">
@@ -151,7 +151,7 @@
     <div style="display: flex; flex-direction: column; gap: 5px;">
       <div style="font-size: 11.5px; font-weight: 500; color: #8A8194;">{{ groupLabel }}</div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        <sc-for list="{{ addGroups }}" as="g" hint-placeholder-count="5">
+        <sc-for list="{{ addGroups }}" as="g" hint-placeholder-count="6">
           <div onClick="{{ g.pick }}" class="press" style="box-sizing: border-box; height: 34px; border-radius: 11px; padding: 0 12px; cursor: pointer; background: {{ g.bg }}; border: 1.5px solid {{ g.bd }}; display: flex; align-items: center;">
             <div style="font-size: 12px; font-weight: {{ g.w }}; color: {{ g.fg }}; white-space: nowrap;">{{ g.name }}</div>
           </div>
@@ -213,7 +213,7 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
-const GROUPS = ['ירקות ופירות', 'בשר ועוף', 'יבשים', 'חלב וגבינות', 'אריזות'];
+const GROUPS = ['ירקות ופירות', 'בשר עוף ודגים', 'יבשים', 'חלב וגבינות', 'אריזות', 'כללי'];
 const UNITS = ['ק״ג', 'יח׳', 'קרטון'];
 
 /* לכל קנייה יש שיוך · הוא נכנס לשם הקנייה ולהיסטוריה */
@@ -238,10 +238,10 @@ const PANTRY = [
   { name: 'פטרוזיליה',      g: 'ירקות ופירות', unit: 'יח׳',    price: 4 },
   { name: 'קישואים',        g: 'ירקות ופירות', unit: 'ק״ג',    price: 8 },
   { name: 'תפוחי אדמה',     g: 'ירקות ופירות', unit: 'ק״ג',    price: 5 },
-  { name: 'ירך עוף',        g: 'בשר ועוף',     unit: 'ק״ג',    price: 40 },
-  { name: 'חזה עוף',        g: 'בשר ועוף',     unit: 'ק״ג',    price: 46 },
-  { name: 'פילה עוף',       g: 'בשר ועוף',     unit: 'ק״ג',    price: 58 },
-  { name: 'בשר טחון למפרום', g: 'בשר ועוף',    unit: 'ק״ג',    price: 65 },
+  { name: 'ירך עוף',        g: 'בשר עוף ודגים',     unit: 'ק״ג',    price: 40 },
+  { name: 'חזה עוף',        g: 'בשר עוף ודגים',     unit: 'ק״ג',    price: 46 },
+  { name: 'פילה עוף',       g: 'בשר עוף ודגים',     unit: 'ק״ג',    price: 58 },
+  { name: 'בשר טחון למפרום', g: 'בשר עוף ודגים',    unit: 'ק״ג',    price: 65 },
   { name: 'קוסקוס',         g: 'יבשים',        unit: 'ק״ג',    price: 16 },
   { name: 'חומוס יבש',      g: 'יבשים',        unit: 'ק״ג',    price: 15 },
   { name: 'פירורי לחם',     g: 'יבשים',        unit: 'ק״ג',    price: 12 },
@@ -259,8 +259,8 @@ const SEED = [
   { g: 'ירקות ופירות', name: 'בצל',            unit: 'ק״ג',   qty: '5',  price: '6',  done: true,  actual: '34' },
   { g: 'ירקות ופירות', name: 'גזר',            unit: 'ק״ג',   qty: '4',  price: '6',  done: false, actual: '' },
   { g: 'ירקות ופירות', name: 'כוסברה',         unit: 'יח׳',   qty: '10', price: '4',  done: false, actual: '' },
-  { g: 'בשר ועוף',    name: 'ירך עוף',         unit: 'ק״ג',   qty: '12', price: '40', done: true,  actual: '505' },
-  { g: 'בשר ועוף',    name: 'בשר טחון למפרום', unit: 'ק״ג',   qty: '6',  price: '65', done: false, actual: '' },
+  { g: 'בשר עוף ודגים',    name: 'ירך עוף',         unit: 'ק״ג',   qty: '12', price: '40', done: true,  actual: '505' },
+  { g: 'בשר עוף ודגים',    name: 'בשר טחון למפרום', unit: 'ק״ג',   qty: '6',  price: '65', done: false, actual: '' },
   { g: 'יבשים',       name: 'קוסקוס',          unit: 'ק״ג',   qty: '10', price: '16', done: true,  actual: '160' },
   { g: 'יבשים',       name: 'חומוס יבש',       unit: 'ק״ג',   qty: '3',  price: '15', done: false, actual: '' },
   { g: 'חלב וגבינות', name: 'חמאה',            unit: 'ק״ג',   qty: '2',  price: '45', done: false, actual: '' },

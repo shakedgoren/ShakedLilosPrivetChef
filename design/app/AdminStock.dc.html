@@ -23,9 +23,14 @@
 
   <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 30px 18px 0;">
 
-    <div style="flex-shrink: 0;">
-      <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">מלאי</div>
-      <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 10px;">
+      <div style="flex-grow: 1; min-width: 0;">
+        <div style="font-weight: 600; font-size: 21px; letter-spacing: -0.01em;">מלאי</div>
+        <div style="font-weight: 300; font-size: 12.5px; color: #8A8194; margin-top: 2px;">{{ sub }}</div>
+      </div>
+      <sc-if value="{{ isSupply }}" hint-placeholder-val="{{ true }}"><div onClick="{{ openAdd }}" class="press" style="flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; background: rgba(123,92,188,0.13); display: flex; align-items: center; justify-content: center;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      </div></sc-if>
     </div>
 
     <div style="flex-shrink: 0; box-sizing: border-box; height: 46px; border-radius: 999px; padding: 4px; background: rgba(130,112,162,0.08); display: flex; gap: 4px;">
@@ -153,11 +158,6 @@
             </sc-for>
           </div>
         </sc-for>
-
-        <div onClick="{{ openAdd }}" class="press" style="flex-shrink: 0; align-self: center; height: 40px; padding: 0 18px; border-radius: 999px; cursor: pointer; background: rgba(123,92,188,0.1); border: 1.5px solid rgba(123,92,188,0.3); display: flex; align-items: center; gap: 7px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#43307A" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-          <div style="font-size: 13px; font-weight: 600; color: #43307A;">{{ addLabel }}</div>
-        </div>
 
         <div style="flex-shrink: 0; font-size: 11.5px; font-weight: 300; line-height: 1.6; color: #A79FB2; text-align: center; padding: 4px 10px 0;">{{ supplyNote }}</div>
       </div></sc-if>
@@ -443,7 +443,6 @@ class Component extends DCLogic {
       sentLabel: 'נוספו ' + low.length + ' פריטים לרשימת הקניות',
 
       groups: groups,
-      addLabel: 'פריט למלאי',
       addOpen: st.addOpen,
       openAdd: () => this.setState({ addOpen: true }),
       closeAdd: () => this.setState({ addOpen: false }),
