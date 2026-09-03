@@ -61,9 +61,9 @@
         <div style="position: relative; width: 92px; height: 92px; flex-shrink: 0;">
           <svg width="92" height="92" viewBox="0 0 92 92">
             <circle cx="46" cy="46" r="38" fill="none" stroke="rgba(130,112,162,0.13)" stroke-width="8"></circle>
-            <circle cx="46" cy="46" r="28" fill="none" stroke="rgba(130,112,162,0.13)" stroke-width="8"></circle>
-            <circle cx="46" cy="46" r="38" fill="none" stroke="#7B5CBC" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ ring1 }}" transform="rotate(-90 46 46)"></circle>
-            <circle cx="46" cy="46" r="28" fill="none" stroke="#416D9E" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ ring2 }}" transform="rotate(-90 46 46)"></circle>
+            <sc-if value="{{ hasRing2 }}" hint-placeholder-val="{{ true }}"><circle cx="46" cy="46" r="28" fill="none" stroke="rgba(130,112,162,0.13)" stroke-width="8"></circle></sc-if>
+            <circle cx="46" cy="46" r="38" fill="none" stroke="{{ ring1Hue }}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ ring1 }}" transform="rotate(-90 46 46)"></circle>
+            <sc-if value="{{ hasRing2 }}" hint-placeholder-val="{{ true }}"><circle cx="46" cy="46" r="28" fill="none" stroke="{{ ring2Hue }}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ ring2 }}" transform="rotate(-90 46 46)"></circle></sc-if>
           </svg>
           <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
             <div style="font-size: 15px; font-weight: 600;">{{ ringPct }}</div>
@@ -72,7 +72,7 @@
 
         <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px;">
 
-          <sc-for list="{{ quotas }}" as="q" hint-placeholder-count="2">
+          <sc-for list="{{ quotas }}" as="q" hint-placeholder-count="1">
             <div style="display: flex; align-items: center; gap: 7px;">
               <div style="width: 7px; height: 7px; border-radius: 50%; background: {{ q.hue }}; flex-shrink: 0;"></div>
               <div style="font-size: 11.5px; font-weight: 400; color: #4A4254; flex-grow: 1; min-width: 0;">{{ q.name }}</div>
@@ -89,7 +89,7 @@
             </div>
           </sc-for>
 
-          <div style="font-size: 10.5px; font-weight: 300; color: #8A8194;">נמכר מתוך המכסה · המכסה נקבעת ידנית</div>
+          <div style="font-size: 10.5px; font-weight: 300; color: #8A8194;">{{ quotaNote }}</div>
 
         </div>
       </div>
@@ -327,10 +327,14 @@ const STATE = {
   buys: 6            /* AdminHistory · קניות שנשמרו */
 };
 
+/* מוצגות רק הקטגוריות של ימי המכירה הפתוחים כרגע.
+   ביום של קוסקוס אין מה להראות מכסות שישניצל, ולהפך. */
 const QUOTAS = [
-  { key: 'cous', name: 'קוסקוס',  hue: '#7B5CBC', rgb: '123,92,188', sold: 68, quota: 100 },
-  { key: 'schn', name: 'שישניצל', hue: '#416D9E', rgb: '65,109,158',  sold: 41, quota: 50 }
+  { key: 'cous', name: 'קוסקוס',  hue: '#7B5CBC', rgb: '123,92,188', sold: 68, quota: 100, open: true },
+  { key: 'schn', name: 'שישניצל', hue: '#416D9E', rgb: '65,109,158',  sold: 41, quota: 50,  open: false }
 ];
+/* המכסה זזה ביחידה אחת בכל לחיצה */
+const QUOTA_STEP = 1;
 
 const AMBER = { bg: 'rgba(199,125,62,0.92)', fg: '#FFFFFF' };
 const PLUM  = { bg: 'rgba(123,92,188,0.9)',  fg: '#FFFFFF' };
@@ -338,7 +342,7 @@ const PLUM  = { bg: 'rgba(123,92,188,0.9)',  fg: '#FFFFFF' };
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { open: true, quotas: QUOTAS.map((q) => Object.assign({}, q)) };
+    this.state = { open: true, quotas: QUOTAS.filter((q) => q.open).map((q) => Object.assign({}, q)) };
   }
 
   /* המכסה לא יורדת מתחת למה שכבר נמכר */
@@ -385,13 +389,20 @@ class Component extends DCLogic {
       quotas: st.quotas.map((q) => ({
         name: q.name, hue: q.hue, sold: q.sold, quota: q.quota,
         pill: 'rgba(' + q.rgb + ',0.1)',
-        inc: () => this.bump(q.key, 10),
-        dec: () => this.bump(q.key, -10)
+        inc: () => this.bump(q.key, QUOTA_STEP),
+        dec: () => this.bump(q.key, -QUOTA_STEP)
       })),
 
       ringPct: quota ? Math.round(sold / quota * 100) + '%' : '—',
       ring1: arc(38, st.quotas[0] ? st.quotas[0].sold / st.quotas[0].quota : 0),
+      ring1Hue: st.quotas[0] ? st.quotas[0].hue : '#7B5CBC',
+      /* טבעת שנייה רק כששני ימי מכירה פתוחים יחד */
+      hasRing2: st.quotas.length > 1,
       ring2: arc(28, st.quotas[1] ? st.quotas[1].sold / st.quotas[1].quota : 0),
+      ring2Hue: st.quotas[1] ? st.quotas[1].hue : '#416D9E',
+      quotaNote: st.quotas.length > 1
+        ? 'נמכר מתוך המכסה · שני ימי מכירה פתוחים'
+        : 'נמכר מתוך המכסה של ' + (st.quotas[0] ? st.quotas[0].name : '—'),
 
       tiles: TILES.map((t) => Object.assign({
         name: t.name, paths: t.paths.map(P), go: this.go(t.file)
