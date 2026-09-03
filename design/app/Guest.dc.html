@@ -33,30 +33,10 @@
     .lg-b { animation: lgDriftB 28s ease-in-out infinite; }
     .lg-sheen { animation: lgSheen 9s ease-in-out infinite; }
 
-    /* ── הסיפור נכתב מעצמו · כל פסקה עולה בתורה ── */
-    @keyframes storyIn {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .story > * { opacity: 0; animation: storyIn 620ms cubic-bezier(.22,.9,.28,1) forwards; }
-    .story > *:nth-child(1) { animation-delay: 60ms; }
-    .story > *:nth-child(2) { animation-delay: 200ms; }
-    .story > *:nth-child(3) { animation-delay: 340ms; }
-    .story > *:nth-child(4) { animation-delay: 480ms; }
-    .story > *:nth-child(5) { animation-delay: 620ms; }
-    .story > *:nth-child(6) { animation-delay: 760ms; }
-    .story > *:nth-child(7) { animation-delay: 900ms; }
-    .story > *:nth-child(8) { animation-delay: 1040ms; }
+    /* השורה שמוקלדת כרגע · הסמן מהבהב */
+    @keyframes caret { 50% { opacity: 0.25; } }
+    .story { -webkit-user-select: none; user-select: none; }
 
-    /* השורה שהיא הלב · נכתבת אות אחר אות */
-    @keyframes typeIn { from { width: 0; } to { width: 100%; } }
-    @keyframes caret  { 50% { border-color: transparent; } }
-    .typing {
-      display: inline-block; overflow: hidden; white-space: nowrap;
-      max-width: 100%; vertical-align: bottom;
-      border-left: 1.5px solid currentColor;
-      animation: typeIn 2.4s steps(38, end) 1.2s both, caret 700ms step-end 1.2s 6;
-    }
   </style>
 </helmet>
 
@@ -79,7 +59,7 @@
 
   
 
-  <sc-if value="{{ aboutOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAbout }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"></div><div style="position: absolute; z-index: 41; top: 60px; bottom: 60px; right: 16px; left: 16px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; text-align: right; background: {{ popBg }}; border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 2px 0 rgba(255,255,255,0.95), 0 30px 60px -28px rgba(60,48,84,0.7);"><div style="flex-shrink: 0; padding: 20px 22px 14px; display: flex; align-items: flex-start; gap: 12px;"><div style="flex-grow: 1; font-weight: 600; font-size: 19px; line-height: 1.25;">נעים להכיר, אני שקד לילוז 👋</div><div onClick="{{ closeAbout }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); box-shadow: 0 2px 6px -3px rgba(90,74,120,0.5);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div class="story" style="flex-grow: 1; overflow-y: auto; padding: 0 22px 24px; display: flex; flex-direction: column; gap: 15px;"><div style="font-weight: 300; font-size: 13.5px; line-height: 1.75; color: #6E6478;">שף, קונדיטורית ~ יוצרת רגעים בלתי נשכחים דרך אוכל, אירוח ותשומת לב לכל פרט 👩🏼‍🍳</div><div style="height: 1px; background: {{ popRule }};"></div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">אוכל בשבילי מעולם לא היה רק מתכון,<br>הוא דרך לארח,<br>לשמח,<br>לחבר אנשים סביב שולחן אחד.</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">האהבה והתשוקה שלי לעולם הזה הובילה אותי<br>ללמוד קונדיטוריה בבית הספר Estella,<br>ובהמשך גם לימודי שף בבית הספר Danon,<br>שניים מהמוסדות המובילים בישראל בתחום הקולינריה!</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">ככל שהזמן עבר, הבנתי שיש לי ייעוד בחיים<br>והוא לשמח אחרים בעזרת האוכל שלי.</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">מתוך אהבה אמיתית לאוכל, לאירוח<br>ולרגעים הקטנים שמחברים בין אנשים נולד העסק שלי<br>מקום שמחבר בין חומרי גלם איכותיים, אהבה לאירוח ותשומת לב לכל פרט קטן,<br>כדי ליצור חוויות קולינריות שמרגישות אישיות, מוקפדות ובלתי נשכחות!</div><div style="font-weight: 400; font-size: 14px; line-height: 1.8; color: {{ hue }};"><span class="typing">כי בשבילי, אוכל הוא אף פעם לא רק אוכל,</span><br>הוא הדרך ליצור רגעים שאנשים זוכרים!</div><div style="font-weight: 300; font-size: 13.5px; line-height: 1.8; color: #6E6478;">אני מזמינה אתכם להיכנס למטבח שלי,<br>לתת לי להיות חלק מהרגעים המיוחדים שלכם,<br>ולדאוג שכל מה שיוגש לשולחן יהיה מוקפד, טעים ובעיקר – מכל הלב. ❤️</div></div></div></sc-if>
+  <sc-if value="{{ aboutOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeAbout }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.42); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"></div><div style="position: absolute; z-index: 41; top: 60px; bottom: 60px; right: 16px; left: 16px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; text-align: right; background: {{ popBg }}; border: 1px solid rgba(255,255,255,0.72); box-shadow: inset 0 2px 0 rgba(255,255,255,0.95), 0 30px 60px -28px rgba(60,48,84,0.7);"><div style="flex-shrink: 0; padding: 20px 22px 14px; display: flex; align-items: flex-start; gap: 12px;"><div style="flex-grow: 1; font-weight: 600; font-size: 19px; line-height: 1.25; text-align: center; padding-right: 32px;">נעים להכיר, אני שקד לילוז 👋</div><div onClick="{{ closeAbout }}" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.75); box-shadow: 0 2px 6px -3px rgba(90,74,120,0.5);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div class="story" onClick="{{ finishType }}" style="flex-grow: 1; overflow-y: auto; padding: 0 22px 24px; display: flex; flex-direction: column; gap: 15px; text-align: center; cursor: default;"><sc-for list="{{ blocks }}" as="b" hint-placeholder-count="8"><sc-if value="{{ b.isRule }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: {{ popRule }};"></div></sc-if><sc-if value="{{ b.isText }}" hint-placeholder-val="{{ true }}"><div style="font-weight: {{ b.w }}; font-size: {{ b.size }}; color: {{ b.fg }};"><sc-for list="{{ b.lines }}" as="l" hint-placeholder-count="4"><div style="min-height: {{ l.lh }}; line-height: {{ l.lh }};">{{ l.t }}{{ l.cursor }}</div></sc-for></div></sc-if></sc-for></div></sc-if>
 
 <div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0;">
 
@@ -214,10 +194,56 @@ const EASE = 'transform 560ms cubic-bezier(.22,.9,.28,1)';
 const a = (rgb, alpha) => 'rgba(' + rgb + ',' + alpha + ')';
 const clampIdx = (n) => Math.max(0, Math.min(ITEMS.length - 1, n));
 
+/* ═══ הסיפור האישי ═══
+   הטקסט כולו נכתב על ידי שקד · כאן הוא רק מחולק לשורות
+   כדי שאפשר יהיה להקליד אותו אות אחר אות. */
+const STORY = [
+  { k: 'lead', lines: ['שף, קונדיטורית ~ יוצרת רגעים בלתי נשכחים דרך אוכל, אירוח ותשומת לב לכל פרט 👩🏼\u200d🍳'] },
+  { k: 'rule', lines: [] },
+  { k: 'body', lines: [
+    'אוכל בשבילי מעולם לא היה רק מתכון,',
+    'הוא דרך לארח,',
+    'לשמח,',
+    'לחבר אנשים סביב שולחן אחד.'] },
+  { k: 'body', lines: [
+    'האהבה והתשוקה שלי לעולם הזה הובילה אותי',
+    'ללמוד קונדיטוריה בבית הספר Estella,',
+    'ובהמשך גם לימודי שף בבית הספר Danon,',
+    'שניים מהמוסדות המובילים בישראל בתחום הקולינריה!'] },
+  { k: 'body', lines: [
+    'ככל שהזמן עבר, הבנתי שיש לי ייעוד בחיים',
+    'והוא לשמח אחרים בעזרת האוכל שלי.'] },
+  { k: 'body', lines: [
+    'מתוך אהבה אמיתית לאוכל, לאירוח',
+    'ולרגעים הקטנים שמחברים בין אנשים נולד העסק שלי',
+    'מקום שמחבר בין חומרי גלם איכותיים, אהבה לאירוח ותשומת לב לכל פרט קטן,',
+    'כדי ליצור חוויות קולינריות שמרגישות אישיות, מוקפדות ובלתי נשכחות!'] },
+  { k: 'accent', lines: [
+    'כי בשבילי, אוכל הוא אף פעם לא רק אוכל,',
+    'הוא הדרך ליצור רגעים שאנשים זוכרים!'] },
+  { k: 'body', lines: [
+    'אני מזמינה אתכם להיכנס למטבח שלי,',
+    'לתת לי להיות חלק מהרגעים המיוחדים שלכם,',
+    'ולדאוג שכל מה שיוגש לשולחן יהיה מוקפד, טעים ובעיקר – מכל הלב. ❤️'] }
+];
+
+/* אורך הסיפור · לפיו יודעים מתי ההקלדה נגמרה */
+const STORY_LEN = STORY.reduce((s, b) => s + b.lines.reduce((n, l) => n + l.length, 0), 0);
+
+/* קצב ההקלדה · שלוש אותיות בכל פעימה */
+const TYPE_MS = 16;
+const TYPE_STEP = 3;
+
+const TYPE_STYLE = {
+  lead:   { w: '300', size: '13.5px', lh: '23px', fg: '#6E6478' },
+  body:   { w: '300', size: '13.5px', lh: '24px', fg: '#6E6478' },
+  accent: { w: '400', size: '14px',   lh: '25px', fg: null }
+};
+
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { active: 0, aboutOpen: false, pitch: CARD_PITCH, dragDx: 0, dragging: false };
+    this.state = { active: 0, aboutOpen: false, typed: 0, pitch: CARD_PITCH, dragDx: 0, dragging: false };
   }
 
   componentDidMount() {
@@ -228,6 +254,7 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this._onResize);
+    clearInterval(this._type);
   }
 
   /* offsetLeft ולא getBoundingClientRect — הכרטיסים הלא־פעילים מוקטנים
@@ -263,6 +290,69 @@ class Component extends DCLogic {
     this.setState({ dragging: false, dragDx: 0, active: next });
   }
 
+  /* ── הסיפור נכתב אות אחר אות, עם קליק של מכונת כתיבה ── */
+  openAbout() {
+    this.setState({ aboutOpen: true, typed: 0 });
+    clearInterval(this._type);
+    this._type = setInterval(() => {
+      const n = this.state.typed + TYPE_STEP;
+      if (n >= STORY_LEN) { clearInterval(this._type); this.setState({ typed: STORY_LEN }); return; }
+      this.setState({ typed: n });
+      this.tick();
+    }, TYPE_MS);
+  }
+  closeAbout() {
+    clearInterval(this._type);
+    this.setState({ aboutOpen: false, typed: 0 });
+  }
+  /* לחיצה על הסיפור מסיימת את ההקלדה מיד */
+  finishType() {
+    clearInterval(this._type);
+    this.setState({ typed: STORY_LEN });
+  }
+  /* קליק קצר · מסונתז, בלי קובץ קול */
+  tick() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!this._ac) this._ac = new AC();
+      const ac = this._ac;
+      if (ac.state === 'suspended') ac.resume();
+      const t = ac.currentTime;
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(1400 + Math.random() * 600, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.045, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t); o.stop(t + 0.06);
+    } catch (e) { /* דפדפן שחוסם קול · ההקלדה ממשיכה בלעדיו */ }
+  }
+
+  /* חלוקת התווים שנחשפו עד כה בין השורות */
+  storyBlocks() {
+    const cur = ITEMS[this.state.active];
+    let left = this.state.typed;
+    return STORY.map((b) => {
+      const st = TYPE_STYLE[b.k] || TYPE_STYLE.body;
+      const lines = b.lines.map((text) => {
+        const take = Math.max(0, Math.min(text.length, left));
+        left -= text.length;
+        const typing = take > 0 && take < text.length;
+        return { t: text.slice(0, take), cursor: typing ? '▍' : '', lh: st.lh };
+      });
+      return {
+        isRule: b.k === 'rule',
+        isText: b.k !== 'rule',
+        w: st.w, size: st.size, lh: st.lh,
+        fg: st.fg || cur.hue,
+        lines: lines
+      };
+    });
+  }
+
   renderVals() {
     const active = this.state.active;
     const cur = ITEMS[active];
@@ -283,8 +373,10 @@ class Component extends DCLogic {
       cta: cur.cta,
       hue: cur.hue,
       aboutOpen: this.state.aboutOpen,
-      openAbout: () => this.setState({ aboutOpen: true }),
-      closeAbout: () => this.setState({ aboutOpen: false }),
+      openAbout: () => this.openAbout(),
+      closeAbout: () => this.closeAbout(),
+      finishType: () => this.finishType(),
+      blocks: this.storyBlocks(),
       aboutBg: 'linear-gradient(150deg, rgba(255,255,255,0.52) 0%, ' + a(cur.rgb, 0.1) + ' 100%)',
       aboutShadow: 'inset 0 1px 0 rgba(255,255,255,0.82), 0 12px 28px -22px ' + a(cur.rgb, 0.5),
       aboutBtnBg: a(cur.rgb, 0.15),
