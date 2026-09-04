@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${SK:?צריך SK=<נתיב לסקיל design>}"
 
-BOARDS=(Main Guest Login Admin AdminOrders AdminBoard AdminDays AdminMoney
+BOARDS=(App Main Guest Login Admin AdminOrders AdminBoard AdminDays AdminMoney
         AdminShopping AdminHistory AdminStock AdminCustomers AdminMenu AdminCosts
         Order Schnitzel Boxes Fruit Chef MyOrders Profile)
 

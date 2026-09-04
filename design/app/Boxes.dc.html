@@ -1098,7 +1098,7 @@ class Component extends DCLogic {
       loginCancel: 'ביטול',
       loginGo: 'להתחברות',
       closeNeedLogin: () => this.setState({ needLogin: false }),
-      goLogin: () => this.setState({ needLogin: false }),
+      goLogin: () => { this.setState({ needLogin: false }); if (this.props && this.props.go) this.props.go('login'); },
       closeFlow: () => this.setState({ step: 0 }),
       pickSelf:  () => this.setState({ ship: 'self',  time: null, step: 2 }),
       pickDeliv: () => this.setState({ ship: 'deliv', time: null, step: 2 }),

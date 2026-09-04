@@ -1,0 +1,85 @@
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+  </style>
+</helmet>
+
+<!-- ── מעטפת הניווט ──
+     כל מסך הוא ארטבורד נפרד, וכאן הם נטענים אחד בכל רגע לפי המצב screen.
+     כל מסך מקבל את הפונקציה go, וקורא לה כדי לעבור למסך אחר. -->
+<div dir="rtl" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #FCFBFB;">
+
+  <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}"><dc-import name="Guest" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isMain }}"  hint-placeholder-val="{{ false }}"><dc-import name="Main" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}"><dc-import name="Login" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+
+  <sc-if value="{{ isCous }}"  hint-placeholder-val="{{ false }}"><dc-import name="Order"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isSchn }}"  hint-placeholder-val="{{ false }}"><dc-import name="Schnitzel" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isBox }}"   hint-placeholder-val="{{ false }}"><dc-import name="Boxes"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isFruit }}" hint-placeholder-val="{{ false }}"><dc-import name="Fruit"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isChef }}"  hint-placeholder-val="{{ false }}"><dc-import name="Chef"      go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+
+  <sc-if value="{{ isOrders }}"  hint-placeholder-val="{{ false }}"><dc-import name="MyOrders" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}"><dc-import name="Profile"  go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"start":{"editor":"text","default":"guest","section":"ניווט"},"loggedIn":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
+/* המסכים שהמעטפת יודעת לפתוח · המפתח הוא מה שמעבירים ל-go() */
+const SCREENS = ['guest', 'main', 'login', 'cous', 'schn', 'box', 'fruit', 'chef', 'orders', 'profile'];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { screen: null, stack: [], loggedIn: null };
+  }
+
+  /* מסך הפתיחה מגיע מהפרופ start · אחרי הניווט הראשון המצב הוא שקובע */
+  screen() {
+    if (this.state.screen) return this.state.screen;
+    const s = this.props && this.props.start;
+    return SCREENS.indexOf(s) === -1 ? 'guest' : s;
+  }
+
+  /* מחוברת · מתחיל מהפרופ, ומשתנה כשעוברים דרך מסך ההתחברות */
+  isIn() {
+    if (this.state.loggedIn !== null) return this.state.loggedIn;
+    return !!(this.props && this.props.loggedIn);
+  }
+
+  go(name) {
+    if (name === 'back') {
+      const st = this.state.stack.slice();
+      const prev = st.pop();
+      this.setState({ screen: prev || 'guest', stack: st });
+      return;
+    }
+    /* מסך ההתחברות הוא גם מה שמסמן שהתחברנו · יציאה ממנו מעבירה למצב מחובר */
+    if (name === 'loggedIn') {
+      this.setState({ loggedIn: true, screen: 'main', stack: [] });
+      return;
+    }
+    if (SCREENS.indexOf(name) === -1) return;
+    this.setState({ screen: name, stack: this.state.stack.concat(this.screen()) });
+  }
+
+  renderVals() {
+    const s = this.screen();
+    return {
+      go: (name) => this.go(name),
+      isIn: this.isIn(),
+      isGuest:   s === 'guest',
+      isMain:    s === 'main',
+      isLogin:   s === 'login',
+      isCous:    s === 'cous',
+      isSchn:    s === 'schn',
+      isBox:     s === 'box',
+      isFruit:   s === 'fruit',
+      isChef:    s === 'chef',
+      isOrders:  s === 'orders',
+      isProfile: s === 'profile'
+    };
+  }
+}
+</script>
