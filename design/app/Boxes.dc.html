@@ -490,9 +490,24 @@
       </div>
     </div>
   </div></sc-if>
+
+  <!-- ── חסם התחברות · נפתח כשלוחצים המשך בלי להיות מחוברים ── -->
+  <sc-if value="{{ needLogin }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeNeedLogin }}" style="position: absolute; inset: 0; z-index: 60; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
+  <div style="position: absolute; z-index: 61; top: 300px; right: 30px; left: 30px; border-radius: 26px; padding: 22px 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+    <div style="font-size: 16px; font-weight: 600; text-align: center;">{{ loginTitle }}</div>
+    <div style="font-size: 13px; font-weight: 300; color: #7D7488; text-align: center; line-height: 1.55;">{{ loginBody }}</div>
+    <div style="display: flex; gap: 9px; margin-top: 12px; width: 100%;">
+      <div onClick="{{ closeNeedLogin }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #4A4254;">{{ loginCancel }}</div>
+      </div>
+      <div onClick="{{ goLogin }}" class="press" style="flex: 1; height: 44px; border-radius: 999px; cursor: pointer; background: linear-gradient(160deg, #D2C2F2 0%, #B9A4E4 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center;">
+        <div style="font-size: 14px; font-weight: 600; color: #43307A;">{{ loginGo }}</div>
+      </div>
+    </div>
+  </div></sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+<script data-dc-script data-props='{"loggedIn":{"editor":"boolean","default":true,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* כל הכותרות, התיאורים, שמות הסלטים והמחירים נכתבו על ידי שקד. */
 
 const COATS  = ['שומשום', 'קמח', 'קלאסית'];
@@ -1075,7 +1090,15 @@ class Component extends DCLogic {
       isDeliv:   deliv,
       isPickup:  !deliv,
 
-      openFlow:  () => { if (ready) this.setState({ step: 1 }); },
+      openFlow:  () => { if (!ready) return; if (!this.props.loggedIn) this.setState({ needLogin: true }); else this.setState({ step: 1 }); },
+      /* חסם התחברות · פעיל רק כשהמשתמשת לא מחוברת */
+      needLogin: !!this.state.needLogin,
+      loginTitle: 'צריך להתחבר כדי להמשיך',
+      loginBody: 'הבחירות שלך נשמרות · אחרי ההתחברות חוזרים בדיוק לכאן.',
+      loginCancel: 'ביטול',
+      loginGo: 'להתחברות',
+      closeNeedLogin: () => this.setState({ needLogin: false }),
+      goLogin: () => this.setState({ needLogin: false }),
       closeFlow: () => this.setState({ step: 0 }),
       pickSelf:  () => this.setState({ ship: 'self',  time: null, step: 2 }),
       pickDeliv: () => this.setState({ ship: 'deliv', time: null, step: 2 }),

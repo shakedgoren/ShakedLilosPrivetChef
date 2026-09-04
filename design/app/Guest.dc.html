@@ -138,7 +138,7 @@
     <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 350px; height: 291px; padding-top: 90px; margin-left: -18px; margin-right: -18px; margin-top: 14px; touch-action: pan-y; user-select: none; -webkit-user-select: none">
       <div data-track="1" style="display: flex; gap: 12px; transition: {{ trackEase }}; transform: {{ trackShift }}; width: 351px; height: 96px; opacity: 1">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5" style="opacity: 1">
-          <div style="position: static; width: 342px; height: 181px; flex-shrink: 0; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
+          <div onClick="{{ c.open }}" class="press" style="position: static; width: 342px; height: 181px; flex-shrink: 0; cursor: pointer; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
 
             <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0; width: 116px; text-align: right; align-items: flex-start; justify-content: center; height: 146px">
               <div style="font-weight: 600; font-size: 30px; line-height: 1.1; letter-spacing: -0.025em">{{ c.title }}</div>
@@ -611,6 +611,9 @@ class Component extends DCLogic {
       ctaInk: cur.hue,
 
       cards: ITEMS.map((it, i) => ({
+        /* לחיצה על הכרטיס · פותחת את דף הקטגוריה. בקנבס אין ניווט בין מסכים,
+           אז זו נקודת החיבור שהאפליקציה תחבר למסך של it.key */
+        open: () => {},
         num: it.num,
         title: it.title,
         sub: it.sub,
