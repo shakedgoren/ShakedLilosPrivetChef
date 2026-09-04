@@ -91,7 +91,7 @@
     </div>
   </div>
 
-<div style="position: relative; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0;">
+<div style="position: relative; height: 628px; box-sizing: border-box; display: flex; flex-direction: column; padding: 30px 18px 0; width: 389px">
 
     <div style="padding: 0 0 4px; position: relative">
       <div class="band">
@@ -112,7 +112,7 @@
 
     
 
-    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 354px; height: 698px; padding-top: 30px; margin-left: -18px; margin-right: -18px; margin-top: 50px; touch-action: pan-y; user-select: none; -webkit-user-select: none;">
+    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 353px; height: 437px; padding-top: 30px; margin-left: -18px; margin-right: -18px; margin-top: 50px; touch-action: pan-y; user-select: none; -webkit-user-select: none">
       <div data-track="1" style="display: flex; gap: 12px; transition: {{ trackEase }}; transform: {{ trackShift }}; width: 298px; height: 265px">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5">
           <div style="position: static; width: 303px; height: 308px; flex-shrink: 0; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; border-color: #FFFFFF; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
@@ -180,9 +180,9 @@
       <div style="position: absolute; top: 0; right: 0; left: 0; height: 52%; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)); pointer-events: none;"></div>
       <div style="position: relative; font-weight: 600; font-size: 16.5px; transition: color 560ms ease; color: {{ ctaInk }};">{{ cta }}</div>
     </div></div>
-    </div><div style="flex-grow: 1;"></div>
+    </div>
 
-    <div style="height: 86px; flex-shrink: 0"></div>
+    
 
   </div></div>
 </x-dc>
