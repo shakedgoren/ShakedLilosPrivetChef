@@ -293,11 +293,33 @@ const STORY = [
 /* אורך הסיפור · לפיו יודעים מתי ההקלדה נגמרה */
 const STORY_LEN = STORY.reduce((s, b) => s + b.lines.reduce((n, l) => n + l.length, 0), 0);
 
-/* קצב ההקלדה · אות אחת כל 20ms, כ-16 שניות לסיפור המלא.
-   הנקישה מושמעת כל אות רביעית · אחרת זה זמזום ולא הקלדה. */
-const TYPE_MS = 20;
-const TYPE_STEP = 1;
+/* ═══ קצב ההקלדה · אנושי ולא מטרונום ═══
+   מהר בתוך מילה, עצירה קטנה ברווח, נשימה אחרי פסיק ונקודה,
+   ומדי פעם היסוס. זה ההבדל בין מכונה לבין מישהי שמקלידה. */
+const TYPE_BASE = 11;      /* בסיס לאות */
+const TYPE_JIT  = 9;       /* פיזור אקראי */
+const PAUSE = { ' ': 30, ',': 120, '.': 200, '!': 200, '?': 200 };
+const HESITATE = 0.03;     /* אחוז ההיסוסים */
+const HESITATE_MS = 100;
+/* הנקישה מושמעת כל אות רביעית · נקישה לכל אות בקצב הזה היא זמזום */
 const TICK_EVERY = 4;
+
+/* סופי השורות · שם נשמעת פעמון וחזרת הגררה */
+const LINE_ENDS = (function () {
+  const ends = [];
+  let n = 0;
+  STORY.forEach(function (b) {
+    b.lines.forEach(function (l) { n += l.length; ends.push(n); });
+  });
+  return ends;
+})();
+
+/* התו שבמיקום מסוים · לפיו נקבעת ההשהיה */
+const CHAR_AT = (function () {
+  let all = '';
+  STORY.forEach(function (b) { b.lines.forEach(function (l) { all += l; }); });
+  return all;
+})();
 
 const TYPE_STYLE = {
   lead:   { w: '300', size: '13.5px', lh: '23px', fg: '#6E6478' },
@@ -319,7 +341,7 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this._onResize);
-    clearInterval(this._type);
+    clearTimeout(this._type);
   }
 
   /* offsetLeft ולא getBoundingClientRect — הכרטיסים הלא־פעילים מוקטנים
@@ -361,68 +383,143 @@ class Component extends DCLogic {
 
   /* ── הסיפור נכתב אות אחר אות, עם קליק של מכונת כתיבה ── */
   openAbout() {
+    /* הלחיצה הזאת היא מחוות המשתמש שמתירה קול · חייבים לפתוח כאן */
+    this.unlock();
     this.setState({ aboutOpen: true, typed: 0 });
-    clearInterval(this._type);
-    this._type = setInterval(() => {
-      const n = this.state.typed + TYPE_STEP;
-      if (n >= STORY_LEN) { clearInterval(this._type); this.setState({ typed: STORY_LEN }); return; }
-      this.setState({ typed: n });
-      if (n % TICK_EVERY === 0) this.tick();
-    }, TYPE_MS);
+    clearTimeout(this._type);
+    this.step();
   }
+
+  /* פעימה אחת · האות נוספת וההשהיה הבאה נגזרת ממנה */
+  step() {
+    const n = this.state.typed + 1;
+    if (n > STORY_LEN) return;
+    this.setState({ typed: n });
+
+    const ch = CHAR_AT.charAt(n - 1);
+    if (LINE_ENDS.indexOf(n) !== -1) this.ding();
+    else if (n % TICK_EVERY === 0) this.tick();
+
+    if (n >= STORY_LEN) return;
+    let d = TYPE_BASE + Math.random() * TYPE_JIT;
+    if (PAUSE[ch]) d += PAUSE[ch];
+    if (Math.random() < HESITATE) d += HESITATE_MS;
+    this._type = setTimeout(() => this.step(), d);
+  }
+
   closeAbout() {
-    clearInterval(this._type);
+    clearTimeout(this._type);
     this.setState({ aboutOpen: false, typed: 0 });
   }
   /* לחיצה על הסיפור מסיימת את ההקלדה מיד */
   finishType() {
-    clearInterval(this._type);
+    clearTimeout(this._type);
     this.setState({ typed: STORY_LEN });
   }
-  /* מכת מקש · פרץ רעש קצר דרך מסנן, ומתחתיו החבטה הנמוכה של הפטיש.
-     זה מה שנשמע כמו מכונת כתיבה · אוסילטור לבדו נשמע כמו ציוץ. */
-  noise(ac) {
+  /* ── הקול ──
+     דפדפן פותח AudioContext רק אחרי מחווה של המשתמש, ולכן הוא נפתח
+     בלחיצה שפותחת את הסיפור. בלי זה שום דבר לא נשמע. */
+  unlock() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!this._ac) {
+        this._ac = new AC();
+        this._out = this._ac.createGain();
+        this._out.gain.value = 0.9;
+        this._out.connect(this._ac.destination);
+      }
+      if (this._ac.state === 'suspended') this._ac.resume();
+      /* פעימה אילמת · חלק מהדפדפנים דורשים ניגון בפועל בתוך המחווה */
+      const s = this._ac.createBufferSource();
+      s.buffer = this._ac.createBuffer(1, 1, this._ac.sampleRate);
+      s.connect(this._out);
+      s.start(0);
+    } catch (e) {}
+  }
+
+  /* buffer של רעש לבן · נבנה פעם אחת ומשמש לכל הנקישות */
+  noise() {
     if (this._buf) return this._buf;
-    const len = Math.floor(ac.sampleRate * 0.06);
+    const ac = this._ac;
+    const len = Math.floor(ac.sampleRate * 0.08);
     const buf = ac.createBuffer(1, len, ac.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this._buf = buf;
     return buf;
   }
+
+  /* מכת מקש · פרץ רעש מסונן ומתחתיו החבטה הנמוכה של הפטיש */
   tick() {
     try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return;
-      if (!this._ac) this._ac = new AC();
+      if (!this._ac) this.unlock();
       const ac = this._ac;
+      if (!ac) return;
       if (ac.state === 'suspended') ac.resume();
       const t = ac.currentTime;
+      const lift = 0.85 + Math.random() * 0.3;
 
-      /* הנקישה · רעש מסונן שנחתך תוך 28 מילישניות */
       const src = ac.createBufferSource();
-      src.buffer = this.noise(ac);
+      src.buffer = this.noise();
       const bp = ac.createBiquadFilter();
       bp.type = 'bandpass';
-      bp.frequency.setValueAtTime(1900 + Math.random() * 900, t);
-      bp.Q.setValueAtTime(1.4, t);
+      bp.frequency.setValueAtTime(2200 + Math.random() * 1100, t);
+      bp.Q.setValueAtTime(0.9, t);
       const ng = ac.createGain();
-      ng.gain.setValueAtTime(0.16, t);
-      ng.gain.exponentialRampToValueAtTime(0.0002, t + 0.028);
-      src.connect(bp); bp.connect(ng); ng.connect(ac.destination);
-      src.start(t); src.stop(t + 0.06);
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(0.5 * lift, t + 0.002);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.042);
+      src.connect(bp); bp.connect(ng); ng.connect(this._out);
+      src.start(t); src.stop(t + 0.09);
 
-      /* החבטה · הגוף הנמוך של המקש בנייר */
       const o = ac.createOscillator();
       const og = ac.createGain();
       o.type = 'sine';
-      o.frequency.setValueAtTime(150 + Math.random() * 40, t);
-      o.frequency.exponentialRampToValueAtTime(72, t + 0.05);
-      og.gain.setValueAtTime(0.09, t);
-      og.gain.exponentialRampToValueAtTime(0.0002, t + 0.055);
-      o.connect(og); og.connect(ac.destination);
-      o.start(t); o.stop(t + 0.07);
+      o.frequency.setValueAtTime(190 + Math.random() * 50, t);
+      o.frequency.exponentialRampToValueAtTime(80, t + 0.05);
+      og.gain.setValueAtTime(0.0001, t);
+      og.gain.exponentialRampToValueAtTime(0.3 * lift, t + 0.003);
+      og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+      o.connect(og); og.connect(this._out);
+      o.start(t); o.stop(t + 0.08);
     } catch (e) { /* דפדפן שחוסם קול · ההקלדה ממשיכה בלעדיו */ }
+  }
+
+  /* סוף שורה · פעמון קטן ואחריו חריקת חזרת הגררה */
+  ding() {
+    try {
+      if (!this._ac) this.unlock();
+      const ac = this._ac;
+      if (!ac) return;
+      const t = ac.currentTime;
+
+      [1568, 2093].forEach((f, k) => {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(f, t);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(k === 0 ? 0.22 : 0.1, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+        o.connect(g); g.connect(this._out);
+        o.start(t); o.stop(t + 0.55);
+      });
+
+      const src = ac.createBufferSource();
+      src.buffer = this.noise();
+      const bp = ac.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(900, t + 0.07);
+      bp.frequency.linearRampToValueAtTime(2600, t + 0.2);
+      bp.Q.setValueAtTime(1.6, t);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t + 0.07);
+      g.gain.exponentialRampToValueAtTime(0.14, t + 0.1);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      src.connect(bp); bp.connect(g); g.connect(this._out);
+      src.start(t + 0.07); src.stop(t + 0.26);
+    } catch (e) {}
   }
 
   /* חלוקת התווים שנחשפו עד כה בין השורות */
