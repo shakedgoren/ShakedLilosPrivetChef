@@ -137,7 +137,7 @@
     
 
     <!-- ── קרוסלת התמונות · נעה לבד, לחיצה פותחת ── -->
-    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 355px; height: 285px; padding-top: 80px; margin-left: -18px; margin-right: -18px; margin-top: 14px; touch-action: pan-y; user-select: none; -webkit-user-select: none">
+    <div onPointerDown="{{ dragStart }}" onPointerMove="{{ dragMove }}" onPointerUp="{{ dragEnd }}" onPointerCancel="{{ dragEnd }}" style="overflow: hidden; margin: 0 -18px; padding: 8px 18px 0; width: 350px; height: 291px; padding-top: 90px; margin-left: -18px; margin-right: -18px; margin-top: 14px; touch-action: pan-y; user-select: none; -webkit-user-select: none">
       <div data-track="1" style="display: flex; gap: 12px; transition: {{ trackEase }}; transform: {{ trackShift }}; width: 351px; height: 96px; opacity: 1">
         <sc-for list="{{ cards }}" as="c" hint-placeholder-count="5" style="opacity: 1">
           <div style="position: static; width: 342px; height: 181px; flex-shrink: 0; box-sizing: border-box; border-radius: 26px; backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%); padding: 20px 22px; display: flex; align-items: stretch; gap: 8px; transition: transform 560ms cubic-bezier(.22,.9,.28,1), opacity 560ms ease, background 560ms ease, box-shadow 560ms ease; transform: {{ c.scale }}; opacity: {{ c.dim }}; background: {{ c.cardBg }}; box-shadow: {{ c.cardShadow }}; align-self: center; padding-left: 22px; padding-right: 22px; margin-right: 5px; left: -30px">
@@ -172,7 +172,7 @@
 
           </div>
         </sc-for>
-      </div><div style="position: relative; padding: 26px 0 0; width: 367px; height: 153px">
+      </div><div style="position: relative; padding: 26px 0 0; width: 367px; height: 153px; top: 20px">
       
       <div style="position: relative; display: flex; justify-content: space-between; gap: 2px;">
         <sc-for list="{{ rail }}" as="r" hint-placeholder-count="5">
@@ -200,14 +200,14 @@
         </sc-for>
       </div>
     </div>
-    </div><div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 20px;"><div onClick="{{ noop }}" class="press" style="flex-shrink: 0; width: 250px; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: linear-gradient(104deg, #CCBAF0 0%, #BCA7E6 58%, #C6B3EB 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), inset 0 -2.5px 5px rgba(118,92,174,0.28), 0 10px 20px -12px rgba(118,92,174,0.65);"><div style="position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(180deg, #FFFFFF 0%, #F6F3FA 100%); box-shadow: inset 0 1.5px 0 #FFFFFF, 0 4px 9px -4px rgba(90,70,140,0.55); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B3B78" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></div><div style="font-size: 20px; font-weight: 600; color: #FFFFFF; white-space: nowrap;">מתחילים את המסע</div></div><div onClick="{{ noop }}" class="press" style="flex-shrink: 0; width: 250px; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: linear-gradient(180deg, #FFFFFF 0%, #FBF8F8 100%); box-shadow: inset 0 1.5px 0 #FFFFFF, inset 0 -2px 4px rgba(150,132,178,0.12), 0 8px 18px -12px rgba(120,100,150,0.6);"><div style="font-size: 20px; font-weight: 600; color: #6E6480; white-space: nowrap;">להתחברות</div></div></div><div class="reel" style="flex-shrink: 0; width: 100%; min-width: 0; margin-top: 10px; border-radius: 18px; overflow: hidden;">
+    </div><div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 20px; width: 357px; height: 100px; position: static"><div onClick="{{ noop }}" class="press" style="flex-shrink: 0; width: 250px; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: linear-gradient(104deg, #CCBAF0 0%, #BCA7E6 58%, #C6B3EB 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.6), inset 0 -2.5px 5px rgba(118,92,174,0.28), 0 10px 20px -12px rgba(118,92,174,0.65);"><div style="position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(180deg, #FFFFFF 0%, #F6F3FA 100%); box-shadow: inset 0 1.5px 0 #FFFFFF, 0 4px 9px -4px rgba(90,70,140,0.55); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B3B78" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></div><div style="font-size: 20px; font-weight: 600; color: #FFFFFF; white-space: nowrap;">מתחילים את המסע</div></div><div onClick="{{ noop }}" class="press" style="flex-shrink: 0; width: 250px; height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; box-sizing: border-box; background: linear-gradient(180deg, #FFFFFF 0%, #FBF8F8 100%); box-shadow: inset 0 1.5px 0 #FFFFFF, inset 0 -2px 4px rgba(150,132,178,0.12), 0 8px 18px -12px rgba(120,100,150,0.6);"><div style="font-size: 20px; font-weight: 600; color: #6E6480; white-space: nowrap;">להתחברות</div></div></div><div class="reel" style="flex-shrink: 0; width: 100%; min-width: 0; margin-top: 10px; margin-bottom: 24px; border-radius: 18px; overflow: hidden;">
       <div class="reel-track" style="display: flex; gap: 10px; width: max-content;">
         <sc-for list="{{ reel }}" as="r" hint-placeholder-count="10">
-          <div onClick="{{ r.open }}" class="press" style="position: relative; flex-shrink: 0; width: 116px; height: 104px; border-radius: 18px; overflow: hidden; cursor: pointer; background-image: {{ r.img }}; background-size: cover; background-position: center; background-color: {{ r.tint }}; border: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -18px rgba(96,80,132,0.7);">
-            <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0) 52%, rgba(20,16,12,0.34) 100%); top: -4px; width: 126px; height: 115px"></div>
-            <div style="position: absolute; right: 8px; bottom: 8px; border-radius: 999px; padding: 3px 10px; background: rgba(255,255,255,0.88); box-shadow: 0 2px 8px -4px rgba(20,16,12,0.5);">
-              <div style="font-size: 11px; font-weight: 700; color: {{ r.ink }}; white-space: nowrap;">{{ r.name }}</div>
-            </div>
+          <div onClick="{{ r.open }}" class="press" style="position: relative; flex-shrink: 0; width: 116px; height: 140px; border-radius: 18px; overflow: hidden; cursor: pointer; background-image: {{ r.img }}; background-size: cover; background-position: center; background-color: {{ r.tint }}; border: 1.5px solid rgba(255,255,255,0.8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -18px rgba(96,80,132,0.7)">
+            <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0) 52%, rgba(20,16,12,0.34) 100%); top: -4px; width: 129px; height: 153px"></div>
+            
+              <div style="font-size: 11px; font-weight: 700; color: {{ r.ink }}; white-space: nowrap;"></div>
+            
           </div>
         </sc-for>
       </div>
@@ -217,7 +217,7 @@
 
     
 
-    <div style="height: 26px; flex-shrink: 0"></div>
+    
 
   </div></div>
 </x-dc>
