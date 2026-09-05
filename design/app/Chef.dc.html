@@ -9,6 +9,10 @@
 <helmet>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;display=swap">
   <style>
+    /* שורות אפשרויות · שורה שלא מתמלאת נשארת ממורכזת לאמצע */
+    [style*="--opt-basis"] { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; }
+    [style*="--opt-basis"] > * { flex: 0 0 var(--opt-basis); min-width: 0; }
+
     body { margin: 0; }
     a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
 
@@ -141,7 +145,7 @@
 
           <sc-if value="{{ s.isFine }}" hint-placeholder-val="{{ true }}"><div style="font-size: 11px; font-weight: 400; font-style: italic; line-height: 1.5; color: #9A93A6; text-align: center; padding: 0 6px;">{{ s.label }}</div></sc-if>
 
-          <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+          <sc-if value="{{ s.isGrid }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; --g: 8px; --opt-basis: {{ s.basis }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: {{ s.radius }}; padding: 8px 6px; opacity: {{ o.op }}; cursor: {{ o.cur }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.name }}</div>
@@ -158,7 +162,7 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isCards }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 10px;">
+          <sc-if value="{{ s.isCards }}" hint-placeholder-val="{{ true }}"><div style="--g: 10px; --opt-basis: {{ s.basis }}; gap: 10px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="4">
               <div onClick="{{ o.pick }}" class="press" style="position: relative; box-sizing: border-box; height: {{ s.cardH }}; border-radius: 20px; overflow: hidden; cursor: pointer; background: rgba(255,255,255,0.6); border: 2px solid {{ o.bd }};">
                 <div style="position: absolute; inset: 0; border-radius: 18px; border: 1.5px dashed rgba(168,90,40,0.28); display: flex; align-items: center; justify-content: center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
@@ -177,7 +181,7 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isTiers }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+          <sc-if value="{{ s.isTiers }}" hint-placeholder-val="{{ true }}"><div style="--g: 8px; --opt-basis: calc((100% - 2 * var(--g)) / 3); gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; border-radius: 18px; padding: 12px 6px; opacity: {{ o.op }}; cursor: {{ o.cur }}; display: flex; flex-direction: column; align-items: center; gap: 4px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 13px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.25; text-align: center;">{{ o.name }}</div>
@@ -193,7 +197,7 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isPair }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+          <sc-if value="{{ s.isPair }}" hint-placeholder-val="{{ true }}"><div style="--g: 8px; --opt-basis: {{ s.basis }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="2">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 74px; border-radius: 18px; padding: 12px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 13.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; line-height: 1.3; text-align: center;">{{ o.name }}</div>
@@ -202,7 +206,7 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isRow }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+          <sc-if value="{{ s.isRow }}" hint-placeholder-val="{{ true }}"><div style="--g: 8px; --opt-basis: calc((100% - 2 * var(--g)) / 3); gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
               <div style="box-sizing: border-box; border-radius: 16px; padding: 9px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; white-space: nowrap;">{{ o.name }}</div>
@@ -215,7 +219,7 @@
             </sc-for>
           </div></sc-if>
 
-          <sc-if value="{{ s.isImages }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+          <sc-if value="{{ s.isImages }}" hint-placeholder-val="{{ true }}"><div style="--g: 8px; --opt-basis: {{ s.basis }}; gap: 8px;">
             <sc-for list="{{ s.frames }}" as="f" hint-placeholder-count="3">
               <div style="height: {{ f.h }}; border-radius: 16px; border: 1.5px dashed rgba(168,90,40,0.34); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M4 16l4.5-4.5 3 3 3.5-3.5L20 15"></path><circle cx="9" cy="9" r="1.4"></circle></svg></div>
             </sc-for>
@@ -248,7 +252,7 @@
             </div>
           </div></sc-if>
 
-          <sc-if value="{{ s.isPairText }}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+          <sc-if value="{{ s.isPairText }}" hint-placeholder-val="{{ true }}"><div style="--g: 8px; --opt-basis: calc((100% - 1 * var(--g)) / 2); gap: 8px;">
             <sc-for list="{{ s.fields }}" as="f" hint-placeholder-count="2">
               <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
                 <div style="font-size: 11.5px; font-weight: 500; color: #8A8194; text-align: center;">{{ f.label }}</div>
@@ -267,7 +271,7 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7A3D18" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
               </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 10px;">
+            <div style="--g: 3px; --opt-basis: calc((100% - 6 * var(--g)) / 7); gap: 3px; margin-top: 10px;">
               <sc-for list="{{ s.dows }}" as="d" hint-placeholder-count="7">
                 <div style="text-align: center; font-size: 10px; font-weight: 600; color: #A79FB2;">{{ d.t }}</div>
               </sc-for>
@@ -290,7 +294,7 @@
             </div></sc-if>
           </div></sc-if>
 
-          <sc-if value="{{ s.isMulti }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; display: grid; grid-template-columns: {{ s.cols }}; gap: 8px;">
+          <sc-if value="{{ s.isMulti }}" hint-placeholder-val="{{ true }}"><div style="width: 100%; max-width: {{ s.maxW }}; align-self: center; --g: 8px; --opt-basis: {{ s.basis }}; gap: 8px;">
             <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="6">
               <div onClick="{{ o.pick }}" class="press" style="box-sizing: border-box; min-height: 44px; border-radius: 18px; padding: 8px 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: {{ o.bg }}; border: 1.5px solid {{ o.bd }};">
                 <div style="font-size: 12.5px; font-weight: {{ o.w }}; color: {{ o.fg }}; text-align: center; line-height: 1.25;">{{ o.name }}</div>
@@ -465,7 +469,7 @@
       </div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 16px;">
+    <div style="--g: 9px; --opt-basis: calc((100% - 3 * var(--g)) / 4); gap: 9px; margin-top: 16px;">
       <sc-for list="{{ slots }}" as="t" hint-placeholder-count="7">
         <div onClick="{{ t.pick }}" style="height: 46px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-variant-numeric: tabular-nums; font-weight: {{ t.w }}; color: {{ t.fg }}; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">{{ t.label }}</div>
       </sc-for>
@@ -1347,7 +1351,7 @@ class Component extends DCLogic {
       flush: false, hasHint: false,
       isMulti: false, isDate: false, isHead: false, isPairText: false, isCal: false, isAddr: false, isRows: false,
       fields: [], days: [], dows: [], sug: [], month: '', prev: () => {}, next: () => {}, prevOp: '1', hasSug: false,
-      label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr',
+      label: s.label || '', hint: s.hint || '', options: [], frames: [], cols: '1fr', basis: '100%',
       radius: '999px', maxW: 'none',
       value: '', unit: '', ph: '', decOp: '1', mt: '0px', hasUpload: false,
       pad: '12px 14px', gap: '18px', btn: '40px', numW: '74px', numSize: '26px',
@@ -1373,7 +1377,7 @@ class Component extends DCLogic {
       for (let i = 0; i < s.count; i++) frames.push({ h: s.h });
       return Object.assign(base, {
         isImages: true, frames: frames,
-        cols: 'repeat(' + s.count + ', minmax(0, 1fr))'
+        cols: 'repeat(' + s.count + ', minmax(0, 1fr))', basis: 'calc((100% - ' + ((+ s.count) - 1) + ' * var(--g)) / ' + (+ s.count) + ')'
       });
     }
 
@@ -1402,7 +1406,7 @@ class Component extends DCLogic {
     if (s.kind === 'pair') {
       return Object.assign(base, {
         isPair: true,
-        cols: 'repeat(' + (s.cols || 2) + ', minmax(0, 1fr))',
+        cols: 'repeat(' + (s.cols || 2) + ', minmax(0, 1fr))', basis: 'calc((100% - ' + ((+ (s.cols || 2)) - 1) + ' * var(--g)) / ' + (+ (s.cols || 2)) + ')',
         options: s.options.map((o) => {
           const c = chip(this.state.picks[s.id] === o.n);
           return { name: o.n, desc: o.d, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.setPick(s.id, o.n) };
@@ -1480,7 +1484,7 @@ class Component extends DCLogic {
       const cur = this.state.picks[s.id] || [];
       return Object.assign(base, {
         isMulti: true,
-        cols: 'repeat(' + (s.cols || 3) + ', minmax(0, 1fr))',
+        cols: 'repeat(' + (s.cols || 3) + ', minmax(0, 1fr))', basis: 'calc((100% - ' + ((+ (s.cols || 3)) - 1) + ' * var(--g)) / ' + (+ (s.cols || 3)) + ')',
         maxW: s.maxw || 'none',
         options: s.options.map((o) => {
           const c = chip(cur.indexOf(o) !== -1);
@@ -1550,7 +1554,7 @@ class Component extends DCLogic {
       const n = s.options.length;
       return Object.assign(base, {
         isGrid: true,
-        cols: 'repeat(' + (s.cols || (n <= 3 ? n : 2)) + ', minmax(0, 1fr))',
+        cols: 'repeat(' + (s.cols || (n <= 3 ? n : 2)) + ', minmax(0, 1fr))', basis: 'calc((100% - ' + ((+ (s.cols || (n <= 3 ? n : 2))) - 1) + ' * var(--g)) / ' + (+ (s.cols || (n <= 3 ? n : 2))) + ')',
         radius: s.boxy ? '18px' : '999px',
         maxW: s.maxw || (s.narrow ? '272px' : 'none'),
         options: s.options.map((o, k) => {
@@ -1591,7 +1595,7 @@ class Component extends DCLogic {
       const cur = multi ? (this.state.picks[s.id] || []) : null;
       return Object.assign(base, {
         isCards: true,
-        cols: 'repeat(' + (s.one ? 1 : 2) + ', minmax(0, 1fr))',
+        cols: 'repeat(' + (s.one ? 1 : 2) + ', minmax(0, 1fr))', basis: 'calc((100% - ' + ((+ (s.one ? 1 : 2)) - 1) + ' * var(--g)) / ' + (+ (s.one ? 1 : 2)) + ')',
         cardH: s.one ? '250px' : '208px',
         descSize: s.one ? '12.5px' : '10px',
         nameSize: s.one ? '14.5px' : '12.5px',

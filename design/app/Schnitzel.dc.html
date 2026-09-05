@@ -9,6 +9,10 @@
 <helmet>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700&amp;display=swap">
   <style>
+    /* שורות אפשרויות · שורה שלא מתמלאת נשארת ממורכזת לאמצע */
+    [style*="--opt-basis"] { display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; }
+    [style*="--opt-basis"] > * { flex: 0 0 var(--opt-basis); min-width: 0; }
+
     body { margin: 0; }
     a { color: #7B5CBC; } a:hover { color: #6B4FA8; }
 
@@ -76,7 +80,7 @@
 
     <sc-if value="{{ isUnit }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
       <div style="font-size: 10.5px; letter-spacing: 0.22em; font-weight: 600; color: #A69EAE; text-align: center;">בחר סוג חלה</div>
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;">
+      <div style="--g: 9px; --opt-basis: calc((100% - 1 * var(--g)) / 2); gap: 9px;">
         <sc-for list="{{ types }}" as="t" hint-placeholder-count="2">
           <div onClick="{{ t.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 11px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
             <div style="width: 100%; height: 76px; border-radius: 14px; border: 1.5px dashed rgba(65,109,158,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
@@ -92,7 +96,7 @@
 <sc-if value="{{ isBox }}" hint-placeholder-val="{{ true }}"><div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;">
 
       <div style="box-sizing: border-box; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 11px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;">
+        <div style="--g: 9px; --opt-basis: calc((100% - 1 * var(--g)) / 2); gap: 9px;">
           <sc-for list="{{ forms }}" as="f" hint-placeholder-count="2">
             <div onClick="{{ f.pick }}" class="press" style="height: 76px; box-sizing: border-box; border-radius: 16px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: {{ f.bg }}; border: 1.5px solid {{ f.bd }};">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{ f.fg }}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -106,7 +110,7 @@
       </div>
 
       <div style="box-sizing: border-box; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 11px; background: linear-gradient(152deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(22px) saturate(155%); -webkit-backdrop-filter: blur(22px) saturate(155%); border: 1px solid rgba(255,255,255,0.74); box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6);">
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;">
+        <div style="--g: 9px; --opt-basis: calc((100% - 1 * var(--g)) / 2); gap: 9px;">
           <sc-for list="{{ boxTypes }}" as="t" hint-placeholder-count="2">
             <div onClick="{{ t.pick }}" class="press" style="box-sizing: border-box; border-radius: 20px; padding: 11px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">
               <div style="width: 100%; height: 76px; border-radius: 14px; border: 1.5px dashed rgba(65,109,158,0.38); background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center;">
@@ -298,7 +302,7 @@
       </div>
       <div onClick="{{ closeFlow }}" style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: rgba(130,112,162,0.09); display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6E6478" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div>
     </div>
-    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 16px;">
+    <div style="--g: 9px; --opt-basis: calc((100% - 3 * var(--g)) / 4); gap: 9px; margin-top: 16px;">
       <sc-for list="{{ slots }}" as="t" hint-placeholder-count="7">
         <div onClick="{{ t.pick }}" style="height: 46px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-variant-numeric: tabular-nums; font-weight: {{ t.w }}; color: {{ t.fg }}; background: {{ t.bg }}; border: 1.5px solid {{ t.bd }};">{{ t.label }}</div>
       </sc-for>
