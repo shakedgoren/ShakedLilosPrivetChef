@@ -650,7 +650,9 @@ const TIER_LINES = [
   ['3 מנות פתיחה', '3 סלטים', '3 עיקריות', '3 קינוחים']
 ];
 
-const STYLES = ['איטלקי', 'אסייאתי', 'מזרח תיכוני', 'דיינר אמריקאי'];
+const STYLES = ['איטלקי', 'אסייאתי', 'מזרח תיכוני', 'דיינר אמריקאי', 'מקסיקני', 'יווני'];
+/* סגנונות שפתוחים לכל הצירים · מזרח תיכוני ודיינר נפתחים רק בבשרי */
+const STYLES_ALL = ['איטלקי', 'אסייאתי', 'מקסיקני', 'יווני'];
 
 /* המשך השאלון · הועתק מהאתר הקודם */
 const SPICE   = ['בלי בכלל', 'עדין', 'אוהבים מאוד'];
@@ -825,7 +827,7 @@ const BOXES = [
         { kind: 'pair',  id: 'concept', options: CONCEPTS.map((c) => ({ n: c.n, d: c.d })), cols: 3, req: true },
         { kind: 'title', label: 'סגנון' },
         { kind: 'grid',  id: 'style', options: STYLES, cols: 4, boxy: true, req: true,
-          lock: 'concept', allow: (p) => p.concept === 'בשרי' ? STYLES : STYLES.slice(0, 2) },
+          lock: 'concept', allow: (p) => p.concept === 'בשרי' ? STYLES : STYLES_ALL },
         { kind: 'title', label: 'איך המסלול שלנו הולך להראות' },
         { kind: 'fine',  label: '* המחיר משתנה בהתאם לכמות הסועדים *' },
         { kind: 'tiers', id: 'tier', options: TIERS, req: true, lock: 'concept' }
@@ -1243,7 +1245,7 @@ class Component extends DCLogic {
     picks[id] = v;
     /* ציר חדש · סגנון שכבר אינו זמין מתאפס */
     if (id === 'concept' && picks.style) {
-      const ok = v === 'בשרי' ? STYLES : STYLES.slice(0, 2);
+      const ok = v === 'בשרי' ? STYLES : STYLES_ALL;
       if (ok.indexOf(picks.style) === -1) picks.style = null;
     }
     this.setState({ picks: picks });

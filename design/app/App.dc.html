@@ -12,7 +12,8 @@
 
   <sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}"><dc-import name="Guest" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
   <sc-if value="{{ isMain }}"  hint-placeholder-val="{{ false }}"><dc-import name="Main" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
-  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}"><dc-import name="Login" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isLogin }}"  hint-placeholder-val="{{ false }}"><dc-import name="Login" go="{{ go }}" start="in" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}"><dc-import name="Login" go="{{ go }}" start="up" hint-size="390px,844px"></dc-import></sc-if>
 
   <sc-if value="{{ isCous }}"  hint-placeholder-val="{{ false }}"><dc-import name="Order"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
   <sc-if value="{{ isSchn }}"  hint-placeholder-val="{{ false }}"><dc-import name="Schnitzel" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
@@ -27,7 +28,7 @@
 </x-dc>
 <script data-dc-script data-props='{"start":{"editor":"text","default":"guest","section":"ניווט"},"loggedIn":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* המסכים שהמעטפת יודעת לפתוח · המפתח הוא מה שמעבירים ל-go() */
-const SCREENS = ['guest', 'main', 'login', 'cous', 'schn', 'box', 'fruit', 'chef', 'orders', 'profile'];
+const SCREENS = ['guest', 'main', 'login', 'signup', 'cous', 'schn', 'box', 'fruit', 'chef', 'orders', 'profile'];
 
 class Component extends DCLogic {
   constructor(props) {
@@ -72,6 +73,7 @@ class Component extends DCLogic {
       isGuest:   s === 'guest',
       isMain:    s === 'main',
       isLogin:   s === 'login',
+      isSignup:  s === 'signup',
       isCous:    s === 'cous',
       isSchn:    s === 'schn',
       isBox:     s === 'box',
