@@ -399,20 +399,20 @@
     </div>
   </div></sc-if>
 
-  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+  <sc-if value="{{ navOn }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div onClick="{{ navProfile }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
       <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">בית</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+    <div onClick="{{ navOrders }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">הזמנות</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+    <div onClick="{{ navHome }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">אזור אישי</div>
     </div>
-  </div>
+  </div></sc-if>
 
   <sc-if value="{{ flowOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeFlow }}" style="position: absolute; inset: 0; z-index: 40; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div></sc-if>
 
@@ -615,13 +615,30 @@
         <sc-if value="{{ hasPerHead }}" hint-placeholder-val="{{ true }}"><div style="margin-top: -6px; text-align: left; font-size: 12px; font-weight: 400; color: #7D7488; font-variant-numeric: tabular-nums;">{{ perHead }} ₪ לסועד</div></sc-if>
 
         <sc-if value="{{ isPickup }}" hint-placeholder-val="{{ true }}"><div style="height: 1px; background: rgba(130,112,162,0.16);"></div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="flex-grow: 1; font-size: 12.5px; font-weight: 300; color: #7D7488;">כתובת לאיסוף</div>
-          <div style="font-size: 13.5px; font-weight: 600;">נופר 25 יבנה</div>
+        <div style="align-self: stretch; font-size: 17px; font-weight: 600; line-height: 1.35;">כתובת : נופר 25, יבנה.</div>
+        <div style="align-self: stretch; font-size: 12.5px; font-weight: 300; line-height: 1.5; color: #7D7488;">הוויז לא מביא לתוך החנייה, מצורפת מפת הגעה מדוייקת מכל הכיוונים האפשריים:</div>
+
+        <div style="position: relative; width: 100%; height: 190px; border-radius: 16px; overflow: hidden; background-color: rgba(255,255,255,0.5);">
+          <div style="position: absolute; inset: 0; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(168,90,40,0.36); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(168,90,40,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"></path><path d="M9 4v13M15 6.5v13"></path></svg>
+            <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(168,90,40,0.66);">{{ pkFile }}</div>
+          </div>
+          <div style="position: absolute; inset: 0; background-image: {{ pkImg }}; background-size: cover; background-position: center;"></div>
+          <div style="position: absolute; top: 10px; right: 10px; border-radius: 999px; padding: 5px 12px; background: rgba(255,255,255,0.92); box-shadow: 0 2px 8px -4px rgba(20,16,12,0.5);">
+            <div style="font-size: 12px; font-weight: 700; color: #7A3D18; white-space: nowrap;">{{ pkTitle }}</div>
+          </div>
+          <div onClick="{{ pkPrev }}" class="press" style="position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(255,255,255,0.92); box-shadow: 0 3px 9px -4px rgba(20,16,12,0.55); display: flex; align-items: center; justify-content: center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7A3D18" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+          </div>
+          <div onClick="{{ pkNext }}" class="press" style="position: absolute; top: 50%; left: 8px; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: rgba(255,255,255,0.92); box-shadow: 0 3px 9px -4px rgba(20,16,12,0.55); display: flex; align-items: center; justify-content: center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7A3D18" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+          </div>
         </div>
-        <div style="width: 100%; height: 148px; box-sizing: border-box; border-radius: 16px; border: 1.5px dashed rgba(168,90,40,0.36); background: rgba(255,255,255,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(122,61,24,0.6)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5z"></path><path d="M9 4v13M15 6.5v13"></path></svg>
-          <div style="font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(122,61,24,0.66);">תמונה</div>
+
+        <div style="display: flex; justify-content: center; gap: 6px;">
+          <sc-for list="{{ pkDots }}" as="d" hint-placeholder-count="4">
+            <div onClick="{{ d.pick }}" style="height: 6px; border-radius: 999px; cursor: pointer; transition: width 300ms ease, background 300ms ease; width: {{ d.w }}; background: {{ d.bg }};"></div>
+          </sc-for>
         </div></sc-if>
       </div>
 
@@ -636,7 +653,7 @@
   </div></sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+<script data-dc-script data-props='{"loggedIn":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
 /* כל התוכן, השמות, המחירים והתיאורים נלקחו מהאתר הקודם של שקד. */
 
 const CONCEPTS = [
@@ -1091,6 +1108,14 @@ function pastaLine(x) {
   if (x.up) bits.push(x.up + ' • שדרוג');
   return bits.join(' · ');
 }
+
+/* מפות ההגעה לחנייה · ארבעה כיוונים, קבצי התמונות בתיקיית assets */
+const PARK = [
+  { f: 'parking-1.jpg', t: 'הגעה מכיוון נווה אילן' },
+  { f: 'parking-2.jpg', t: 'הגעה מכיוון הרצל' },
+  { f: 'parking-3.jpg', t: 'הגעה מכיוון לב יבנה' },
+  { f: 'parking-4.jpg', t: 'הגעה מכיוון רוגובין' }
+];
 
 class Component extends DCLogic {
   constructor(props) {
@@ -1667,6 +1692,11 @@ class Component extends DCLogic {
     const popSec = (pop && !isPasta && !isNotice) ? this.pageList().filter((x) => x.id === pop.id)[0] : null;
 
     return {
+      /* הנאב-בר מופיע רק כשמחוברים · הלשוניות מנווטות דרך מעטפת הניווט */
+      navOn: !!(this.props && this.props.loggedIn),
+      navHome:    () => { if (this.props && this.props.go) this.props.go('main'); },
+      navOrders:  () => { if (this.props && this.props.go) this.props.go('orders'); },
+      navProfile: () => { if (this.props && this.props.go) this.props.go('profile'); },
       pastaOpen: isPasta,
       pastaSauce: isPasta ? pop.sauce : '',
       pastaShapes: isPasta ? PASTA_SHAPES.map((sh) => {
@@ -1771,6 +1801,17 @@ class Component extends DCLogic {
       confetti: CONFETTI,
 
       shipLabel: b.pages ? 'תאריך האירוע' : (deliv ? 'משלוח' : 'איסוף עצמי'),
+      /* מפות ההגעה לחנייה · דפדוף בין ארבעת הכיוונים */
+      pkTitle: PARK[st.pk || 0].t,
+      pkFile:  PARK[st.pk || 0].f,
+      pkImg:   'url(./' + PARK[st.pk || 0].f + ')',
+      pkPrev:  () => this.setState({ pk: ((st.pk || 0) + PARK.length - 1) % PARK.length }),
+      pkNext:  () => this.setState({ pk: ((st.pk || 0) + 1) % PARK.length }),
+      pkDots:  PARK.map((p, i) => ({
+        w:  i === (st.pk || 0) ? '18px' : '6px',
+        bg: i === (st.pk || 0) ? '#A85A28' : 'rgba(130,112,162,0.28)',
+        pick: () => this.setState({ pk: i })
+      })),
       timeLabel: b.pages ? (st.picks.date || '') : (st.time || ''),
       payLabel:  b.pages ? (st.picks.daypart || '') : (st.pay || ''),
 

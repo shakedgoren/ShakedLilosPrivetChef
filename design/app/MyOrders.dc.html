@@ -141,20 +141,20 @@
     </div>
   </div></sc-if>
 
-  <div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+  <sc-if value="{{ navOn }}" hint-placeholder-val="{{ true }}"><div style="position: absolute; bottom: 26px; right: 18px; left: 18px; height: 68px; border-radius: 999px; background: linear-gradient(152deg, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0.44) 100%); backdrop-filter: blur(34px) saturate(200%); -webkit-backdrop-filter: blur(34px) saturate(200%); border: 1px solid rgba(255,255,255,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 18px 34px -18px rgba(96,80,132,0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 10px;">
+    <div onClick="{{ navProfile }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">בית</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
+    <div onClick="{{ navOrders }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer; border-radius: 999px; background: rgba(155,127,212,0.13);">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B5CBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
       <div style="font-size: 11px; font-weight: 700; color: #7B5CBC;">הזמנות</div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
+    <div onClick="{{ navHome }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 62px; height: 56px; cursor: pointer;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#918A9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
       <div style="font-size: 11px; color: #918A9E;">אזור אישי</div>
     </div>
-  </div>
+  </div></sc-if>
 
 </div>
 </x-dc>
@@ -229,6 +229,11 @@ class Component extends DCLogic {
     const any  = live.length + past.length > 0;
 
     return {
+      /* הנאב-בר מופיע רק כשמחוברים · הלשוניות מנווטות דרך מעטפת הניווט */
+      navOn: !!(this.props && this.props.loggedIn),
+      navHome:    () => { if (this.props && this.props.go) this.props.go('main'); },
+      navOrders:  () => { if (this.props && this.props.go) this.props.go('orders'); },
+      navProfile: () => { if (this.props && this.props.go) this.props.go('profile'); },
 
       /* פקד ההזדהות בכותרת · מחוברת מתנתקת, לא מחוברת נכנסת */
       isIn:  !!this.props.loggedIn,

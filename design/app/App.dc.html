@@ -19,10 +19,10 @@
   <sc-if value="{{ isSchn }}"  hint-placeholder-val="{{ false }}"><dc-import name="Schnitzel" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
   <sc-if value="{{ isBox }}"   hint-placeholder-val="{{ false }}"><dc-import name="Boxes"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
   <sc-if value="{{ isFruit }}" hint-placeholder-val="{{ false }}"><dc-import name="Fruit"     go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
-  <sc-if value="{{ isChef }}"  hint-placeholder-val="{{ false }}"><dc-import name="Chef"      go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isChef }}"  hint-placeholder-val="{{ false }}"><dc-import name="Chef"      go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
 
-  <sc-if value="{{ isOrders }}"  hint-placeholder-val="{{ false }}"><dc-import name="MyOrders" go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
-  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}"><dc-import name="Profile"  go="{{ go }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isOrders }}"  hint-placeholder-val="{{ false }}"><dc-import name="MyOrders" go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}"><dc-import name="Profile"  go="{{ go }}" loggedIn="{{ isIn }}" hint-size="390px,844px"></dc-import></sc-if>
 
 </div>
 </x-dc>
