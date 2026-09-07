@@ -700,11 +700,11 @@ class Component extends DCLogic {
       })),
 
       popOpen: p !== null,
-      popTitle: p ? SCH_TYPES[p.type].name : '',
+      popTitle: (p && SCH_TYPES[p.type]) ? SCH_TYPES[p.type].name : '',
       popBtn: p ? (p.target === 'box' || p.edit !== null ? 'שמור' : 'הוסף חלה') : '',
       popClose: () => this.closePop(),
       popAdd: () => this.commitPop(),
-      popTops: p ? SCH_TYPES[p.type].tops.map((n) => {
+      popTops: (p && SCH_TYPES[p.type]) ? SCH_TYPES[p.type].tops.map((n) => {
         const c = chip(p.tops.indexOf(n) !== -1);
         return { name: n, bg: c.bg, bd: c.bd, fg: c.fg, w: c.w, pick: () => this.togglePopTop(n) };
       }) : [],
