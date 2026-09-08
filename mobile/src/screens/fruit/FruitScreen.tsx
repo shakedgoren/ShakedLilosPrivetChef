@@ -1,11 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FRUIT_FULFILLMENT, FRUIT_TRAYS } from '../../data/fruit';
+import { TRAY_PHOTOS } from '../../data/photos';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
-
-/** תמונת המגש · לפי סדר FRUIT_TRAYS */
-const TRAY_PHOTOS = ['tray-meruba-large', 'tray-malben-large', 'tray-agol-xl', 'tray-boat'];
 import { LoginGate } from '../../components/LoginGate';
 import { Stepper } from '../../components/Stepper';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';

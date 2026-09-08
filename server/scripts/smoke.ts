@@ -136,6 +136,48 @@ const customers = await api('/admin/customers', {
 });
 if (customers.status !== 200) fail('admin customers', customers);
 
+const patched = await api('/users/me', {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({
+    name: 'דנה כהן',
+    phone: '0521112233',
+    address: 'הרצל 10',
+    city: 'אילת',
+    email: 'dana@example.com',
+  }),
+});
+if (patched.status !== 200) fail('patch me', patched);
+const patchedUser = (patched.body as { user: { city: string; createdAt?: string } }).user;
+if (patchedUser.city !== 'אילת') fail('city not saved outside delivery area', patched.body);
+if (!patchedUser.createdAt) fail('createdAt missing', patched.body);
+
+const meAfter = await api('/auth/me', {
+  headers: { authorization: `Bearer ${customerToken}` },
+});
+if (meAfter.status !== 200) fail('me after patch', meAfter);
+if ((meAfter.body as { user: { city: string } }).user.city !== 'אילת') fail('me city', meAfter.body);
+
+const badPass = await api('/auth/change-password', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({ current: 'wrong-pass', next: 'newsecret99' }),
+});
+if (badPass.status !== 401) fail('change password wrong current', badPass);
+
+const changed = await api('/auth/change-password', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({ current: 'secret12', next: 'newsecret99' }),
+});
+if (changed.status !== 200) fail('change password', changed);
+
+const relogin = await api('/auth/login', {
+  method: 'POST',
+  body: JSON.stringify({ who: 'dana@example.com', password: 'newsecret99' }),
+});
+if (relogin.status !== 200) fail('login after password change', relogin);
+
 const days = await api('/admin/days', {
   headers: { authorization: `Bearer ${adminToken}` },
 });

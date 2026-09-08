@@ -37,6 +37,7 @@ export function publicUser(u: {
   address: string;
   city: string;
   note?: string;
+  createdAt?: Date | string;
 }) {
   return {
     id: u.id,
@@ -47,5 +48,6 @@ export function publicUser(u: {
     address: u.address,
     city: u.city,
     note: u.note ?? '',
+    createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : (u.createdAt ?? ''),
   };
 }

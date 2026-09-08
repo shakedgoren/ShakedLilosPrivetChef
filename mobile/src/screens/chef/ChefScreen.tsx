@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CHEF_FULFILLMENT } from '../../data/chef';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
+import { PhotoStrip } from '../../components/PhotoStrip';
 import { CHEF_PHOTOS, TABON_PHOTOS } from '../../data/photos';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
@@ -69,6 +70,14 @@ export function ChefScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+        {o.page === 0 ? (
+          <PhotoStrip
+            names={o.pkg.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
+            height={180}
+            rgb={ACCENT.rgb}
+          />
+        ) : null}
+
         {o.page === 0 &&
           o.pkg.intro?.map((t, i) => (
             <Text

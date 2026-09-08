@@ -4,7 +4,9 @@ import { COUSCOUS_FULFILLMENT, COUSCOUS_MENU } from '../../data/couscous';
 import { SALE_DATE } from '../../data/shared';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
+import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
+import { COUSCOUS_PHOTOS } from '../../data/photos';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -32,6 +34,7 @@ export function CouscousScreen() {
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         {COUSCOUS_MENU.map((it, i) => (
           <View key={it.name} style={s.row}>
+            <Photo name={COUSCOUS_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
             <View style={s.rowText}>
               <Text style={s.name}>{it.name}</Text>
               <Text style={s.price}>{it.price} ₪</Text>
@@ -94,6 +97,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.14)',
   },
+  shot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },
   name: { fontSize: 15.5, fontWeight: '500', color: surface.ink },
   price: { fontSize: type.label, color: surface.muted },

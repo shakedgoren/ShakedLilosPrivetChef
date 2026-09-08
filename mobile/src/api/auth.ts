@@ -15,5 +15,9 @@ export const googleStub = () =>
 
 export const me = (token?: string) => api<{ user: PublicUser }>('/auth/me', { token });
 
-export const updateMe = (patch: Partial<Pick<PublicUser, 'name' | 'phone' | 'address' | 'city'>>) =>
-  api<{ user: PublicUser }>('/users/me', { method: 'PATCH', body: patch });
+export const updateMe = (
+  patch: Partial<Pick<PublicUser, 'name' | 'phone' | 'address' | 'city'>> & { email?: string | null },
+) => api<{ user: PublicUser }>('/users/me', { method: 'PATCH', body: patch });
+
+export const changePassword = (current: string, next: string) =>
+  api<{ ok: true }>('/auth/change-password', { body: { current, next } });

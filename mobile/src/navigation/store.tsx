@@ -48,6 +48,7 @@ type Nav = {
   back: () => void;
   signIn: (session?: Session) => void;
   signOut: () => void;
+  setUser: (user: PublicUser) => void;
   canBack: boolean;
 };
 
@@ -126,6 +127,10 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     setScreen('guest');
   }, []);
 
+  const applyUser = useCallback((next: PublicUser) => {
+    setUser(next);
+  }, []);
+
   const value = useMemo(
     () => ({
       screen,
@@ -136,9 +141,10 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       back,
       signIn,
       signOut,
+      setUser: applyUser,
       canBack: stack.length > 0,
     }),
-    [screen, loggedIn, user, go, back, signIn, signOut, stack.length],
+    [screen, loggedIn, user, go, back, signIn, signOut, applyUser, stack.length],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

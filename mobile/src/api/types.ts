@@ -7,6 +7,7 @@ export type PublicUser = {
   address: string;
   city: string;
   note?: string;
+  createdAt?: string;
 };
 
 export type Session = { token: string; user: PublicUser };

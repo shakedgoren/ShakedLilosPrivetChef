@@ -2,7 +2,7 @@
  * מפת התמונות · נוצר אוטומטית מ-mobile/assets/photos.
  * לעדכון: bash scripts/sync-photos.sh && node scripts/emit-photos.mjs
  *
- * התמונות מגיעות מ-design/app/assets, בגודל שהמסך באמת צריך.
+ * המקור: design/app/assets/originals/ · לא המוקטנות.
  */
 import type { ImageSourcePropType } from 'react-native';
 
@@ -103,8 +103,7 @@ export const PARKING_PHOTOS = ["parking-1","parking-2","parking-3","parking-4"] 
 
 /**
  * גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts.
- * ⚠ ל-premium אין עדיין תמונה בתיקייה, ולכן הוא לא מופיע כאן
- * והמסך ייפול למציין מקום.
+ * שלוש תמונות מהשף עדיין חסרות · ראו MISSING_PHOTOS.
  */
 export const BOX_PHOTOS: Record<string, string[]> = {
   "free": [
@@ -136,5 +135,35 @@ export const BOX_PHOTOS: Record<string, string[]> = {
   "shana": [
     "box-shana-1",
     "box-shana-2"
+  ],
+  "premium": [
+    "arichat-shulhan"
   ]
 };
+
+/** תמונות ששקד סימנה באדום · יגיעו בהמשך. המסך מציג מציין מקום. */
+export const MISSING_PHOTOS = [
+  'ממשותף לאישי',
+  'שולחן קינוחים מעוצב',
+  'חבילת שתייה ללא הגבלה',
+] as const;
+
+export const isMissingPhoto = (name: string) =>
+  (MISSING_PHOTOS as readonly string[]).includes(name);
+
+/** מנות הקוסקוס · לפי סדר COUSCOUS_MENU */
+export const COUSCOUS_PHOTOS = [
+  'dish-couscous-veg',
+  'dish-couscous-chicken',
+  'dish-couscous-mafroum',
+  'dish-couscous-only-veg',
+  'dish-couscous-only-chicken',
+  'dish-couscous-only-mafroum',
+] as const;
+
+/** שישניצל · יחידה ואז מארז, לפי סדר SCHNITZEL_TYPES */
+export const SCHNITZEL_UNIT_PHOTOS = ['dish-schnitzel-thin', 'dish-schnitzel-tampura'] as const;
+export const SCHNITZEL_BOX_PHOTOS = ['schnitzel-thin-box', 'schnitzel-tampura-box'] as const;
+
+/** מגשי פירות · לפי סדר FRUIT_TRAYS */
+export const TRAY_PHOTOS = ['tray-meruba-large', 'tray-malben-large', 'tray-agol-xl', 'tray-boat'] as const;

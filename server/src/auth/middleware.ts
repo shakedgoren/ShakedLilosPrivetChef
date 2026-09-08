@@ -11,6 +11,7 @@ export type AuthedUser = {
   name: string;
   address: string;
   city: string;
+  createdAt: Date;
 };
 
 declare global {
@@ -29,7 +30,17 @@ const toAuthed = (u: {
   name: string;
   address: string;
   city: string;
-}): AuthedUser => u;
+  createdAt: Date;
+}): AuthedUser => ({
+  id: u.id,
+  role: u.role,
+  email: u.email,
+  phone: u.phone,
+  name: u.name,
+  address: u.address,
+  city: u.city,
+  createdAt: u.createdAt,
+});
 
 export async function optionalAuth(req: Request, _res: Response, next: NextFunction) {
   const header = req.header('authorization');

@@ -9,7 +9,9 @@ import {
 } from '../../data/schnitzel';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
+import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
+import { SCHNITZEL_BOX_PHOTOS, SCHNITZEL_UNIT_PHOTOS } from '../../data/photos';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -54,6 +56,7 @@ export function SchnitzelScreen() {
           <>
             {o.basket.map((b, i) => (
               <View key={`${b.type}-${i}`} style={s.row}>
+                <Photo name={SCHNITZEL_UNIT_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
                 <View style={s.rowText}>
                   <Text style={s.name}>
                     חלה {i + 1} · {SCHNITZEL_TYPES[b.type].short}
@@ -73,6 +76,7 @@ export function SchnitzelScreen() {
             <Text style={s.sectionTitle}>הוספת חלה</Text>
             {SCHNITZEL_TYPES.map((t, k) => (
               <Pressable key={t.name} onPress={() => o.openAdd(k)} style={s.pick}>
+                <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.shot} />
                 <View style={s.rowText}>
                   <Text style={s.name}>{t.name}</Text>
                   <Text style={s.price}>{t.unit} ₪</Text>
@@ -92,6 +96,7 @@ export function SchnitzelScreen() {
                   onPress={() => o.openBox(k)}
                   style={[s.pick, on && { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) }]}
                 >
+                  <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.shot} />
                   <View style={s.rowText}>
                     <Text style={s.name}>{t.name}</Text>
                     <Text style={s.price}>{t.box} ₪</Text>
@@ -201,6 +206,7 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.16)',
   },
+  shot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },
   name: { fontSize: 15, fontWeight: '500', color: surface.ink },
   tops: { fontSize: 12, color: surface.muted },

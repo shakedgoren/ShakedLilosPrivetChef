@@ -133,3 +133,27 @@ authRouter.post('/google', async (_req, res) => {
 authRouter.get('/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user!) });
 });
+
+authRouter.post('/change-password', requireAuth, async (req, res, next) => {
+  try {
+    const body = z
+      .object({
+        current: z.string().min(1),
+        next: z.string().min(8),
+      })
+      .parse(req.body);
+
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    if (!user?.passwordHash) throw unauthorized('invalid_credentials');
+    const ok = await verifyPassword(body.current, user.passwordHash);
+    if (!ok) throw unauthorized('invalid_credentials');
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(body.next) },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
