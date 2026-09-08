@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
 import { AdminShell, KpiRow } from './ui/AdminShell';
+import { BOARD_LABEL } from '../data/adminOrders';
+import { useNav } from '../navigation/store';
 import { Chip } from './ui/Chip';
 import { OrderCard } from './OrderCard';
 import { CancelSheet } from './CancelSheet';
@@ -15,6 +17,7 @@ const COUS = HUES.cous;
 /* לשוניות הסינון · המסלול בלי המצב האחרון, ואחריו ״בוטלה״ */
 
 export function AdminOrdersScreen() {
+  const { go } = useNav();
   const admin = useAdminOrders();
   const TABS = [ALL, ...admin.flow.slice(0, -1), CANCELLED];
 
@@ -34,7 +37,10 @@ export function AdminOrdersScreen() {
     <AdminShell
       title="הזמנות"
       sub={ORDERS_SUBTITLE}
-      actions={[{ label: 'הזמנה ידנית', onPress: admin.openNew, primary: true }]}
+      actions={[
+        { label: BOARD_LABEL, onPress: () => go('adminBoard') },
+        { label: 'הזמנה ידנית', onPress: admin.openNew, primary: true },
+      ]}
     >
       <View style={s.tabs}>
         {TABS.map((name) => (

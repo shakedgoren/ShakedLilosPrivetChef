@@ -21,6 +21,7 @@ import { AdminCustomersScreen } from './src/admin/AdminCustomersScreen';
 import { AdminMenuScreen } from './src/admin/AdminMenuScreen';
 import { AdminCostsScreen } from './src/admin/AdminCostsScreen';
 import { AdminMoneyScreen } from './src/admin/AdminMoneyScreen';
+import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
 import { AdminNav } from './src/admin/AdminNav';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
@@ -49,7 +50,6 @@ const ADMIN_SCREENS: Screen[] = [
 const TODO_TITLES: Partial<Record<Screen, string>> = {
   orders: 'ההזמנות שלי',
   profile: 'אזור אישי',
-  adminBoard: 'ניהול · לוח מכירה',
 };
 
 function Router() {
@@ -73,6 +73,7 @@ function Router() {
   if (screen === 'adminMenu') return <AdminMenuScreen />;
   if (screen === 'adminCosts') return <AdminCostsScreen />;
   if (screen === 'adminMoney') return <AdminMoneyScreen />;
+  if (screen === 'adminBoard') return <AdminBoardScreen />;
   if (CATEGORY_SCREENS.includes(screen as CategoryKey))
     return <CategoryScreen categoryKey={screen as CategoryKey} />;
 

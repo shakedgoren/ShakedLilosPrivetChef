@@ -40,7 +40,12 @@ export const FLOW: string[] = ${j(d.FLOW)};
 /** ״בוטלה״ אינו חלק מהמסלול · אפשר להגיע אליו מכל מצב שטרם נמסר */
 export const CANCELLED = ${j(d.CANCELLED)};
 
-export const TONE: Record<string, { bg: string; fg: string }> = ${j(d.TONE)};
+export const TONE: Record<string, { bg: string; fg: string }> = {
+  ...${j(d.TONE)},
+  /* ⚠ לא מהקנבס · מצב שהשרת מחזיר ואין לו גוון בעיצוב.
+     יושב כאן ולא בקובץ שנוצר, כדי שהרצה מחדש של הסקריפט לא תמחק אותו. */
+  'מאושרת': { bg: 'rgba(65,109,158,0.12)', fg: '#2B4A6E' },
+};
 
 /** ביטול מאוחר · פחות מ-12 שעות לפני האיסוף מחייב 30% מהעסקה */
 export const LATE_HOURS = ${d.LATE_HOURS};
@@ -48,6 +53,8 @@ export const LATE_FEE = ${d.LATE_FEE};
 export const REASONS: string[] = ${j(d.REASONS)};
 
 export type AdminOrder = {
+  /** ⚠ לא מהקנבס · מזהה מהשרת */
+  id?: string;
   key: AdminCatKey;
   status: string;
   who: string;
@@ -60,6 +67,9 @@ export type AdminOrder = {
   via: string;
   /** שעות שנותרו עד האיסוף · שלילי אם עבר */
   hrs: number;
+  /** ⚠ לא מהקנבס · תיעוד הביטול שמגיע מהשרת */
+  cancelReason?: string;
+  cancelNote?: string;
 };
 
 /** הזמנות הדגמה · נכתבו על ידי Claude בקנבס */
@@ -67,6 +77,9 @@ export const ORDERS: AdminOrder[] = ${j(d.ORDERS)};
 
 /** תאריך יום המכירה שמוצג תחת הכותרת */
 export const ORDERS_SUBTITLE = 'שלישי · 25 באוגוסט';
+
+/** הכפתור שמוביל ללוח המכירה */
+export const BOARD_LABEL = ${j(d.boardLabel)};
 `;
 
 const OUT = '/Users/shakedgoren/Downloads/files/mobile/src/data/adminOrders.ts';
