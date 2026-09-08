@@ -12,6 +12,14 @@ import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
 import { SCHNITZEL_BOX_PHOTOS, SCHNITZEL_UNIT_PHOTOS } from '../../data/photos';
+import {
+  GIFT_NOTE,
+  PICK_TYPE_LABEL,
+  SCHNITZEL_DATE,
+  SCHNITZEL_INTRO,
+  SCHNITZEL_TITLE,
+  TYPE_CARD,
+} from '../../data/schnitzelCopy';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -25,6 +33,9 @@ const ACCENT = hues.schn;
 export function SchnitzelScreen() {
   const { go, loggedIn } = useNav();
   const o = useSchnitzelOrder();
+  /* רוחב הכרטיס נמדד · הנוסחה בקנבס היא (100% − רווח) ÷ 2 */
+  const [gridW, setGridW] = useState(0);
+  const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
   const f = useFulfillment(SCHNITZEL_FULFILLMENT);
   const [gate, setGate] = useState(false);
 
@@ -35,7 +46,9 @@ export function SchnitzelScreen() {
 
   return (
     <View style={s.page}>
-      <CategoryHeader title="שישי של מטעמים" date="שישי · 28 באוגוסט" />
+      <CategoryHeader title={SCHNITZEL_TITLE} date={SCHNITZEL_DATE} />
+
+      <Text style={s.intro}>{SCHNITZEL_INTRO}</Text>
 
       <View style={s.modes}>
         {SCHNITZEL_MODES.map((label, k) => (
@@ -52,6 +65,10 @@ export function SchnitzelScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+        <View style={s.gift}>
+          <Text style={s.giftText}>{GIFT_NOTE}</Text>
+        </View>
+
         {o.isUnit ? (
           <>
             {o.basket.map((b, i) => (
@@ -73,17 +90,21 @@ export function SchnitzelScreen() {
               </View>
             ))}
 
-            <Text style={s.sectionTitle}>הוספת חלה</Text>
-            {SCHNITZEL_TYPES.map((t, k) => (
-              <Pressable key={t.name} onPress={() => o.openAdd(k)} style={s.pick}>
-                <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.shot} />
-                <View style={s.rowText}>
-                  <Text style={s.name}>{t.name}</Text>
-                  <Text style={s.price}>{t.unit} ₪</Text>
-                </View>
-                <Text style={s.plus}>+</Text>
-              </Pressable>
-            ))}
+            <Text style={s.sectionTitle}>{PICK_TYPE_LABEL}</Text>
+            {/* שתי עמודות · תמונה מלמעלה, בדיוק כמו בקנבס */}
+            <View style={s.typeGrid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+              {SCHNITZEL_TYPES.map((t, k) => (
+                <Pressable
+                  key={t.name}
+                  onPress={() => o.openAdd(k)}
+                  style={[s.typeCard, { width: typeCardW }]}
+                >
+                  <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} />
+                  <Text style={s.typeName}>{t.name}</Text>
+                  <Text style={s.typePrice}>{t.unit} ₪</Text>
+                </Pressable>
+              ))}
+            </View>
           </>
         ) : (
           <>
@@ -171,6 +192,47 @@ export function SchnitzelScreen() {
 }
 
 const s = StyleSheet.create({
+  intro: {
+    fontSize: 13.5,
+    fontWeight: '300',
+    lineHeight: 22,
+    color: surface.inkSoft,
+    textAlign: 'center',
+    paddingHorizontal: space.lg,
+    marginBottom: 12,
+  },
+  gift: {
+    borderRadius: 18,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+    backgroundColor: a(ACCENT.rgb, 0.08),
+    borderWidth: 1,
+    borderColor: a(ACCENT.rgb, 0.2),
+    marginBottom: 18,
+  },
+  giftText: { fontSize: 14.5, fontWeight: '600', lineHeight: 20, color: ACCENT.deep },
+
+  /* שתי עמודות · תמונה מלמעלה */
+  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: TYPE_CARD.gridGap },
+  typeCard: {
+    borderRadius: TYPE_CARD.radius,
+    paddingVertical: TYPE_CARD.padV,
+    paddingHorizontal: TYPE_CARD.padH,
+    gap: TYPE_CARD.gap,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.74)',
+  },
+  typeShot: {
+    width: '100%',
+    height: TYPE_CARD.shotHeight,
+    borderRadius: TYPE_CARD.shotRadius,
+    overflow: 'hidden',
+  },
+  typeName: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center', color: surface.ink },
+  typePrice: { fontSize: 13, fontWeight: '600', color: ACCENT.deep },
+
   page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
   modes: {
     flexDirection: 'row',
