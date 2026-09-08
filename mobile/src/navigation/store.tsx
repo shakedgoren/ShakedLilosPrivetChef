@@ -17,6 +17,11 @@ export const SCREENS = [
   'chef',
   'orders',
   'profile',
+  /* צד הניהול · שקד בלבד */
+  'admin',
+  'adminOrders',
+  'adminStock',
+  'adminMoney',
 ] as const;
 
 export type Screen = (typeof SCREENS)[number];
@@ -33,8 +38,19 @@ type Nav = {
 
 const Ctx = createContext<Nav | null>(null);
 
+/**
+ * פתיחה ישירה במסך מסוים · ?screen=adminOrders בדפדפן.
+ * ⚠ נכתב על ידי Claude · פתח זמני לבדיקת מסכי הניהול עד שיהיה להם
+ * שער כניסה אמיתי מ-Admin.dc.html. לא קיים במכשיר.
+ */
+function initialScreen(): Screen {
+  if (typeof window === 'undefined' || !window.location) return 'guest';
+  const want = new URLSearchParams(window.location.search).get('screen');
+  return (SCREENS as readonly string[]).includes(want ?? '') ? (want as Screen) : 'guest';
+}
+
 export function NavProvider({ children }: { children: React.ReactNode }) {
-  const [screen, setScreen] = useState<Screen>('guest');
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const [stack, setStack] = useState<Screen[]>([]);
   const [loggedIn, setLoggedIn] = useState(false);
 
