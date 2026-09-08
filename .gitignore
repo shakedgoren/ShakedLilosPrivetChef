@@ -14,3 +14,6 @@ deployroot/
 node_modules/
 site/
 העתקים ושחזורים - לא לגעת!/
+
+mobile/node_modules/
+mobile/.expo/
