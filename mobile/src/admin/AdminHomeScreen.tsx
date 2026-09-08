@@ -19,6 +19,7 @@ import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
 import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
 import { useAdminHome } from './home/useAdminHome';
+import { LTR_ROW } from './ui/ltrRow';
 
 /** כל אריח מצביע על מסך ניהול · אותה מפה שבקנבס, בשמות של הניווט */
 const TILE_ROUTES: Record<TileKey, Screen> = {
@@ -204,9 +205,10 @@ const s = StyleSheet.create({
   cardTitle: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
   revTotal: { fontSize: 15, fontWeight: '600', color: surface.ink },
   chart: { flex: 1, marginTop: 4 },
-  months: { flexDirection: 'row', alignItems: 'center' },
+  months: { flexDirection: LTR_ROW, alignItems: 'center' },
   axisPad: { width: 30 },
-  monthRow: { flex: 1, flexDirection: 'row', justifyContent: 'space-around' },
+  /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */
+  monthRow: { flex: 1, flexDirection: LTR_ROW, justifyContent: 'space-around' },
   month: { fontSize: 10, fontWeight: '300', color: '#9A93A6' },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
