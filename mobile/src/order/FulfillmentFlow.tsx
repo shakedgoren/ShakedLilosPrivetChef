@@ -5,6 +5,10 @@ import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
 import { hhmm, type Accent, type OrderLine } from './types';
+import { apiEnabled } from '../api/config';
+import { COPY } from '../api/copy';
+import { createOrder } from '../api/orders';
+import type { OrderDetails } from '../api/types';
 
 type Props = {
   f: Fulfillment;
@@ -12,11 +16,42 @@ type Props = {
   total: number;
   accent: Accent;
   onHome: () => void;
+  /** פרטי הקטגוריה לשמירה בשרת · בלי זה (או בלי API) ההזמנה נשארת מקומית */
+  details?: OrderDetails;
 };
 
 /** זרימת המסירה והתשלום · משותפת לכל הקטגוריות */
-export function FulfillmentFlow({ f, lines, total, accent, onHome }: Props) {
+export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Props) {
+  const [busy, setBusy] = React.useState(false);
+  const [err, setErr] = React.useState('');
+
   if (f.step === STEP.closed) return null;
+
+  const onPay = async (p: string) => {
+    if (busy) return;
+    if (!apiEnabled || !details || !f.ship || !f.time) {
+      f.pickPay(p);
+      return;
+    }
+    setBusy(true);
+    setErr('');
+    try {
+      await createOrder({
+        ship: f.ship === 'deliv' ? 'deliv' : 'self',
+        time: f.time,
+        city: f.city,
+        address: f.addr,
+        pay: p,
+        saleDate: SALE_DATE,
+        details,
+      });
+      f.pickPay(p);
+    } catch {
+      setErr(COPY.orderFail);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={f.reset}>
@@ -34,7 +69,7 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome }: Props) {
             {f.step === STEP.time &&
               (f.isDelivery ? <SlotsStep f={f} accent={accent} /> : <ClockStep f={f} accent={accent} />)}
             {f.step === STEP.address && <AddressStep f={f} accent={accent} />}
-            {f.step === STEP.pay && <PayStep f={f} />}
+            {f.step === STEP.pay && <PayStep busy={busy} err={err} onPay={onPay} />}
             {(f.step === STEP.done || f.step === STEP.confirm) && (
               <ConfirmStep f={f} lines={lines} total={total} accent={accent} onHome={onHome} />
             )}
@@ -152,14 +187,28 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   );
 }
 
-function PayStep({ f }: { f: Fulfillment }) {
+function PayStep({
+  busy,
+  err,
+  onPay,
+}: {
+  busy: boolean;
+  err: string;
+  onPay: (p: string) => void;
+}) {
   return (
     <View style={s.stack}>
       {PAYMENTS.map((p) => (
-        <Pressable key={p} onPress={() => f.pickPay(p)} style={s.option}>
+        <Pressable
+          key={p}
+          disabled={busy}
+          onPress={() => onPay(p)}
+          style={[s.option, { opacity: busy ? 0.45 : 1 }]}
+        >
           <Text style={s.optionTitle}>{p}</Text>
         </Pressable>
       ))}
+      {err ? <Text style={s.toast}>{err}</Text> : null}
     </View>
   );
 }

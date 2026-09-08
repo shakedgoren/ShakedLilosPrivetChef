@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
+import { apiEnabled } from '../api/config';
+import { forgotPassword, googleStub, login, register } from '../api/auth';
+import { authError, COPY } from '../api/copy';
+import { ApiError } from '../api/types';
 
 /** מסך הכניסה וההרשמה · הטאב הפתוח נקבע לפי המסך שממנו הגענו */
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
@@ -10,9 +14,56 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [who, setWho] = useState('');
   const [pass, setPass] = useState('');
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
   const isIn = tab === 'in';
-  const can = who.trim().length > 2 && pass.trim().length >= 6;
+  const can = who.trim().length > 2 && pass.trim().length >= 6 && !busy;
+
+  const onSubmit = async () => {
+    if (!can) return;
+    if (!apiEnabled) {
+      signIn();
+      return;
+    }
+    setBusy(true);
+    setErr('');
+    try {
+      const session = isIn ? await login(who.trim(), pass) : await register(who.trim(), pass);
+      signIn(session);
+    } catch (e) {
+      setErr(e instanceof ApiError ? authError(e.code) : COPY.net);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onGoogle = async () => {
+    if (!apiEnabled) {
+      signIn();
+      return;
+    }
+    setBusy(true);
+    setErr('');
+    try {
+      signIn(await googleStub());
+    } catch (e) {
+      setErr(e instanceof ApiError ? authError(e.code) : COPY.google);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onForgot = async () => {
+    if (apiEnabled && who.trim().length > 2) {
+      try {
+        await forgotPassword(who.trim());
+      } catch {
+        /* ההודעה למשתמשת זהה גם אם השרת לא מצא חשבון */
+      }
+    }
+    setSent(true);
+  };
 
   return (
     <View style={s.page}>
@@ -41,15 +92,17 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         style={s.field}
       />
 
-      <Pressable disabled={!can} onPress={signIn} style={[s.cta, { opacity: can ? 1 : 0.45 }]}>
+      <Pressable disabled={!can} onPress={onSubmit} style={[s.cta, { opacity: can ? 1 : 0.45 }]}>
         <Text style={s.ctaText}>{isIn ? 'כניסה' : 'יצירת חשבון'}</Text>
       </Pressable>
 
-      <Pressable onPress={signIn} style={s.ghost}>
+      {err ? <Text style={s.err}>{err}</Text> : null}
+
+      <Pressable disabled={busy} onPress={onGoogle} style={s.ghost}>
         <Text style={s.ghostText}>המשך עם גוגל</Text>
       </Pressable>
 
-      <Pressable onPress={() => setSent(true)}>
+      <Pressable onPress={onForgot}>
         <Text style={s.link}>שכחתי סיסמה</Text>
       </Pressable>
 
@@ -96,6 +149,7 @@ const s = StyleSheet.create({
     marginTop: space.sm,
   },
   ctaText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  err: { fontSize: 13, color: '#B95349', textAlign: 'center' },
   ghost: {
     height: 48,
     borderRadius: radius.pill,

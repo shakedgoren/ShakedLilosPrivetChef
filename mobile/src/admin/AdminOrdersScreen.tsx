@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
-import { CANCELLED, FLOW, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
+import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
 import { AdminShell, KpiRow } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
 import { OrderCard } from './OrderCard';
@@ -11,12 +11,12 @@ import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
 
 const ALL = 'הכל';
-/* לשוניות הסינון · המסלול בלי ״נמסרה״, ואחריו ״בוטלה״ */
-const TABS = [ALL, ...FLOW.slice(0, 3), CANCELLED];
 const COUS = HUES.cous;
+/* לשוניות הסינון · המסלול בלי המצב האחרון, ואחריו ״בוטלה״ */
 
 export function AdminOrdersScreen() {
   const admin = useAdminOrders();
+  const TABS = [ALL, ...admin.flow.slice(0, -1), CANCELLED];
 
   const all = admin.allOrders.map((o, i) => ({ o, i, status: admin.statusOf(i) }));
   const shown = admin.tab === ALL ? all : all.filter((x) => x.status === admin.tab);
@@ -58,11 +58,12 @@ export function AdminOrdersScreen() {
         ) : (
           shown.map((x) => (
             <OrderCard
-              key={x.i}
+              key={x.o.id ?? x.i}
               order={x.o}
               status={x.status}
               isOpen={admin.open === x.i}
-              note={admin.notes[x.i]}
+              note={admin.noteOf(x.i)}
+              flow={admin.flow}
               onToggle={() => admin.toggle(x.i)}
               onAdvance={() => admin.advance(x.i)}
               onCancel={() => admin.askCancel(x.i)}

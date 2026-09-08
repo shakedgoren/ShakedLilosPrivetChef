@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// לקוחה או מנהלת · email ו/או phone, כמו בשדה ״טלפון או אימייל״ באפליקציה
+model User {
+  id           String   @id @default(cuid())
+  role         String   @default("customer")
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String?
+  googleId     String?  @unique
+  name         String   @default("")
+  address      String   @default("")
+  city         String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+  resets PasswordReset[]
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// הזמנה · סכומים בשקלים שלמים, בלי מע״מ (עוסק פטור)
+model Order {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  category     String
+  status       String   @default("חדשה")
+  name         String   @default("")
+  phone        String   @default("")
+  ship         String
+  time         String
+  city         String   @default("")
+  address      String   @default("")
+  pay          String
+  saleDate     String   @default("")
+  via          String   @default("")
+  itemsJson    String
+  detailsJson  String
+  itemsTotal   Int
+  shippingFee  Int      @default(0)
+  total        Int
+  cancelReason String   @default("")
+  cancelNote   String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}

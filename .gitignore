@@ -15,5 +15,11 @@ node_modules/
 site/
 העתקים ושחזורים - לא לגעת!/
 
+server/node_modules/
+server/.env
+server/prisma/*.db
+server/prisma/*.db-journal
 mobile/node_modules/
 mobile/.expo/
+mobile/.env
+mobile/.env.local

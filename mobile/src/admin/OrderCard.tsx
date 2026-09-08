@@ -9,6 +9,7 @@ type Props = {
   status: string;
   isOpen: boolean;
   note?: CancelNote;
+  flow?: string[];
   onToggle: () => void;
   onAdvance: () => void;
   onCancel: () => void;
@@ -31,12 +32,12 @@ function detailRows(order: AdminOrder, cancelled: boolean, note?: CancelNote) {
   ]);
 }
 
-export function OrderCard({ order, status, isOpen, note, onToggle, onAdvance, onCancel }: Props) {
+export function OrderCard({ order, status, isOpen, note, flow = FLOW, onToggle, onAdvance, onCancel }: Props) {
   const hue = HUES[order.key];
   const cancelled = status === CANCELLED;
   const tone = TONE[status] ?? TONE['חדשה'];
-  const step = FLOW.indexOf(status);
-  const isLast = step >= FLOW.length - 1;
+  const step = flow.indexOf(status);
+  const isLast = step >= flow.length - 1;
   const rows = detailRows(order, cancelled, note);
 
   return (
@@ -83,7 +84,7 @@ export function OrderCard({ order, status, isOpen, note, onToggle, onAdvance, on
                   ]}
                 >
                   <Text style={[s.nextText, { color: isLast ? '#A79FB2' : hue.deep }]}>
-                    {isLast ? 'ההזמנה נמסרה' : `סמני כ${FLOW[step + 1]}`}
+                    {isLast ? 'ההזמנה נמסרה' : `סמני כ${flow[step + 1]}`}
                   </Text>
                 </Pressable>
                 <Pressable onPress={onCancel} style={s.kill} hitSlop={6}>

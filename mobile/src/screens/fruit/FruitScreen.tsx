@@ -80,6 +80,7 @@ export function FruitScreen() {
         lines={lines}
         total={total}
         accent={ACCENT}
+        details={{ category: 'fruit', qty }}
         onHome={() => {
           f.reset();
           go(loggedIn ? 'main' : 'guest');

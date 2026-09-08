@@ -139,6 +139,13 @@ export function SchnitzelScreen() {
         lines={o.lines}
         total={o.total}
         accent={ACCENT}
+        details={{
+          category: 'schn',
+          mode: o.isUnit ? 'unit' : 'box',
+          rolls: o.basket,
+          box: o.box,
+          cocottes: o.cocottes,
+        }}
         onHome={() => {
           f.reset();
           go(loggedIn ? 'main' : 'guest');

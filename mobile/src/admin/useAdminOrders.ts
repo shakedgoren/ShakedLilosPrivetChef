@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BOOK,
   CANCELLED,
@@ -7,6 +7,11 @@ import {
   type AdminCatKey,
   type AdminOrder,
 } from '../data/adminOrders';
+import { KITCHEN_FLOW } from '../api/status';
+import { apiEnabled } from '../api/config';
+import { adminCreateOrder, adminListOrders, adminSetStatus } from '../api/orders';
+import { useNav } from '../navigation/store';
+import type { AdminCard } from '../api/types';
 import {
   EMPTY_DRAFT,
   isReady,
@@ -26,13 +31,35 @@ const EMPTY_CX: CancelNote = { reason: '', note: '' };
 /** שעות ההזמנה שנפתחת ידנית · יום שלם קדימה, אף פעם לא ביטול מאוחר */
 const MANUAL_ORDER_HOURS = 24;
 
+const cardToOrder = (c: AdminCard): AdminOrder => ({
+  id: c.id,
+  key: c.key,
+  status: c.status,
+  who: c.who,
+  phone: c.phone,
+  time: c.time,
+  items: c.items,
+  sum: c.sum,
+  ship: c.ship,
+  pay: c.pay,
+  via: c.via,
+  hrs: c.hrs,
+  cancelReason: c.cancelReason,
+  cancelNote: c.cancelNote,
+});
+
 export function useAdminOrders() {
+  const { user } = useNav();
+  const live = apiEnabled && user?.role === 'admin';
+  const flow = live ? [...KITCHEN_FLOW] : FLOW;
+
   const [tab, setTab] = useState('הכל');
   const [open, setOpen] = useState(-1);
   /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
   const [moved, setMoved] = useState<Record<number, string>>({});
   const [notes, setNotes] = useState<Record<number, CancelNote>>({});
   const [extra, setExtra] = useState<AdminOrder[]>([]);
+  const [remote, setRemote] = useState<AdminOrder[]>([]);
   const [newOpen, setNewOpen] = useState(false);
   const [draft, setDraft] = useState<NewOrderDraft>(EMPTY_DRAFT);
   /* איזו הזמנה בתהליך ביטול · -1 = אין */
@@ -40,12 +67,35 @@ export function useAdminOrders() {
   const [cx, setCx] = useState<CancelNote>(EMPTY_CX);
   const [pop, setPop] = useState<RollPop>(null);
 
-  /* הרשימה המלאה · הזמנות ההדגמה ואחריהן הזמנות שנפתחו ידנית */
-  const allOrders = useMemo(() => ORDERS.concat(extra), [extra]);
+  const reload = useCallback(async () => {
+    if (!live) return;
+    const { cards } = await adminListOrders();
+    setRemote(cards.map(cardToOrder));
+  }, [live]);
+
+  useEffect(() => {
+    void reload().catch(() => setRemote([]));
+  }, [reload]);
+
+  /* הרשימה המלאה · מהשרת כשמחוברים כמנהלת, אחרת הדגמה */
+  const allOrders = useMemo(
+    () => (live ? remote : ORDERS.concat(extra)),
+    [live, remote, extra],
+  );
 
   const statusOf = useCallback(
-    (i: number) => moved[i] ?? allOrders[i].status,
-    [moved, allOrders],
+    (i: number) => (live ? allOrders[i].status : (moved[i] ?? allOrders[i].status)),
+    [live, moved, allOrders],
+  );
+
+  const noteOf = useCallback(
+    (i: number): CancelNote | undefined => {
+      if (notes[i]) return notes[i];
+      const o = allOrders[i];
+      if (o?.cancelReason) return { reason: o.cancelReason, note: o.cancelNote ?? '' };
+      return undefined;
+    },
+    [notes, allOrders],
   );
 
   const toggle = useCallback((i: number) => setOpen((cur) => (cur === i ? -1 : i)), []);
@@ -60,11 +110,18 @@ export function useAdminOrders() {
     (i: number) => {
       const cur = statusOf(i);
       if (cur === CANCELLED) return;
-      const k = FLOW.indexOf(cur);
-      if (k < 0 || k >= FLOW.length - 1) return;
-      setMoved((m) => ({ ...m, [i]: FLOW[k + 1] }));
+      const k = flow.indexOf(cur);
+      if (k < 0 || k >= flow.length - 1) return;
+      const next = flow[k + 1];
+      if (live) {
+        const id = allOrders[i].id;
+        if (!id) return;
+        void adminSetStatus(id, next).then(reload).catch(() => undefined);
+        return;
+      }
+      setMoved((m) => ({ ...m, [i]: next }));
     },
-    [statusOf],
+    [statusOf, flow, live, allOrders, reload],
   );
 
   /* ── ביטול ── */
@@ -82,11 +139,21 @@ export function useAdminOrders() {
   const doCancel = useCallback(() => {
     if (!cancelReady) return;
     const i = cancelling;
+    if (live) {
+      const id = allOrders[i]?.id;
+      if (!id) return;
+      void adminSetStatus(id, CANCELLED, { reason: cx.reason, note: cx.note })
+        .then(reload)
+        .catch(() => undefined);
+      setCancelling(-1);
+      setOpen(i);
+      return;
+    }
     setMoved((m) => ({ ...m, [i]: CANCELLED }));
     setNotes((n) => ({ ...n, [i]: cx }));
     setCancelling(-1);
     setOpen(i);
-  }, [cancelReady, cancelling, cx]);
+  }, [cancelReady, cancelling, cx, live, allOrders, reload]);
 
   /* ── ההזמנה הידנית ── */
   const setField = useCallback(
@@ -152,6 +219,24 @@ export function useAdminOrders() {
   /* השמירה מוסיפה את ההזמנה לרשימה · לקוחה שאינה בפנקס נפתחת עם ההזמנה */
   const saveNew = useCallback(() => {
     if (!isReady(draft)) return;
+    if (live) {
+      void adminCreateOrder({
+        category: draft.cat,
+        name: trim(draft.name),
+        phone: draft.phone,
+        ship: draft.ship,
+        area: draft.area,
+        address: trim(draft.addr),
+        time: trim(draft.time) || '12:00',
+        qty: draft.qty,
+        rolls: draft.rolls,
+      })
+        .then(reload)
+        .catch(() => undefined);
+      setNewOpen(false);
+      setDraft(EMPTY_DRAFT);
+      return;
+    }
     const row: AdminOrder = {
       key: draft.cat,
       who: trim(draft.name),
@@ -168,13 +253,13 @@ export function useAdminOrders() {
     setExtra((e) => [...e, row]);
     setNewOpen(false);
     setDraft(EMPTY_DRAFT);
-  }, [draft]);
+  }, [draft, live, reload]);
 
   const isKnown = BOOK.some((b) => norm(b.phone) === norm(draft.phone));
 
   return {
     tab, open, moved, notes, extra, newOpen, draft, cancelling, cx, pop,
-    allOrders, statusOf, isKnown, cancelReady,
+    allOrders, statusOf, noteOf, isKnown, cancelReady, live, flow,
     toggle, pickTab, advance,
     askCancel, closeCancel, setCxField, doCancel,
     openNew: useCallback(() => setNewOpen(true), []),
