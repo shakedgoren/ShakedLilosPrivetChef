@@ -69,7 +69,23 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | GET | `/admin/orders/:id` | admin | |
 | PATCH | `/admin/orders/:id/status` | admin | `{ status, reason?, note? }` |
 | POST | `/admin/orders` | admin | הזמנה ידנית (קוסקוס / שישניצל לפי התפריט ב-admin) |
-| GET | `/admin/customers` | admin | לקוחות |
+| GET | `/admin/customers` | admin | לקוחות עם ספירת הזמנות, מחזור והערה |
+| PATCH | `/admin/customers/:id` | admin | `{ note }` |
+| GET/PUT | `/admin/days` · `/admin/days/:date` | admin | לוח ימי מכירה, מכסות, חסימות |
+| GET | `/admin/stock/sale` | admin | מלאי מכירה מימים פתוחים |
+| PATCH | `/admin/stock/sale/:date/waste` | admin | `{ dishId, waste }` |
+| GET/POST/PATCH/DELETE | `/admin/stock/supply` | admin | מלאי לוגיסטי |
+| GET/PUT | `/admin/shop/active` | admin | רשימת הקניות הפתוחה |
+| POST | `/admin/shop/active/close` | admin | סגירה · הוצאה + היסטוריה |
+| GET | `/admin/shop/history` | admin | קניות שנסגרו |
+| GET | `/admin/money?period=month\|quart\|year` | admin | מחזור, הוצאות, רווח (בלי פירות, בלי מע״מ) |
+| GET | `/admin/menu` | admin | מחיר/עלות/רווח ממסך העלויות |
+| GET/PUT | `/admin/costs` · `/admin/costs/:id` | admin | מתכוני ייצור |
+| POST | `/admin/costs/import/:listId` | admin | ייבוא מחירים מקנייה |
+| GET | `/admin/summary` | admin | בית הניהול |
+| GET | `/admin/board` | admin | לוח מכירה · `?date=&category=` |
+| PATCH | `/admin/orders/:id/qty` | admin | עדכון כמויות בלוח (קוסקוס) |
+
 
 Authorization: `Bearer <token>`.
 
@@ -103,8 +119,13 @@ Authorization: `Bearer <token>`.
 
 ## סכמה
 
-- `User` — role `customer` | `admin`, email ו/או phone, name, address, city
+- `User` — role `customer` | `admin`, email ו/או phone, name, address, city, note
 - `PasswordReset` — טוקן לשעה
 - `Order` — category, status, fulfillment, `itemsJson` / `detailsJson`, `itemsTotal` + `shippingFee` + `total` (בלי מע״מ)
+- `SaleDay` — תאריך, חסימה, קטגוריה, פתוח/סגור, מכסות, מנות שירדו
+- `SupplyItem` — מלאי לוגיסטי
+- `ShoppingList` — רשימת קניות פתוחה או סגורה (היסטוריה)
+- `ProductionDish` — מתכון ומחיר ליחידה (מסך עלויות → תפריט)
+- `Expense` — הוצאה לפי קטגוריה / חודש
 
 הזמנת לקוחה מהאפליקציה **לא** מוסיפה דמי משלוח (המסך הנוכחי לא גובה אותם). הזמנה ידנית בניהול כן, לפי `SHIP_FEE` (יבנה 20 / אחר 60).

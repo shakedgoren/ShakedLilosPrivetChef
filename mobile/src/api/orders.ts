@@ -37,4 +37,5 @@ export const adminCreateOrder = (body: {
   pay?: string;
   qty?: Record<string, number>;
   rolls?: { type: string; tops: string[] }[];
+  saleDate?: string;
 }) => api<{ order: Order; card: AdminCard }>('/admin/orders', { body });

@@ -10,6 +10,7 @@ import {
 import { KITCHEN_FLOW } from '../api/status';
 import { apiEnabled } from '../api/config';
 import { adminCreateOrder, adminListOrders, adminSetStatus } from '../api/orders';
+import { adminListCustomers } from '../api/admin';
 import { useNav } from '../navigation/store';
 import type { AdminCard } from '../api/types';
 import {
@@ -60,6 +61,7 @@ export function useAdminOrders() {
   const [notes, setNotes] = useState<Record<number, CancelNote>>({});
   const [extra, setExtra] = useState<AdminOrder[]>([]);
   const [remote, setRemote] = useState<AdminOrder[]>([]);
+  const [book, setBook] = useState(BOOK);
   const [newOpen, setNewOpen] = useState(false);
   const [draft, setDraft] = useState<NewOrderDraft>(EMPTY_DRAFT);
   /* איזו הזמנה בתהליך ביטול · -1 = אין */
@@ -71,6 +73,18 @@ export function useAdminOrders() {
     if (!live) return;
     const { cards } = await adminListOrders();
     setRemote(cards.map(cardToOrder));
+    try {
+      const { customers } = await adminListCustomers();
+      setBook(
+        customers.map((c) => ({
+          name: c.name,
+          phone: c.phone ?? '',
+          addr: [c.address, c.city].filter(Boolean).join(', '),
+        })),
+      );
+    } catch {
+      /* הפנקס נשאר כפי שהוא */
+    }
   }, [live]);
 
   useEffect(() => {
@@ -255,11 +269,11 @@ export function useAdminOrders() {
     setDraft(EMPTY_DRAFT);
   }, [draft, live, reload]);
 
-  const isKnown = BOOK.some((b) => norm(b.phone) === norm(draft.phone));
+  const isKnown = book.some((b) => norm(b.phone) === norm(draft.phone));
 
   return {
     tab, open, moved, notes, extra, newOpen, draft, cancelling, cx, pop,
-    allOrders, statusOf, noteOf, isKnown, cancelReady, live, flow,
+    allOrders, statusOf, noteOf, isKnown, cancelReady, live, flow, book,
     toggle, pickTab, advance,
     askCancel, closeCancel, setCxField, doCancel,
     openNew: useCallback(() => setNewOpen(true), []),

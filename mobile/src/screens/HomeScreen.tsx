@@ -5,6 +5,7 @@ import { CARD, CategoryCard } from '../components/CategoryCard';
 import { CategoryRail } from '../components/CategoryRail';
 import { CATEGORIES } from '../data/categories';
 import { radius, space, surface, type } from '../theme/tokens';
+import { HOME_TITLE } from '../data/adminHome';
 import { useNav, type Screen } from '../navigation/store';
 
 /**
@@ -13,8 +14,9 @@ import { useNav, type Screen } from '../navigation/store';
  * אחרי התחברות מוצגת תיבת המכירה הקרובה — כמו בקנבס.
  */
 export function HomeScreen() {
-  const { loggedIn, go } = useNav();
+  const { loggedIn, go, user } = useNav();
   const [active, setActive] = useState(0);
+  const isAdmin = user?.role === 'admin';
 
   return (
     <ScrollView
@@ -61,6 +63,12 @@ export function HomeScreen() {
           </Pressable>
         </View>
       )}
+
+      {isAdmin ? (
+        <Pressable onPress={() => go('admin')} style={s.adminEntry}>
+          <Text style={s.adminEntryText}>{HOME_TITLE}</Text>
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
@@ -99,4 +107,15 @@ const s = StyleSheet.create({
   btnGoText: { fontSize: 20, fontWeight: '600', color: '#FFFFFF' },
   btnPlain: { backgroundColor: '#FFFFFF' },
   btnPlainText: { fontSize: 20, fontWeight: '600', color: '#6E6480' },
+  adminEntry: {
+    alignSelf: 'center',
+    marginTop: 18,
+    height: 40,
+    paddingHorizontal: 22,
+    borderRadius: 999,
+    backgroundColor: '#C6B3EC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adminEntryText: { fontSize: 16, fontWeight: '600', color: '#43307A' },
 });

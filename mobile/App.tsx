@@ -16,6 +16,12 @@ import { AdminOrdersScreen } from './src/admin/AdminOrdersScreen';
 import { AdminDaysScreen } from './src/admin/AdminDaysScreen';
 import { AdminStockScreen } from './src/admin/AdminStockScreen';
 import { AdminShoppingScreen } from './src/admin/AdminShoppingScreen';
+import { AdminMoneyScreen } from './src/admin/AdminMoneyScreen';
+import { AdminCustomersScreen } from './src/admin/AdminCustomersScreen';
+import { AdminMenuScreen } from './src/admin/AdminMenuScreen';
+import { AdminCostsScreen } from './src/admin/AdminCostsScreen';
+import { AdminHistoryScreen } from './src/admin/AdminHistoryScreen';
+import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
 import { AdminNav } from './src/admin/AdminNav';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
@@ -44,32 +50,34 @@ const ADMIN_SCREENS: Screen[] = [
 const TODO_TITLES: Partial<Record<Screen, string>> = {
   orders: 'ההזמנות שלי',
   profile: 'אזור אישי',
-  adminMoney: 'ניהול · כספים',
-  adminCustomers: 'ניהול · לקוחות',
-  adminMenu: 'ניהול · תפריט',
-  adminCosts: 'ניהול · עלויות',
-  adminHistory: 'ניהול · היסטוריה',
-  adminBoard: 'ניהול · לוח מכירה',
 };
 
 function Router() {
-  const { screen } = useNav();
+  const { screen, user, apiEnabled } = useNav();
+  const gated = ADMIN_SCREENS.includes(screen) && apiEnabled && user?.role !== 'admin';
+  const view = gated ? 'main' : screen;
 
-  if (screen === 'guest' || screen === 'main') return <HomeScreen />;
-  if (screen === 'login') return <LoginScreen mode="in" />;
-  if (screen === 'signup') return <LoginScreen mode="up" />;
-  if (screen === 'cous') return <CouscousScreen />;
-  if (screen === 'schn') return <SchnitzelScreen />;
-  if (screen === 'fruit') return <FruitScreen />;
-  if (screen === 'box') return <BoxesScreen />;
-  if (screen === 'chef') return <ChefScreen />;
-  if (screen === 'admin') return <AdminHomeScreen />;
-  if (screen === 'adminOrders') return <AdminOrdersScreen />;
-  if (screen === 'adminDays') return <AdminDaysScreen />;
-  if (screen === 'adminStock') return <AdminStockScreen />;
-  if (screen === 'adminShopping') return <AdminShoppingScreen />;
-  if (CATEGORY_SCREENS.includes(screen as CategoryKey))
-    return <CategoryScreen categoryKey={screen as CategoryKey} />;
+  if (view === 'guest' || view === 'main') return <HomeScreen />;
+  if (view === 'login') return <LoginScreen mode="in" />;
+  if (view === 'signup') return <LoginScreen mode="up" />;
+  if (view === 'cous') return <CouscousScreen />;
+  if (view === 'schn') return <SchnitzelScreen />;
+  if (view === 'fruit') return <FruitScreen />;
+  if (view === 'box') return <BoxesScreen />;
+  if (view === 'chef') return <ChefScreen />;
+  if (view === 'admin') return <AdminHomeScreen />;
+  if (view === 'adminOrders') return <AdminOrdersScreen />;
+  if (view === 'adminDays') return <AdminDaysScreen />;
+  if (view === 'adminStock') return <AdminStockScreen />;
+  if (view === 'adminShopping') return <AdminShoppingScreen />;
+  if (view === 'adminMoney') return <AdminMoneyScreen />;
+  if (view === 'adminCustomers') return <AdminCustomersScreen />;
+  if (view === 'adminMenu') return <AdminMenuScreen />;
+  if (view === 'adminCosts') return <AdminCostsScreen />;
+  if (view === 'adminHistory') return <AdminHistoryScreen />;
+  if (view === 'adminBoard') return <AdminBoardScreen />;
+  if (CATEGORY_SCREENS.includes(view as CategoryKey))
+    return <CategoryScreen categoryKey={view as CategoryKey} />;
 
   /* מסכים שטרם הועברו מהעיצוב */
   return (
@@ -82,8 +90,10 @@ function Router() {
 
 /** הנאב-בר הנכון למסך הנוכחי · של הניהול או של הלקוחה */
 function Chrome() {
-  const { screen } = useNav();
-  return ADMIN_SCREENS.includes(screen) ? <AdminNav /> : <BottomNav />;
+  const { screen, user, apiEnabled } = useNav();
+  if (screen === 'adminBoard') return null;
+  const showAdmin = ADMIN_SCREENS.includes(screen) && (!apiEnabled || user?.role === 'admin');
+  return showAdmin ? <AdminNav /> : <BottomNav />;
 }
 
 export default function App() {

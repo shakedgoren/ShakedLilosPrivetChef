@@ -9,12 +9,14 @@ import { CancelSheet } from './CancelSheet';
 import { NewOrderSheet } from './NewOrderSheet';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
+import { useNav } from '../navigation/store';
 
 const ALL = 'הכל';
 const COUS = HUES.cous;
 /* לשוניות הסינון · המסלול בלי המצב האחרון, ואחריו ״בוטלה״ */
 
 export function AdminOrdersScreen() {
+  const { go } = useNav();
   const admin = useAdminOrders();
   const TABS = [ALL, ...admin.flow.slice(0, -1), CANCELLED];
 
@@ -34,7 +36,10 @@ export function AdminOrdersScreen() {
     <AdminShell
       title="הזמנות"
       sub={ORDERS_SUBTITLE}
-      actions={[{ label: 'הזמנה ידנית', onPress: admin.openNew, primary: true }]}
+      actions={[
+        { label: 'לוח מכירה', onPress: () => go('adminBoard') },
+        { label: 'הזמנה ידנית', onPress: admin.openNew, primary: true },
+      ]}
     >
       <View style={s.tabs}>
         {TABS.map((name) => (

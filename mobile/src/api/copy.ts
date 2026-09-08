@@ -9,6 +9,9 @@ export const COPY = {
   google: 'התחברות עם גוגל עדיין לא פעילה',
   orderFail: 'לא הצלחנו לשמור את ההזמנה · נסי שוב',
   whoInvalid: 'צריך אימייל או מספר טלפון תקין',
+  adminOnly: 'הניהול פתוח רק למנהלת',
+  shopHome: 'לחנות',
+  saveFail: 'לא הצלחנו לשמור · נסי שוב',
 };
 
 export function authError(code: string): string {

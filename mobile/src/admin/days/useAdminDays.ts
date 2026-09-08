@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CATS,
   SEED,
@@ -8,6 +8,9 @@ import {
   type DayCatKey,
   type DayRecord,
 } from '../../data/adminDays';
+import { apiEnabled } from '../../api/config';
+import { adminGetDays, adminPutDay } from '../../api/admin';
+import { useNav } from '../../navigation/store';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 /** מפתח היום · 2026-09-08 */
@@ -18,6 +21,8 @@ const freshQuota = (cat: DayCatKey): Record<string, number> =>
   Object.fromEntries(CATS[cat].dishes.map((d) => [d.id, d.q]));
 
 export function useAdminDays() {
+  const { user } = useNav();
+  const live = apiEnabled && user?.role === 'admin';
   const [year, setYear] = useState(START_YEAR);
   const [month, setMonth] = useState(START_MONTH);
   const [selected, setSelected] = useState(dayKey(START_YEAR, START_MONTH, START_DAY));
@@ -25,12 +30,37 @@ export function useAdminDays() {
     JSON.parse(JSON.stringify(SEED)),
   );
 
+  const reload = useCallback(async () => {
+    if (!live) return;
+    const from = dayKey(year, month, 1);
+    const last = new Date(year, month + 1, 0).getDate();
+    const to = dayKey(year, month, last);
+    const res = await adminGetDays(from, to);
+    setDays(res.days as Record<string, DayRecord>);
+  }, [live, year, month]);
+
+  useEffect(() => {
+    void reload().catch(() => undefined);
+  }, [reload]);
+
   /* היום הנבחר · נוצר בעצלתיים כשנוגעים בו */
   const rec = useCallback((k: string): DayRecord => days[k] ?? {}, [days]);
 
   const put = useCallback((k: string, patch: DayRecord) => {
-    setDays((prev) => ({ ...prev, [k]: { ...(prev[k] ?? {}), ...patch } }));
-  }, []);
+    setDays((prev) => {
+      const next = { ...(prev[k] ?? {}), ...patch };
+      if (live) {
+        void adminPutDay(k, {
+          blocked: next.blocked ?? false,
+          sale: next.sale ?? null,
+          except: next.except ?? null,
+          open: next.open ?? false,
+          q: next.q ?? {},
+        }).catch(() => undefined);
+      }
+      return { ...prev, [k]: next };
+    });
+  }, [live]);
 
   const step = useCallback((dir: number) => {
     setMonth((m) => {
