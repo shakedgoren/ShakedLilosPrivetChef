@@ -6,6 +6,7 @@ import { BottomNav } from './src/components/BottomNav';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
+import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
 
@@ -21,6 +22,7 @@ function Router() {
   if (screen === 'guest' || screen === 'main') return <HomeScreen />;
   if (screen === 'login') return <LoginScreen mode="in" />;
   if (screen === 'signup') return <LoginScreen mode="up" />;
+  if (screen === 'cous') return <CouscousScreen />;
   if (CATEGORY_SCREENS.includes(screen as CategoryKey))
     return <CategoryScreen categoryKey={screen as CategoryKey} />;
 
