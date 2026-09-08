@@ -11,6 +11,8 @@ import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
 import { FruitScreen } from './src/screens/fruit/FruitScreen';
 import { BoxesScreen } from './src/screens/boxes/BoxesScreen';
 import { ChefScreen } from './src/screens/chef/ChefScreen';
+import { MyOrdersScreen } from './src/screens/MyOrdersScreen';
+import { ProfileScreen } from './src/screens/ProfileScreen';
 import { AdminHomeScreen } from './src/admin/AdminHomeScreen';
 import { AdminOrdersScreen } from './src/admin/AdminOrdersScreen';
 import { AdminDaysScreen } from './src/admin/AdminDaysScreen';
@@ -47,11 +49,6 @@ const ADMIN_SCREENS: Screen[] = [
   'adminBoard',
 ];
 
-const TODO_TITLES: Partial<Record<Screen, string>> = {
-  orders: 'ההזמנות שלי',
-  profile: 'אזור אישי',
-};
-
 function Router() {
   const { screen, user, apiEnabled } = useNav();
   const gated = ADMIN_SCREENS.includes(screen) && apiEnabled && user?.role !== 'admin';
@@ -65,6 +62,8 @@ function Router() {
   if (view === 'fruit') return <FruitScreen />;
   if (view === 'box') return <BoxesScreen />;
   if (view === 'chef') return <ChefScreen />;
+  if (view === 'orders') return <MyOrdersScreen />;
+  if (view === 'profile') return <ProfileScreen />;
   if (view === 'admin') return <AdminHomeScreen />;
   if (view === 'adminOrders') return <AdminOrdersScreen />;
   if (view === 'adminDays') return <AdminDaysScreen />;
@@ -79,11 +78,11 @@ function Router() {
   if (CATEGORY_SCREENS.includes(view as CategoryKey))
     return <CategoryScreen categoryKey={view as CategoryKey} />;
 
-  /* מסכים שטרם הועברו מהעיצוב */
+  /* כל 22 המסכים מנותבים · הענף הזה נשאר כרשת ביטחון בלבד */
   return (
     <View style={s.todo}>
-      <Text style={s.todoText}>{TODO_TITLES[screen] ?? 'אזור אישי'}</Text>
-      <Text style={s.todoSub}>המסך הזה עדיין לא הועבר מהעיצוב</Text>
+      <Text style={s.todoText}>{screen}</Text>
+      <Text style={s.todoSub}>מסך לא מוכר</Text>
     </View>
   );
 }
