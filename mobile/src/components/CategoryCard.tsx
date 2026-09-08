@@ -2,6 +2,16 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import type { Category } from '../data/categories';
+import { Photo } from './Photo';
+
+/** תמונת הקטגוריה · שם הקובץ מהטבלה של שקד */
+const PHOTO_BY_CATEGORY: Record<string, string> = {
+  cous: 'cat-couscous',
+  schn: 'cat-schnitzel',
+  box: 'cat-boxes',
+  fruit: 'cat-fruit',
+  chef: 'cat-chef',
+};
 
 /** כרטיס הקטגוריה · 342×181, בדיוק כמו בקנבס */
 export const CARD = { width: 342, height: 181, gap: 12 } as const;
@@ -28,10 +38,7 @@ export function CategoryCard({ item, active, onPress }: Props) {
         <Text style={s.desc}>{item.desc}</Text>
       </View>
 
-      {/* מקום התמונה · עד שנחבר את התמונות של שקד */}
-      <View style={[s.shot, { borderColor: a(item.rgb, 0.34) }]}>
-        <Text style={[s.shotLabel, { color: a(item.rgb, 0.72) }]}>תמונה</Text>
-      </View>
+      <Photo name={PHOTO_BY_CATEGORY[item.key]} rgb={item.rgb} style={s.shot} />
     </Pressable>
   );
 }
@@ -52,15 +59,5 @@ const s = StyleSheet.create({
   title: { fontSize: type.title, fontWeight: '600', lineHeight: type.title * 1.1, color: surface.ink },
   sub: { fontSize: type.subtitle, lineHeight: type.subtitle * 1.3, marginTop: 5 },
   desc: { fontSize: type.body, lineHeight: type.body * 1.65, color: surface.muted, marginTop: 6 },
-  shot: {
-    width: 128,
-    height: 128,
-    alignSelf: 'center',
-    borderRadius: 64,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shotLabel: { fontSize: 9.5, letterSpacing: 0.6 },
+  shot: { width: 128, height: 128, alignSelf: 'center', borderRadius: 64, overflow: 'hidden' },
 });

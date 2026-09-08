@@ -6,6 +6,7 @@ import { apiEnabled } from '../api/config';
 import { forgotPassword, googleStub, login, register } from '../api/auth';
 import { authError, COPY } from '../api/copy';
 import { ApiError } from '../api/types';
+import { Photo } from '../components/Photo';
 
 /** מסך הכניסה וההרשמה · הטאב הפתוח נקבע לפי המסך שממנו הגענו */
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
@@ -67,6 +68,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
   return (
     <View style={s.page}>
+      {/* עיגול הזכוכית עם הלוגו · 84px בקנבס, הלוגו 62px בתוכו */}
+      <View style={s.logoRing}>
+        <Photo name="logo" style={s.logo} resizeMode="contain" />
+      </View>
+
       <View style={s.tabs}>
         <Pressable onPress={() => setTab('in')} style={s.tab}>
           <Text style={[s.tabText, isIn && s.tabOn]}>כניסה</Text>
@@ -124,6 +130,19 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 }
 
 const s = StyleSheet.create({
+  logoRing: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignSelf: 'center',
+    marginBottom: 18,
+    backgroundColor: 'rgba(123,92,188,0.09)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: { width: 62, height: 62 },
   page: { flex: 1, backgroundColor: surface.ground, padding: space.xl, paddingTop: 90, gap: space.md },
   tabs: { flexDirection: 'row', gap: space.lg, marginBottom: space.sm },
   tab: { paddingVertical: 6 },

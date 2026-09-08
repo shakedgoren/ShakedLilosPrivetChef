@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BOXES_FULFILLMENT } from '../../data/boxes';
 import { CategoryHeader } from '../../components/CategoryHeader';
+import { Photo } from '../../components/Photo';
+import { BOX_PHOTOS } from '../../data/photos';
 import { LoginGate } from '../../components/LoginGate';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
@@ -48,7 +50,12 @@ export function BoxesScreen() {
             ))}
 
             {o.box.sections.map((sec, i) => (
-              <SectionRenderer key={`${sec.kind}-${sec.id ?? i}`} s={sec} api={o} />
+              <SectionRenderer
+                key={`${sec.kind}-${sec.id ?? i}`}
+                s={sec}
+                api={o}
+                photos={BOX_PHOTOS[o.box?.key ?? ''] ?? []}
+              />
             ))}
           </ScrollView>
 
@@ -73,9 +80,7 @@ export function BoxesScreen() {
           <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
             {o.boxes.map((b, i) => (
               <Pressable key={b.key} onPress={() => o.openBox(i)} style={s.card}>
-                <View style={s.shot}>
-                  <Text style={s.shotLabel}>תמונה</Text>
-                </View>
+                <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} />
                 <View style={s.cardText}>
                   <Text style={s.name}>{b.name}</Text>
                   <Text style={s.desc} numberOfLines={3}>
@@ -145,17 +150,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.14)',
   },
-  shot: {
-    width: 76,
-    height: 76,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: a(ACCENT.rgb, 0.34),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shotLabel: { fontSize: 9.5, color: a(ACCENT.rgb, 0.72) },
+  shot: { width: 76, height: 76, borderRadius: radius.field, overflow: 'hidden' },
   cardText: { flex: 1, gap: 3 },
   name: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   desc: { fontSize: 12, color: surface.muted, lineHeight: 17 },

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
+import { Photo } from './Photo';
 
 /**
  * מפות ההגעה לחנייה · הכתובת בגדול, הערת הוויז מתחתיה,
  * וארבע המפות עם כותרת הכיוון על התמונה מימין למעלה.
- * קבצי parking-1..4 עדיין לא הועלו — עד אז מוצג מציין מקום עם שם הקובץ.
+ * ארבע המפות מגיעות מ-design/app/assets · parking-1..4.
  */
 export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const [i, setI] = useState(0);
@@ -21,9 +22,7 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
       <Text style={s.note}>{PICKUP.note}</Text>
 
       <View style={s.frame}>
-        <View style={[s.placeholder, { borderColor: a(rgb, 0.36) }]}>
-          <Text style={[s.placeholderText, { color: a(rgb, 0.66) }]}>{cur.file}</Text>
-        </View>
+        <Photo name={cur.file} rgb={rgb} style={s.map} />
 
         <View style={s.badge}>
           <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
@@ -66,19 +65,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.5)',
     marginTop: space.xs,
   },
-  placeholder: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderRadius: radius.field,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: { fontSize: 10, letterSpacing: 0.6 },
+  map: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   badge: {
     position: 'absolute',
     top: 10,

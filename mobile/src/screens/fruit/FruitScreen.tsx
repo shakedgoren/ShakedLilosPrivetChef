@@ -2,6 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FRUIT_FULFILLMENT, FRUIT_TRAYS } from '../../data/fruit';
 import { CategoryHeader } from '../../components/CategoryHeader';
+import { Photo } from '../../components/Photo';
+
+/** תמונת המגש · לפי סדר FRUIT_TRAYS */
+const TRAY_PHOTOS = ['tray-meruba-large', 'tray-malben-large', 'tray-agol-xl', 'tray-boat'];
 import { LoginGate } from '../../components/LoginGate';
 import { Stepper } from '../../components/Stepper';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
@@ -44,9 +48,7 @@ export function FruitScreen() {
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         {FRUIT_TRAYS.map((t, i) => (
           <View key={t.name} style={s.card}>
-            <View style={s.shot}>
-              <Text style={s.shotLabel}>תמונה</Text>
-            </View>
+            <Photo name={TRAY_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
             <View style={s.text}>
               <Text style={s.name}>{t.name}</Text>
               <Text style={s.desc}>{t.desc}</Text>
@@ -112,17 +114,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.14)',
   },
-  shot: {
-    width: 84,
-    height: 84,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: a(ACCENT.rgb, 0.34),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shotLabel: { fontSize: 9.5, color: a(ACCENT.rgb, 0.72) },
+  shot: { width: 84, height: 84, borderRadius: radius.field, overflow: 'hidden' },
   text: { flex: 1, gap: 4 },
   name: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   desc: { fontSize: 12, color: surface.muted, lineHeight: 17 },

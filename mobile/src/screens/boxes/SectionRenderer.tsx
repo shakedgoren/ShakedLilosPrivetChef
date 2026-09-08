@@ -4,6 +4,7 @@ import type { Section } from '../../data/boxes';
 import { Stepper } from '../../components/Stepper';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
+import { Photo } from '../../components/Photo';
 
 const ACCENT = hues.box;
 
@@ -16,7 +17,16 @@ type Api = {
 };
 
 /** מצייר סעיף אחד מתוך המארז · כל סוגי הסעיפים שהקנבס מגדיר */
-export function SectionRenderer({ s, api }: { s: Section; api: Api }) {
+export function SectionRenderer({
+  s,
+  api,
+  photos = [],
+}: {
+  s: Section;
+  api: Api;
+  /** גלריית המארז הפתוח · סעיף images שואב ממנה לפי הסדר */
+  photos?: string[];
+}) {
   /* סעיף מוסתר נפתח רק כשהבחירה שהוא תלוי בה נעשתה */
   if (s.when && api.picks[s.when.id] !== s.when.is) return null;
 
@@ -46,9 +56,12 @@ export function SectionRenderer({ s, api }: { s: Section; api: Api }) {
       return (
         <View style={st.images}>
           {Array.from({ length: s.count ?? 1 }).map((_, i) => (
-            <View key={i} style={[st.shot, { height: parseInt(s.h ?? '84px', 10) }]}>
-              <Text style={st.shotLabel}>תמונה</Text>
-            </View>
+            <Photo
+              key={i}
+              name={photos[i]}
+              rgb={ACCENT.rgb}
+              style={[st.shot, { height: parseInt(s.h ?? '84px', 10) }]}
+            />
           ))}
         </View>
       );
@@ -199,16 +212,7 @@ const st = StyleSheet.create({
   fine: { fontSize: 11, color: surface.faint },
 
   images: { flexDirection: 'row', gap: space.sm },
-  shot: {
-    flex: 1,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: a(ACCENT.rgb, 0.34),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shotLabel: { fontSize: 9.5, color: a(ACCENT.rgb, 0.66) },
+  shot: { flex: 1, borderRadius: radius.field, overflow: 'hidden' },
 
   field: {
     minHeight: 68,

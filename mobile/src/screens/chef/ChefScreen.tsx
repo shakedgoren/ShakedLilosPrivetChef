@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CHEF_FULFILLMENT } from '../../data/chef';
 import { CategoryHeader } from '../../components/CategoryHeader';
+import { Photo } from '../../components/Photo';
+import { CHEF_PHOTOS, TABON_PHOTOS } from '../../data/photos';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -33,9 +35,7 @@ export function ChefScreen() {
         <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
           {o.packages.map((p, i) => (
             <Pressable key={p.key} onPress={() => o.openPackage(i)} style={s.card}>
-              <View style={s.shot}>
-                <Text style={s.shotLabel}>תמונה</Text>
-              </View>
+              <Photo name={p.key === 'chef' ? CHEF_PHOTOS[0] : TABON_PHOTOS[0]} rgb={ACCENT.rgb} style={s.shot} />
               <View style={s.cardText}>
                 <Text style={s.name}>{p.name}</Text>
                 <Text style={s.desc} numberOfLines={3}>
@@ -153,17 +153,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.14)',
   },
-  shot: {
-    width: 76,
-    height: 76,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: a(ACCENT.rgb, 0.34),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shotLabel: { fontSize: 9.5, color: a(ACCENT.rgb, 0.72) },
+  shot: { width: 76, height: 76, borderRadius: radius.field, overflow: 'hidden' },
   cardText: { flex: 1, gap: 3 },
   name: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   desc: { fontSize: 12, color: surface.muted, lineHeight: 17 },
