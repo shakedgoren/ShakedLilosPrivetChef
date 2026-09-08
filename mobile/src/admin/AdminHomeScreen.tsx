@@ -7,12 +7,12 @@ import {
   HOME_TITLE,
   MANUAL_SUB,
   MANUAL_TITLE,
-  MONTH_CHIP,
   PROFIT,
   REVENUE,
   TODAY,
   type TileKey,
 } from '../data/adminHome';
+import { COPY } from '../api/copy';
 import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
@@ -44,11 +44,11 @@ export function AdminHomeScreen() {
       <View style={s.head}>
         <View style={s.headText}>
           <Text style={s.title}>{HOME_TITLE}</Text>
-          <Text style={s.sub}>{HOME_SUBTITLE}</Text>
+          <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
         </View>
-        <View style={s.monthChip}>
-          <Text style={s.monthText}>{MONTH_CHIP}</Text>
-        </View>
+        <Pressable onPress={() => go('main')} style={s.monthChip}>
+          <Text style={s.monthText}>{COPY.shopHome}</Text>
+        </Pressable>
       </View>
 
       <SalePanel
@@ -59,6 +59,7 @@ export function AdminHomeScreen() {
         step={home.step}
         ringPct={home.ringPct}
         note={home.note}
+        dayLabel={home.subtitle}
       />
 
       <View style={s.row}>
@@ -75,12 +76,12 @@ export function AdminHomeScreen() {
         <View style={s.stats}>
           <GlassCard style={s.stat}>
             <Text style={s.statLabel}>{TODAY.ordersLabel}</Text>
-            <Text style={s.statValue}>{TODAY.orders}</Text>
+            <Text style={s.statValue}>{home.today.orders}</Text>
           </GlassCard>
           <GlassCard style={s.stat}>
             <Text style={s.statLabel}>{TODAY.revenueLabel}</Text>
             <View style={s.statMoney}>
-              <Text style={s.statValue}>{money(TODAY.revenue)}</Text>
+              <Text style={s.statValue}>{money(home.today.revenue)}</Text>
               <Text style={s.currency}>₪</Text>
             </View>
           </GlassCard>
@@ -91,7 +92,7 @@ export function AdminHomeScreen() {
         <View style={s.cardHead}>
           <Text style={s.cardTitle}>{REVENUE.title}</Text>
           <View style={s.statMoney}>
-            <Text style={s.revTotal}>{money(REVENUE.total)}</Text>
+            <Text style={s.revTotal}>{money(home.live && home.month.revenue ? home.month.revenue : REVENUE.total)}</Text>
             <Text style={s.currency}>₪</Text>
           </View>
         </View>
@@ -130,7 +131,7 @@ export function AdminHomeScreen() {
         <GlassCard style={s.profitCard}>
           <Text style={s.cardTitle}>{PROFIT.title}</Text>
           <View style={s.statMoney}>
-            <Text style={s.profitNet}>{money(PROFIT.net)}</Text>
+            <Text style={s.profitNet}>{money(home.live ? home.month.profit : PROFIT.net)}</Text>
             <Text style={s.currencyBig}>₪</Text>
           </View>
           <Text style={s.profitNote}>{PROFIT.netNote}</Text>
@@ -147,7 +148,7 @@ export function AdminHomeScreen() {
         </GlassCard>
       </View>
 
-      <TileRail onOpen={(key) => go(TILE_ROUTES[key])} />
+      <TileRail onOpen={(key) => go(TILE_ROUTES[key])} badges={home.badges} />
     </ScrollView>
   );
 }

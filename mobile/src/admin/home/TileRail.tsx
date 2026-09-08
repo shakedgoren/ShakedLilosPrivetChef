@@ -17,11 +17,26 @@ const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = 
 };
 
 /** רצועת האריחים · שער לשמונת מסכי הניהול */
-export function TileRail({ onOpen }: { onOpen: (key: TileKey) => void }) {
+export function TileRail({
+  onOpen,
+  badges,
+}: {
+  onOpen: (key: TileKey) => void;
+  badges?: Record<string, number | string | boolean>;
+}) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.rail}>
       {TILES.map((t) => {
-        const badge = BADGES[t.key];
+        const fallback = BADGES[t.key];
+        const raw = badges
+          ? t.key === 'costs'
+            ? badges.costs
+              ? '!'
+              : 0
+            : badges[t.key]
+          : fallback.value;
+        const value = raw === true ? '!' : raw === false ? 0 : (raw ?? fallback.value);
+        const tone = fallback.tone;
         return (
           <Pressable key={t.key} onPress={() => onOpen(t.key)} style={s.tile}>
             <Svg width={21} height={21} viewBox="0 0 24 24">
@@ -38,9 +53,9 @@ export function TileRail({ onOpen }: { onOpen: (key: TileKey) => void }) {
               ))}
             </Svg>
             <Text style={s.name}>{t.name}</Text>
-            {badge.value ? (
-              <View style={[s.badge, { backgroundColor: badge.tone.bg }]}>
-                <Text style={[s.badgeText, { color: badge.tone.fg }]}>{badge.value}</Text>
+            {value ? (
+              <View style={[s.badge, { backgroundColor: tone.bg }]}>
+                <Text style={[s.badgeText, { color: tone.fg }]}>{value}</Text>
               </View>
             ) : null}
           </Pressable>

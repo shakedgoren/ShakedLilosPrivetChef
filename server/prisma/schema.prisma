@@ -18,6 +18,7 @@ model User {
   name         String   @default("")
   address      String   @default("")
   city         String   @default("")
+  note         String   @default("")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -67,4 +68,72 @@ model Order {
   @@index([status])
   @@index([category])
   @@index([createdAt])
+  @@index([saleDate])
+}
+
+/// יום בלוח · חסימה, קטגוריית מכירה, מכסות ומנות שירדו
+model SaleDay {
+  date       String  @id
+  blocked    Boolean @default(false)
+  sale       String  @default("")
+  exceptCat  String  @default("")
+  open       Boolean @default(false)
+  quotasJson String  @default("{}")
+  wasteJson  String  @default("{}")
+  updatedAt  DateTime @updatedAt
+}
+
+/// מלאי לוגיסטי · אריזות, יבשים וציוד. ידני, לא קשור למכירות
+model SupplyItem {
+  id        String   @id @default(cuid())
+  groupName String
+  name      String
+  unit      String
+  qty       Int      @default(0)
+  min       Int      @default(0)
+  per       Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// רשימת קניות · פתוחה אחת בכל רגע, סגורה נכנסת להיסטוריה ולהוצאות
+model ShoppingList {
+  id        String    @id @default(cuid())
+  area      String
+  openedAt  DateTime  @default(now())
+  closedAt  DateTime?
+  itemsJson String    @default("[]")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([closedAt])
+  @@index([area])
+}
+
+/// מנת ייצור · מחיר ללקוחה, מתכון ומצב חישוב. מקור למסך התפריט
+model ProductionDish {
+  id        String   @id
+  category  String
+  sub       String   @default("")
+  name      String
+  mode      String
+  price     Float
+  yieldQty  Float    @default(0)
+  note      String   @default("")
+  fromJson  String   @default("[]")
+  partsJson String   @default("[]")
+  updatedAt DateTime @updatedAt
+}
+
+/// הוצאה לפי קטגוריית כספים · גם ידנית וגם מסגירת קנייה
+model Expense {
+  id        String   @id @default(cuid())
+  category  String
+  amount    Int
+  period    String
+  note      String   @default("")
+  source    String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([period])
 }

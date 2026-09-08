@@ -36,6 +36,7 @@ export function publicUser(u: {
   name: string;
   address: string;
   city: string;
+  note?: string;
 }) {
   return {
     id: u.id,
@@ -45,5 +46,6 @@ export function publicUser(u: {
     name: u.name,
     address: u.address,
     city: u.city,
+    note: u.note ?? '',
   };
 }

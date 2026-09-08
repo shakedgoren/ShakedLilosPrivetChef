@@ -1,22 +1,18 @@
 /**
- * עלויות ייצור · הנתונים חולצו אוטומטית מ-AdminCosts.dc.html בקנבס.
- * לעדכון: node scripts/extract-admin-costs.mjs && node scripts/emit-admin-costs.mjs
- *
- * ⚠ המחיר שנקבע כאן הוא המחיר של כל האפליקציה, כולל צד הלקוחה.
- * מגשי הפירות אינם כאן — הם לא בניהול הכספי של שקד.
+ * עלויות ייצור · חולץ מ-AdminCosts.dc.html בקנבס.
+ * המחירים למכירה תואמים את מסכי הלקוחה. המתכונים הם נתוני הדגמה מהקנבס.
  */
 
-export type CostCatKey = 'cous' | 'schn' | 'box' | 'chef';
-export type SubCat = { id: string; n: string };
 export type CostCat = {
-  id: CostCatKey;
+  id: string;
   n: string;
   hue: string;
   deep: string;
   rgb: string;
-  subs: SubCat[] | null;
+  subs: { id: string; n: string }[] | null;
 };
-export const CATS: CostCat[] = [
+
+export const COST_CATS: CostCat[] = [
   {
     "id": "cous",
     "n": "קוסקוס",
@@ -64,9 +60,8 @@ export const CATS: CostCat[] = [
   }
 ];
 
-/** פנקס המצרכים · אותו פנקס של מסך הקניות */
-export type PantryRow = { name: string; unit: string; price: number };
-export const PANTRY: PantryRow[] = [
+export type CostPantry = { name: string; unit: string; price: number };
+export const COST_PANTRY: CostPantry[] = [
   {
     "name": "עגבניות",
     "unit": "ק״ג",
@@ -269,42 +264,32 @@ export const PANTRY: PantryRow[] = [
   }
 ];
 
-/**
- * מצבי חישוב:
- *   unit   · עלות ליחידה   = סה״כ המצרכים ÷ כמה יצא
- *   weight · עלות ל-100 גרם = סה״כ המצרכים ÷ (גרמים ÷ 100)
- *   auto   · העלות נשאבת ממנות אחרות · אין מה למלא חוץ מהמחיר
- */
-export type CostMode = 'unit' | 'weight' | 'auto';
-
-export type Part = { n: string; price: number; qty: number };
-/** מקור שאיבה · id של מנה אחרת, או 'salads:avg' לממוצע הסלטים */
-export type FromRef = { id: string; m: number };
-
-export type Dish = {
+export type CostPart = { n: string; price: number; qty: number };
+export type CostFrom = { id: string; m: number };
+export type CostDish = {
   id: string;
-  c: CostCatKey;
-  sub?: string;
+  c: string;
+  sub: string;
   name: string;
-  mode: CostMode;
+  mode: 'unit' | 'weight' | 'auto' | string;
   price: number;
-  yld?: number;
-  note?: string;
-  from?: FromRef[];
-  parts?: Part[];
+  yld: number;
+  note: string;
+  from: CostFrom[];
+  parts: CostPart[];
 };
-/**
- * ⚠ נתוני הדגמה · המצרכים והכמויות נכתבו על ידי Claude בקנבס.
- * המחירים למכירה נלקחו מהמסכים של הלקוחה.
- */
-export const DISHES: Dish[] = [
+
+export const COST_DISHES: CostDish[] = [
   {
     "id": "cousVeg",
     "c": "cous",
+    "sub": "",
     "name": "קוסקוס צמחוני",
     "mode": "unit",
     "price": 45,
     "yld": 120,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "קוסקוס",
@@ -336,10 +321,13 @@ export const DISHES: Dish[] = [
   {
     "id": "cousChick",
     "c": "cous",
+    "sub": "",
     "name": "קוסקוס עם עוף",
     "mode": "unit",
     "price": 55,
     "yld": 95,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "קוסקוס",
@@ -371,10 +359,13 @@ export const DISHES: Dish[] = [
   {
     "id": "cousMafr",
     "c": "cous",
+    "sub": "",
     "name": "קוסקוס עם מפרום",
     "mode": "unit",
     "price": 65,
     "yld": 70,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "קוסקוס",
@@ -406,10 +397,13 @@ export const DISHES: Dish[] = [
   {
     "id": "addVeg",
     "c": "cous",
+    "sub": "",
     "name": "תוספת ירקות",
     "mode": "unit",
     "price": 10,
     "yld": 60,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "גזר",
@@ -426,10 +420,13 @@ export const DISHES: Dish[] = [
   {
     "id": "addChick",
     "c": "cous",
+    "sub": "",
     "name": "תוספת עוף",
     "mode": "unit",
     "price": 15,
     "yld": 45,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "ירך עוף",
@@ -441,10 +438,13 @@ export const DISHES: Dish[] = [
   {
     "id": "addMafr",
     "c": "cous",
+    "sub": "",
     "name": "תוספת מפרום",
     "mode": "unit",
     "price": 20,
     "yld": 30,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "בשר טחון למפרום",
@@ -456,10 +456,13 @@ export const DISHES: Dish[] = [
   {
     "id": "schThin",
     "c": "schn",
+    "sub": "",
     "name": "חלת שניצל דק",
     "mode": "unit",
     "price": 50,
     "yld": 110,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "חזה עוף",
@@ -491,10 +494,13 @@ export const DISHES: Dish[] = [
   {
     "id": "schTemp",
     "c": "schn",
+    "sub": "",
     "name": "חלת פילה עוף טמפורה",
     "mode": "unit",
     "price": 60,
     "yld": 65,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פילה עוף",
@@ -521,10 +527,13 @@ export const DISHES: Dish[] = [
   {
     "id": "boxThin",
     "c": "schn",
+    "sub": "",
     "name": "מארז שניצל דק",
     "mode": "unit",
     "price": 200,
     "yld": 22,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "חזה עוף",
@@ -551,10 +560,13 @@ export const DISHES: Dish[] = [
   {
     "id": "boxTemp",
     "c": "schn",
+    "sub": "",
     "name": "מארז פילה עוף טמפורה",
     "mode": "unit",
     "price": 250,
     "yld": 14,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פילה עוף",
@@ -581,10 +593,13 @@ export const DISHES: Dish[] = [
   {
     "id": "cocotte",
     "c": "schn",
+    "sub": "",
     "name": "קוקוט רוטב",
     "mode": "unit",
     "price": 3,
     "yld": 140,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "מיונז",
@@ -606,6 +621,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 6000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "עגבניות",
@@ -632,6 +649,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3200,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "ביצים",
@@ -653,6 +672,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3200,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "חציל",
@@ -674,6 +695,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 4500,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "חציל",
@@ -700,6 +723,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "גזר",
@@ -721,6 +746,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 4500,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פלפל אדום",
@@ -747,6 +774,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "כרוב סגול",
@@ -768,6 +797,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 2600,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "כרוב לבן",
@@ -789,6 +820,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 2500,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "כרוב לבן",
@@ -810,6 +843,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 2800,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "סלק",
@@ -831,6 +866,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 4000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פטרוזיליה",
@@ -857,6 +894,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פטרוזיליה",
@@ -883,6 +922,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 4000,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פלפל אדום",
@@ -904,6 +945,8 @@ export const DISHES: Dish[] = [
     "mode": "weight",
     "price": 89,
     "yld": 3500,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פלפל אדום",
@@ -926,6 +969,7 @@ export const DISHES: Dish[] = [
     "price": 25,
     "yld": 40,
     "note": "שומשום, קמח וקלאסית הן אותה חלה ואותו מחיר — מספיק חישוב אחד.",
+    "from": [],
     "parts": [
       {
         "n": "קמח",
@@ -958,6 +1002,7 @@ export const DISHES: Dish[] = [
     "price": 12,
     "yld": 90,
     "note": "העלות הזאת נכנסת אוטומטית לכל ארבעת סוגי האירוע שמתחתיה.",
+    "from": [],
     "parts": [
       {
         "n": "קמח",
@@ -983,6 +1028,8 @@ export const DISHES: Dish[] = [
     "name": "ראש השנה",
     "mode": "auto",
     "price": 18,
+    "yld": 90,
+    "note": "",
     "from": [
       {
         "id": "chBase",
@@ -1000,8 +1047,7 @@ export const DISHES: Dish[] = [
         "price": 110,
         "qty": 1
       }
-    ],
-    "yld": 90
+    ]
   },
   {
     "id": "chHafr",
@@ -1010,6 +1056,8 @@ export const DISHES: Dish[] = [
     "name": "הפרשת חלה",
     "mode": "auto",
     "price": 18,
+    "yld": 60,
+    "note": "",
     "from": [
       {
         "id": "chBase",
@@ -1022,8 +1070,7 @@ export const DISHES: Dish[] = [
         "price": 65,
         "qty": 1
       }
-    ],
-    "yld": 60
+    ]
   },
   {
     "id": "chEvent",
@@ -1032,13 +1079,14 @@ export const DISHES: Dish[] = [
     "name": "ימי הולדת ואירועים",
     "mode": "auto",
     "price": 12,
+    "yld": 0,
+    "note": "",
     "from": [
       {
         "id": "chBase",
         "m": 1
       }
     ],
-    "yld": 0,
     "parts": [
       {
         "n": "שקית נשיאה",
@@ -1059,6 +1107,8 @@ export const DISHES: Dish[] = [
     "name": "פינוק לגן ולכיתה",
     "mode": "auto",
     "price": 16,
+    "yld": 120,
+    "note": "",
     "from": [
       {
         "id": "chBase",
@@ -1076,8 +1126,7 @@ export const DISHES: Dish[] = [
         "price": 60,
         "qty": 1
       }
-    ],
-    "yld": 120
+    ]
   },
   {
     "id": "pkSalads",
@@ -1086,6 +1135,7 @@ export const DISHES: Dish[] = [
     "name": "חגיגה בשולחן · סלטים",
     "mode": "auto",
     "price": 179,
+    "yld": 0,
     "note": "החלות והסלטים נשאבים מהקטגוריות שמעל · כאן רק האריזה והתוספות.",
     "from": [
       {
@@ -1097,7 +1147,6 @@ export const DISHES: Dish[] = [
         "m": 12.5
       }
     ],
-    "yld": 0,
     "parts": [
       {
         "n": "מארז",
@@ -1125,6 +1174,7 @@ export const DISHES: Dish[] = [
     "price": 339,
     "yld": 1,
     "note": "העיקריות כאן נמכרות לפי משקל ולא לפי מנה, ולכן אינן נשאבות מהקוסקוס — מעדכנים אותן ידנית.",
+    "from": [],
     "parts": [
       {
         "n": "ירך עוף",
@@ -1155,6 +1205,7 @@ export const DISHES: Dish[] = [
     "name": "הכל עלינו",
     "mode": "auto",
     "price": 499,
+    "yld": 0,
     "note": "מורכב במלואו משני המארזים שמעל · כאן רק האריזה והתוספות והמחיר הסופי.",
     "from": [
       {
@@ -1166,7 +1217,6 @@ export const DISHES: Dish[] = [
         "m": 1
       }
     ],
-    "yld": 0,
     "parts": [
       {
         "n": "מארז גדול",
@@ -1194,6 +1244,7 @@ export const DISHES: Dish[] = [
     "price": 49,
     "yld": 30,
     "note": "מארז עצמאי · מתעדכן ידנית.",
+    "from": [],
     "parts": [
       {
         "n": "דבש",
@@ -1220,10 +1271,13 @@ export const DISHES: Dish[] = [
   {
     "id": "chefMeal",
     "c": "chef",
+    "sub": "",
     "name": "ארוחת שף · לסועד",
     "mode": "unit",
     "price": 250,
     "yld": 34,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "פילה עוף",
@@ -1255,10 +1309,13 @@ export const DISHES: Dish[] = [
   {
     "id": "tabun",
     "c": "chef",
+    "sub": "",
     "name": "עמדת טאבון · לסועד",
     "mode": "unit",
     "price": 220,
     "yld": 52,
+    "note": "",
+    "from": [],
     "parts": [
       {
         "n": "קמח",
@@ -1284,140 +1341,7 @@ export const DISHES: Dish[] = [
   }
 ];
 
-/**
- * ⚠ הקניות · אותה רשימה שמופיעה במסך היסטוריית הקניות.
- * הייבוא מושך מכאן את המחיר ששולם בפועל ומעדכן בו כל מצרך תואם.
- */
-export type BuyRow = { n: string; p: number; q: number };
-export type Buy = { area: string; d: string; t: string; rows: BuyRow[] };
-export const BUYS: Buy[] = [
-  {
-    "area": "קוסקוס",
-    "d": "1 בספטמבר",
-    "t": "07:40",
-    "rows": [
-      {
-        "n": "עגבניות",
-        "p": 9,
-        "q": 8
-      },
-      {
-        "n": "בצל",
-        "p": 6,
-        "q": 5
-      },
-      {
-        "n": "גזר",
-        "p": 6.5,
-        "q": 4
-      },
-      {
-        "n": "ירך עוף",
-        "p": 43,
-        "q": 12
-      },
-      {
-        "n": "קוסקוס",
-        "p": 17,
-        "q": 10
-      },
-      {
-        "n": "חומוס יבש",
-        "p": 15,
-        "q": 3
-      }
-    ]
-  },
-  {
-    "area": "שניצלים",
-    "d": "30 באוגוסט",
-    "t": "08:15",
-    "rows": [
-      {
-        "n": "חזה עוף",
-        "p": 49,
-        "q": 14
-      },
-      {
-        "n": "פילה עוף",
-        "p": 61,
-        "q": 8
-      },
-      {
-        "n": "פירורי לחם",
-        "p": 13,
-        "q": 4
-      },
-      {
-        "n": "קמח טמפורה",
-        "p": 18,
-        "q": 3
-      },
-      {
-        "n": "קוקוטים",
-        "p": 62,
-        "q": 1
-      }
-    ]
-  },
-  {
-    "area": "מארזים",
-    "d": "28 באוגוסט",
-    "t": "09:00",
-    "rows": [
-      {
-        "n": "קמח",
-        "p": 5.5,
-        "q": 25
-      },
-      {
-        "n": "שמרים",
-        "p": 23,
-        "q": 2
-      },
-      {
-        "n": "שומשום",
-        "p": 19,
-        "q": 2
-      },
-      {
-        "n": "קופסאות אישיות",
-        "p": 78,
-        "q": 3
-      }
-    ]
-  },
-  {
-    "area": "כללי",
-    "d": "24 באוגוסט",
-    "t": "17:05",
-    "rows": [
-      {
-        "n": "מגשי אלומיניום",
-        "p": 94,
-        "q": 2
-      },
-      {
-        "n": "שקית נשיאה",
-        "p": 2.8,
-        "q": 200
-      },
-      {
-        "n": "כרטיס ברכה",
-        "p": 1.7,
-        "q": 150
-      }
-    ]
-  }
-];
-
-/** ⚠ תאריך ההדגמה · ב-1 בחודש התזכורת נדלקת מעצמה */
-export const TODAY = {
-  "y": 2026,
-  "m": 9,
-  "d": 1
-};
-export const MONTHS: string[] = [
+export const COST_MONTHS: string[] = [
   "ינואר",
   "פברואר",
   "מרץ",
@@ -1432,62 +1356,21 @@ export const MONTHS: string[] = [
   "דצמבר"
 ];
 
-/** מתחת לאחוז הזה הרווחיות נחשבת דקה */
-export const THIN_MARGIN = 40;
-/** עומק השאיבה המרבי · מגן מפני מעגל בין מנות */
-export const MAX_DEPTH = 4;
-/** המפתח המיוחד שמושך את ממוצע הסלטים */
-export const SALADS_AVG = 'salads:avg';
-export const SALADS_AVG_LABEL = "ממוצע הסלטים";
-
-export const START_CAT: CostCatKey = "cous";
-export const START_SUB = "salads";
-
-/* ── כותרות ── */
-export const COSTS_TITLE = "עלויות ייצור";
-export const SUB_PREFIX = "עדכון חודשי · ";
-export const DUE_TITLE = "הגיע ה-1 בחודש";
-export const DUE_SUB = "זה הזמן לעדכן את עלויות הייצור";
-export const IMPORT = {
-  label: "ייבוא",
-  title: "ייבוא מרשימת קניות",
-  sub: "המחירים ששולמו בפועל יעדכנו כל מצרך תואם",
-  none: "לא נמצאו מצרכים תואמים",
-  prefix: "עודכנו ",
-  suffix: " שורות מצרכים",
-} as const;
-export const AUTO_TAG = "אוטומטי";
-export const FROM_LABEL = "נשאב מקטגוריות אחרות";
-export const PART_PLACEHOLDER = "שם המצרך";
-export const COLS = {
-  name: "מוצר",
-  price: "מחיר",
-  qty: "כמות",
-  sum: "סה״כ",
-} as const;
-export const PARTS_TITLE = {
-  "auto": "האריזה והתוספות",
-  "manual": "חישוב עלות למנה אחת"
-};
-export const YIELD_LABEL = {
-  "weight": "כמות (גרם)",
-  "unit": "כמות (יח׳)"
-};
-export const PRICE_LABEL = {
-  "weight": "מחיר לק״ג",
-  "unit": "מחיר ליח׳"
-};
-export const ROW_KEYS = {
-  "partsSum": "סה״כ מצרכים",
-  "cost": {
-    "weight": "עלות ל-100 גרם",
-    "unit": "עלות ליחידה"
-  },
-  "costKg": "עלות לק״ג",
-  "profit": {
-    "weight": "רווח לק״ג",
-    "unit": "רווח ליחידה"
-  },
-  "margin": "רווחיות"
-};
-export const SCREEN_NOTE = "המחיר שנקבע כאן הוא המחיר בכל האפליקציה, כולל אצל הלקוחה. העלות עוברת אוטומטית למסך התפריט.";
+export const COSTS_TITLE = 'עלויות ייצור';
+export const COSTS_IMPORT = 'ייבוא';
+export const COSTS_DUE_TITLE = 'הגיע ה-1 בחודש';
+export const COSTS_DUE_SUB = 'זה הזמן לעדכן את עלויות הייצור';
+export const COSTS_IMP_TITLE = 'ייבוא מרשימת קניות';
+export const COSTS_IMP_SUB = 'המחירים ששולמו בפועל יעדכנו כל מצרך תואם';
+export const COSTS_IMP_NONE = 'לא נמצאו מצרכים תואמים';
+export const COSTS_AUTO_TAG = 'אוטומטי';
+export const COSTS_FROM_LABEL = 'נשאב מקטגוריות אחרות';
+export const COSTS_PART_PH = 'שם המצרך';
+export const COSTS_COLS = { name: 'מוצר', price: 'מחיר', qty: 'כמות', sum: 'סה״כ' } as const;
+export const COSTS_FOOT = 'המחיר שנקבע כאן הוא המחיר בכל האפליקציה, כולל אצל הלקוחה. העלות עוברת אוטומטית למסך התפריט.';
+export const COSTS_YIELD_UNIT = 'כמות (יח׳)';
+export const COSTS_YIELD_WEIGHT = 'כמות (גרם)';
+export const COSTS_PRICE_UNIT = 'מחיר ליח׳';
+export const COSTS_PRICE_KG = 'מחיר לק״ג';
+export const COSTS_PARTS_TITLE = 'חישוב עלות למנה אחת';
+export const COSTS_PACK_TITLE = 'האריזה והתוספות';

@@ -13,14 +13,15 @@ type Props = {
   step: number;
   ringPct: string;
   note: string;
+  dayLabel?: string;
 };
 
 /** לוח יום המכירה · מתג פתוח/סגור, טבעות המכסה ומוני המכסה */
-export function SalePanel({ isOpen, onToggle, quotas, onBump, step, ringPct, note }: Props) {
+export function SalePanel({ isOpen, onToggle, quotas, onBump, step, ringPct, note, dayLabel }: Props) {
   return (
     <GlassCard style={s.card}>
       <View style={s.head}>
-        <Text style={s.day}>{`יום מכירה · ${STATE.day}`}</Text>
+        <Text style={s.day}>{`יום מכירה · ${dayLabel || STATE.day}`}</Text>
         <Pressable onPress={onToggle} style={s.toggle} hitSlop={8}>
           <Text style={[s.state, { color: isOpen ? '#437C59' : surface.faint }]}>
             {isOpen ? 'פתוח' : 'סגור'}

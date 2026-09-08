@@ -13,8 +13,8 @@ const PLUM = '#7B5CBC';
 
 type Props = {
   groups: { name: string; count: string; items: ShopRow[] }[];
-  onToggle: (id: number) => void;
-  onDrop: (id: number) => void;
+  onToggle: (id: number | string) => void;
+  onDrop: (id: number | string) => void;
 };
 
 export function ShopTable({ groups, onToggle, onDrop }: Props) {

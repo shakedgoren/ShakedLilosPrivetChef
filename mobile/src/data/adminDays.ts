@@ -1,7 +1,9 @@
 /**
  * ימי מכירה · הנתונים חולצו אוטומטית מ-AdminDays.dc.html בקנבס.
  * לעדכון: node scripts/extract-admin-days.mjs && node scripts/emit-admin-days.mjs
+ * ברירת ימי המכירה (שלישי=קוסקוס, שישי=שניצל) חיה ב-saleWeek.ts — לא בחילוץ.
  */
+import { eachIsoDate, weekdaySale } from './saleWeek';
 
 export const MONTHS: string[] = [
   "ינואר",
@@ -157,6 +159,32 @@ export const SALE_KEYS: DayCatKey[] = [
   "schn"
 ];
 
+export function freshQuota(cat: DayCatKey): Record<string, number> {
+  return Object.fromEntries(CATS[cat].dishes.map((d) => [d.id, d.q]));
+}
+
+/** יום שלישי/שישי בלי שורה שמורה — נפתח כיום מכירה סגור, עם מכסות ברירת המנה. */
+export function impliedWeekdayRecord(iso: string): DayRecord | null {
+  const sale = weekdaySale(iso);
+  if (!sale) return null;
+  return { sale, open: false, q: freshQuota(sale) };
+}
+
+/** שורה קיימת במסד/זרע גוברת. חסרים רק ממולאים לפי יום בשבוע. */
+export function mergeWeekdayDays(
+  stored: Record<string, DayRecord>,
+  from: string,
+  to: string,
+): Record<string, DayRecord> {
+  const out = { ...stored };
+  for (const d of eachIsoDate(from, to)) {
+    if (d in out) continue;
+    const implied = impliedWeekdayRecord(d);
+    if (implied) out[d] = implied;
+  }
+  return out;
+}
+
 export type DayRecord = {
   /** הקטגוריה של יום המכירה */
   sale?: DayCatKey | null;
@@ -173,8 +201,9 @@ export type DayRecord = {
 };
 
 /**
- * ⚠ מצב פתיחה · התאריכים החסומים הועתקו מהשאלון הישן ולא אושרו.
- * כאן הם רק מצב התחלתי — שקד פותחת וסוגרת ימים מהמסך הזה.
+ * מצב פתיחה לספטמבר 2026.
+ * שלישי = קוסקוס, שישי = שניצל · ימי אמצע/סוף השבוע החסומים נשארו מהשאלון הישן.
+ * שלישי ושישי בטווח הזה הם ימי מכירה (סגורים עד שפותחים), לא חסומים.
  */
 export const SEED: Record<string, DayRecord> = {
   "2026-09-01": {
@@ -252,7 +281,12 @@ export const SEED: Record<string, DayRecord> = {
     "blocked": true
   },
   "2026-09-11": {
-    "blocked": true
+    "sale": "schn",
+    "open": false,
+    "q": {
+      "thin": 30,
+      "temp": 20
+    }
   },
   "2026-09-12": {
     "blocked": true
@@ -270,8 +304,12 @@ export const SEED: Record<string, DayRecord> = {
     "blocked": true
   },
   "2026-09-25": {
-    "blocked": true,
-    "except": "fruit"
+    "sale": "schn",
+    "open": false,
+    "q": {
+      "thin": 30,
+      "temp": 20
+    }
   },
   "2026-09-26": {
     "blocked": true
@@ -283,7 +321,13 @@ export const SEED: Record<string, DayRecord> = {
     "blocked": true
   },
   "2026-09-29": {
-    "blocked": true
+    "sale": "cous",
+    "open": false,
+    "q": {
+      "veg": 40,
+      "chick": 30,
+      "mafr": 30
+    }
   },
   "2026-09-30": {
     "blocked": true

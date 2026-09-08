@@ -1,96 +1,128 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import {
-  CATS,
   CAT_TITLE,
-  EXPENSES,
   EXP_TITLE,
-  MARGIN_PREFIX,
+  EXPENSES,
+  MONEY_CATS,
   MONEY_TITLE,
   PERIODS,
-  PERIOD_KEYS,
   REV_LABEL,
-  START_PERIOD,
-  TILE_KEYS,
+  REV_SUB_PREFIX,
+  TILE_EXP,
+  TILE_PROFIT,
   type PeriodKey,
 } from '../data/adminMoney';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
-import { ProgressBar } from './ui/ProgressBar';
-import { nf } from './shopping/useAdminShopping';
+import { apiEnabled } from '../api/config';
+import { adminMoney } from '../api/admin';
+import { useNav } from '../navigation/store';
 
-const PLUM = { rgb: '123,92,188', deep: '#43307A' };
-const AMBER = '#A65E2A';
-const GREEN = '#4E8A64';
+const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 
 export function AdminMoneyScreen() {
-  const [period, setPeriod] = useState<PeriodKey>(START_PERIOD);
+  const { user } = useNav();
+  const live = apiEnabled && user?.role === 'admin';
+  const [period, setPeriod] = useState<PeriodKey>('month');
+  const [data, setData] = useState<{
+    label: string;
+    periodName: string;
+    revenue: number;
+    expenses: number;
+    profit: number;
+    margin: number;
+    cats: { n: string; hue: string; deep: string; v: number; pct: number }[];
+    expenseRows: { k: string; sub: string; v: number }[];
+  } | null>(null);
 
-  const p = PERIODS[period];
-  const revenue = p.gross;
-  const expenses = Math.round(EXPENSES.reduce((s, e) => s + e.gross, 0) * p.factor);
-  const profit = revenue - expenses;
-  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+  useEffect(() => {
+    if (!live) return;
+    void adminMoney(period).then(setData).catch(() => setData(null));
+  }, [live, period]);
 
-  const tiles = [
-    { k: TILE_KEYS[0], v: expenses, fg: AMBER },
-    { k: TILE_KEYS[1], v: profit, fg: GREEN },
-  ];
+  const demo = useMemo(() => {
+    const p = PERIODS[period];
+    const rev = p.gross;
+    const exp = Math.round(EXPENSES.reduce((s, e) => s + e.gross, 0) * p.factor);
+    const profit = rev - exp;
+    const margin = rev > 0 ? Math.round((profit / rev) * 100) : 0;
+    const maxShare = MONEY_CATS[0].share;
+    return {
+      label: p.label,
+      periodName: p.n,
+      revenue: rev,
+      expenses: exp,
+      profit,
+      margin,
+      cats: MONEY_CATS.map((c) => ({
+        n: c.n,
+        hue: c.hue,
+        deep: c.deep,
+        v: Math.round(rev * c.share),
+        pct: Math.round(c.share * 100),
+        w: Math.round((c.share / maxShare) * 100),
+      })),
+      expenseRows: EXPENSES.map((e) => ({ k: e.k, sub: e.sub, v: Math.round(e.gross * p.factor) })),
+    };
+  }, [period]);
+
+  const view = data ?? demo;
+  const maxCat = Math.max(...view.cats.map((c) => c.v), 1);
 
   return (
-    <AdminShell title={MONEY_TITLE} sub={p.label}>
-      <View style={s.periods}>
-        {PERIOD_KEYS.map((k) => (
+    <AdminShell title={MONEY_TITLE} sub={view.label}>
+      <View style={s.tabs}>
+        {(Object.keys(PERIODS) as PeriodKey[]).map((k) => (
           <Chip
             key={k}
             label={PERIODS[k].n}
             on={period === k}
             tint={PLUM}
-            style={s.period}
+            style={s.tab}
             onPress={() => setPeriod(k)}
           />
         ))}
       </View>
 
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-        <View style={s.revCard}>
-          <Text style={s.revLabel}>{REV_LABEL}</Text>
-          <View style={s.revRow}>
-            <Text style={s.revValue}>{nf(revenue)}</Text>
-            <Text style={s.revCurrency}>₪</Text>
+        <View style={s.hero}>
+          <Text style={s.heroLabel}>{REV_LABEL}</Text>
+          <View style={s.money}>
+            <Text style={s.heroVal}>{nf(view.revenue)}</Text>
+            <Text style={s.ils}>₪</Text>
           </View>
-          <Text style={s.revSub}>{`${MARGIN_PREFIX}${margin}%`}</Text>
+          <Text style={s.heroSub}>{`${REV_SUB_PREFIX}${view.margin}%`}</Text>
         </View>
 
-        <View style={s.tiles}>
-          {tiles.map((t) => (
-            <View key={t.k} style={s.tile}>
-              <Text style={s.tileLabel}>{t.k}</Text>
-              <View style={s.tileRow}>
-                <Text style={[s.tileValue, { color: t.fg }]}>{nf(t.v)}</Text>
-                <Text style={s.tileCurrency}>₪</Text>
-              </View>
-            </View>
-          ))}
+        <View style={s.row}>
+          <View style={s.tile}>
+            <Text style={s.tileK}>{TILE_EXP}</Text>
+            <Text style={[s.tileV, { color: '#A65E2A' }]}>{nf(view.expenses)}</Text>
+          </View>
+          <View style={s.tile}>
+            <Text style={s.tileK}>{TILE_PROFIT}</Text>
+            <Text style={[s.tileV, { color: '#4E8A64' }]}>{nf(view.profit)}</Text>
+          </View>
         </View>
 
         <View style={s.card}>
           <View style={s.cardHead}>
             <Text style={s.cardTitle}>{CAT_TITLE}</Text>
-            <Text style={s.cardTag}>{p.n}</Text>
+            <Text style={s.tag}>{view.periodName}</Text>
           </View>
-          {CATS.map((c) => (
+          {view.cats.map((c) => (
             <View key={c.n} style={s.catRow}>
-              <View style={s.catHead}>
+              <View style={s.catTop}>
                 <Text style={[s.catName, { color: c.deep }]}>{c.n}</Text>
-                <View style={s.catNums}>
-                  <Text style={s.catValue}>{`${nf(revenue * c.share)} ₪`}</Text>
-                  <Text style={s.catPct}>{`${Math.round(c.share * 100)}%`}</Text>
-                </View>
+                <Text style={s.catVal}>{`${nf(c.v)} ₪`}</Text>
               </View>
-              {/* הפס יחסי לקטגוריה הגדולה ביותר · כמו בקנבס */}
-              <ProgressBar fill={c.share / CATS[0].share} color={c.hue} hue={c.hue} />
+              <View style={s.barTrack}>
+                <View style={[s.barFill, { width: `${Math.round((c.v / maxCat) * 100)}%`, backgroundColor: c.hue }]} />
+              </View>
+              <Text style={s.catPct}>{`${c.pct}%`}</Text>
             </View>
           ))}
         </View>
@@ -98,15 +130,15 @@ export function AdminMoneyScreen() {
         <View style={s.card}>
           <View style={s.cardHead}>
             <Text style={s.cardTitle}>{EXP_TITLE}</Text>
-            <Text style={s.cardTag}>{p.n}</Text>
+            <Text style={s.tag}>{view.periodName}</Text>
           </View>
-          {EXPENSES.map((e) => (
+          {view.expenseRows.map((e) => (
             <View key={e.k} style={s.expRow}>
               <View style={s.expText}>
-                <Text style={s.expName}>{e.k}</Text>
+                <Text style={s.expK}>{e.k}</Text>
                 <Text style={s.expSub}>{e.sub}</Text>
               </View>
-              <Text style={s.expValue}>{`${nf(Math.round(e.gross * p.factor))} ₪`}</Text>
+              <Text style={s.expV}>{`${nf(e.v)} ₪`}</Text>
             </View>
           ))}
         </View>
@@ -116,62 +148,54 @@ export function AdminMoneyScreen() {
 }
 
 const s = StyleSheet.create({
-  periods: { flexDirection: 'row', gap: 6 },
-  period: { flex: 1 },
+  tabs: { flexDirection: 'row', gap: 6 },
+  tab: { flex: 1 },
   body: { flex: 1 },
-  pad: { gap: 11, paddingBottom: 120 },
-
-  revCard: {
+  pad: { gap: 12, paddingBottom: 120 },
+  hero: {
     borderRadius: 22,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    backgroundColor: 'rgba(197,180,236,0.44)',
+    padding: 16,
+    backgroundColor: 'rgba(123,92,188,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: 'rgba(255,255,255,0.75)',
   },
-  revLabel: { fontSize: 11.5, fontWeight: '600', letterSpacing: 0.7, color: '#5B4794' },
-  revRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 5 },
-  revValue: { fontSize: 34, fontWeight: '700', color: '#43307A' },
-  revCurrency: { fontSize: 15, fontWeight: '500', color: '#5B4794' },
-  revSub: { fontSize: 12, fontWeight: '500', color: '#5B4794', marginTop: 3 },
-
-  tiles: { flexDirection: 'row', gap: 10 },
+  heroLabel: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
+  money: { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 },
+  heroVal: { fontSize: 32, fontWeight: '700', color: surface.ink },
+  ils: { fontSize: 14, color: surface.faint },
+  heroSub: { fontSize: 12.5, color: '#4E8A64', marginTop: 4, fontWeight: '600' },
+  row: { flexDirection: 'row', gap: 12 },
   tile: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 14,
     backgroundColor: 'rgba(255,255,255,0.62)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.8)',
   },
-  tileLabel: { fontSize: 11.5, fontWeight: '500', color: surface.muted },
-  tileRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3, marginTop: 4 },
-  tileValue: { fontSize: 22, fontWeight: '700' },
-  tileCurrency: { fontSize: 12, color: surface.faint },
-
+  tileK: { fontSize: 11.5, color: surface.faint },
+  tileV: { fontSize: 22, fontWeight: '700', marginTop: 4 },
   card: {
-    borderRadius: 20,
-    paddingVertical: 15,
-    paddingHorizontal: 18,
-    gap: 11,
+    borderRadius: 22,
+    padding: 16,
     backgroundColor: 'rgba(255,255,255,0.62)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.8)',
+    gap: 12,
   },
   cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
-  cardTag: { fontSize: 11, color: '#A79FB2' },
-
-  catRow: { gap: 5 },
-  catHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  catName: { fontSize: 12.5, fontWeight: '500' },
-  catNums: { flexDirection: 'row', alignItems: 'baseline', gap: 7 },
-  catValue: { fontSize: 13, fontWeight: '600', color: surface.ink },
-  catPct: { fontSize: 11, fontWeight: '500', color: '#A79FB2', minWidth: 26, textAlign: 'left' },
-
+  cardTitle: { fontSize: 13, fontWeight: '600', color: '#6E6478' },
+  tag: { fontSize: 11, color: surface.faint },
+  catRow: { gap: 4 },
+  catTop: { flexDirection: 'row', justifyContent: 'space-between' },
+  catName: { fontSize: 13, fontWeight: '600' },
+  catVal: { fontSize: 13, fontWeight: '600', color: surface.ink },
+  barTrack: { height: 7, borderRadius: 4, backgroundColor: 'rgba(130,112,162,0.1)', overflow: 'hidden' },
+  barFill: { height: 7, borderRadius: 4 },
+  catPct: { fontSize: 11, color: surface.faint },
   expRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   expText: { flex: 1 },
-  expName: { fontSize: 13, fontWeight: '500', color: surface.ink },
-  expSub: { fontSize: 11, fontWeight: '300', color: surface.faint, marginTop: 1 },
-  expValue: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
+  expK: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
+  expSub: { fontSize: 11, color: surface.faint, marginTop: 1 },
+  expV: { fontSize: 14, fontWeight: '600', color: '#A65E2A' },
 });

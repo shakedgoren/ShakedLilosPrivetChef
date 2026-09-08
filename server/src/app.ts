@@ -6,6 +6,10 @@ import { authRouter } from './routes/auth.ts';
 import { usersRouter } from './routes/users.ts';
 import { ordersRouter } from './routes/orders.ts';
 import { adminRouter } from './routes/admin.ts';
+import { adminDaysRouter } from './routes/adminDays.ts';
+import { adminStockRouter } from './routes/adminStock.ts';
+import { adminShopRouter } from './routes/adminShop.ts';
+import { adminFinanceRouter } from './routes/adminFinance.ts';
 
 export function createApp() {
   const app = express();
@@ -20,6 +24,10 @@ export function createApp() {
   app.use('/users', usersRouter);
   app.use('/orders', ordersRouter);
   app.use('/admin', adminRouter);
+  app.use('/admin/days', adminDaysRouter);
+  app.use('/admin/stock', adminStockRouter);
+  app.use('/admin/shop', adminShopRouter);
+  app.use('/admin', adminFinanceRouter);
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (err instanceof ZodError) {

@@ -1,102 +1,90 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import {
-  CATS,
-  COST_LABEL,
-  KPI_KEYS,
-  MARGIN_PREFIX,
-  MENU,
+  MENU_CATS,
+  MENU_COST,
+  MENU_KPI_AVG,
+  MENU_KPI_ITEMS,
+  MENU_KPI_MARGIN,
+  MENU_PRICE,
+  MENU_PROFIT,
+  MENU_ROWS,
   MENU_SUB,
   MENU_TITLE,
-  PRICE_LABEL,
-  PROFIT_LABEL,
-  START_CAT,
-  THIN_MARGIN,
-  marginPct,
-  type MenuCatKey,
 } from '../data/adminMenu';
 import { AdminShell, KpiRow } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
-import { ChipRail } from './ui/ChipRail';
+import { apiEnabled } from '../api/config';
+import { adminMenu } from '../api/admin';
+import { useNav } from '../navigation/store';
 
-const AMBER = '#A65E2A';
-const GREEN = '#4E8A64';
+const money = (n: number) => (Math.round(n * 10) / 10).toFixed(1);
 
 export function AdminMenuScreen() {
-  const [catId, setCatId] = useState<MenuCatKey>(START_CAT);
+  const { user } = useNav();
+  const live = apiEnabled && user?.role === 'admin';
+  const [cat, setCat] = useState('cous');
+  const [items, setItems] = useState(MENU_ROWS);
 
-  const cat = CATS.find((c) => c.id === catId) ?? CATS[0];
-  const list = MENU.filter((x) => x.c === catId);
+  useEffect(() => {
+    if (!live) return;
+    void adminMenu()
+      .then((r) => setItems(r.items.map((x) => ({ c: x.c, name: x.name, price: x.price, cost: x.cost }))))
+      .catch(() => undefined);
+  }, [live]);
 
-  const totalPrice = list.reduce((s, x) => s + x.price, 0);
-  const totalCost = list.reduce((s, x) => s + x.cost, 0);
-  const avg = totalPrice > 0 ? Math.round(((totalPrice - totalCost) / totalPrice) * 100) : 0;
+  const tint = MENU_CATS.find((c) => c.id === cat) ?? MENU_CATS[0];
+  const list = items.filter((x) => x.c === cat);
+  const totPrice = list.reduce((s, x) => s + x.price, 0);
+  const totCost = list.reduce((s, x) => s + x.cost, 0);
+  const avg = totPrice > 0 ? Math.round(((totPrice - totCost) / totPrice) * 100) : 0;
 
-  const kpis = [
-    { k: KPI_KEYS[0], v: String(list.length), fg: cat.deep },
-    { k: KPI_KEYS[1], v: `${avg}%`, fg: avg < THIN_MARGIN ? AMBER : GREEN },
-    {
-      k: KPI_KEYS[2],
-      v: list.length ? `${(totalCost / list.length).toFixed(1)} ₪` : '—',
-      fg: AMBER,
-    },
-  ];
+  const kpis = useMemo(
+    () => [
+      { k: MENU_KPI_ITEMS, v: String(list.length), fg: tint.deep },
+      { k: MENU_KPI_MARGIN, v: `${avg}%`, fg: avg < 40 ? '#A65E2A' : '#4E8A64' },
+      { k: MENU_KPI_AVG, v: list.length ? `${(totCost / list.length).toFixed(1)} ₪` : '—', fg: '#A65E2A' },
+    ],
+    [list, avg, totCost, tint.deep],
+  );
 
   return (
     <AdminShell title={MENU_TITLE} sub={MENU_SUB}>
-      <ChipRail>
-        {CATS.map((c) => (
-          <Chip
-            key={c.id}
-            label={c.n}
-            on={catId === c.id}
-            tint={c}
-            onPress={() => setCatId(c.id)}
-          />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cats}>
+        {MENU_CATS.map((c) => (
+          <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} onPress={() => setCat(c.id)} />
         ))}
-      </ChipRail>
-
-      <KpiRow kpis={kpis} style={{ ...s.summary, backgroundColor: `rgba(${cat.rgb},0.1)` }} />
-
+      </ScrollView>
+      <View style={[s.sum, { backgroundColor: `rgba(${tint.rgb},0.1)` }]}>
+        <KpiRow kpis={kpis} />
+      </View>
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-        {list.map((x) => {
-          const profit = x.price - x.cost;
-          const pct = marginPct(x);
-          const thin = pct < THIN_MARGIN;
+        {list.map((it) => {
+          const profit = it.price - it.cost;
+          const pct = it.price > 0 ? Math.round((profit / it.price) * 100) : 0;
+          const thin = pct < 40;
           return (
-            <View key={x.name} style={[s.card, { borderRightColor: cat.hue }]}>
-              <View>
-                <Text style={s.name}>{x.name}</Text>
-                <Text style={[s.margin, { color: thin ? AMBER : GREEN }]}>
-                  {`${MARGIN_PREFIX}${pct}%`}
-                </Text>
-              </View>
-
-              <View style={s.cells}>
-                <View style={s.cell}>
-                  <Text style={s.cellLabel}>{PRICE_LABEL}</Text>
-                  <View style={[s.box, s.priceBox]}>
-                    <Text style={s.priceText}>{`${x.price} ₪`}</Text>
+            <View key={it.name} style={[s.card, { borderRightColor: tint.hue }]}>
+              <Text style={s.name}>{it.name}</Text>
+              <Text style={[s.margin, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{`רווחיות ${pct}%`}</Text>
+              <View style={s.vals}>
+                <View style={s.box}>
+                  <Text style={s.lab}>{MENU_PRICE}</Text>
+                  <View style={s.valBox}>
+                    <Text style={s.val}>{`${it.price}`}</Text>
                   </View>
                 </View>
-                <View style={s.cell}>
-                  <Text style={s.cellLabel}>{COST_LABEL}</Text>
-                  <View style={[s.box, s.costBox]}>
-                    <Text style={s.costText}>{`${x.cost.toFixed(1)} ₪`}</Text>
+                <View style={s.box}>
+                  <Text style={s.lab}>{MENU_COST}</Text>
+                  <View style={[s.valBox, { backgroundColor: 'rgba(199,125,62,0.1)' }]}>
+                    <Text style={[s.val, { color: '#A65E2A' }]}>{money(it.cost)}</Text>
                   </View>
                 </View>
-                <View style={s.cell}>
-                  <Text style={s.cellLabel}>{PROFIT_LABEL}</Text>
-                  <View
-                    style={[
-                      s.box,
-                      { backgroundColor: thin ? 'rgba(199,125,62,0.12)' : 'rgba(78,138,100,0.12)' },
-                    ]}
-                  >
-                    <Text style={[s.boxText, { color: thin ? AMBER : GREEN }]}>
-                      {`${profit.toFixed(1)} ₪`}
-                    </Text>
+                <View style={s.box}>
+                  <Text style={s.lab}>{MENU_PROFIT}</Text>
+                  <View style={[s.valBox, { backgroundColor: thin ? 'rgba(199,125,62,0.1)' : 'rgba(78,138,100,0.12)' }]}>
+                    <Text style={[s.val, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{money(profit)}</Text>
                   </View>
                 </View>
               </View>
@@ -109,29 +97,28 @@ export function AdminMenuScreen() {
 }
 
 const s = StyleSheet.create({
-  /* בקנבס רצועת הסיכום נצבעת בגוון הקטגוריה · אין רקע לבן מתחתיה */
-  summary: { borderRadius: 20, paddingVertical: 13, paddingHorizontal: 16 },
+  cats: { gap: 6 },
+  sum: { borderRadius: 20, overflow: 'hidden' },
   body: { flex: 1 },
   pad: { gap: 9, paddingBottom: 120 },
   card: {
     borderRadius: 18,
-    paddingVertical: 13,
-    paddingHorizontal: 15,
-    gap: 11,
-    backgroundColor: 'rgba(255,255,255,0.62)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.8)',
+    padding: 13,
+    backgroundColor: 'rgba(255,255,255,0.7)',
     borderRightWidth: 3,
+    gap: 11,
   },
   name: { fontSize: 14.5, fontWeight: '600', color: surface.ink },
-  margin: { fontSize: 11.5, fontWeight: '300', marginTop: 2 },
-  cells: { flexDirection: 'row', gap: 8 },
-  cell: { flex: 1 },
-  cellLabel: { fontSize: 10.5, fontWeight: '500', color: surface.faint, marginBottom: 3 },
-  box: { height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  priceBox: { backgroundColor: 'rgba(130,112,162,0.07)' },
-  costBox: { backgroundColor: 'rgba(199,125,62,0.1)' },
-  boxText: { fontSize: 14.5, fontWeight: '700' },
-  priceText: { fontSize: 14.5, fontWeight: '700', color: surface.ink },
-  costText: { fontSize: 14.5, fontWeight: '700', color: AMBER },
+  margin: { fontSize: 11.5, marginTop: -8 },
+  vals: { flexDirection: 'row', gap: 8 },
+  box: { flex: 1 },
+  lab: { fontSize: 10.5, fontWeight: '500', color: surface.faint, marginBottom: 3 },
+  valBox: {
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: 'rgba(130,112,162,0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  val: { fontSize: 14.5, fontWeight: '700', color: surface.ink },
 });

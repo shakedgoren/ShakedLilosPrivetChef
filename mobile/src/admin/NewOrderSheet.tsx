@@ -33,8 +33,9 @@ export function NewOrderSheet({ admin }: Props) {
 
   /* השלמה מהפנקס · נסגרת ברגע שנבחר שם מדויק */
   const q = trim(d.name);
-  const exact = BOOK.some((b) => b.name === q);
-  const people = q === '' || exact ? [] : BOOK.filter((b) => b.name.includes(q)).slice(0, 4);
+  const book = admin.book ?? BOOK;
+  const exact = book.some((b) => b.name === q);
+  const people = q === '' || exact ? [] : book.filter((b) => b.name.includes(q)).slice(0, 4);
 
   return (
     <Sheet title="הזמנה ידנית" sub="מוואטסאפ או בטלפון" onClose={admin.closeNew} style={s.pos}>

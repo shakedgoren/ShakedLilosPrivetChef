@@ -6,6 +6,7 @@ export type PublicUser = {
   name: string;
   address: string;
   city: string;
+  note?: string;
 };
 
 export type Session = { token: string; user: PublicUser };
@@ -53,6 +54,15 @@ export type AdminCard = {
   cancelNote: string;
   saleDate: string;
   createdAt: string;
+};
+
+export type AdminCustomer = PublicUser & {
+  orders: number;
+  spent: number;
+  since: string;
+  last: string;
+  likes: string[];
+  history: { id: string; d: string; k: string; t: string; v: number; s: string }[];
 };
 
 export type CouscousDetails = { category: 'cous'; qty: number[] };
