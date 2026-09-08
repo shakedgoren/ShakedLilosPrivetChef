@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { radius, surface } from '../../theme/tokens';
 
 export type HeaderAction = { label: string; onPress: () => void; primary?: boolean };
@@ -39,9 +39,16 @@ export function AdminShell({ title, sub, actions = [], children }: Props) {
 }
 
 /** רצועת המספרים של היום · שלושה ערכים מוצגים זה לצד זה */
-export function KpiRow({ kpis }: { kpis: { k: string; v: number | string; fg: string }[] }) {
+export function KpiRow({
+  kpis,
+  style,
+}: {
+  kpis: { k: string; v: number | string; fg: string }[];
+  /** דורס את רקע הרצועה · במסך התפריט היא נצבעת בגוון הקטגוריה */
+  style?: ViewStyle;
+}) {
   return (
-    <View style={s.kpiBar}>
+    <View style={[s.kpiBar, style]}>
       {kpis.map((kpi) => (
         <View key={kpi.k} style={s.kpi}>
           <Text style={[s.kpiValue, { color: kpi.fg }]}>{kpi.v}</Text>

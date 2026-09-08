@@ -15,6 +15,7 @@ import {
 import { useNav } from '../navigation/store';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
+import { ChipRail } from './ui/ChipRail';
 import { ProgressBar } from './ui/ProgressBar';
 import { ShopTable } from './shopping/ShopTable';
 import { AddShopSheet } from './shopping/AddShopSheet';
@@ -35,7 +36,7 @@ export function AdminShoppingScreen() {
         { label: 'פריט', onPress: admin.openAdd, primary: true },
       ]}
     >
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.areas}>
+      <ChipRail>
         {AREAS.map((a) => (
           <Chip
             key={a.id}
@@ -45,7 +46,7 @@ export function AdminShoppingScreen() {
             onPress={() => admin.setArea(a.id)}
           />
         ))}
-      </ScrollView>
+      </ChipRail>
 
       <View style={s.prog}>
         <View style={s.progHead}>
@@ -90,7 +91,6 @@ export function AdminShoppingScreen() {
 }
 
 const s = StyleSheet.create({
-  areas: { gap: 6, paddingBottom: 2 },
   prog: {
     borderRadius: 20,
     padding: 14,

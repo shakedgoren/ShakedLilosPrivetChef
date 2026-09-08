@@ -208,14 +208,10 @@ export const FLOW: string[] = [
 export const CANCELLED = "בוטלה";
 
 export const TONE: Record<string, { bg: string; fg: string }> = {
+  ...{
   "חדשה": {
     "bg": "rgba(123,92,188,0.12)",
     "fg": "#43307A"
-  },
-  /* גוון למצב מאושרת · נכתב עבור השרת, לא היה בקנבס */
-  "מאושרת": {
-    "bg": "rgba(65,109,158,0.12)",
-    "fg": "#2B4A6E"
   },
   "בהכנה": {
     "bg": "rgba(199,125,62,0.14)",
@@ -233,6 +229,10 @@ export const TONE: Record<string, { bg: string; fg: string }> = {
     "bg": "rgba(185,83,73,0.12)",
     "fg": "#B95349"
   }
+},
+  /* ⚠ לא מהקנבס · מצב שהשרת מחזיר ואין לו גוון בעיצוב.
+     יושב כאן ולא בקובץ שנוצר, כדי שהרצה מחדש של הסקריפט לא תמחק אותו. */
+  'מאושרת': { bg: 'rgba(65,109,158,0.12)', fg: '#2B4A6E' },
 };
 
 /** ביטול מאוחר · פחות מ-12 שעות לפני האיסוף מחייב 30% מהעסקה */
@@ -246,6 +246,7 @@ export const REASONS: string[] = [
 ];
 
 export type AdminOrder = {
+  /** ⚠ לא מהקנבס · מזהה מהשרת */
   id?: string;
   key: AdminCatKey;
   status: string;
@@ -259,6 +260,7 @@ export type AdminOrder = {
   via: string;
   /** שעות שנותרו עד האיסוף · שלילי אם עבר */
   hrs: number;
+  /** ⚠ לא מהקנבס · תיעוד הביטול שמגיע מהשרת */
   cancelReason?: string;
   cancelNote?: string;
 };
@@ -321,3 +323,6 @@ export const ORDERS: AdminOrder[] = [
 
 /** תאריך יום המכירה שמוצג תחת הכותרת */
 export const ORDERS_SUBTITLE = 'שלישי · 25 באוגוסט';
+
+/** הכפתור שמוביל ללוח המכירה */
+export const BOARD_LABEL = "לוח מכירה";

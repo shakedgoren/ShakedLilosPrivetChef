@@ -3,13 +3,14 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
 import { AdminShell, KpiRow } from './ui/AdminShell';
+import { BOARD_LABEL } from '../data/adminOrders';
+import { useNav } from '../navigation/store';
 import { Chip } from './ui/Chip';
 import { OrderCard } from './OrderCard';
 import { CancelSheet } from './CancelSheet';
 import { NewOrderSheet } from './NewOrderSheet';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
-import { useNav } from '../navigation/store';
 
 const ALL = 'הכל';
 const COUS = HUES.cous;
@@ -37,7 +38,7 @@ export function AdminOrdersScreen() {
       title="הזמנות"
       sub={ORDERS_SUBTITLE}
       actions={[
-        { label: 'לוח מכירה', onPress: () => go('adminBoard') },
+        { label: BOARD_LABEL, onPress: () => go('adminBoard') },
         { label: 'הזמנה ידנית', onPress: admin.openNew, primary: true },
       ]}
     >

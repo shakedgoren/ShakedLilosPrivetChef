@@ -22,8 +22,17 @@ const m = await import('data:text/javascript;base64,' + Buffer.from(mod).toStrin
 
 const out = {};
 for (const k of NAMES) out[k] = m[k];
+
+/* תוויות שיושבות ב-renderVals · נשלפות מהמקור ונבדקות שהן יחידות */
+const pick = (name) => {
+  const hits = [...js.matchAll(new RegExp(name + ":\\s*'([^']*)'", 'g'))];
+  if (hits.length !== 1) throw new Error(name + ': ' + hits.length + ' התאמות במקום אחת');
+  return hits[0][1];
+};
+out.boardLabel = pick('boardLabel');
 fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
+console.log('כפתור הלוח:', out.boardLabel);
 console.log('הזמנות הדגמה:', m.ORDERS.length, '· פנקס:', m.BOOK.length);
 console.log('מסלול:', m.FLOW.join(' → '), '+', m.CANCELLED);
 console.log('קטגוריות ידניות:', m.MANUAL_CATS.map((k) => m.HUES[k].n).join(', '));
