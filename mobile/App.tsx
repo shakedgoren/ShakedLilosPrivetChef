@@ -8,6 +8,7 @@ import { LoginScreen } from './src/screens/LoginScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
 import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
+import { FruitScreen } from './src/screens/fruit/FruitScreen';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
 
@@ -25,6 +26,7 @@ function Router() {
   if (screen === 'signup') return <LoginScreen mode="up" />;
   if (screen === 'cous') return <CouscousScreen />;
   if (screen === 'schn') return <SchnitzelScreen />;
+  if (screen === 'fruit') return <FruitScreen />;
   if (CATEGORY_SCREENS.includes(screen as CategoryKey))
     return <CategoryScreen categoryKey={screen as CategoryKey} />;
 
