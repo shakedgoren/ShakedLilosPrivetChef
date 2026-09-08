@@ -141,6 +141,21 @@ const days = await api('/admin/days', {
 });
 if (days.status !== 200) fail('admin days', days);
 
+const week = await api('/admin/days?from=2026-10-06&to=2026-10-09', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (week.status !== 200) fail('admin days range', week);
+const weekDays = (week.body as { days: Record<string, { sale?: string }> }).days;
+if (weekDays['2026-10-06']?.sale !== 'cous') fail('tuesday couscous default', week.body);
+if (weekDays['2026-10-09']?.sale !== 'schn') fail('friday schnitzel default', week.body);
+if (weekDays['2026-10-07']?.sale) fail('wednesday must not be a sale day', week.body);
+
+const tue = await api('/admin/days/2026-10-06', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (tue.status !== 200) fail('admin day tuesday', tue);
+if ((tue.body as { rec: { sale?: string } }).rec.sale !== 'cous') fail('get tuesday couscous', tue.body);
+
 for (const path of [
   '/admin/summary',
   '/admin/board',

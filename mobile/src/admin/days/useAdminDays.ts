@@ -5,9 +5,13 @@ import {
   START_DAY,
   START_MONTH,
   START_YEAR,
+  freshQuota,
+  impliedWeekdayRecord,
+  mergeWeekdayDays,
   type DayCatKey,
   type DayRecord,
 } from '../../data/adminDays';
+import { weekdaySale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
 import { adminGetDays, adminPutDay } from '../../api/admin';
 import { useNav } from '../../navigation/store';
@@ -15,10 +19,6 @@ import { useNav } from '../../navigation/store';
 const pad2 = (n: number) => String(n).padStart(2, '0');
 /** מפתח היום · 2026-09-08 */
 export const dayKey = (y: number, m: number, d: number) => `${y}-${pad2(m + 1)}-${pad2(d)}`;
-
-/** ברירת המכסות של קטגוריה · משמשת גם ליום מכירה וגם לחריגה */
-const freshQuota = (cat: DayCatKey): Record<string, number> =>
-  Object.fromEntries(CATS[cat].dishes.map((d) => [d.id, d.q]));
 
 export function useAdminDays() {
   const { user } = useNav();
@@ -43,12 +43,20 @@ export function useAdminDays() {
     void reload().catch(() => undefined);
   }, [reload]);
 
-  /* היום הנבחר · נוצר בעצלתיים כשנוגעים בו */
-  const rec = useCallback((k: string): DayRecord => days[k] ?? {}, [days]);
+  const visibleDays = useMemo(() => {
+    const from = dayKey(year, month, 1);
+    const last = new Date(year, month + 1, 0).getDate();
+    const to = dayKey(year, month, last);
+    return mergeWeekdayDays(days, from, to);
+  }, [days, year, month]);
+
+  /* היום הנבחר · נוצר בעצלתיים כשנוגעים בו · שלישי/שישי מקבלים ברירת יום מכירה */
+  const rec = useCallback((k: string): DayRecord => visibleDays[k] ?? {}, [visibleDays]);
 
   const put = useCallback((k: string, patch: DayRecord) => {
     setDays((prev) => {
-      const next = { ...(prev[k] ?? {}), ...patch };
+      const base = k in prev ? prev[k] : (impliedWeekdayRecord(k) ?? {});
+      const next = { ...base, ...patch };
       if (live) {
         void adminPutDay(k, {
           blocked: next.blocked ?? false,
@@ -80,9 +88,16 @@ export function useAdminDays() {
   const current = rec(selected);
 
   const toggleAvail = useCallback(() => {
-    if (current.blocked) put(selected, { blocked: false, except: null });
-    else put(selected, { blocked: true, sale: null, open: false });
-  }, [current.blocked, put, selected]);
+    if (current.blocked) {
+      const sale = weekdaySale(selected);
+      put(
+        selected,
+        sale
+          ? { blocked: false, except: null, sale, open: false, q: current.q ?? freshQuota(sale) }
+          : { blocked: false, except: null },
+      );
+    } else put(selected, { blocked: true, sale: null, open: false });
+  }, [current.blocked, current.q, put, selected]);
 
   const setSale = useCallback(
     (cat: DayCatKey) => {
@@ -136,7 +151,7 @@ export function useAdminDays() {
   }, [cat, current.q, current.sold]);
 
   return {
-    year, month, selected, days, current, cat, activeKey, quotas,
+    year, month, selected, days: visibleDays, current, cat, activeKey, quotas,
     totalQuota: quotas.reduce((s, q) => s + q.n, 0),
     select: setSelected,
     step, rec, toggleAvail, setSale, setExcept, bumpQuota, toggleOpen,

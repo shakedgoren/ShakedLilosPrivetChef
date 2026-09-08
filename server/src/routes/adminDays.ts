@@ -2,7 +2,13 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { requireAdmin, requireAuth } from '../auth/middleware.ts';
-import { CATS, type DayCatKey, type DayRecord } from '../../../mobile/src/data/adminDays.ts';
+import {
+  CATS,
+  impliedWeekdayRecord,
+  mergeWeekdayDays,
+  type DayCatKey,
+  type DayRecord,
+} from '../../../mobile/src/data/adminDays.ts';
 import { hebrewDayLabel, soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CANCELLED } from '../catalog/status.ts';
@@ -64,8 +70,12 @@ adminDaysRouter.get('/', async (req, res, next) => {
       const { date: _d, ...rest } = rec;
       days[row.date] = rest;
     }
+    const merged = from && to ? mergeWeekdayDays(days, from, to) : days;
     const open = rows.filter((r) => r.open);
-    res.json({ days, open: open.map((r) => ({ date: r.date, sale: r.sale, label: hebrewDayLabel(r.date) })) });
+    res.json({
+      days: merged,
+      open: open.map((r) => ({ date: r.date, sale: r.sale, label: hebrewDayLabel(r.date) })),
+    });
   } catch (err) {
     next(err);
   }
@@ -76,7 +86,7 @@ adminDaysRouter.get('/:date', async (req, res, next) => {
     const date = String(req.params.date ?? '');
     const row = await prisma.saleDay.findUnique({ where: { date } });
     if (!row) {
-      res.json({ date, rec: {} });
+      res.json({ date, rec: impliedWeekdayRecord(date) ?? {} });
       return;
     }
     const cat = row.blocked ? row.exceptCat : row.sale;
