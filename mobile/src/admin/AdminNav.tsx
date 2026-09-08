@@ -52,6 +52,7 @@ const s = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
+    zIndex: 20,
   },
   tab: {
     minWidth: 52,
