@@ -212,6 +212,11 @@ export const TONE: Record<string, { bg: string; fg: string }> = {
     "bg": "rgba(123,92,188,0.12)",
     "fg": "#43307A"
   },
+  /* גוון למצב מאושרת · נכתב עבור השרת, לא היה בקנבס */
+  "מאושרת": {
+    "bg": "rgba(65,109,158,0.12)",
+    "fg": "#2B4A6E"
+  },
   "בהכנה": {
     "bg": "rgba(199,125,62,0.14)",
     "fg": "#A65E2A"
@@ -241,6 +246,7 @@ export const REASONS: string[] = [
 ];
 
 export type AdminOrder = {
+  id?: string;
   key: AdminCatKey;
   status: string;
   who: string;
@@ -253,6 +259,8 @@ export type AdminOrder = {
   via: string;
   /** שעות שנותרו עד האיסוף · שלילי אם עבר */
   hrs: number;
+  cancelReason?: string;
+  cancelNote?: string;
 };
 
 /** הזמנות הדגמה · נכתבו על ידי Claude בקנבס */

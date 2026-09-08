@@ -94,6 +94,7 @@ export function BoxesScreen() {
         lines={o.lines}
         total={o.total}
         accent={ACCENT}
+        details={o.box ? { category: 'box', key: o.box.key, picks: o.picks } : undefined}
         onHome={() => {
           f.reset();
           o.backToList();

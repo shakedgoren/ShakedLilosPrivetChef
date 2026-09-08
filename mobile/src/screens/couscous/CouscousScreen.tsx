@@ -61,6 +61,7 @@ export function CouscousScreen() {
         lines={o.lines}
         total={o.total}
         accent={ACCENT}
+        details={{ category: 'cous', qty: o.qty }}
         onHome={() => {
           f.reset();
           go(loggedIn ? 'main' : 'guest');

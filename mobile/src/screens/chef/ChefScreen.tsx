@@ -104,6 +104,7 @@ export function ChefScreen() {
         lines={o.lines}
         total={o.total}
         accent={ACCENT}
+        details={o.pkg ? { category: 'chef', key: o.pkg.key, picks: o.picks } : undefined}
         onHome={() => {
           f.reset();
           o.backToList();
