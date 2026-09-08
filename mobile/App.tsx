@@ -1,6 +1,9 @@
 import React from 'react';
 import { I18nManager, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import { FONTS } from './src/theme/fonts';
+import { applyFonts } from './src/theme/applyFonts';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -96,6 +99,12 @@ function Chrome() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts(FONTS);
+  /* הגופן מוחל פעם אחת · לפני הרינדור הראשון של טקסט כלשהו */
+  if (fontsLoaded) applyFonts();
+  /* עד שהגופן נטען לא מרנדרים · אחרת הטקסט קופץ מגופן המערכת ל-Assistant */
+  if (!fontsLoaded) return null;
+
   return (
     <NavProvider>
       <SafeAreaView style={s.root}>

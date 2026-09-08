@@ -1,17 +1,44 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { brand, type } from '../theme/tokens';
+import { DISPLAY_FAMILY } from '../theme/fonts';
 
 /**
- * הכותרת · ״BITE & TELL״ בזהב עם קו מפריד וכיתוב מתחתיו.
+ * הכותרת · ״BITE & TELL״ ב-Anton עם הזהב המטאלי של הלוגו, קו מפריד וכיתוב.
  * המיקומים נמדדו בקנבס: הכותרת 36px, הכיתוב 18px, הקו 196px.
- * ב-React Native אין gradient על טקסט בלי ספרייה — עד שנוסיף אחת,
- * הזהב הוא הגוון האמצעי של הגרדיאנט (#A9812A), שנקרא זהה על הרקע.
+ *
+ * הזהב הוא גרדיאנט על הטקסט עצמו (background-clip: text בקנבס).
+ * ב-React Native אין גרדיאנט על טקסט, ולכן הכותרת מצוירת ב-SVG —
+ * זו הדרך היחידה לקבל בדיוק את אותם ארבעה עצירות צבע.
  */
+const MARK = 'BITE & TELL';
+const MARK_HEIGHT = 46;
+
 export function Masthead() {
   return (
     <View style={s.band}>
-      <Text style={s.mark}>BITE &amp; TELL</Text>
+      <Svg width="100%" height={MARK_HEIGHT}>
+        <Defs>
+          <LinearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0%" stopColor={brand.goldDark} />
+            <Stop offset="34%" stopColor={brand.gold} />
+            <Stop offset="58%" stopColor={brand.goldMid} />
+            <Stop offset="100%" stopColor={brand.goldDark} />
+          </LinearGradient>
+        </Defs>
+        <SvgText
+          x="50%"
+          y={type.mark}
+          textAnchor="middle"
+          fontFamily={DISPLAY_FAMILY}
+          fontSize={type.mark}
+          letterSpacing={0.05 * type.mark}
+          fill="url(#gold)"
+        >
+          {MARK}
+        </SvgText>
+      </Svg>
       <View style={s.rule} />
       <Text style={s.sub}>אוכל ביתי · ארוחות שף · עמדת טאבון</Text>
     </View>
@@ -20,13 +47,6 @@ export function Masthead() {
 
 const s = StyleSheet.create({
   band: { alignItems: 'center', paddingTop: 22, paddingBottom: 12 },
-  mark: {
-    fontSize: type.mark,
-    lineHeight: type.mark,
-    letterSpacing: 0.05 * type.mark,
-    fontWeight: '700',
-    color: brand.goldInk,
-  },
   rule: { width: 196, height: 1, backgroundColor: brand.goldMid, opacity: 0.75, marginTop: 11 },
   sub: {
     fontSize: type.markSub,
