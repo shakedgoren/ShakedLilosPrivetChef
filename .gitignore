@@ -23,3 +23,5 @@ mobile/node_modules/
 mobile/.expo/
 mobile/.env
 mobile/.env.local
+.canvas-preview/
+mobile/public/canvas/

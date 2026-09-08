@@ -1,6 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { FRUIT_FULFILLMENT, FRUIT_TRAYS } from '../../data/fruit';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  BY_APPOINTMENT,
+  CARD,
+  DISCLAIMER,
+  FRUIT_FULFILLMENT,
+  FRUIT_HOURS,
+  FRUIT_TITLE,
+  FRUIT_TRAYS,
+  INTRO_BODY,
+  INTRO_TITLE,
+  PHONE_HREF,
+  PHONE_LABEL,
+} from '../../data/fruit';
 import { TRAY_PHOTOS } from '../../data/photos';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
@@ -20,6 +32,9 @@ export function FruitScreen() {
   const [qty, setQty] = useState<number[]>(() => FRUIT_TRAYS.map(() => 0));
   const f = useFulfillment(FRUIT_FULFILLMENT);
   const [gate, setGate] = useState(false);
+  /* רוחב הכרטיס נמדד · בקנבס הנוסחה היא (100% − רווח) ÷ 2, ול-RN אין calc */
+  const [gridW, setGridW] = useState(0);
+  const cardW = gridW ? (gridW - CARD.gap) / 2 : undefined;
 
   const bump = (i: number, next: number) =>
     setQty((prev) => prev.map((v, k) => (k === i ? Math.max(0, next) : v)));
@@ -41,23 +56,34 @@ export function FruitScreen() {
 
   return (
     <View style={s.page}>
-      <CategoryHeader title="מגשי פירות" date="בעבודת יד" />
+      <CategoryHeader title={FRUIT_TITLE} />
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
-        {FRUIT_TRAYS.map((t, i) => (
-          <View key={t.name} style={s.card}>
-            <Photo name={TRAY_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
-            <View style={s.text}>
-              <Text style={s.name}>{t.name}</Text>
+        <Text style={s.hours}>{FRUIT_HOURS}</Text>
+        <Text style={s.hours}>{BY_APPOINTMENT}</Text>
+
+        <Text style={s.introTitle}>{INTRO_TITLE}</Text>
+        <Text style={s.introBody}>{INTRO_BODY}</Text>
+        <Text style={s.disclaimer}>{DISCLAIMER}</Text>
+
+        <Pressable onPress={() => Linking.openURL(PHONE_HREF)} style={s.phone}>
+          <Text style={s.phoneText}>{PHONE_LABEL}</Text>
+        </Pressable>
+
+        {/* שתי עמודות · בדיוק כמו רשת הכרטיסים בקנבס */}
+        <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+          {FRUIT_TRAYS.map((t, i) => (
+            <View key={t.name} style={[s.card, { width: cardW }, qty[i] > 0 && s.cardOn]}>
+              <Photo name={TRAY_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
+              <Text style={[s.name, qty[i] > 0 && s.nameOn]}>{t.name}</Text>
               <Text style={s.desc}>{t.desc}</Text>
-              <View style={s.foot}>
-                <Text style={s.price}>{t.price} ₪</Text>
-                <View style={s.grow} />
-                <Stepper value={qty[i]} onChange={(n) => bump(i, n)} />
-              </View>
+              <Text style={s.serves}>{t.serves}</Text>
+              <View style={s.grow} />
+              <Text style={s.price}>{t.price} ₪</Text>
+              <Stepper value={qty[i]} onChange={(n) => bump(i, n)} />
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </ScrollView>
 
       <View style={s.bar}>
@@ -102,22 +128,39 @@ export function FruitScreen() {
 
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
-  list: { paddingVertical: space.lg, gap: space.md },
+  list: { paddingVertical: space.lg, gap: 6 },
+  hours: { fontSize: 12, color: '#7A7080', textAlign: 'center' },
+
+  introTitle: { fontSize: 15, fontWeight: '600', color: surface.ink, marginTop: 10, lineHeight: 20 },
+  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
+  disclaimer: { fontSize: 11, fontWeight: '300', lineHeight: 16, color: surface.faint },
+  phone: {
+    alignSelf: 'center',
+    marginTop: 6,
+    borderRadius: radius.pill,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    backgroundColor: a(ACCENT.rgb, 0.1),
+  },
+  phoneText: { fontSize: 14.5, fontWeight: '700', color: ACCENT.deep },
+
+  /* שתי עמודות · הרוחב הוא חצי פחות חצי מהרווח */
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD.gap, marginTop: 16 },
   card: {
-    flexDirection: 'row',
-    gap: space.md,
-    borderRadius: 22,
-    padding: 14,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1,
+    borderRadius: CARD.radius,
+    padding: CARD.padding,
+    gap: CARD.inner,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.14)',
   },
-  shot: { width: 84, height: 84, borderRadius: radius.field, overflow: 'hidden' },
-  text: { flex: 1, gap: 4 },
-  name: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
-  desc: { fontSize: 12, color: surface.muted, lineHeight: 17 },
-  foot: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  price: { fontSize: type.label, fontWeight: '600', color: ACCENT.deep },
+  cardOn: { backgroundColor: a(ACCENT.rgb, 0.1), borderColor: a(ACCENT.rgb, 0.42) },
+  shot: { width: '100%', height: CARD.shotHeight, borderRadius: CARD.shotRadius, overflow: 'hidden' },
+  name: { fontSize: 13.5, fontWeight: '500', color: surface.ink, lineHeight: 18 },
+  nameOn: { fontWeight: '700', color: ACCENT.deep },
+  desc: { fontSize: 10.5, fontWeight: '300', lineHeight: 15, color: surface.muted },
+  serves: { fontSize: 10.5, fontWeight: '400', lineHeight: 15, color: surface.muted },
+  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.deep, paddingTop: 2 },
   grow: { flex: 1 },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
