@@ -22,6 +22,13 @@ export const SCREENS = [
   'adminOrders',
   'adminStock',
   'adminMoney',
+  'adminDays',
+  'adminShopping',
+  'adminCustomers',
+  'adminMenu',
+  'adminCosts',
+  'adminHistory',
+  'adminBoard',
 ] as const;
 
 export type Screen = (typeof SCREENS)[number];

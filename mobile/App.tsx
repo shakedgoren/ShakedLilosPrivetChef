@@ -11,6 +11,7 @@ import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
 import { FruitScreen } from './src/screens/fruit/FruitScreen';
 import { BoxesScreen } from './src/screens/boxes/BoxesScreen';
 import { ChefScreen } from './src/screens/chef/ChefScreen';
+import { AdminHomeScreen } from './src/admin/AdminHomeScreen';
 import { AdminOrdersScreen } from './src/admin/AdminOrdersScreen';
 import { AdminNav } from './src/admin/AdminNav';
 import { surface } from './src/theme/tokens';
@@ -23,14 +24,32 @@ I18nManager.forceRTL(true);
 const CATEGORY_SCREENS: CategoryKey[] = ['cous', 'schn', 'box', 'fruit', 'chef'];
 
 /* מסכי הניהול · נאב-בר משלהם, נפרד מזה של הלקוחה */
-const ADMIN_SCREENS: Screen[] = ['admin', 'adminOrders', 'adminStock', 'adminMoney'];
+const ADMIN_SCREENS: Screen[] = [
+  'admin',
+  'adminOrders',
+  'adminStock',
+  'adminMoney',
+  'adminDays',
+  'adminShopping',
+  'adminCustomers',
+  'adminMenu',
+  'adminCosts',
+  'adminHistory',
+  'adminBoard',
+];
 
 const TODO_TITLES: Partial<Record<Screen, string>> = {
   orders: 'ההזמנות שלי',
   profile: 'אזור אישי',
-  admin: 'בית · ניהול',
   adminStock: 'ניהול · מלאי',
   adminMoney: 'ניהול · כספים',
+  adminDays: 'ניהול · ימי מכירה',
+  adminShopping: 'ניהול · קניות',
+  adminCustomers: 'ניהול · לקוחות',
+  adminMenu: 'ניהול · תפריט',
+  adminCosts: 'ניהול · עלויות',
+  adminHistory: 'ניהול · היסטוריה',
+  adminBoard: 'ניהול · לוח מכירה',
 };
 
 function Router() {
@@ -44,6 +63,7 @@ function Router() {
   if (screen === 'fruit') return <FruitScreen />;
   if (screen === 'box') return <BoxesScreen />;
   if (screen === 'chef') return <ChefScreen />;
+  if (screen === 'admin') return <AdminHomeScreen />;
   if (screen === 'adminOrders') return <AdminOrdersScreen />;
   if (CATEGORY_SCREENS.includes(screen as CategoryKey))
     return <CategoryScreen categoryKey={screen as CategoryKey} />;
