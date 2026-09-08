@@ -1,5 +1,5 @@
 import React from 'react';
-import { I18nManager, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, SafeAreaView, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
@@ -23,6 +23,8 @@ import { AdminCostsScreen } from './src/admin/AdminCostsScreen';
 import { AdminHistoryScreen } from './src/admin/AdminHistoryScreen';
 import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
 import { AdminNav } from './src/admin/AdminNav';
+import { MyOrdersScreen } from './src/screens/orders/MyOrdersScreen';
+import { ProfileScreen } from './src/screens/profile/ProfileScreen';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
 
@@ -46,11 +48,6 @@ const ADMIN_SCREENS: Screen[] = [
   'adminHistory',
   'adminBoard',
 ];
-
-const TODO_TITLES: Partial<Record<Screen, string>> = {
-  orders: 'ההזמנות שלי',
-  profile: 'אזור אישי',
-};
 
 function Router() {
   const { screen, user, apiEnabled } = useNav();
@@ -76,16 +73,12 @@ function Router() {
   if (view === 'adminCosts') return <AdminCostsScreen />;
   if (view === 'adminHistory') return <AdminHistoryScreen />;
   if (view === 'adminBoard') return <AdminBoardScreen />;
+  if (view === 'orders') return <MyOrdersScreen />;
+  if (view === 'profile') return <ProfileScreen />;
   if (CATEGORY_SCREENS.includes(view as CategoryKey))
     return <CategoryScreen categoryKey={view as CategoryKey} />;
 
-  /* מסכים שטרם הועברו מהעיצוב */
-  return (
-    <View style={s.todo}>
-      <Text style={s.todoText}>{TODO_TITLES[screen] ?? 'אזור אישי'}</Text>
-      <Text style={s.todoSub}>המסך הזה עדיין לא הועבר מהעיצוב</Text>
-    </View>
-  );
+  return <HomeScreen />;
 }
 
 /** הנאב-בר הנכון למסך הנוכחי · של הניהול או של הלקוחה */
@@ -110,7 +103,4 @@ export default function App() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: surface.ground },
-  todo: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  todoText: { fontSize: 20, fontWeight: '600', color: surface.ink },
-  todoSub: { fontSize: 13, color: surface.muted },
 });

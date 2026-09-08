@@ -3,7 +3,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Masthead } from '../components/Masthead';
 import { CARD, CategoryCard } from '../components/CategoryCard';
 import { CategoryRail } from '../components/CategoryRail';
+import { PhotoStrip } from '../components/PhotoStrip';
 import { CATEGORIES } from '../data/categories';
+import { HOME_PHOTOS } from '../data/photos';
 import { radius, space, surface, type } from '../theme/tokens';
 import { HOME_TITLE } from '../data/adminHome';
 import { useNav, type Screen } from '../navigation/store';
@@ -53,6 +55,11 @@ export function HomeScreen() {
 
       <CategoryRail items={CATEGORIES} activeKey={CATEGORIES[active].key} onPick={setActive} />
 
+      {/* home-1..10 · ריבועיים 800×800 כמו שיצאו מהקנבס */}
+      <View style={s.reel}>
+        <PhotoStrip names={HOME_PHOTOS} height={140} tileWidth={116} />
+      </View>
+
       {!loggedIn && (
         <View style={s.cta}>
           <Pressable onPress={() => go('signup')} style={[s.btn, s.btnGo]}>
@@ -77,6 +84,7 @@ const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground },
   content: { paddingHorizontal: space.lg, paddingTop: space.xxl },
   track: { gap: CARD.gap, paddingVertical: space.lg },
+  reel: { marginTop: space.sm, marginBottom: space.md },
 
   sale: {
     height: 46,

@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * בונה את מפת התמונות של האפליקציה.
  * ל-React Native דרוש require סטטי לכל קובץ, ולכן הקובץ נוצר ולא נכתב ביד.
  * לעדכון: bash scripts/sync-photos.sh && node scripts/emit-photos.mjs
  */
-const DIR = '/Users/shakedgoren/Downloads/files/mobile/assets/photos';
-const OUT = '/Users/shakedgoren/Downloads/files/mobile/src/data/photos.ts';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DIR = path.join(root, 'mobile/assets/photos');
+const OUT = path.join(root, 'mobile/src/data/photos.ts');
 
 const files = fs.readdirSync(DIR).filter((f) => /\.(jpg|png)$/i.test(f)).sort();
 if (files.length === 0) throw new Error('לא נמצאו תמונות · צריך להריץ קודם sync-photos.sh');
@@ -41,12 +43,16 @@ const boxPhotos = Object.fromEntries(
     return [k, [...exact, ...rest]];
   }),
 );
+/* מארז פרימיום · arichat-shulhan הוא עריכת השולחן שצולמה למארז הזה */
+if (files.some((f) => key(f) === 'arichat-shulhan')) {
+  boxPhotos.premium = ['arichat-shulhan'];
+}
 
 const ts = `/**
  * מפת התמונות · נוצר אוטומטית מ-mobile/assets/photos.
  * לעדכון: bash scripts/sync-photos.sh && node scripts/emit-photos.mjs
  *
- * התמונות מגיעות מ-design/app/assets, בגודל שהמסך באמת צריך.
+ * המקור: design/app/assets/originals/ · לא המוקטנות.
  */
 import type { ImageSourcePropType } from 'react-native';
 
@@ -68,13 +74,39 @@ export const PARKING_PHOTOS = ${JSON.stringify(groups.parking)} as const;
 
 /**
  * גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts.
- * ⚠ ל-premium אין עדיין תמונה בתיקייה, ולכן הוא לא מופיע כאן
- * והמסך ייפול למציין מקום.
+ * שלוש תמונות מהשף עדיין חסרות · ראו MISSING_PHOTOS.
  */
 export const BOX_PHOTOS: Record<string, string[]> = ${JSON.stringify(boxPhotos, null, 2)};
+
+/** תמונות ששקד סימנה באדום · יגיעו בהמשך. המסך מציג מציין מקום. */
+export const MISSING_PHOTOS = [
+  'ממשותף לאישי',
+  'שולחן קינוחים מעוצב',
+  'חבילת שתייה ללא הגבלה',
+] as const;
+
+export const isMissingPhoto = (name: string) =>
+  (MISSING_PHOTOS as readonly string[]).includes(name);
+
+/** מנות הקוסקוס · לפי סדר COUSCOUS_MENU */
+export const COUSCOUS_PHOTOS = [
+  'dish-couscous-veg',
+  'dish-couscous-chicken',
+  'dish-couscous-mafroum',
+  'dish-couscous-only-veg',
+  'dish-couscous-only-chicken',
+  'dish-couscous-only-mafroum',
+] as const;
+
+/** שישניצל · יחידה ואז מארז, לפי סדר SCHNITZEL_TYPES */
+export const SCHNITZEL_UNIT_PHOTOS = ['dish-schnitzel-thin', 'dish-schnitzel-tampura'] as const;
+export const SCHNITZEL_BOX_PHOTOS = ['schnitzel-thin-box', 'schnitzel-tampura-box'] as const;
+
+/** מגשי פירות · לפי סדר FRUIT_TRAYS */
+export const TRAY_PHOTOS = ['tray-meruba-large', 'tray-malben-large', 'tray-agol-xl', 'tray-boat'] as const;
 `;
 
 fs.writeFileSync(OUT, ts);
-console.log('נכתב', OUT, '·', files.length, 'תמונות');
-console.log('מארזים:', Object.entries(boxPhotos).map(([k,v])=>k+'='+v.length).join(' · '));
+console.log('נכתב', path.relative(root, OUT), '·', files.length, 'תמונות');
+console.log('מארזים:', Object.entries(boxPhotos).map(([k, v]) => k + '=' + v.length).join(' · '));
 console.log('קרוסלות:', Object.entries(groups).map(([k, v]) => k + '=' + v.length).join(' · '));

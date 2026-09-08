@@ -12,6 +12,7 @@ export const COPY = {
   adminOnly: 'הניהול פתוח רק למנהלת',
   shopHome: 'לחנות',
   saveFail: 'לא הצלחנו לשמור · נסי שוב',
+  passWrong: 'הסיסמה הנוכחית לא נכונה',
 };
 
 export function authError(code: string): string {

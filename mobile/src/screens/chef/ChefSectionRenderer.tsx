@@ -1,7 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { ChefSection } from '../../data/chef';
+import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
+import { isMissingPhoto } from '../../data/photos';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
 
@@ -182,14 +184,18 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
               const d = descOf(o);
               const on = cur.includes(n);
               const blocked = full && !on;
+              const missing = isMissingPhoto(n);
               return (
                 <Pressable
                   key={n}
                   onPress={() => api.toggle(s.id, n, cap)}
-                  style={[asCards ? st.card : st.chip, on && st.on, blocked && st.blocked]}
+                  style={[asCards ? st.card : st.chip, on && st.on, blocked && st.blocked, missing && st.missingRow]}
                 >
-                  <Text style={[asCards ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
-                  {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+                  {missing ? <Photo rgb={ACCENT.rgb} style={st.missingShot} /> : null}
+                  <View style={missing ? st.grow : undefined}>
+                    <Text style={[asCards ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
+                    {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+                  </View>
                 </Pressable>
               );
             })}
@@ -262,4 +268,6 @@ const st = StyleSheet.create({
   on: { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) },
   onText: { color: ACCENT.deep, fontWeight: '600' },
   blocked: { opacity: 0.4 },
+  missingRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
+  missingShot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
 });
