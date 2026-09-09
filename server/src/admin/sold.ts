@@ -1,17 +1,55 @@
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { MENU } from '../../../mobile/src/data/adminOrders.ts';
 import { COUSCOUS_MENU } from '../../../mobile/src/data/couscous.ts';
+import type { CustomerDetails } from '../catalog/quote.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { readJson } from '../json.ts';
 import type { Order } from '@prisma/client';
 
 const COUS_IDS = (MENU.cous ?? []).map((it) => it.id);
+const SCHN_UNIT = ['thin', 'temp'] as const;
+const SCHN_BOX = ['boxThin', 'boxTemp'] as const;
 
 export type QtyMap = Record<string, number>;
+
+/** כמויות ממבנה ההזמנה של הלקוחה · מזהי מנות כמו ב-SaleDay.quotasJson */
+export function qtyOfCustomerDetails(details: CustomerDetails): QtyMap {
+  if (details.category === 'cous') {
+    const out: QtyMap = {};
+    details.qty.forEach((n, i) => {
+      const id = COUS_IDS[i];
+      if (id && Number.isFinite(n) && n > 0) out[id] = n;
+    });
+    return out;
+  }
+  if (details.category === 'schn') {
+    const out: QtyMap = {};
+    if (details.mode === 'unit') {
+      for (const r of details.rolls) {
+        const id = SCHN_UNIT[r.type];
+        if (id) out[id] = (out[id] ?? 0) + 1;
+      }
+    } else if (details.box) {
+      const id = SCHN_BOX[details.box.type];
+      if (id) out[id] = (out[id] ?? 0) + 1;
+    }
+    return out;
+  }
+  return {};
+}
 
 /** כמה נמכר מכל מנה ביום · מה-qty שבפרטי ההזמנה, או לפי שמות השורות */
 export function qtyOfOrder(row: Order): QtyMap {
   const details = readJson<Record<string, unknown>>(row.detailsJson, {});
+  if (details.category === 'cous' || details.category === 'schn') {
+    const parsed = details as CustomerDetails;
+    try {
+      const fromDetails = qtyOfCustomerDetails(parsed);
+      if (Object.keys(fromDetails).length) return fromDetails;
+    } catch {
+      /* fall through */
+    }
+  }
   const qty = details.qty;
   if (qty && typeof qty === 'object' && !Array.isArray(qty)) {
     const out: QtyMap = {};

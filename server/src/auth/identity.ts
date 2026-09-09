@@ -37,6 +37,7 @@ export function publicUser(u: {
   address: string;
   city: string;
   note?: string;
+  avatarUrl?: string | null;
   createdAt?: Date | string;
 }) {
   return {
@@ -48,6 +49,7 @@ export function publicUser(u: {
     address: u.address,
     city: u.city,
     note: u.note ?? '',
+    avatarUrl: u.avatarUrl ?? '',
     createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : (u.createdAt ?? ''),
   };
 }

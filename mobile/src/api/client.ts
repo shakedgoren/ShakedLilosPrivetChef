@@ -22,13 +22,13 @@ export async function api<T>(path: string, opts: Opts = {}): Promise<T> {
   });
 
   const text = await res.text();
-  let data: { error?: string } = {};
+  let data: { error?: string; message?: string } = {};
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
     data = { error: 'bad_response' };
   }
 
-  if (!res.ok) throw new ApiError(res.status, data.error ?? 'server_error');
+  if (!res.ok) throw new ApiError(res.status, data.error ?? 'server_error', data.message);
   return data as T;
 }

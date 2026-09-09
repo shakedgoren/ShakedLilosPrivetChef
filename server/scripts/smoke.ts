@@ -1,5 +1,6 @@
 /**
  * בדיקת עשן · מרים שרת זמני על SQLite נפרד, נרשם, מזמין קוסקוס, ושולף כמשתמשת וכמנהלת.
+ * גם מכסות, להזמין שוב, גוגל 501, והעלאת תמונת פרופיל.
  * מריצים מתוך server/: `npm run smoke`
  */
 import { mkdtempSync, writeFileSync } from 'node:fs';
@@ -20,6 +21,7 @@ process.env.ADMIN_PHONE = '0500000000';
 process.env.ADMIN_PASSWORD = 'changeme';
 process.env.ADMIN_NAME = 'שקד לילוז';
 process.env.NODE_ENV = 'test';
+process.env.UPLOAD_DIR = join(dir, 'uploads');
 
 execSync('npx prisma db push --skip-generate', {
   cwd: root,
@@ -38,6 +40,23 @@ await prisma.user.create({
     passwordHash: await hashPassword('changeme'),
     name: 'שקד לילוז',
     role: 'admin',
+  },
+});
+
+await prisma.saleDay.create({
+  data: {
+    date: '2026-09-15',
+    sale: 'cous',
+    open: true,
+    quotasJson: JSON.stringify({
+      veg: 40,
+      chick: 30,
+      mafr: 30,
+      aVeg: 20,
+      aChick: 15,
+      aMafr: 15,
+    }),
+    wasteJson: '{}',
   },
 });
 
@@ -71,6 +90,15 @@ const fail = (msg: string, extra?: unknown): never => {
 const health = await api('/health');
 if (health.status !== 200) fail('health', health);
 
+const googleUnset = await api('/auth/google', {
+  method: 'POST',
+  body: JSON.stringify({ idToken: 'anything' }),
+});
+if (googleUnset.status !== 501) fail('google unset should 501', googleUnset);
+if ((googleUnset.body as { error?: string }).error !== 'google_not_configured') {
+  fail('google unset error code', googleUnset);
+}
+
 const registered = await api('/auth/register', {
   method: 'POST',
   body: JSON.stringify({ who: 'dana@example.com', password: 'secret12', name: 'דנה כהן' }),
@@ -89,9 +117,10 @@ const created = await api('/orders', {
   }),
 });
 if (created.status !== 201) fail('create order', created);
-const order = (created.body as { order: { id: string; total: number; status: string } }).order;
+const order = (created.body as { order: { id: string; total: number; status: string; saleDate: string } }).order;
 if (order.total !== 145) fail('price', order);
 if (order.status !== 'חדשה') fail('status', order);
+if (order.saleDate !== '2026-09-15') fail('saleDate resolved to open couscous day', order);
 
 const listed = await api('/orders', { headers: { authorization: `Bearer ${customerToken}` } });
 if (listed.status !== 200) fail('list mine', listed);
@@ -151,6 +180,87 @@ if (patched.status !== 200) fail('patch me', patched);
 const patchedUser = (patched.body as { user: { city: string; createdAt?: string } }).user;
 if (patchedUser.city !== 'אילת') fail('city not saved outside delivery area', patched.body);
 if (!patchedUser.createdAt) fail('createdAt missing', patched.body);
+
+const png =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+const photo = await api('/users/me/photo', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({ image: `data:image/png;base64,${png}` }),
+});
+if (photo.status !== 201) fail('photo upload', photo);
+const avatarUrl = (photo.body as { user: { avatarUrl: string } }).user.avatarUrl;
+if (!avatarUrl.startsWith('/uploads/avatars/')) fail('avatarUrl path', photo.body);
+const served = await api(avatarUrl);
+if (served.status !== 200) fail('serve avatar', served);
+
+const quotaDay = await api('/admin/days/2026-09-22', {
+  method: 'PUT',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({
+    sale: 'cous',
+    open: true,
+    q: { veg: 1, chick: 30, mafr: 30, aVeg: 20, aChick: 15, aMafr: 15 },
+  }),
+});
+if (quotaDay.status !== 200) fail('open quota day', quotaDay);
+
+const overQuota = await api('/orders', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({
+    ship: 'self',
+    time: '12:30',
+    pay: 'ביט',
+    saleDate: '2026-09-22',
+    details: { category: 'cous', qty: [2, 0, 0, 0, 0, 0] },
+  }),
+});
+if (overQuota.status !== 409) fail('quota should 409', overQuota);
+if ((overQuota.body as { error?: string }).error !== 'quota_exceeded') fail('quota code', overQuota);
+
+const closedDay = await api('/admin/days/2026-09-29', {
+  method: 'PUT',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ sale: 'cous', open: false }),
+});
+if (closedDay.status !== 200) fail('close day', closedDay);
+
+const closedOrder = await api('/orders', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({
+    ship: 'self',
+    time: '12:30',
+    pay: 'ביט',
+    saleDate: '2026-09-29',
+    details: { category: 'cous', qty: [1, 0, 0, 0, 0, 0] },
+  }),
+});
+if (closedOrder.status !== 400) fail('closed day should 400', closedOrder);
+if ((closedOrder.body as { error?: string }).error !== 'day_closed') fail('closed code', closedOrder);
+
+const again = await api(`/orders/${order.id}/reorder`, {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({}),
+});
+if (again.status !== 201) fail('reorder', again);
+const copy = (again.body as { order: { id: string; total: number; saleDate: string } }).order;
+if (copy.id === order.id) fail('reorder must be a new order', again);
+if (copy.total !== 145) fail('reorder price from catalog', again);
+if (copy.saleDate !== '2026-09-15') fail('reorder saleDate', again);
+
+process.env.GOOGLE_CLIENT_ID = 'smoke.apps.googleusercontent.com';
+const googleNoToken = await api('/auth/google', { method: 'POST', body: JSON.stringify({}) });
+if (googleNoToken.status !== 400) fail('google configured without token', googleNoToken);
+const googleOk = await api('/auth/google', {
+  method: 'POST',
+  body: JSON.stringify({ idToken: 'test:gid-smoke:galia@example.com:גליה' }),
+});
+if (googleOk.status !== 200) fail('google test token', googleOk);
+if (!(googleOk.body as { token?: string }).token) fail('google session token', googleOk);
+delete process.env.GOOGLE_CLIENT_ID;
 
 const meAfter = await api('/auth/me', {
   headers: { authorization: `Bearer ${customerToken}` },

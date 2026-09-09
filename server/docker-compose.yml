@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bite-and-tell-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: bite
+      POSTGRES_PASSWORD: bite
+      POSTGRES_DB: biteandtell
+    volumes:
+      - bite_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bite -d biteandtell"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bite_pg_data:

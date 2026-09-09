@@ -1,32 +1,53 @@
 # BITE & TELL · שרת
 
-API ב-Node/TypeScript + Express + Prisma + SQLite (מקומי).
+API ב-Node/TypeScript + Express + Prisma.
+ברירת המחדל: **SQLite מקומי**. אפשר **Postgres מקומי** דרך Docker Compose — בלי ענן.
+
 המחירים והקטלוג מגיעים מ-`mobile/src/data/` — לא מוקלדים שוב.
 
 אין מע״מ (עוסק פטור). סליקה ווואטסאפ מחוץ להיקף.
 
-## הרצה מקומית
+## הרצה מקומית · SQLite (ברירת מחדל)
+
+בלי Docker. קובץ הדאטה הוא `server/prisma/dev.db`.
 
 ```bash
 cd server
 cp .env.example .env
 npm install
-npx prisma migrate dev --name init
+npx prisma migrate dev
 npm run db:seed
 npm run dev
 ```
 
 השרת עולה על `http://localhost:3001`.
 
-בלי Docker. קובץ הדאטה הוא `server/prisma/dev.db`.
+## הרצה מקומית · Postgres (Docker Compose)
 
-ל-Postgres בפרודקשן: החליפי `DATABASE_URL` ב-.env לחיבור Postgres, ושני ב-`prisma/schema.prisma` את `provider` ל-`postgresql`, ואז `prisma migrate dev`.
+לא מחליף את מסלול ה-SQLite. `prisma/schema.prisma` נשאר sqlite; ל-Postgres נוצר `prisma/schema.postgresql.prisma` בזמן `db:postgres:push` (לא בגיט).
+
+```bash
+cd server
+cp .env.example .env
+# ב-.env הכבי את שורת ה-SQLite והפעילי:
+# DATABASE_URL="postgresql://bite:bite@localhost:5432/biteandtell"
+
+docker compose up -d          # או: npm run db:postgres:up
+npm install
+npm run db:postgres:push      # db push + prisma generate ל-Postgres
+npm run db:seed
+npm run dev
+```
+
+חזרה ל-SQLite: `DATABASE_URL="file:./dev.db"` ב-`.env`, ואז `npx prisma generate` (ולפי הצורך `npx prisma migrate dev`).
+
+`docker compose down` עוצר את Postgres. הווליום `bite_pg_data` שומר את הנתונים עד `docker compose down -v`.
 
 ## בדיקות
 
 ```bash
-npm test          # תמחור מול הקטלוג הקיים
-npm run smoke     # נרשמת · מזמינה קוסקוס · שולפת כמשתמשת וכמנהלת
+npm test          # תמחור, ימי מכירה, מכסות, טוקן גוגל לבדיקות
+npm run smoke     # נרשמת · מכסות · הזמנה · להזמין שוב · גוגל 501 · תמונת פרופיל
 ```
 
 `smoke` מרים שרת זמני על SQLite נפרד ואינו דורש `npm run dev`.
@@ -59,10 +80,13 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | POST | `/auth/login` | | `{ who, password }` |
 | POST | `/auth/forgot-password` | | `{ who }` · תמיד `{ ok: true }`. עם `RESET_DEBUG=1` מוחזר גם `resetToken` |
 | POST | `/auth/reset-password` | | `{ token, password }` |
-| POST | `/auth/google` | | stub · `501 google_not_configured` עד שיוגדר `GOOGLE_CLIENT_ID` |
+| POST | `/auth/google` | | `{ idToken }` · אימות Google ID token כש-`GOOGLE_CLIENT_ID` מוגדר. בלי זה `501 google_not_configured` |
 | GET | `/auth/me` | JWT | המשתמשת המחוברת |
-| GET/PATCH | `/users/me` | JWT | פרופיל: name, phone, address, city |
-| POST | `/orders` | JWT · שף גם בלי | יצירת הזמנה. השרת מחשב מחיר מהקטלוג |
+| GET/PATCH | `/users/me` | JWT | פרופיל: name, phone, address, city, וגם `image`/`imageBase64` ב-PATCH |
+| POST | `/users/me/photo` | JWT | תמונת פרופיל · multipart שדה `photo` או JSON `{ image: "data:image/png;base64,..." }` |
+| GET | `/uploads/avatars/:file` | כולם | קובץ תמונה שנשמר מקומית |
+| POST | `/orders` | JWT · שף גם בלי | יצירת הזמנה. השרת מחשב מחיר מהקטלוג ובודק יום מכירה/מכסות |
+| POST | `/orders/:id/reorder` | JWT | להזמין שוב · אותם פריטים, מחיר מהקטלוג, יום מכירה הבא הפתוח |
 | GET | `/orders` | JWT | ההזמנות שלי |
 | GET | `/orders/:id` | JWT / admin | הזמנה אחת |
 | GET | `/admin/orders` | admin | `?status=&category=&q=` |
@@ -96,9 +120,12 @@ Authorization: `Bearer <token>`.
   "ship": "self",
   "time": "12:30",
   "pay": "ביט",
+  "saleDate": "2026-09-15",
   "details": { "category": "cous", "qty": [2, 1, 0, 0, 0, 0] }
 }
 ```
+
+`saleDate` בפורמט `YYYY-MM-DD`. אם חסר (או מגיע תווית עברית מהאפליקציה), השרת בוחר את יום המכירה הפתוח הבא לאותה קטגוריה.
 
 קטגוריות:
 
@@ -111,6 +138,41 @@ Authorization: `Bearer <token>`.
 משלוח: `ship: "deliv"`, `city` מתוך רשימת הערים, `address` עם מספר בית.
 חלונות הזמן נלקחים מאותם קבצי fulfillment שבאפליקציה.
 
+הזמנת **קוסקוס / שישניצל** נדחית אם היום חסום, סגור, לא יום המכירה של הקטגוריה, או אם המכסה מלאה (כולל מנות שירדו). שף / ספיישל / פירות לא כפופים ליום שלישי/שישי, אבל יום חסום בלי חריגה נחסם גם להם.
+
+קודים: `day_closed` · `day_blocked` · `category_closed` · `quota_exceeded` (409) · הודעה בעברית בשדה `message`.
+
+הזמנות ידניות מ-`POST /admin/orders` **לא** עוברות את בדיקת המכסות (המנהלת יכולה לחרוג).
+
+### להזמין שוב (`POST /orders/:id/reorder`)
+
+משכפל את `detailsJson` של הזמנה קודמת של אותה משתמשת. **לא** סומך על סכומים מהלקוחה — המחיר מחושב מהקטלוג. יום המכירה הוא הבא הפתוח (אלא אם נשלח `saleDate`).
+
+```json
+POST /orders/:id/reorder
+Authorization: Bearer <token>
+{ "ship": "self", "time": "12:30", "pay": "ביט" }
+```
+
+גוף אופציונלי: `ship`, `time`, `city`, `address`, `pay`, `saleDate`, `name`, `phone`. בלי גוף — מועתקים מההזמנה המקורית. הזמנות שנזרעו בלי פרטי לקוחה מחזירות `reorder_unavailable`.
+
+### התחברות עם גוגל (`POST /auth/google`)
+
+```json
+{ "idToken": "<Google ID token מהלקוח>" }
+```
+
+כש-`GOOGLE_CLIENT_ID` מוגדר (אפשר כמה מזהים בפסיק), השרת מאמת מול Google, מוצא או יוצר משתמשת לפי `googleId` / אימייל, ומחזיר `{ token, user }` כמו ב-login. בלי המשתנה: `501 { "error": "google_not_configured" }`. טוקן חסר: `400 google_token_required`. טוקן לא תקין: `401 invalid_google_token`.
+
+### תמונת פרופיל
+
+`POST /users/me/photo` (JWT):
+
+- `multipart/form-data` עם קובץ בשדה `photo`
+- או JSON `{ "image": "data:image/png;base64,..." }` / `{ "imageBase64": "..." }`
+
+נשמר ב-`uploads/avatars/<userId>.<ext>` ומוחזר ב-`user.avatarUrl` (נתיב יחסי, למשל `/uploads/avatars/...`). אותו שדה מתקבל גם ב-`PATCH /users/me`. jpeg / png / webp / gif, עד 2MB. הקבצים מוגשים ב-`GET /uploads/...`.
+
 ### מצבים
 
 `חדשה` → `מאושרת` → `בהכנה` → `מוכנה` → `נמסרה` · ו-`בוטלה` מכל מצב שטרם נמסר.
@@ -119,7 +181,7 @@ Authorization: `Bearer <token>`.
 
 ## סכמה
 
-- `User` — role `customer` | `admin`, email ו/או phone, name, address, city, note
+- `User` — role `customer` | `admin`, email ו/או phone, googleId, name, address, city, note, avatarUrl
 - `PasswordReset` — טוקן לשעה
 - `Order` — category, status, fulfillment, `itemsJson` / `detailsJson`, `itemsTotal` + `shippingFee` + `total` (בלי מע״מ)
 - `SaleDay` — תאריך, חסימה, קטגוריה, פתוח/סגור, מכסות, מנות שירדו

@@ -27,8 +27,17 @@ export const env = {
   adminPhone: process.env.ADMIN_PHONE ?? '0500000000',
   adminPassword: process.env.ADMIN_PASSWORD ?? 'changeme',
   adminName: process.env.ADMIN_NAME ?? 'שקד לילוז',
-  googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
+  get googleClientIds(): string[] {
+    return (process.env.GOOGLE_CLIENT_ID ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  },
+  get googleClientId(): string {
+    return (process.env.GOOGLE_CLIENT_ID ?? '').split(',')[0]?.trim() ?? '';
+  },
   resetDebug: process.env.RESET_DEBUG === '1',
+  uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
 };
 
 export { isProd };

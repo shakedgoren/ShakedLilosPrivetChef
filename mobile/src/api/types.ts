@@ -7,6 +7,7 @@ export type PublicUser = {
   address: string;
   city: string;
   note?: string;
+  avatarUrl?: string;
   createdAt?: string;
 };
 
@@ -100,7 +101,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     public code: string,
+    message?: string,
   ) {
-    super(code);
+    super(message ?? code);
   }
 }

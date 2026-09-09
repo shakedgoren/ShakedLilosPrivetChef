@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ספק ברירת מחדל: sqlite. ל-Postgres מקומי (docker compose) ראו README · npm run db:postgres:push
+
 /// לקוחה או מנהלת · email ו/או phone, כמו בשדה ״טלפון או אימייל״ באפליקציה
 model User {
   id           String   @id @default(cuid())
@@ -19,6 +21,8 @@ model User {
   address      String   @default("")
   city         String   @default("")
   note         String   @default("")
+  /// נתיב מקומי או URL · POST /users/me/photo
+  avatarUrl    String   @default("")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

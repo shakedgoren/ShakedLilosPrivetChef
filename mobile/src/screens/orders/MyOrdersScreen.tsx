@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { listMyOrders } from '../../api/orders';
+import { listMyOrders, reorderOrder } from '../../api/orders';
 import { apiEnabled } from '../../api/config';
-import { COPY } from '../../api/copy';
-import type { Order } from '../../api/types';
+import { COPY, orderError } from '../../api/copy';
+import { ApiError, type Order } from '../../api/types';
 import { LogoutConfirm } from '../../components/LogoutConfirm';
 import { useNav, type Screen } from '../../navigation/store';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -55,6 +55,25 @@ export function MyOrdersScreen() {
   const past = orders.filter((o) => !isLive(o.status));
   const empty = live.length + past.length === 0 && !err;
 
+  const onAgain = async (o: Order) => {
+    if (!apiEnabled) {
+      go(categoryKey(o.category) as Screen);
+      return;
+    }
+    setErr('');
+    try {
+      await reorderOrder(o.id);
+      await load();
+    } catch (e) {
+      const code = e instanceof ApiError ? e.code : '';
+      if (code === 'reorder_unavailable') {
+        go(categoryKey(o.category) as Screen);
+        return;
+      }
+      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.reorderFail);
+    }
+  };
+
   return (
     <View style={s.page}>
       <View style={s.head}>
@@ -97,7 +116,7 @@ export function MyOrdersScreen() {
               variant="past"
               open={open === o.id}
               onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
-              onAgain={isCancelled(o.status) ? undefined : () => go(categoryKey(o.category) as Screen)}
+              onAgain={isCancelled(o.status) ? undefined : () => void onAgain(o)}
             />
           ))}
         </ScrollView>

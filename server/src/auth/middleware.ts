@@ -11,6 +11,8 @@ export type AuthedUser = {
   name: string;
   address: string;
   city: string;
+  note: string;
+  avatarUrl: string;
   createdAt: Date;
 };
 
@@ -30,6 +32,8 @@ const toAuthed = (u: {
   name: string;
   address: string;
   city: string;
+  note: string;
+  avatarUrl: string;
   createdAt: Date;
 }): AuthedUser => ({
   id: u.id,
@@ -39,6 +43,8 @@ const toAuthed = (u: {
   name: u.name,
   address: u.address,
   city: u.city,
+  note: u.note,
+  avatarUrl: u.avatarUrl,
   createdAt: u.createdAt,
 });
 

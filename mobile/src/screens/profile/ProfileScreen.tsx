@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { apiEnabled } from '../../api/config';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
+import { apiEnabled, API_URL } from '../../api/config';
 import { changePassword, updateMe } from '../../api/auth';
 import { COPY } from '../../api/copy';
 import { ApiError, type PublicUser } from '../../api/types';
@@ -201,6 +201,11 @@ export function ProfileScreen() {
 
   const since = sinceLabel(user?.createdAt);
   const displayName = trim(form.name) || 'ללא שם';
+  const avatarSrc = user?.avatarUrl
+    ? user.avatarUrl.startsWith('http')
+      ? user.avatarUrl
+      : `${API_URL}${user.avatarUrl}`
+    : '';
 
   return (
     <View style={s.page}>
@@ -214,7 +219,11 @@ export function ProfileScreen() {
       <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
         <View style={s.hero}>
           <View style={s.avatar}>
-            <Text style={s.avatarGlyph}>☺</Text>
+            {avatarSrc ? (
+              <Image source={{ uri: avatarSrc }} style={s.avatarImg} />
+            ) : (
+              <Text style={s.avatarGlyph}>☺</Text>
+            )}
             <View style={s.cam}>
               <Text style={s.camGlyph}>📷</Text>
             </View>
@@ -429,6 +438,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarImg: { position: 'absolute', width: 92, height: 92, borderRadius: 46 },
   avatarGlyph: { fontSize: 36, color: '#43307A' },
   cam: {
     position: 'absolute',
