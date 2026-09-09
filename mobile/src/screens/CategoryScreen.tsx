@@ -78,7 +78,7 @@ export function CategoryScreen({ categoryKey }: { categoryKey: CategoryKey }) {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: surface.ground, padding: space.lg, paddingTop: 90 },
+  page: { flex: 1, padding: space.lg, paddingTop: 90 },
   back: {
     position: 'absolute',
     top: 30,

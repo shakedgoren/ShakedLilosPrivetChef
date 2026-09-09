@@ -134,18 +134,6 @@ export function Bowl({ size = 27, color = '#2A2430', strokeWidth = 1.7 }: IconPr
       <Path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0z" />
       <Path d="M2.5 12.5h19" />
       <Path d="M9 8.5q1.6-1.6 0-3.2M12 7.6q1.6-1.6 0-3.2M15 8.5q1.6-1.6 0-3.2" />
-      <Path d="M3 12.5a9 4.5 0 0 1 18 0v3.5a9 4.5 0 0 1-18 0z" />
-      <Path d="M7.5 10.6l1.6 2M11.2 10.2l1.6 2M15 10.6l1.6 2" />
-      <Path d="M3.5 9.5h17V20h-17z" />
-      <Path d="M3.5 9.5L5.5 5h13l2 4.5M12 5v15" />
-      <Path d="M9.6 4.6q2.4-1.6 2.4 .9M14.4 4.6q-2.4-1.6-2.4 .9" />
-      <Path d="M3 14.5h18a9 9 0 0 1-18 0z" />
-      <Circle cx="9" cy="10" r="2.6" />
-      <Circle cx="14.6" cy="11" r="2" />
-      <Path d="M9 7.4V5.6" />
-      <Path d="M7 14a4 4 0 1 1 1.4-7.75 4.3 4.3 0 0 1 7.2 0A4 4 0 1 1 17 14z" />
-      <Path d="M7 14v4.5h10V14" />
-      <Path d="M7 17h10" />
     </Base>
   );
 }
@@ -156,6 +144,17 @@ export function Box3D({ size = 22, color = '#918A9E', strokeWidth = 1.7 }: IconP
     <Base size={size} color={color} strokeWidth={strokeWidth}>
       <Path d="M3 8.5L12 4l9 4.5v7L12 20l-9-4.5z" />
       <Path d="M3 8.5L12 13l9-4.5M12 13v7" />
+    </Base>
+  );
+}
+
+/** 2 מופעים בקנבס · Guest, Main */
+export function BoxMeal({ size = 27, color = '#2A2430', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M3.5 9.5h17V20h-17z" />
+      <Path d="M3.5 9.5L5.5 5h13l2 4.5M12 5v15" />
+      <Path d="M9.6 4.6q2.4-1.6 2.4 .9M14.4 4.6q-2.4-1.6-2.4 .9" />
     </Base>
   );
 }
@@ -197,6 +196,17 @@ export function Check({ size = 34, color = '#FFFFFF', strokeWidth = 3 }: IconPro
   return (
     <Base size={size} color={color} strokeWidth={strokeWidth}>
       <Path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Base>
+  );
+}
+
+/** 2 מופעים בקנבס · Guest, Main */
+export function ChefHat({ size = 27, color = '#2A2430', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M7 14a4 4 0 1 1 1.4-7.75 4.3 4.3 0 0 1 7.2 0A4 4 0 1 1 17 14z" />
+      <Path d="M7 14v4.5h10V14" />
+      <Path d="M7 17h10" />
     </Base>
   );
 }
@@ -274,6 +284,18 @@ export function FileText({ size = 11, color = '#A65E2A', strokeWidth = 2 }: Icon
     <Base size={size} color={color} strokeWidth={strokeWidth}>
       <Path d="M6 3h9l5 5v13H6z" />
       <Path d="M9 12h7M9 16h5" />
+    </Base>
+  );
+}
+
+/** 2 מופעים בקנבס · Guest, Main */
+export function FruitPlate({ size = 27, color = '#2A2430', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M3 14.5h18a9 9 0 0 1-18 0z" />
+      <Circle cx="9" cy="10" r="2.6" />
+      <Circle cx="14.6" cy="11" r="2" />
+      <Path d="M9 7.4V5.6" />
     </Base>
   );
 }
@@ -409,14 +431,22 @@ export function PhoneCall({ size = 15, color = '#7A2E4E', strokeWidth = 1.9 }: I
 }
 
 /** מופע אחד בקנבס · Schnitzel */
-export function Platter({ size = 22, color = '#2A2430', strokeWidth = 1.6 }: IconProps) {
+export function PlatterFamily({ size = 22, color = '#2A2430', strokeWidth = 1.6 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Ellipse cx="12" cy="12" rx="9" ry="6" />
+      <Path d="M6 10.5q2-2 3.4 0M11 10q2-2 3.4 0M15.6 10.5q2-2 3.4 0" />
+    </Base>
+  );
+}
+
+/** מופע אחד בקנבס · Schnitzel */
+export function PlatterSingles({ size = 22, color = '#2A2430', strokeWidth = 1.6 }: IconProps) {
   return (
     <Base size={size} color={color} strokeWidth={strokeWidth}>
       <Ellipse cx="7" cy="9" rx="4" ry="3" />
       <Ellipse cx="16" cy="9" rx="4" ry="3" />
       <Ellipse cx="11.5" cy="16" rx="4" ry="3" />
-      <Ellipse cx="12" cy="12" rx="9" ry="6" />
-      <Path d="M6 10.5q2-2 3.4 0M11 10q2-2 3.4 0M15.6 10.5q2-2 3.4 0" />
     </Base>
   );
 }
@@ -446,6 +476,16 @@ export function Refresh({ size = 13, color = '#43307A', strokeWidth = 2.2 }: Ico
     <Base size={size} color={color} strokeWidth={strokeWidth}>
       <Path d="M3 12a9 9 0 1 0 3-6.7" />
       <Path d="M3 4v5h5" />
+    </Base>
+  );
+}
+
+/** 2 מופעים בקנבס · Guest, Main */
+export function SchnitzelDish({ size = 27, color = '#2A2430', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M3 12.5a9 4.5 0 0 1 18 0v3.5a9 4.5 0 0 1-18 0z" />
+      <Path d="M7.5 10.6l1.6 2M11.2 10.2l1.6 2M15 10.6l1.6 2" />
     </Base>
   );
 }

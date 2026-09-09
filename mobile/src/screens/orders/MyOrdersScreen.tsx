@@ -24,6 +24,7 @@ import {
   MY_ORDERS_TITLE,
   PAST_LABEL,
 } from '../../data/myOrders';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 /** ההזמנות שלי · מקביל ל-MyOrders.dc.html, מחובר ל-GET /orders */
 export function MyOrdersScreen() {
@@ -201,7 +202,7 @@ function OrderCard({
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: space.xxl },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: space.xxl },
   head: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,7 +267,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 18,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.78)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     borderRightWidth: 3,
     gap: 12,
   },

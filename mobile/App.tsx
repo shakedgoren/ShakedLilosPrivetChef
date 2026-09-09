@@ -6,6 +6,7 @@ import { FONTS } from './src/theme/fonts';
 import { applyFonts } from './src/theme/applyFonts';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
+import { PageWash } from './src/components/PageWash';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
@@ -92,6 +93,13 @@ function Router() {
 }
 
 /** הנאב-בר הנכון למסך הנוכחי · של הניהול או של הלקוחה */
+/** שטיפת הרקע · במסכי הקטגוריות היא נצבעת בגוון הקטגוריה */
+function Wash() {
+  const { screen } = useNav();
+  const key = CATEGORY_SCREENS.includes(screen as CategoryKey) ? (screen as CategoryKey) : undefined;
+  return <PageWash categoryKey={key} />;
+}
+
 function Chrome() {
   const { screen, user, apiEnabled } = useNav();
   if (screen === 'adminBoard') return null;
@@ -110,6 +118,7 @@ export default function App() {
     <NavProvider>
       <SafeAreaView style={s.root}>
         <StatusBar style="dark" />
+        <Wash />
         <Router />
         <Chrome />
       </SafeAreaView>

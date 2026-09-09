@@ -6,6 +6,7 @@ import { Stepper } from '../../components/Stepper';
 import { isMissingPhoto } from '../../data/photos';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.chef;
 
@@ -245,7 +246,8 @@ const st = StyleSheet.create({
     minWidth: 92,
     borderRadius: radius.field,
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     backgroundColor: 'rgba(255,255,255,0.7)',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -257,7 +259,8 @@ const st = StyleSheet.create({
   card: {
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     backgroundColor: 'rgba(255,255,255,0.7)',
     padding: 13,
     gap: 3,

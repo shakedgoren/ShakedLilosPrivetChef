@@ -5,6 +5,7 @@ import { Stepper } from '../../components/Stepper';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
 import { Photo } from '../../components/Photo';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.box;
 
@@ -236,7 +237,8 @@ const st = StyleSheet.create({
     minWidth: 96,
     borderRadius: radius.field,
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     backgroundColor: 'rgba(255,255,255,0.7)',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -252,7 +254,8 @@ const st = StyleSheet.create({
   card: {
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     backgroundColor: 'rgba(255,255,255,0.7)',
     padding: 13,
     gap: 3,
@@ -267,7 +270,8 @@ const st = StyleSheet.create({
     gap: space.md,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
     backgroundColor: 'rgba(255,255,255,0.7)',
     padding: 12,
   },

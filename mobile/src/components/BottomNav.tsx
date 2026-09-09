@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { radius, surface, type } from '../theme/tokens';
+import { radius, type } from '../theme/tokens';
+import { NAV_EDGE, NAV_SHADOW, NAV_STOPS } from '../theme/glass';
+import { GlassFill } from './Glass';
 import { Home, Receipt, User } from '../icons';
 import { useNav } from '../navigation/store';
 
@@ -26,6 +28,7 @@ export function BottomNav() {
 
   return (
     <View style={s.bar}>
+      <GlassFill stops={NAV_STOPS} radius={radius.pill} />
       {TABS.map((t) => {
         const on = screen === t.key;
         return (
@@ -49,9 +52,10 @@ const s = StyleSheet.create({
     left: 18,
     height: 68,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.82)',
     borderWidth: 1,
-    borderColor: surface.glassEdge,
+    borderColor: NAV_EDGE,
+    boxShadow: NAV_SHADOW,
+    overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',

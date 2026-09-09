@@ -20,6 +20,7 @@ import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
 import { ChefSectionRenderer } from './ChefSectionRenderer';
 import { ChevronRight } from '../../icons';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.chef;
 
@@ -208,7 +209,7 @@ const s = StyleSheet.create({
   },
   pickCtaText: { fontSize: 14.5, fontWeight: '600', color: ACCENT.deep },
 
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   back: {
     position: 'absolute',
     top: 30,
@@ -243,7 +244,8 @@ const s = StyleSheet.create({
     padding: 14,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   shot: { width: 76, height: 76, borderRadius: radius.field, overflow: 'hidden' },
   cardText: { flex: 1, gap: 3 },

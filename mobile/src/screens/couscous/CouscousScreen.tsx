@@ -23,6 +23,7 @@ import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useCouscousOrder } from './useCouscousOrder';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.cous;
 
@@ -147,12 +148,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   addonName: { fontSize: 12.5, fontWeight: '600', lineHeight: 15, textAlign: 'center', color: surface.ink },
   addonPrice: { fontSize: 12, fontWeight: '600', color: ACCENT.hue },
 
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   list: { paddingVertical: space.lg, gap: space.md },
   row: {
     height: DISH_ROW.height,
@@ -163,7 +165,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   shot: { width: DISH_ROW.shotSize, height: DISH_ROW.shotSize, borderRadius: DISH_ROW.shotRadius, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },

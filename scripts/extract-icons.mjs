@@ -19,6 +19,18 @@ const OUT = process.env.SP + '/icons.json';
 /** האלמנטים שמותר לאייקון להכיל · כל אחר יעצור את החילוץ */
 const SHAPES = ['path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse'];
 
+/**
+ * פיצול גוף ה-SVG לגרסאות · <sc-if> בקנבס הוא בורר בין צורות שאינן
+ * מופיעות יחד לעולם. בלי הפיצול חמשת אייקוני הקטגוריות בדף הבית
+ * התמזגו לאייקון אחד עם 14 צורות. הצורות שמחוץ לכל sc-if משותפות לכולן.
+ */
+const variants = (body) => {
+  const blocks = [...body.matchAll(/<sc-if\b[^>]*>([\s\S]*?)<\/sc-if>/g)];
+  if (!blocks.length) return [body];
+  const shared = body.replace(/<sc-if\b[^>]*>[\s\S]*?<\/sc-if>/g, '');
+  return blocks.map((b) => shared + b[1]);
+};
+
 const attrs = (tag) => {
   const out = {};
   for (const m of tag.matchAll(/([a-zA-Z-]+)="([^"]*)"/g)) out[m[1]] = m[2];
@@ -33,7 +45,6 @@ for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith('.dc.html')).sor
 
   for (const m of src.matchAll(/<svg\b([^>]*)>([\s\S]*?)<\/svg>/g)) {
     const head = attrs(m[1]);
-    const body = m[2];
 
     const box = head.viewBox || '';
     if (box !== '0 0 24 24') {
@@ -41,6 +52,7 @@ for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith('.dc.html')).sor
       continue;
     }
 
+    for (const body of variants(m[2])) {
     const shapes = [];
     for (const s of body.matchAll(/<(\w+)\b([^>]*?)\/?>/g)) {
       const name = s[1];
@@ -74,6 +86,7 @@ for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith('.dc.html')).sor
     if (stroke && !stroke.includes('{{')) prev.strokes.set(stroke, (prev.strokes.get(stroke) ?? 0) + 1);
     if (head.fill && head.fill !== 'none') prev.filled = true;
     icons.set(key, prev);
+    }
   }
 }
 

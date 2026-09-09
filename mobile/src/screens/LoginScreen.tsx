@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import { apiEnabled } from '../api/config';
@@ -93,7 +93,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   };
 
   return (
-    <View style={s.page}>
+    /**
+     * ⚠ המסך חייב להיות נגלל · בטאב ההרשמה יש חמישה שדות והתוכן
+     * גבוה מהמסך. כשהוא היה <View> קבוע התחתית נחתכה, כפתור
+     * ההרשמה לא היה נגיש כלל, ולא היה אפשר להירשם באפליקציה.
+     */
+    <KeyboardAvoidingView
+      style={s.page}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+    <ScrollView
+      contentContainerStyle={s.content}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       {/* עיגול הזכוכית עם הלוגו · 84px בקנבס, הלוגו 62px בתוכו */}
       <View style={s.logoRing}>
         <Photo name="logo" style={s.logo} resizeMode="contain" />
@@ -170,7 +183,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           </Pressable>
         </View>
       )}
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -216,7 +230,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: { width: 62, height: 62 },
-  page: { flex: 1, backgroundColor: surface.ground, padding: space.xl, paddingTop: 60 },
+  page: { flex: 1 },
+  content: { padding: space.xl, paddingTop: 60, paddingBottom: 60 },
   /* מתג גלולה · כמו בקנבס, ולא שתי תוויות טקסט */
   tabs: {
     flexDirection: 'row',

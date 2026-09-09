@@ -22,7 +22,7 @@ const NAMES = {
   '4a2602d0': 'ChevronDown',  '23df1f07': 'UserCircle',   '8c94c459': 'Bag',
   '716742f4': 'Truck',        '0596a7de': 'Map',          '7bad913d': 'Clock',
   '1bf71dca': 'Bars',         'ee2f3faa': 'Phone',        'df63f46b': 'Bookmark',
-  '4f6db3de': 'Upload',       '2d9c8fca': 'MapPin',       '452b404e': 'Bowl',
+  '4f6db3de': 'Upload',       '2d9c8fca': 'MapPin',
   'da0b6599': 'LogIn',        '9f87b4ed': 'Pencil',       'f69b12d7': 'Box3D',
   'a0b5ae32': 'Download',     'f6772829': 'Bell',         '9265fec7': 'Search',
   '884471ad': 'FileText',     'ec43b738': 'Board',        '0ebd5efc': 'UserSmall',
@@ -30,7 +30,16 @@ const NAMES = {
   'd979751d': 'PhoneCall',    'fac8cae7': 'ArrowLeft',    'b4edc90d': 'Eye',
   '6017d31d': 'LogOut',       '7e44b53f': 'Refresh',      '9cac8196': 'AlertCircle',
   '66d09cbb': 'Camera',       'cca49021': 'Lock',         'c7c6e864': 'Gift',
-  'c81321f4': 'Platter',      '17dc327f': 'Copy',
+  '17dc327f': 'Copy',
+
+  /* חמשת אייקוני הקטגוריות · כל אחד יושב ב-sc-if משלו בתוך אותו <svg>
+     ב-Main ו-Guest. עד לתיקון הפיצול ב-extract-icons.mjs הם התמזגו
+     לאייקון אחד עם 14 צורות, ולכן לא היו אייקונים בשורת הקטגוריות. */
+  'f0f18c70': 'Bowl',         '5d887106': 'SchnitzelDish', 'f90453d9': 'BoxMeal',
+  'efc7a120': 'FruitPlate',   'ac31927f': 'ChefHat',
+
+  /* שני גדלי המנה ב-Schnitzel · אף הם שני sc-if באותו <svg> */
+  '7fa3399a': 'PlatterSingles', 'c2508034': 'PlatterFamily',
 };
 
 /** האלמנט של react-native-svg לכל תגית SVG */

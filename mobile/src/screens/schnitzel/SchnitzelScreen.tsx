@@ -26,6 +26,7 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { ToppingsSheet } from './ToppingsSheet';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.schn;
 
@@ -233,7 +234,7 @@ const s = StyleSheet.create({
   typeName: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center', color: surface.ink },
   typePrice: { fontSize: 13, fontWeight: '600', color: ACCENT.deep },
 
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   modes: {
     flexDirection: 'row',
     alignSelf: 'center',
@@ -256,7 +257,8 @@ const s = StyleSheet.create({
     padding: 14,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   pick: {
     flexDirection: 'row',
@@ -266,7 +268,8 @@ const s = StyleSheet.create({
     padding: 14,
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   shot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },

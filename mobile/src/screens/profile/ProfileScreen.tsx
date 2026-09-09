@@ -410,7 +410,7 @@ function Field({
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: space.xxl },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: space.xxl },
   head: {
     flexDirection: 'row',
     alignItems: 'center',

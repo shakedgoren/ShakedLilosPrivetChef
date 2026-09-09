@@ -12,6 +12,7 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useBoxesOrder } from './useBoxesOrder';
 import { SectionRenderer } from './SectionRenderer';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.box;
 
@@ -133,7 +134,7 @@ const s = StyleSheet.create({
   introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
   introCta: { fontSize: 13, fontWeight: '500', lineHeight: 18, color: ACCENT.deep },
 
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   back: {
     position: 'absolute',
     top: 30,
@@ -160,7 +161,8 @@ const s = StyleSheet.create({
     padding: 14,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   shot: { width: 76, height: 76, borderRadius: radius.field, overflow: 'hidden' },
   cardText: { flex: 1, gap: 3 },

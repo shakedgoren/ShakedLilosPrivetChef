@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, PanResponder, StyleSheet, View } from 'react-native';
 import { CARD, CategoryCard } from './CategoryCard';
 import type { Category } from '../data/categories';
@@ -12,7 +12,12 @@ import { space } from '../theme/tokens';
  * (0 עד ‎-1419), האינדקס שחושב ממנו נחתך ל-0, ושורת הבועות שמתחת
  * לא התעדכנה אף פעם. המסלול המוזז פותר את זה בשתי הפלטפורמות.
  *
- * הסף להחלקה והמרווח בין הכרטיסים לקוחים מהקנבס.
+ * ⚠ תיקון שני · הכרטיס עצמו הוא Pressable, והוא תפס את ה-responder
+ * כבר בנגיעה. ברגע שילד הוא ה-responder, ההורה כבר לא נשאל שוב
+ * ב-`onMoveShouldSetPanResponder` — רק שלב ה-capture רץ לפניו.
+ * בלי `onMoveShouldSetPanResponderCapture` הגרירה לא הגיעה לעולם
+ * למסלול, והקרוסלה לא זזה בכלל. ה-capture מחזיר true רק אחרי
+ * DRAG_SLOP אופקי, כך שלחיצה רגילה על הכרטיס ממשיכה לעבוד.
  */
 
 /** מרחק ההחלקה שממנו מחליפים כרטיס · SWIPE_MIN בקנבס */
@@ -21,6 +26,16 @@ const SWIPE_MIN = 45;
 const DRAG_SLOP = 6;
 /** המרחק בין מרכזי כרטיסים · רוחב הכרטיס ועוד המרווח */
 const PITCH = CARD.width + CARD.gap;
+/** מעבר הכרטיס · 560ms בקנבס */
+const GLIDE_MS = 560;
+
+/**
+ * גרירה אופקית · רק אם היא אופקית בבירור. ScrollView אנכי עוטף את
+ * הקרוסלה, ובלי הבדיקה הזו גלילה אנכית הייתה מזיזה כרטיסים.
+ */
+export function isHorizontal(dx: number, dy: number): boolean {
+  return Math.abs(dx) > DRAG_SLOP && Math.abs(dx) > Math.abs(dy);
+}
 
 /**
  * הכרטיס שאליו עוברים אחרי החלקה.
@@ -42,32 +57,52 @@ type Props = {
 };
 
 export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Props) {
-  const [dragDx, setDragDx] = useState(0);
+  /* מיקום המסלול · ערך אנימציה אחד שגם הגרירה וגם המעבר כותבים אליו */
+  const x = useRef(new Animated.Value(active * PITCH)).current;
   /* ה-ref מחזיק את הערך העדכני · ה-PanResponder נבנה פעם אחת */
   const activeRef = useRef(active);
   activeRef.current = active;
 
+  /* החלקה למקום · גם אחרי מעבר כרטיס וגם בחזרה כשההחלקה לא הספיקה */
+  const glideTo = React.useCallback(
+    (index: number) => {
+      Animated.timing(x, {
+        toValue: index * PITCH,
+        duration: GLIDE_MS,
+        useNativeDriver: true,
+      }).start();
+    },
+    [x],
+  );
+
+  useEffect(() => glideTo(active), [active, glideTo]);
+
   const pan = useMemo(
     () =>
       PanResponder.create({
-        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > DRAG_SLOP,
-        onPanResponderMove: (_e, g) => setDragDx(g.dx),
+        /* לחיצה רגילה ממשיכה לכרטיס · רק תנועה נחטפת */
+        onStartShouldSetPanResponderCapture: () => false,
+        onMoveShouldSetPanResponderCapture: (_e, g) => isHorizontal(g.dx, g.dy),
+        onMoveShouldSetPanResponder: (_e, g) => isHorizontal(g.dx, g.dy),
+        /* ה-ScrollView האנכי לא ייקח את הגרירה באמצע */
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderMove: (_e, g) => x.setValue(activeRef.current * PITCH + g.dx),
         onPanResponderRelease: (_e, g) => {
-          setDragDx(0);
-          onActiveChange(nextIndex(activeRef.current, g.dx, items.length));
+          const next = nextIndex(activeRef.current, g.dx, items.length);
+          /* גם כשההחלקה לא הספיקה צריך להחזיר את המסלול · אחרת הוא
+             נשאר תקוע במקום שאליו נגררה האצבע, כי active לא השתנה */
+          glideTo(next);
+          onActiveChange(next);
         },
-        onPanResponderTerminate: () => setDragDx(0),
+        onPanResponderTerminate: () => glideTo(activeRef.current),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items.length],
+    [items.length, glideTo, onActiveChange],
   );
 
   return (
     <View style={s.window}>
-      <Animated.View
-        {...pan.panHandlers}
-        style={[s.track, { transform: [{ translateX: active * PITCH + dragDx }] }]}
-      >
+      <Animated.View {...pan.panHandlers} style={[s.track, { transform: [{ translateX: x }] }]}>
         {items.map((c, i) => (
           <CategoryCard key={c.key} item={c} active={i === active} onPress={() => onOpen(c.key)} />
         ))}

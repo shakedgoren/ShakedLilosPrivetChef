@@ -10,11 +10,15 @@ import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
 import { Bag, ChevronLeft, Close, Truck } from '../icons';
+import { TILE_SHADOW } from '../theme/glass';
 
 /* מידות שורות המסירה · מהקנבס · האיסוף בגוון הקטגוריה, המשלוח אפור */
 const OPTION_ICON = 21;
 const OPTION_STROKE = 1.7;
 const TRUCK_INK = '#8A8194';
+/* שורת האיסוף · הרקע והמסגרת בגוון הקטגוריה · rgba(hue,0.08) ו-0.3 בקנבס */
+const PICKUP_BG = 0.08;
+const PICKUP_EDGE = 0.3;
 const CHEV = 14;
 const CHEV_INK = '#C1BBCB';
 const CHEV_STROKE = 2.4;
@@ -106,7 +110,13 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
 
   return (
     <View style={s.stack}>
-      <Pressable onPress={f.wantPickup} style={s.option}>
+      <Pressable
+        onPress={f.wantPickup}
+        style={[
+          s.option,
+          { backgroundColor: a(accent.rgb, PICKUP_BG), borderColor: a(accent.rgb, PICKUP_EDGE) },
+        ]}
+      >
         <Bag size={OPTION_ICON} color={accent.hue} strokeWidth={OPTION_STROKE} />
         <View style={s.optionText}>
           <Text style={s.optionTitle}>איסוף עצמי</Text>
@@ -115,7 +125,7 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
         <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
       </Pressable>
 
-      <Pressable onPress={f.wantDelivery} style={s.option}>
+      <Pressable onPress={f.wantDelivery} style={[s.option, s.optionPlain]}>
         <Truck size={OPTION_ICON} color={TRUCK_INK} strokeWidth={OPTION_STROKE} />
         <View style={s.optionText}>
           <Text style={s.optionTitle}>משלוח</Text>
@@ -298,15 +308,20 @@ const s = StyleSheet.create({
   bodyPad: { paddingBottom: space.sm },
   stack: { gap: space.md },
 
+  /* המידות מהקנבס · גובה 66, פינה 20, ריפוד אופקי 16 ומרווח 13 */
   option: {
+    height: 66,
     borderRadius: 20,
-    padding: 14,
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    paddingHorizontal: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.16)',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 13,
+  },
+  optionPlain: {
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderColor: 'rgba(130,112,162,0.16)',
+    boxShadow: TILE_SHADOW,
   },
   /* הטקסט תופס את מה שנשאר · האייקון והחץ נשארים בקצוות */
   optionText: { flexGrow: 1, flexShrink: 1, gap: 3 },

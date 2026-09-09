@@ -23,6 +23,7 @@ import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import type { OrderLine } from '../../order/types';
+import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.fruit;
 
@@ -127,7 +128,7 @@ export function FruitScreen() {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   list: { paddingVertical: space.lg, gap: 6 },
   hours: { fontSize: 12, color: '#7A7080', textAlign: 'center' },
 
@@ -152,7 +153,8 @@ const s = StyleSheet.create({
     gap: CARD.inner,
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.14)',
+    borderColor: TILE_EDGE,
+    boxShadow: TILE_SHADOW,
   },
   cardOn: { backgroundColor: a(ACCENT.rgb, 0.1), borderColor: a(ACCENT.rgb, 0.42) },
   shot: { width: '100%', height: CARD.shotHeight, borderRadius: CARD.shotRadius, overflow: 'hidden' },

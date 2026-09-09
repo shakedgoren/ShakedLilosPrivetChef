@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Minus, Plus } from '../icons';
+import { IS_RTL } from '../theme/rtl';
 
 const OFF = '#C0B9CA';
 const ON = '#2A2430';
@@ -10,12 +11,25 @@ const GLYPH_STROKE = 2.4;
 /* צבע הפלוס בקנבס · קבוע, בשונה מהמינוס שנצבע לפי הכמות */
 const PLUS_INK = '#43307A';
 
-/** בורר כמות · מינוס מימין ופלוס משמאל, כמו בקנבס */
+/**
+ * בורר כמות · הפלוס תמיד מימין לכמות והמינוס תמיד משמאל,
+ * בכל מסך באפליקציה. שקד ביקשה את זה מפורשות.
+ *
+ * הסדר ב-JSX הוא פלוס · כמות · מינוס, ולכן ב-RTL (`row`) הפלוס
+ * נוחת בימין. אם הכיוון יתהפך אי פעם, `row-reverse` שומר על אותו
+ * סידור ויזואלי — הכיוון לא נלקח מ-I18nManager אלא מ-rtl.ts.
+ */
 type Props = { value: number; onChange: (next: number) => void; min?: number };
 
 export function Stepper({ value, onChange, min = 0 }: Props) {
   return (
     <View style={s.row}>
+      <Pressable onPress={() => onChange(value + 1)} style={s.key} hitSlop={8}>
+        <Plus size={GLYPH} color={PLUS_INK} strokeWidth={GLYPH_STROKE} />
+      </Pressable>
+
+      <Text style={[s.value, { color: value === 0 ? OFF : ON }]}>{value}</Text>
+
       <Pressable
         onPress={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
@@ -24,18 +38,12 @@ export function Stepper({ value, onChange, min = 0 }: Props) {
       >
         <Minus size={GLYPH} color={value <= min ? OFF : ON} strokeWidth={GLYPH_STROKE} />
       </Pressable>
-
-      <Text style={[s.value, { color: value === 0 ? OFF : ON }]}>{value}</Text>
-
-      <Pressable onPress={() => onChange(value + 1)} style={s.key} hitSlop={8}>
-        <Plus size={GLYPH} color={PLUS_INK} strokeWidth={GLYPH_STROKE} />
-      </Pressable>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  row: { flexDirection: IS_RTL ? 'row' : 'row-reverse', alignItems: 'center', gap: 10 },
   key: {
     width: 30,
     height: 30,
