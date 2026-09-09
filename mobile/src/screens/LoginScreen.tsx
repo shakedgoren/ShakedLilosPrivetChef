@@ -7,19 +7,45 @@ import { forgotPassword, googleStub, login, register } from '../api/auth';
 import { authError, COPY } from '../api/copy';
 import { ApiError } from '../api/types';
 import { Photo } from '../components/Photo';
+import {
+  BRAND,
+  BRAND_SUB,
+  CTA_IN,
+  CTA_UP,
+  FIELDS_IN,
+  FIELDS_UP,
+  FORGOT_LABEL,
+  GOOGLE_LABEL,
+  GUEST_LABEL,
+  LEDE_IN,
+  LEDE_UP,
+  OR_LABEL,
+  PASS_MIN,
+  TAB_IN,
+  TAB_UP,
+} from '../data/login';
 
 /** מסך הכניסה וההרשמה · הטאב הפתוח נקבע לפי המסך שממנו הגענו */
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const { go, signIn } = useNav();
   const [tab, setTab] = useState<'in' | 'up'>(mode);
-  const [who, setWho] = useState('');
-  const [pass, setPass] = useState('');
+  /* טופס אחד לשני הטאבים · השדות מגיעים מהקנבס */
+  const [form, setForm] = useState<Record<string, string>>({});
+  const setField = (id: string, v: string) => setForm((f) => ({ ...f, [id]: v }));
+  const fields = tab === 'in' ? FIELDS_IN : FIELDS_UP;
+  /* השרת מקבל מזהה אחד · בכניסה זה who, בהרשמה הטלפון */
+  const who = tab === 'in' ? form.who ?? '' : form.phone ?? '';
+  const pass = form.pass ?? '';
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
   const isIn = tab === 'in';
-  const can = who.trim().length > 2 && pass.trim().length >= 6 && !busy;
+  /* כל שדה חייב להתמלא · ובהרשמה גם אימות הסיסמה חייב להתאים */
+  const filled = fields.every((f) => (form[f.id] ?? '').trim() !== '');
+  const passOk = pass.trim().length >= PASS_MIN;
+  const confirmOk = tab === 'in' || (form.pass2 ?? '') === pass;
+  const can = filled && passOk && confirmOk && !busy;
 
   const onSubmit = async () => {
     if (!can) return;
@@ -73,47 +99,66 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         <Photo name="logo" style={s.logo} resizeMode="contain" />
       </View>
 
+      <View style={s.brandBlock}>
+        <Text style={s.brand}>{BRAND}</Text>
+        <Text style={s.brandSub}>{BRAND_SUB}</Text>
+      </View>
+
+      {/* מתג כניסה / הרשמה · גלולה עם ידית לבנה */}
       <View style={s.tabs}>
-        <Pressable onPress={() => setTab('in')} style={s.tab}>
-          <Text style={[s.tabText, isIn && s.tabOn]}>כניסה</Text>
+        <Pressable onPress={() => setTab('in')} style={[s.tab, isIn && s.tabActive]}>
+          <Text style={[s.tabText, isIn && s.tabOn]}>{TAB_IN}</Text>
         </Pressable>
-        <Pressable onPress={() => setTab('up')} style={s.tab}>
-          <Text style={[s.tabText, !isIn && s.tabOn]}>הרשמה</Text>
+        <Pressable onPress={() => setTab('up')} style={[s.tab, !isIn && s.tabActive]}>
+          <Text style={[s.tabText, !isIn && s.tabOn]}>{TAB_UP}</Text>
         </Pressable>
       </View>
 
-      <TextInput
-        value={who}
-        onChangeText={setWho}
-        placeholder="טלפון או אימייל"
-        placeholderTextColor="#B3ABBD"
-        style={s.field}
-      />
-      <TextInput
-        value={pass}
-        onChangeText={setPass}
-        placeholder="סיסמה"
-        placeholderTextColor="#B3ABBD"
-        secureTextEntry
-        style={s.field}
-      />
+      <Text style={s.lede}>{isIn ? LEDE_IN : LEDE_UP}</Text>
+
+      {/* גוגל קודם · ואז המפריד, כמו בקנבס */}
+      <Pressable disabled={busy} onPress={onGoogle} style={s.ghost}>
+        <Text style={s.ghostText}>{GOOGLE_LABEL}</Text>
+      </Pressable>
+
+      <View style={s.orRow}>
+        <View style={s.orLine} />
+        <Text style={s.orText}>{OR_LABEL}</Text>
+        <View style={s.orLine} />
+      </View>
+
+      {fields.map((f) => (
+        <View key={f.id} style={s.fieldBlock}>
+          <Text style={s.fieldLabel}>{f.label}</Text>
+          <TextInput
+            value={form[f.id] ?? ''}
+            onChangeText={(v) => setField(f.id, v)}
+            placeholder={f.placeholder}
+            placeholderTextColor="#B3ABBD"
+            secureTextEntry={f.type === 'password'}
+            keyboardType={f.type === 'tel' ? 'phone-pad' : f.type === 'email' ? 'email-address' : 'default'}
+            autoCapitalize="none"
+            style={s.field}
+          />
+        </View>
+      ))}
+
+      {isIn ? (
+        <Pressable onPress={onForgot} style={s.forgotWrap}>
+          <Text style={s.link}>{FORGOT_LABEL}</Text>
+        </Pressable>
+      ) : null}
+
+      <View style={s.grow} />
 
       <Pressable disabled={!can} onPress={onSubmit} style={[s.cta, { opacity: can ? 1 : 0.45 }]}>
-        <Text style={s.ctaText}>{isIn ? 'כניסה' : 'יצירת חשבון'}</Text>
+        <Text style={s.ctaText}>{isIn ? CTA_IN : CTA_UP}</Text>
       </Pressable>
 
       {err ? <Text style={s.err}>{err}</Text> : null}
 
-      <Pressable disabled={busy} onPress={onGoogle} style={s.ghost}>
-        <Text style={s.ghostText}>המשך עם גוגל</Text>
-      </Pressable>
-
-      <Pressable onPress={onForgot}>
-        <Text style={s.link}>שכחתי סיסמה</Text>
-      </Pressable>
-
       <Pressable onPress={() => go('guest')}>
-        <Text style={s.link}>להסתכל בלי חשבון</Text>
+        <Text style={s.link}>{GUEST_LABEL}</Text>
       </Pressable>
 
       {sent && (
@@ -130,6 +175,34 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 }
 
 const s = StyleSheet.create({
+  brandBlock: { alignItems: 'center', marginBottom: 18 },
+  brand: { fontSize: 23, fontWeight: '600', color: surface.ink },
+  brandSub: { fontSize: 13, fontWeight: '300', color: surface.faint, marginTop: 2 },
+
+  tabActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#605084',
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  lede: {
+    fontSize: 13.5,
+    fontWeight: '300',
+    lineHeight: 20,
+    color: surface.muted,
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 14,
+  },
+  orRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 14 },
+  orLine: { flex: 1, height: 1, backgroundColor: 'rgba(130,112,162,0.16)' },
+  orText: { fontSize: 12, color: surface.faint },
+  fieldBlock: { gap: 5, marginBottom: 12 },
+  fieldLabel: { fontSize: 11.5, fontWeight: '500', color: surface.faint },
+  forgotWrap: { alignSelf: 'flex-start' },
+  grow: { flex: 1 },
+
   logoRing: {
     width: 84,
     height: 84,
@@ -143,10 +216,16 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: { width: 62, height: 62 },
-  page: { flex: 1, backgroundColor: surface.ground, padding: space.xl, paddingTop: 90, gap: space.md },
-  tabs: { flexDirection: 'row', gap: space.lg, marginBottom: space.sm },
-  tab: { paddingVertical: 6 },
-  tabText: { fontSize: 17, color: '#8A8194' },
+  page: { flex: 1, backgroundColor: surface.ground, padding: space.xl, paddingTop: 60 },
+  /* מתג גלולה · כמו בקנבס, ולא שתי תוויות טקסט */
+  tabs: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(130,112,162,0.08)',
+  },
+  tab: { flex: 1, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  tabText: { fontSize: 14, color: '#8A8194' },
   tabOn: { color: '#43307A', fontWeight: '600' },
   field: {
     height: 48,
