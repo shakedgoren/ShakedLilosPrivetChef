@@ -5,36 +5,16 @@ import { optionalAuth, requireAuth } from '../auth/middleware.ts';
 import { badRequest, forbidden, notFound } from '../errors.ts';
 import {
   assertFulfillment,
-  defaultSaleDate,
   isCategory,
   quoteCustomer,
   type CustomerDetails,
 } from '../catalog/quote.ts';
+import { detailsSchema, parseCustomerDetails } from '../orders/details.ts';
+import { assertCustomerOrderDay } from '../orders/saleDay.ts';
 import { serializeOrder } from '../orders/serialize.ts';
+import { readJson } from '../json.ts';
 
 export const ordersRouter = Router();
-
-const detailsSchema = z.discriminatedUnion('category', [
-  z.object({ category: z.literal('cous'), qty: z.array(z.number().int().nonnegative()) }),
-  z.object({
-    category: z.literal('schn'),
-    mode: z.enum(['unit', 'box']),
-    rolls: z.array(z.object({ type: z.number().int().nonnegative(), tops: z.array(z.string()) })),
-    box: z.object({ type: z.number().int().nonnegative(), tops: z.array(z.string()) }).nullable(),
-    cocottes: z.array(z.number().int().nonnegative()),
-  }),
-  z.object({ category: z.literal('fruit'), qty: z.array(z.number().int().nonnegative()) }),
-  z.object({
-    category: z.literal('box'),
-    key: z.string().min(1),
-    picks: z.record(z.string(), z.unknown()),
-  }),
-  z.object({
-    category: z.literal('chef'),
-    key: z.string().min(1),
-    picks: z.record(z.string(), z.unknown()),
-  }),
-]);
 
 const createSchema = z.object({
   ship: z.enum(['self', 'deliv']),
@@ -48,46 +28,95 @@ const createSchema = z.object({
   details: detailsSchema,
 });
 
+const reorderSchema = z.object({
+  ship: z.enum(['self', 'deliv']).optional(),
+  time: z.string().min(4).optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  pay: z.string().min(1).optional(),
+  saleDate: z.string().optional(),
+  name: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+async function placeCustomerOrder(opts: {
+  userId: string | null;
+  userName: string;
+  userPhone: string;
+  ship: 'self' | 'deliv';
+  time: string;
+  city?: string;
+  address?: string;
+  pay: string;
+  saleDate?: string;
+  name?: string;
+  phone?: string;
+  details: CustomerDetails;
+}) {
+  const category = opts.details.category;
+  if (!isCategory(category)) throw badRequest('invalid_order', 'category');
+
+  const quote = quoteCustomer(opts.details);
+  assertFulfillment(category, quote.meals, {
+    ship: opts.ship,
+    time: opts.time,
+    city: opts.city,
+    address: opts.address,
+    pay: opts.pay,
+  });
+
+  const name = (opts.name ?? opts.userName ?? '').trim();
+  const phone = (opts.phone ?? opts.userPhone ?? '').trim();
+
+  return prisma.$transaction(async (tx) => {
+    const saleDate = await assertCustomerOrderDay(tx, {
+      requested: opts.saleDate,
+      category,
+      details: opts.details,
+    });
+    return tx.order.create({
+      data: {
+        userId: opts.userId,
+        category,
+        status: 'חדשה',
+        name,
+        phone,
+        ship: opts.ship,
+        time: opts.time,
+        city: opts.ship === 'deliv' ? (opts.city ?? '') : '',
+        address: opts.ship === 'deliv' ? (opts.address ?? '').trim() : '',
+        pay: opts.pay,
+        saleDate,
+        via: '',
+        itemsJson: JSON.stringify(quote.lines),
+        detailsJson: JSON.stringify(opts.details),
+        itemsTotal: quote.itemsTotal,
+        shippingFee: 0,
+        total: quote.total,
+      },
+    });
+  });
+}
+
 ordersRouter.post('/', optionalAuth, async (req, res, next) => {
   try {
     const body = createSchema.parse(req.body);
     const category = body.details.category;
-    if (!isCategory(category)) throw badRequest('invalid_order', 'category');
-
     if (category !== 'chef' && !req.user) throw forbidden('login_required');
 
-    const quote = quoteCustomer(body.details as CustomerDetails);
-    assertFulfillment(category, quote.meals, {
+    const row = await placeCustomerOrder({
+      userId: req.user?.id ?? null,
+      userName: req.user?.name ?? '',
+      userPhone: req.user?.phone ?? '',
       ship: body.ship,
       time: body.time,
       city: body.city,
       address: body.address,
       pay: body.pay,
-    });
-
-    const name = (body.name ?? req.user?.name ?? '').trim();
-    const phone = (body.phone ?? req.user?.phone ?? '').trim();
-
-    const row = await prisma.order.create({
-      data: {
-        userId: req.user?.id ?? null,
-        category,
-        status: 'חדשה',
-        name,
-        phone,
-        ship: body.ship,
-        time: body.time,
-        city: body.ship === 'deliv' ? (body.city ?? '') : '',
-        address: body.ship === 'deliv' ? (body.address ?? '').trim() : '',
-        pay: body.pay,
-        saleDate: defaultSaleDate(body.saleDate),
-        via: '',
-        itemsJson: JSON.stringify(quote.lines),
-        detailsJson: JSON.stringify(body.details),
-        itemsTotal: quote.itemsTotal,
-        shippingFee: 0,
-        total: quote.total,
-      },
+      saleDate: body.saleDate,
+      name: body.name,
+      phone: body.phone,
+      details: body.details as CustomerDetails,
     });
 
     res.status(201).json({ order: serializeOrder(row) });
@@ -103,6 +132,40 @@ ordersRouter.get('/', requireAuth, async (req, res, next) => {
       orderBy: { createdAt: 'desc' },
     });
     res.json({ orders: rows.map(serializeOrder) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** שכפול שורות הזמנה קודמת · מחיר מהקטלוג, יום מכירה הבא הפתוח */
+ordersRouter.post('/:id/reorder', requireAuth, async (req, res, next) => {
+  try {
+    const id = String(req.params.id ?? '');
+    const original = await prisma.order.findUnique({ where: { id } });
+    if (!original) throw notFound();
+    if (original.userId !== req.user!.id && req.user!.role !== 'admin') throw forbidden();
+
+    const details = parseCustomerDetails(readJson(original.detailsJson, null));
+    if (!details) throw badRequest('reorder_unavailable', 'אי אפשר להזמין שוב את ההזמנה הזו');
+
+    const body = reorderSchema.parse(req.body ?? {});
+    const ship = body.ship ?? (original.ship === 'deliv' ? 'deliv' : 'self');
+    const row = await placeCustomerOrder({
+      userId: req.user!.id,
+      userName: req.user!.name,
+      userPhone: req.user!.phone ?? '',
+      ship,
+      time: body.time ?? original.time,
+      city: body.city ?? original.city,
+      address: body.address ?? original.address,
+      pay: body.pay ?? original.pay,
+      saleDate: body.saleDate,
+      name: body.name ?? original.name,
+      phone: body.phone ?? original.phone,
+      details,
+    });
+
+    res.status(201).json({ order: serializeOrder(row), from: original.id });
   } catch (err) {
     next(err);
   }

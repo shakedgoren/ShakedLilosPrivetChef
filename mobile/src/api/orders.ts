@@ -4,6 +4,9 @@ import type { AdminCard, CreateOrderBody, Order } from './types';
 export const createOrder = (body: CreateOrderBody) =>
   api<{ order: Order }>('/orders', { body });
 
+export const reorderOrder = (id: string, body: Partial<CreateOrderBody> = {}) =>
+  api<{ order: Order; from: string }>(`/orders/${id}/reorder`, { body });
+
 export const listMyOrders = () => api<{ orders: Order[] }>('/orders');
 
 export const getOrder = (id: string) => api<{ order: Order }>(`/orders/${id}`);

@@ -6,9 +6,9 @@ import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
 import { hhmm, type Accent, type OrderLine } from './types';
 import { apiEnabled } from '../api/config';
-import { COPY } from '../api/copy';
+import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
-import type { OrderDetails } from '../api/types';
+import { ApiError, type OrderDetails } from '../api/types';
 
 type Props = {
   f: Fulfillment;
@@ -46,8 +46,8 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
         details,
       });
       f.pickPay(p);
-    } catch {
-      setErr(COPY.orderFail);
+    } catch (e) {
+      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.orderFail);
     } finally {
       setBusy(false);
     }

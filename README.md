@@ -10,7 +10,7 @@
 
 ## שרת מקומי
 
-ההוראות המלאות ב-[server/README.md](server/README.md).
+ההוראות המלאות ב-[server/README.md](server/README.md) — כולל **SQLite מול Postgres מקומי** (Docker Compose, בלי ענן).
 
 ```bash
 cd server

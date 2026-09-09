@@ -8,6 +8,7 @@ import { parseWho, publicUser } from '../auth/identity.ts';
 import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
+import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
 
 export const authRouter = Router();
 
@@ -122,12 +123,22 @@ authRouter.post('/reset-password', async (req, res, next) => {
   }
 });
 
-authRouter.post('/google', async (_req, res) => {
-  if (!env.googleClientId) {
-    res.status(501).json({ error: 'google_not_configured' });
-    return;
+authRouter.post('/google', async (req, res, next) => {
+  try {
+    const audiences = env.googleClientIds;
+    if (!audiences.length) {
+      res.status(501).json({ error: 'google_not_configured' });
+      return;
+    }
+    const body = z.object({ idToken: z.string().min(1) }).safeParse(req.body);
+    if (!body.success) throw badRequest('google_token_required', 'חסר idToken מגוגל');
+
+    const profile = await verifyGoogleIdToken(body.data.idToken, audiences);
+    const user = await upsertGoogleUser(profile);
+    res.json(sessionOf(user));
+  } catch (err) {
+    next(err);
   }
-  res.status(501).json({ error: 'google_not_configured' });
 });
 
 authRouter.get('/me', requireAuth, (req, res) => {

@@ -9,9 +9,12 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:postgres:up": "docker compose up -d",
+    "db:postgres:down": "docker compose down",
+    "db:postgres:push": "node scripts/db-mode.mjs push",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
-    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts"
+    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -22,7 +25,9 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "google-auth-library": "^11.0.2",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.3.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -30,6 +35,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.3.1",
     "prisma": "^6.15.0",
     "tsx": "^4.20.5",

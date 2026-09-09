@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { ZodError } from 'zod';
+import { env } from './env.ts';
 import { HttpError } from './errors.ts';
 import { authRouter } from './routes/auth.ts';
 import { usersRouter } from './routes/users.ts';
@@ -14,7 +15,8 @@ import { adminFinanceRouter } from './routes/adminFinance.ts';
 export function createApp() {
   const app = express();
   app.use(cors({ origin: true }));
-  app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '4mb' }));
+  app.use('/uploads', express.static(env.uploadDir));
 
   app.get('/health', (_req, res) => {
     res.json({ ok: true, service: 'bite-and-tell' });

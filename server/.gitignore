@@ -3,3 +3,7 @@ node_modules/
 *.db
 *.db-journal
 dist/
+uploads/avatars/*
+!uploads/avatars/.gitkeep
+prisma/schema.postgresql.prisma
+
