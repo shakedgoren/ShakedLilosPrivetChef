@@ -134,12 +134,18 @@ export function AdminHomeScreen() {
             <Text style={s.profitNet}>{money(home.live ? home.month.profit : PROFIT.net)}</Text>
             <Text style={s.currencyBig}>₪</Text>
           </View>
-          <Text style={s.profitNote}>{PROFIT.netNote}</Text>
           <View style={s.rule} />
           <View style={s.grossRow}>
-            <Text style={s.profitNote}>{PROFIT.grossLabel}</Text>
+            <Text style={s.profitNote}>{PROFIT.revLabel}</Text>
             <View style={s.statMoney}>
-              <Text style={s.gross}>{money(PROFIT.gross)}</Text>
+              <Text style={s.gross}>{money(home.live ? home.month.revenue : PROFIT.rev)}</Text>
+              <Text style={s.currencySm}>₪</Text>
+            </View>
+          </View>
+          <View style={[s.grossRow, s.expRow]}>
+            <Text style={s.profitNote}>{PROFIT.expLabel}</Text>
+            <View style={s.statMoney}>
+              <Text style={s.gross}>{money(home.live ? home.month.expenses : PROFIT.exp)}</Text>
               <Text style={s.currencySm}>₪</Text>
             </View>
           </View>
@@ -211,6 +217,7 @@ const s = StyleSheet.create({
   /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */
   monthRow: { flex: 1, flexDirection: LTR_ROW, justifyContent: 'space-around' },
   month: { fontSize: 10, fontWeight: '300', color: '#9A93A6' },
+  expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
   donutCard: { width: 168, height: 144, borderRadius: 22, paddingVertical: 12, paddingHorizontal: 14 },

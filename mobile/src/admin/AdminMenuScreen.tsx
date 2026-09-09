@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
+import type { MenuCatKey, MenuRow } from '../data/adminMenu';
 import {
-  MENU_CATS,
-  MENU_COST,
-  MENU_KPI_AVG,
-  MENU_KPI_ITEMS,
-  MENU_KPI_MARGIN,
-  MENU_PRICE,
-  MENU_PROFIT,
-  MENU_ROWS,
+  CATS,
+  COST_LABEL,
+  KPI_KEYS,
+  MARGIN_PREFIX,
+  MENU,
   MENU_SUB,
   MENU_TITLE,
+  PRICE_LABEL,
+  PROFIT_LABEL,
+  START_CAT,
+  THIN_MARGIN,
+  marginPct,
 } from '../data/adminMenu';
 import { AdminShell, KpiRow } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
@@ -21,20 +24,25 @@ import { useNav } from '../navigation/store';
 
 const money = (n: number) => (Math.round(n * 10) / 10).toFixed(1);
 
+/* אימות בגבול · השרת מחזיר קטגוריה כמחרוזת חופשית, והמסך מצייר רק ארבע */
+const isMenuCat = (c: string): c is MenuCatKey => CATS.some((x) => x.id === c);
+const toMenuRows = (rows: readonly { c: string; name: string; price: number; cost: number }[]): MenuRow[] =>
+  rows.flatMap((x) => (isMenuCat(x.c) ? [{ c: x.c, name: x.name, price: x.price, cost: x.cost }] : []));
+
 export function AdminMenuScreen() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
-  const [cat, setCat] = useState('cous');
-  const [items, setItems] = useState(MENU_ROWS);
+  const [cat, setCat] = useState<MenuCatKey>(START_CAT);
+  const [items, setItems] = useState<MenuRow[]>(MENU);
 
   useEffect(() => {
     if (!live) return;
     void adminMenu()
-      .then((r) => setItems(r.items.map((x) => ({ c: x.c, name: x.name, price: x.price, cost: x.cost }))))
+      .then((r) => setItems(toMenuRows(r.items)))
       .catch(() => undefined);
   }, [live]);
 
-  const tint = MENU_CATS.find((c) => c.id === cat) ?? MENU_CATS[0];
+  const tint = CATS.find((c) => c.id === cat) ?? CATS[0];
   const list = items.filter((x) => x.c === cat);
   const totPrice = list.reduce((s, x) => s + x.price, 0);
   const totCost = list.reduce((s, x) => s + x.cost, 0);
@@ -42,9 +50,9 @@ export function AdminMenuScreen() {
 
   const kpis = useMemo(
     () => [
-      { k: MENU_KPI_ITEMS, v: String(list.length), fg: tint.deep },
-      { k: MENU_KPI_MARGIN, v: `${avg}%`, fg: avg < 40 ? '#A65E2A' : '#4E8A64' },
-      { k: MENU_KPI_AVG, v: list.length ? `${(totCost / list.length).toFixed(1)} ₪` : '—', fg: '#A65E2A' },
+      { k: KPI_KEYS[0], v: String(list.length), fg: tint.deep },
+      { k: KPI_KEYS[1], v: `${avg}%`, fg: avg < THIN_MARGIN ? '#A65E2A' : '#4E8A64' },
+      { k: KPI_KEYS[2], v: list.length ? `${(totCost / list.length).toFixed(1)} ₪` : '—', fg: '#A65E2A' },
     ],
     [list, avg, totCost, tint.deep],
   );
@@ -52,7 +60,7 @@ export function AdminMenuScreen() {
   return (
     <AdminShell title={MENU_TITLE} sub={MENU_SUB}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cats}>
-        {MENU_CATS.map((c) => (
+        {CATS.map((c) => (
           <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} onPress={() => setCat(c.id)} />
         ))}
       </ScrollView>
@@ -62,27 +70,27 @@ export function AdminMenuScreen() {
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
         {list.map((it) => {
           const profit = it.price - it.cost;
-          const pct = it.price > 0 ? Math.round((profit / it.price) * 100) : 0;
-          const thin = pct < 40;
+          const pct = marginPct(it);
+          const thin = pct < THIN_MARGIN;
           return (
             <View key={it.name} style={[s.card, { borderRightColor: tint.hue }]}>
               <Text style={s.name}>{it.name}</Text>
-              <Text style={[s.margin, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{`רווחיות ${pct}%`}</Text>
+              <Text style={[s.margin, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{`${MARGIN_PREFIX}${pct}%`}</Text>
               <View style={s.vals}>
                 <View style={s.box}>
-                  <Text style={s.lab}>{MENU_PRICE}</Text>
+                  <Text style={s.lab}>{PRICE_LABEL}</Text>
                   <View style={s.valBox}>
                     <Text style={s.val}>{`${it.price}`}</Text>
                   </View>
                 </View>
                 <View style={s.box}>
-                  <Text style={s.lab}>{MENU_COST}</Text>
+                  <Text style={s.lab}>{COST_LABEL}</Text>
                   <View style={[s.valBox, { backgroundColor: 'rgba(199,125,62,0.1)' }]}>
                     <Text style={[s.val, { color: '#A65E2A' }]}>{money(it.cost)}</Text>
                   </View>
                 </View>
                 <View style={s.box}>
-                  <Text style={s.lab}>{MENU_PROFIT}</Text>
+                  <Text style={s.lab}>{PROFIT_LABEL}</Text>
                   <View style={[s.valBox, { backgroundColor: thin ? 'rgba(199,125,62,0.1)' : 'rgba(78,138,100,0.12)' }]}>
                     <Text style={[s.val, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{money(profit)}</Text>
                   </View>

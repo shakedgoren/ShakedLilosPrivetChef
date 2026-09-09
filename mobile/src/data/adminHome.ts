@@ -260,10 +260,11 @@ export const DONUT = {
 /* ── כרטיס הרווח · העמודות במערכת קואורדינטות 148×30 ── */
 export const PROFIT = {
   title: "רווח החודש",
-  net: 9140,
-  netNote: "לפני מע״מ",
-  grossLabel: "כולל מע״מ",
-  gross: 10694,
+  net: 19660,
+  revLabel: "הכנסות",
+  rev: 40900,
+  expLabel: "הוצאות",
+  exp: 21240,
   bars: [
   {
     "x": 2,

@@ -77,9 +77,10 @@ export const DONUT = {
 export const PROFIT = {
   title: ${j(d.profitTitle)},
   net: ${d.profitNet},
-  netNote: ${j(d.profitNetNote)},
-  grossLabel: ${j(d.profitGrossLabel)},
-  gross: ${d.profitGross},
+  revLabel: ${j(d.profitRevLabel)},
+  rev: ${d.profitRev},
+  expLabel: ${j(d.profitExpLabel)},
+  exp: ${d.profitExp},
   bars: ${j(d.profitBars)},
 } as const;
 `;

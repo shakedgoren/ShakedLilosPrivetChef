@@ -64,9 +64,14 @@ out.donutTitle = 'לפי קטגוריה';
 /* כרטיס הרווח */
 out.profitTitle = 'רווח החודש';
 out.profitNet = num(one('רווח החודש</div>[\\s\\S]*?<div[^>]*>([\\d,]+)</div>', 'רווח נטו')[1]);
-out.profitNetNote = one('>(לפני מע״מ)</div>', 'הערת הרווח')[1];
-out.profitGrossLabel = one('>(כולל מע״מ)</div>', 'תווית ברוטו')[1];
-out.profitGross = num(one('כולל מע״מ</div>\\s*<div[^>]*>\\s*<div[^>]*>([\\d,]+)</div>', 'רווח ברוטו')[1]);
+/* אין פיצול מע״מ · עוסק פטור. הכרטיס מראה הכנסות, הוצאות והפרש ביניהן */
+out.profitRevLabel = one('>(הכנסות)</div>', 'תווית הכנסות')[1];
+out.profitRev = num(one('הכנסות</div>\\s*<div[^>]*>\\s*<div[^>]*>([\\d,]+)</div>', 'הכנסות')[1]);
+out.profitExpLabel = one('>(הוצאות)</div>', 'תווית הוצאות')[1];
+out.profitExp = num(one('הוצאות</div>\\s*<div[^>]*>\\s*<div[^>]*>([\\d,]+)</div>', 'הוצאות')[1]);
+if (out.profitRev - out.profitExp !== out.profitNet) {
+  throw new Error(`הרווח בכרטיס (${out.profitNet}) אינו ההפרש בין ההכנסות (${out.profitRev}) להוצאות (${out.profitExp})`);
+}
 out.profitBars = all('<rect x="(\\d+)" y="(\\d+)" width="18" height="(\\d+)"', 'עמודות הרווח', 6)
   .map((h) => ({ x: num(h[1]), y: num(h[2]), h: num(h[3]) }));
 
@@ -86,4 +91,4 @@ console.log('היום:', out.todayOrders, 'הזמנות ·', out.todayRevenue, '
 console.log('חצי שנה:', out.revenueTotal, '₪ ·', out.revenueMonths.join(' '), '· שיא', out.revenueTip);
 console.log('ציר Y:', out.revenueAxis.join(' '), '· נקודות:', out.revenueDots.map((d) => d.cx + ',' + d.cy).join(' '));
 console.log('דונאט:', out.donutLegend.map((d) => d.name + ' ' + d.pct + '%').join(' · '), '· מרכז', out.donutCenter);
-console.log('רווח:', out.profitNet, out.profitNetNote, '·', out.profitGross, out.profitGrossLabel, '·', out.profitBars.length, 'עמודות');
+console.log('רווח:', out.profitRev, '-', out.profitExp, '=', out.profitNet, '·', out.profitBars.length, 'עמודות');

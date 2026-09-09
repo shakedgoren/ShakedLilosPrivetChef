@@ -1,9 +1,21 @@
 import fs from 'fs';
+import { loadDishes, unitCosts, saladCostPerKg } from './lib/dish-costs.mjs';
 
 /**
  * חילוץ מסך התפריט מהקנבס.
  * ⚠ המסך לקריאה בלבד · המחיר והעלות מגיעים ממסך עלויות הייצור.
+ *
+ * ⚠ לא מהקנבס · העלויות אינן נלקחות מ-MENU שבמרקאפ אלא מחושבות מעץ
+ * המתכונים של AdminCosts. הן נכתבו שם ביד ונעו מהמקור (19.9 מול 21.3,
+ * 30.8 מול 43.8, 213.3 מול 244.3). שקד ביקשה שהתפריט יתעדכן אוטומטית.
  */
+
+/* שני פריטים בתפריט נקראים אחרת ממה שהם נקראים בעלויות הייצור */
+const COST_ALIASES = {
+  'חלה לכל אירוע': 'חלה לכל אירוע · הבסיס',
+};
+/* פריט שאינו מנה יחידה אלא ממוצע · קילו סלט */
+const SALAD_PER_KG = 'סלטים · ק״ג';
 const SRC = '/Users/shakedgoren/Downloads/files/design/app/AdminMenu.dc.html';
 const OUT = process.env.SP + '/admin-menu.json';
 
@@ -17,6 +29,21 @@ const mod = head + '\nexport { ' + NAMES.join(', ') + ' };';
 const m = await import('data:text/javascript;base64,' + Buffer.from(mod).toString('base64'));
 const out = {};
 for (const k of NAMES) out[k] = m[k];
+
+/* ── העלויות · מעץ המתכונים, לא מהמרקאפ ── */
+const dishes = await loadDishes();
+const costs = unitCosts(dishes);
+const saladKg = saladCostPerKg(dishes);
+
+out.MENU = out.MENU.map((item) => {
+  const cost = item.name === SALAD_PER_KG
+    ? saladKg
+    : costs.get(COST_ALIASES[item.name] || item.name);
+  if (cost === undefined) {
+    throw new Error(`${item.name}: אין מנה תואמת בעלויות הייצור`);
+  }
+  return { ...item, cost };
+});
 
 const pick = (name) => {
   const hits = [...js.matchAll(new RegExp(name + ":\\s*'([^']*)'", 'g'))];
