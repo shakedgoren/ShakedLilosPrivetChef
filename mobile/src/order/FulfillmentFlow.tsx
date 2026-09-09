@@ -9,7 +9,15 @@ import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
-import { Close } from '../icons';
+import { Bag, ChevronLeft, Close, Truck } from '../icons';
+
+/* מידות שורות המסירה · מהקנבס · האיסוף בגוון הקטגוריה, המשלוח אפור */
+const OPTION_ICON = 21;
+const OPTION_STROKE = 1.7;
+const TRUCK_INK = '#8A8194';
+const CHEV = 14;
+const CHEV_INK = '#C1BBCB';
+const CHEV_STROKE = 2.4;
 
 type Props = {
   f: Fulfillment;
@@ -99,16 +107,24 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   return (
     <View style={s.stack}>
       <Pressable onPress={f.wantPickup} style={s.option}>
-        <Text style={s.optionTitle}>איסוף עצמי</Text>
-        <Text style={s.optionSub}>נופר 25, יבנה · {window(pickupFrom, pickupTo)}</Text>
+        <Bag size={OPTION_ICON} color={accent.hue} strokeWidth={OPTION_STROKE} />
+        <View style={s.optionText}>
+          <Text style={s.optionTitle}>איסוף עצמי</Text>
+          <Text style={s.optionSub}>נופר 25, יבנה · {window(pickupFrom, pickupTo)}</Text>
+        </View>
+        <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
       </Pressable>
 
       <Pressable onPress={f.wantDelivery} style={s.option}>
-        <Text style={s.optionTitle}>משלוח</Text>
-        <Text style={s.optionSub}>
-          {minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}
-          {first}–{last}
-        </Text>
+        <Truck size={OPTION_ICON} color={TRUCK_INK} strokeWidth={OPTION_STROKE} />
+        <View style={s.optionText}>
+          <Text style={s.optionTitle}>משלוח</Text>
+          <Text style={s.optionSub}>
+            {minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}
+            {first}–{last}
+          </Text>
+        </View>
+        <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
       </Pressable>
 
       {f.toast && (
@@ -288,8 +304,12 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.16)',
-    gap: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
+  /* הטקסט תופס את מה שנשאר · האייקון והחץ נשארים בקצוות */
+  optionText: { flexGrow: 1, flexShrink: 1, gap: 3 },
   optionTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   optionSub: { fontSize: type.label, color: surface.muted },
   toast: { fontSize: type.label, color: '#B95349', textAlign: 'center' },

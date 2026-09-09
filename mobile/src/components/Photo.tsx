@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View, type ImageStyle, type ViewStyle } from 'react-native';
+import { Image, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { photo } from '../data/photos';
-import { a } from '../theme/tokens';
+import { Image as ImageIcon } from '../icons';
+import { a, deepRgbOf } from '../theme/tokens';
 
 type Props = {
   /** שם הקובץ בלי הסיומת · למשל 'cat-couscous' */
@@ -13,17 +14,26 @@ type Props = {
   resizeMode?: 'cover' | 'contain';
 };
 
+/* מציין המקום בקנבס · אייקון בגודל 26 בגוון הכהה של הקטגוריה */
+const MARK = 26;
+const MARK_STROKE = 1.4;
+const MARK_ALPHA = 0.5;
+const EDGE_ALPHA = 0.34;
+
 /**
  * תמונה של שקד · נופלת בחזרה למציין מקום כשהקובץ עדיין לא הועלה.
  * שלוש תמונות מהטבלה עוד חסרות, ולכן המצב הזה חייב להישאר.
+ *
+ * ⚠ מציין המקום הראה את המילה ״תמונה״ · היא לא קיימת בקנבס, שבו
+ * יש רק את האייקון בתוך המסגרת המקווקוות. הוסרה כדי להתאים.
  */
 export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover' }: Props) {
   const src = name ? photo(name) : undefined;
 
   if (!src) {
     return (
-      <View style={[s.placeholder, { borderColor: a(rgb, 0.34) }, style as ViewStyle]}>
-        <Text style={[s.label, { color: a(rgb, 0.72) }]}>תמונה</Text>
+      <View style={[s.placeholder, { borderColor: a(rgb, EDGE_ALPHA) }, style as ViewStyle]}>
+        <ImageIcon size={MARK} color={a(deepRgbOf(rgb), MARK_ALPHA)} strokeWidth={MARK_STROKE} />
       </View>
     );
   }
@@ -38,5 +48,4 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { fontSize: 9.5, letterSpacing: 0.6 },
 });

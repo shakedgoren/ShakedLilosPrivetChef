@@ -36,6 +36,22 @@ export type CategoryKey = keyof typeof hues;
 /** rgba מתוך שלישיית ה-rgb של גוון · a('123,92,188', 0.3) */
 export const a = (rgb: string, alpha: number) => `rgba(${rgb},${alpha})`;
 
+/** שלישיית rgb מתוך hex · '#43307A' → '67,48,122' */
+export const hexRgb = (hex: string): string => {
+  const h = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
+};
+
+/**
+ * הגוון הכהה של הקטגוריה, כשלישיית rgb.
+ * מציין המקום של התמונות בקנבס צובע את האייקון בגוון הכהה ואת
+ * המסגרת המקווקוות בגוון הרגיל, ולכן צריך את שניהם.
+ */
+export const deepRgbOf = (rgb: string): string => {
+  const match = Object.values(hues).find((h) => h.rgb === rgb);
+  return match ? hexRgb(match.deep) : rgb;
+};
+
 export const type = {
   family: 'Assistant',
   display: 'Anton',
