@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
+import { count as plural } from '../text/counts';
 import {
   CALL_LABEL,
   CUSTOMERS_TITLE,
@@ -162,7 +163,7 @@ export function AdminCustomersScreen() {
                         <Text style={[s.tagText, { color: reg ? '#4E8A64' : '#43307A' }]}>{reg ? TAG_REG : TAG_NEW}</Text>
                       </View>
                     </View>
-                    <Text style={s.line}>{`${p.orders} הזמנות · לקוחה מאז ${p.since}`}</Text>
+                    <Text style={s.line}>{`${plural(p.orders, 'הזמנה אחת', 'הזמנות')} · לקוחה מאז ${p.since}`}</Text>
                     {p.note ? <Text style={s.noteFlag} numberOfLines={1}>{p.note}</Text> : null}
                   </View>
                   <View>
@@ -221,7 +222,7 @@ export function AdminCustomersScreen() {
         )}
       </ScrollView>
       {hist ? (
-        <Sheet title={`ההזמנות של ${hist.name}`} sub={`${hist.history.length} הזמנות`} onClose={() => setHist(null)}>
+        <Sheet title={`ההזמנות של ${hist.name}`} sub={plural(hist.history.length, 'הזמנה אחת', 'הזמנות')} onClose={() => setHist(null)}>
           <ScrollView style={{ maxHeight: 360 }}>
             {(hist.history.length ? hist.history : [{ d: hist.last, k: hist.likes[0] ?? 'cous', t: hist.last, v: hist.spent, s: 'נמסרה' }]).map((h, i) => (
               <View key={h.id ?? i} style={s.histRow}>

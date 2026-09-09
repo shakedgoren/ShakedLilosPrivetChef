@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
+import { count } from '../text/counts';
 import {
   HIST_AREAS,
   HIST_BUYS,
@@ -41,7 +42,7 @@ export function AdminHistoryScreen() {
         const area = AREA[b.area] ?? HIST_AREAS.find((a) => a.id === b.area);
         return {
           title: `${area?.n ?? b.area} · ${b.d} · ${b.t}`,
-          count: `${b.rows.length} פריטים`,
+          count: count(b.rows.length, 'פריט אחד', 'פריטים'),
           sum: buySum(b.rows),
           hue: area?.hue ?? '#7B5CBC',
           deep: area?.deep ?? '#43307A',
@@ -62,7 +63,7 @@ export function AdminHistoryScreen() {
         const sum = l.items.reduce((s, x) => s + Number(x.qty) * Number(x.price), 0);
         return {
           title,
-          count: `${l.items.length} פריטים`,
+          count: count(l.items.length, 'פריט אחד', 'פריטים'),
           sum,
           hue: area?.hue ?? '#7B5CBC',
           deep: area?.deep ?? '#43307A',
@@ -80,7 +81,7 @@ export function AdminHistoryScreen() {
   const total = rows.reduce((s, b) => s + b.sum, 0);
 
   return (
-    <AdminShell title={HIST_TITLE} sub={`${rows.length} קניות · ${nf(total)} ₪ מצטבר`}>
+    <AdminShell title={HIST_TITLE} sub={`${count(rows.length, 'קנייה אחת', 'קניות')} · ${nf(total)} ₪ מצטבר`}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filters}>
         {HIST_AREAS.map((a) => (
           <Chip key={a.id} label={a.n} on={filter === a.id} tint={PLUM} onPress={() => { setFilter(a.id); setOpen(-1); }} />

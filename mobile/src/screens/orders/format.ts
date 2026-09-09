@@ -1,4 +1,5 @@
 import { CATEGORIES } from '../../data/categories';
+import { count } from '../../text/counts';
 import { CANCELLED, FLOW } from '../../data/adminOrders';
 import type { Order } from '../../api/types';
 import type { CategoryKey } from '../../theme/tokens';
@@ -37,5 +38,7 @@ export function shortRef(id: string): string {
 }
 
 export function countLabel(live: number, past: number): string {
-  return live ? `${live} פעילה · ${past} קודמות` : `${past} הזמנות קודמות`;
+  return live
+    ? `${live} פעילה · ${past} קודמות`
+    : count(past, 'הזמנה קודמת אחת', 'הזמנות קודמות');
 }

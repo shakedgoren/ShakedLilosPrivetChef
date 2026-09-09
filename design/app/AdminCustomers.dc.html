@@ -302,7 +302,7 @@ class Component extends DCLogic {
         tag: reg ? 'קבועה' : 'חדשה',
         tagBg: reg ? 'rgba(78,138,100,0.14)' : 'rgba(123,92,188,0.12)',
         tagFg: reg ? '#4E8A64' : '#43307A',
-        line: p.orders + ' הזמנות · לקוחה מאז ' + p.since,
+        line: (p.orders === 1 ? 'הזמנה אחת' : p.orders + ' הזמנות') + ' · לקוחה מאז ' + p.since,
         spent: nf(p.spent), spentTag: 'סה״כ',
         open: open,
         spin: open ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -362,7 +362,7 @@ class Component extends DCLogic {
       histOpen: st.hist !== null,
       closeHist: () => this.setState({ hist: null }),
       histTitle: st.hist === null ? '' : 'ההזמנות של ' + st.hist,
-      histSub: st.hist === null ? '' : (HISTORY[st.hist] || []).length + ' הזמנות',
+      histSub: st.hist === null ? '' : (function (n) { return n === 1 ? 'הזמנה אחת' : n + ' הזמנות'; })((HISTORY[st.hist] || []).length),
       histRows: st.hist === null ? [] : (HISTORY[st.hist] || []).map((o) => {
         const h = HUES[o.k];
         const t = STATE_TONE[o.s] || STATE_TONE['נמסרה'];

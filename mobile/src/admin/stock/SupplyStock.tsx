@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
+import { count } from '../../text/counts';
 import { LOW_CTA, SUPPLY_NOTE } from '../../data/adminStock';
 import type { SupplyRow, useAdminStock } from './useAdminStock';
 
@@ -24,7 +25,7 @@ export function SupplyStock({ admin }: Props) {
       {lowItems.length > 0 ? (
         <View style={s.lowCard}>
           <View style={s.lowText}>
-            <Text style={s.lowTitle}>{`${lowItems.length} פריטים מתחת למינימום`}</Text>
+            <Text style={s.lowTitle}>{`${count(lowItems.length, 'פריט אחד', 'פריטים')} מתחת למינימום`}</Text>
             <Text style={s.lowSub}>{lowItems.map((x) => x.name).join(' · ')}</Text>
           </View>
           <Pressable onPress={admin.sendToShopping} style={s.lowCta}>
@@ -35,7 +36,9 @@ export function SupplyStock({ admin }: Props) {
 
       {admin.sent ? (
         <View style={s.sent}>
-          <Text style={s.sentText}>{`נוספו ${lowItems.length} פריטים לרשימת הקניות`}</Text>
+          <Text style={s.sentText}>{lowItems.length === 1
+              ? 'נוסף פריט אחד לרשימת הקניות'
+              : `נוספו ${lowItems.length} פריטים לרשימת הקניות`}</Text>
         </View>
       ) : null}
 

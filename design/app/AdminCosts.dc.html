@@ -535,7 +535,7 @@ class Component extends DCLogic {
       impSub: 'המחירים ששולמו בפועל יעדכנו כל מצרך תואם',
       buys: BUYS.map((b) => ({
         title: b.area + ' · ' + b.d + ' · ' + b.t,
-        count: b.rows.length + ' פריטים',
+        count: b.rows.length === 1 ? 'פריט אחד' : b.rows.length + ' פריטים',
         pick: () => this.importBuy(b)
       })),
       hasImpDone: st.impDone !== '',

@@ -450,12 +450,12 @@ class Component extends DCLogic {
       saleNote: 'המסך מציג את ימי המכירה שפתוחים כרגע · פתוחים שניים, מוצגים שניהם. המכסה נקבעת בפתיחת היום ויורדת עם כל הזמנה; כאן רק מורידים מנות שהתקלקלו או נפלו.',
 
       hasLow: low.length > 0,
-      lowTitle: low.length + ' פריטים מתחת למינימום',
+      lowTitle: (low.length === 1 ? 'פריט אחד' : low.length + ' פריטים') + ' מתחת למינימום',
       lowSub: low.map((x) => x.name).join(' · '),
       lowCta: 'לרשימת הקניות',
       toShopping: () => this.setState({ sent: true }),
       sent: st.sent,
-      sentLabel: 'נוספו ' + low.length + ' פריטים לרשימת הקניות',
+      sentLabel: low.length === 1 ? 'נוסף פריט אחד לרשימת הקניות' : 'נוספו ' + low.length + ' פריטים לרשימת הקניות',
 
       groups: groups,
       addOpen: st.addOpen,

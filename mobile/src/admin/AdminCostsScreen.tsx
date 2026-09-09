@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
+import { count } from '../text/counts';
 import {
   COST_CATS,
   COST_DISHES,
@@ -101,7 +102,7 @@ export function AdminCostsScreen() {
     setBuys(
       hist.lists.map((l) => {
         const when = new Date(l.closedAt ?? l.openedAt);
-        return { id: l.id, title: `${l.area} · ${when.getDate()}.${when.getMonth() + 1} · ${l.items.length} פריטים` };
+        return { id: l.id, title: `${l.area} · ${when.getDate()}.${when.getMonth() + 1} · ${count(l.items.length, 'פריט אחד', 'פריטים')}` };
       }),
     );
   }, [live]);

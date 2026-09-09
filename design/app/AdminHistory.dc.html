@@ -170,7 +170,7 @@ class Component extends DCLogic {
     const total = BUYS.reduce((s, b) => s + this.sumOf(b), 0);
 
     return {
-      sub: BUYS.length + ' קניות · ' + nf(total) + ' ₪ מצטבר',
+      sub: (BUYS.length === 1 ? 'קנייה אחת' : BUYS.length + ' קניות') + ' · ' + nf(total) + ' ₪ מצטבר',
       goBack: () => {},
 
       filters: AREAS.map((a) => {
@@ -198,7 +198,7 @@ class Component extends DCLogic {
         return {
           title: a.n + ' · ' + b.d + ' · ' + b.t,
           hue: a.hue, deep: a.deep,
-          count: b.rows.length + ' פריטים',
+          count: b.rows.length === 1 ? 'פריט אחד' : b.rows.length + ' פריטים',
           sum: nf(this.sumOf(b)),
           open: open,
           spin: open ? 'rotate(180deg)' : 'rotate(0deg)',
