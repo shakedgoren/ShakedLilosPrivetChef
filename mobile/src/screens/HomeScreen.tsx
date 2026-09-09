@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Masthead } from '../components/Masthead';
-import { CARD, CategoryCard } from '../components/CategoryCard';
+import { CategoryCarousel } from '../components/CategoryCarousel';
 import { CategoryRail } from '../components/CategoryRail';
 import { PhotoReel } from '../components/PhotoReel';
 import { CATEGORIES } from '../data/categories';
@@ -36,21 +36,12 @@ export function HomeScreen() {
         </View>
       )}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD.width + CARD.gap}
-        decelerationRate="fast"
-        contentContainerStyle={s.track}
-        onMomentumScrollEnd={(e) => {
-          const i = Math.round(e.nativeEvent.contentOffset.x / (CARD.width + CARD.gap));
-          setActive(Math.max(0, Math.min(CATEGORIES.length - 1, i)));
-        }}
-      >
-        {CATEGORIES.map((c, i) => (
-          <CategoryCard key={c.key} item={c} active={i === active} onPress={() => go(c.key as Screen)} />
-        ))}
-      </ScrollView>
+      <CategoryCarousel
+        items={CATEGORIES}
+        active={active}
+        onActiveChange={setActive}
+        onOpen={(key) => go(key as Screen)}
+      />
 
       <CategoryRail items={CATEGORIES} activeKey={CATEGORIES[active].key} onPick={setActive} />
 
@@ -80,7 +71,6 @@ export function HomeScreen() {
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground },
   content: { paddingHorizontal: space.lg, paddingTop: space.xxl },
-  track: { gap: CARD.gap, paddingVertical: space.lg },
 
   sale: {
     height: 46,
