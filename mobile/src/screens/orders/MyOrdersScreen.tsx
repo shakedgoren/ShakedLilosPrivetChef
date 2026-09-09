@@ -17,6 +17,13 @@ import {
   shortRef,
   whenLine,
 } from './format';
+import {
+  AGAIN_LABEL,
+  EMPTY_CTA,
+  EMPTY_TEXT,
+  MY_ORDERS_TITLE,
+  PAST_LABEL,
+} from '../../data/myOrders';
 
 /** ההזמנות שלי · מקביל ל-MyOrders.dc.html, מחובר ל-GET /orders */
 export function MyOrdersScreen() {
@@ -52,7 +59,7 @@ export function MyOrdersScreen() {
     <View style={s.page}>
       <View style={s.head}>
         <View style={s.headText}>
-          <Text style={s.title}>ההזמנות שלי</Text>
+          <Text style={s.title}>{MY_ORDERS_TITLE}</Text>
           {!empty ? <Text style={s.count}>{countLabel(live.length, past.length)}</Text> : null}
         </View>
         <Pressable onPress={() => setOutOpen(true)} style={s.authBtn} hitSlop={8}>
@@ -65,9 +72,9 @@ export function MyOrdersScreen() {
           <View style={s.emptyOrb}>
             <Text style={s.emptyGlyph}>☰</Text>
           </View>
-          <Text style={s.emptyTitle}>עוד לא הוזמנה התמכרות חדשה 😝</Text>
+          <Text style={s.emptyTitle}>{EMPTY_TEXT}</Text>
           <Pressable onPress={() => go('main')} style={s.emptyCta}>
-            <Text style={s.emptyCtaText}>מה יש היום</Text>
+            <Text style={s.emptyCtaText}>{EMPTY_CTA}</Text>
           </Pressable>
         </View>
       ) : (
@@ -82,7 +89,7 @@ export function MyOrdersScreen() {
               onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
             />
           ))}
-          {past.length > 0 ? <Text style={s.pastLabel}>הזמנות קודמות</Text> : null}
+          {past.length > 0 ? <Text style={s.pastLabel}>{PAST_LABEL}</Text> : null}
           {past.map((o) => (
             <OrderCard
               key={o.id}
@@ -153,7 +160,7 @@ function OrderCard({
           </View>
           {onAgain ? (
             <Pressable onPress={onAgain} style={s.again}>
-              <Text style={s.againText}>להזמין שוב</Text>
+              <Text style={s.againText}>{AGAIN_LABEL}</Text>
             </Pressable>
           ) : null}
         </View>

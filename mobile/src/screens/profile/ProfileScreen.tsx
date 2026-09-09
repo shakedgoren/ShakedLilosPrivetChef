@@ -6,6 +6,10 @@ import { COPY } from '../../api/copy';
 import { ApiError, type PublicUser } from '../../api/types';
 import { LogoutConfirm } from '../../components/LogoutConfirm';
 import { CITIES } from '../../data/shared';
+import { PLACES } from '../../data/profile';
+
+/** כמה הצעות כתובת מוצגות · כמו בקנבס */
+const MAX_SUGGESTIONS = 4;
 import { useNav } from '../../navigation/store';
 import { a, radius, space, surface } from '../../theme/tokens';
 
@@ -110,6 +114,20 @@ export function ProfileScreen() {
 
   const city = cityOf(form.addr);
   const noShip = !!(city && !(CITIES as readonly string[]).includes(city));
+
+  /* השלמת כתובות · מחפשת גם ברחוב וגם בעיר ומרכיבה ״רחוב מספר, עיר״.
+     נסגרת ברגע שהוקלדה עיר מלאה, בדיוק כמו בקנבס. */
+  const suggestions = useMemo(() => {
+    const raw = trim(form.addr);
+    if (raw.length < 2 || city) return [];
+    const num = raw.match(/\d+/)?.[0] ?? '';
+    const words = raw.replace(/[,\d]/g, ' ').split(/\s+/).filter(Boolean);
+    return PLACES.filter((pl) =>
+      words.some((w) => pl.street.indexOf(w) === 0 || pl.city.indexOf(w) === 0),
+    )
+      .slice(0, MAX_SUGGESTIONS)
+      .map((pl) => `${pl.street}${num ? ' ' + num : ''}, ${pl.city}`);
+  }, [form.addr, city]);
 
   const save = async () => {
     if (!canSave) return;
@@ -248,6 +266,15 @@ export function ProfileScreen() {
             bad={errors.addr}
             hint="יש להזין כתובת מלאה"
           />
+          {suggestions.length > 0 ? (
+            <View style={s.sug}>
+              {suggestions.map((g) => (
+                <Pressable key={g} onPress={() => set('addr', g)} style={s.sugRow}>
+                  <Text style={s.sugText}>{g}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
           {noShip ? <Text style={s.noShip}>אין משלוחים לאיזור הזה</Text> : null}
         </View>
 
@@ -433,6 +460,21 @@ const s = StyleSheet.create({
   addrHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
   addrNote: { fontSize: 11.5, color: surface.faint },
   noShip: { fontSize: 11.5, fontWeight: '600', color: '#7B5CBC' },
+  sug: {
+    marginTop: 6,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(130,112,162,0.18)',
+  },
+  sugRow: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(130,112,162,0.1)',
+  },
+  sugText: { fontSize: 13, color: surface.ink },
 
   fieldWrap: { gap: 5 },
   fieldLabel: { fontSize: 11.5, fontWeight: '500', color: surface.faint },
