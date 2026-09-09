@@ -27,9 +27,10 @@
 
 ### 3 · קבצי `mobile/src/data/*.ts` נוצרים אוטומטית — אסור לערוך אותם ביד
 
-כל שינוי בהם נמחק בהרצה הבאה של ה-emitter. **זה כבר קרה:** הרצה חוזרת של
-`emit-admin-orders.mjs` מחקה תוספות שקורסור כתב לקובץ. תוספות שצד השרת צריך
-נכנסות ל-`scripts/emit-*.mjs` עצמו, ושם הן מסומנות בהערה `⚠ לא מהקנבס`.
+כל שינוי בהם נמחק בהרצה הבאה של ה-emitter. **זה כבר קרה פעמיים:**
+הרצה חוזרת של `emit-admin-orders.mjs` מחקה תוספות שקורסור כתב, ו-`adminMenu.ts`
+נכתב פעם אחת ביד מול emitter ישן — עד שהרצת ה-emitter שברה את המסך.
+תוספות שצד השרת צריך נכנסות ל-`scripts/emit-*.mjs` עצמו, ושם הן מסומנות `⚠ לא מהקנבס`.
 
 ---
 
@@ -40,7 +41,23 @@
 | `chef-questionnaire.html` | הגרסה הראשונה · HTML יחיד | **ארכיון.** מקור אמת לטקסטים ומחירים בלבד |
 | `design/app/` | קנבס העיצוב · 22 מסכים | **פעיל.** שקד עורכת שם ושומרת |
 | `mobile/` | האפליקציה האמיתית · React Native | **22/22 המסכים הועברו** |
-| `server/` | Express + Prisma · קורסור בנה | **חי.** 8 טבלאות, כל הראוטים |
+| `server/` | Express + Prisma · קורסור בנה | **רץ מקומית.** 8 טבלאות, 15 בדיקות עוברות |
+
+---
+
+## איפה עומדים עכשיו
+
+**מה עובד end-to-end מקומית:**
+כל 22 המסכים · 11 מסכי הניהול מושכים נתונים אמיתיים מהשרת (נמדד: 45 בקשות, כולן 200) ·
+DB מקומי זרוע · התחברות, הזמנות וניהול.
+
+**מה שנשאר, לפי סדר:**
+
+1. **אייקונים** — 32 אתרי קריאה מחוברים מתוך ~342 מופעים בקנבס. עבודת מסך-מסך.
+2. **פריסה** — Postgres + hosting. **החלטה של שקד, יש עלות חודשית.** ההמלצה: Railway Hobby ~$5–10 לחודש (בערך 20–40 ₪). לא להתחיל בלי אישור מפורש.
+3. **סליקה · וואטסאפ** — תהליכי אישור של שבועות. על שקד להתחיל אותם.
+4. **3 תמונות חסרות** — כולן במסך השף: ״ממשותף לאישי״, ״שולחן קינוחים מעוצב״, ״חבילת שתייה ללא הגבלה״.
+5. **בדיקות באפליקציה** — כמעט אין. בשרת יש 15.
 
 ---
 
@@ -55,7 +72,8 @@
 
 ```bash
 export SK=<נתיב הסקיל design>        # משתנה בין סשנים · מריצים /design כדי לקבלו
-bash scripts/seed.sh                  # מריץ optimize-assets ואז סוֹרֵק את כל 22 המסכים וכל התמונות
+export SP=<תיקיית סקרצ׳פד>            # ה-extractors כותבים לשם JSON ביניים
+bash scripts/seed.sh                  # optimize-assets ואז סריקת 22 המסכים וכל התמונות
 ```
 ואז `Artifact` עם `url` של הארטיפקט, `contract: "0.1.31"`, `favicon: "👨🏻‍🍳"`, **בלי** `capabilities`.
 
@@ -71,6 +89,9 @@ bash scripts/seed.sh                  # מריץ optimize-assets ואז סוֹר
 **למה זה קיים:** פעם אחת חיתוך מרקאפ בלע את כל תוכן דף הבית לתוך `sc-if`
 מוסתר והדף יצא ריק. `node --check` ובודק החורים עברו בהצלחה. רק בדיקת
 איזון התגיות תופסת את זה.
+
+> בודק החורים מדווח false positives על מפתחות דינמיים (`vals['q' + i]`),
+> קיצור אובייקט, ושני מפתחות באותה שורה. צריך לנכות משתני `sc-for as=""`.
 
 ### 22 המסכים
 
@@ -88,6 +109,17 @@ bash scripts/seed.sh                  # מריץ optimize-assets ואז סוֹר
   פירות `#B04A76` · שף `#A85A28`
 - RTL · גרשיים עבריים `׳`/`״` במחרוזות JS · **אין מע״מ** (עוסק פטור)
 
+### פגמים ידועים בקנבס — לא תוקנו
+
+- **`Main.dc.html` · כפתורי הנאב מחווטים הפוך.** אייקון הבית קורא ל-`navProfile`
+  ואייקון המשתמש קורא ל-`navHome`. באפליקציה זה נכון. שקד לא החליטה אם לתקן.
+- **`AdminBoard` · שורת הסיכומים מוסטת ב-114px.** שורות ההזמנות משתמשות ב-92+220
+  ו-68 לעמודה, שורת הסיכום ב-282 ו-92 — הסטייה מצטברת. **יושר בהעברה, שקד אישרה
+  להשאיר מיושר בינתיים.**
+- **`AdminMenu` · העלויות עדיין מוקלדות.** ארטבורדים לא מייבאים זה מזה, אז
+  החישוב האוטומטי חי ב-extractor. הערכים בקנבס יושרו ידנית; ה-extractor
+  נכשל אם נוצר פער.
+
 ---
 
 ## שכבה 3 · האפליקציה
@@ -99,99 +131,163 @@ bash scripts/seed.sh                  # מריץ optimize-assets ואז סוֹר
 cd mobile && npx tsc --noEmit                    # בדיקת טיפוסים
 npx expo export --platform ios --output-dir /tmp/x   # בדיקת bundle
 ```
+
+**`mobile/.env`** (ב-gitignore, לא ב-git):
+```
+EXPO_PUBLIC_API_URL=http://192.168.1.192:3001
+```
+זו כתובת הרשת של המחשב — עובדת גם בדפדפן וגם באייפון באותה Wi-Fi.
+**אם ה-IP משתנה צריך לעדכן.** ריק = מצב דמה.
+
 **תצוגה חיה:** `.claude/launch.json` מגדיר `bite-and-tell` שמריץ `expo start --web`
 על פורט 8081. משתמשים ב-`preview_start` ואז בודקים עם `javascript_tool`.
-לבדיקה בדפדפן יש קישור עומק `?screen=<שם>` — **אני כתבתי אותו**, הוא לא קיים במכשיר.
+לבדיקה בדפדפן יש קישור עומק `?screen=<שם>` — **Claude כתב אותו**, לא קיים במכשיר.
+**על האייפון:** `npx expo start` בטרמינל, סורקים את ה-QR עם Expo Go.
 
 ### מבנה
 
 ```
 src/theme/tokens.ts        אסימוני העיצוב · הועתקו אחד לאחד מהקנבס
-src/theme/fonts.ts         שש משקולות Assistant + Anton · כל משקולת היא משפחה נפרדת
+src/theme/rtl.ts           IS_RTL ו-enableRTL · המקור היחיד לכיוון
+src/theme/fonts.ts         שש משקולות Assistant + Anton · כל משקולת משפחה נפרדת
 src/theme/applyFonts.tsx   מזריק את המשפחה לפי fontWeight לתוך כל <Text>
+src/icons/index.tsx        ⚠ נוצר אוטומטית · 46 אייקונים מהקנבס
+src/text/counts.ts         יחיד ורבים בעברית
 src/data/                  נתונים שנוצרו אוטומטית · אסור לערוך ביד
 src/api/                   הלקוח מול השרת · client, auth, orders, admin, status, storage
 src/navigation/store.tsx   מעטפת הניווט · מקבילה ל-App.dc.html
 src/order/                 זרימת המסירה המשותפת לכל הקטגוריות
-src/components/            רכיבים משותפים · Masthead, PhotoReel, Photo, Stepper
+src/components/            רכיבים משותפים · Masthead, PhotoReel, PhotoStrip,
+                           CategoryCarousel, Photo, Stepper, BottomNav
 src/screens/               מסכי הלקוחה · 11
 src/admin/                 מסכי הניהול · 11 + ערכת ui/ משותפת
 ```
 
-### הגופנים — התיקון הוויזואלי הגדול ביותר
+### שלושה תיקונים שאסור לשבור שוב
 
-ב-React Native כל משקולת היא **משפחה נפרדת**; `fontWeight` לבדו לא בוחר קובץ.
-`applyFonts.tsx` עוטף את `Text` ומזריק `fontFamily` לפי המשקולת **בכניסה** ל-render.
+**1 · RTL.** `I18nManager.forceRTL(true)` **לא מספיק ב-React Native Web** — הוא לא
+נוגע בכיוון המסמך, ו-`I18nManager.isRTL` נשאר `false`. כל 22 המסכים יצאו LTR.
+`src/theme/rtl.ts` מסמן `<html dir="rtl">` ומייצא `IS_RTL` כמקור אמת.
+**אסור להסתמש ב-`I18nManager.isRTL` בשום מקום.**
+
+**2 · גלילה אופקית ב-RTL.** `contentOffset.x` יוצא **שלילי** (נמדד: 0 עד ‎-1419).
+כל חישוב אינדקס ממנו נחתך ל-0. קרוסלת דף הבית עברה למסלול שזז ב-`transform`,
+כמו בקנבס — `CategoryCarousel.tsx`, עם `SWIPE_MIN 45` ו-`DRAG_SLOP 6` מהקנבס.
+מאותה סיבה `PhotoReel` גוזרת את כיוון האנימציה מ-`IS_RTL`.
+
+**3 · הגופנים.** ב-React Native כל משקולת היא **משפחה נפרדת**; `fontWeight` לבדו
+לא בוחר קובץ. `applyFonts.tsx` עוטף את `Text` ומזריק `fontFamily` **בכניסה** ל-render.
 ניסיון לשכפל את האלמנט המוחזר עם מערך סגנונות נכשל בשקט על צמתי DOM.
 
 ### חילוץ נתונים מהקנבס — אל תקליד ידנית
 
-יש כ-20 זוגות סקריפטים ב-`scripts/`:
+כ-22 זוגות סקריפטים ב-`scripts/`:
 
 ```bash
+export SP=<סקרצ׳פד>
 node scripts/extract-<x>.mjs && node scripts/emit-<x>.mjs   # → mobile/src/data/<x>.ts
 ```
 ה-extractor מושך מהמרקאפ עם `assert found exactly once` — כל כישלון כזה תפס עד היום
-בעיה אמיתית (תגית כפולה עם ערכים שונים, רגקס שתפס סף שגוי, כותרת שמופיעה פעמיים).
-**לעולם לא להקליד את הנתונים ביד.**
+בעיה אמיתית. **לעולם לא להקליד את הנתונים ביד.**
+
+**סקריפטים שאינם מהקנבס** (נכתבו על ידי Claude, מסומנים בקובץ עצמו):
+- `scripts/lib/dish-costs.mjs` — נמל של `unitCost` מ-`AdminCosts`. מזין את עלויות
+  `AdminMenu` במקום שיוקלדו. 17 מתוך 20 הפריטים תאמו מיד — זה מה שאימת את הנמל.
+- `scripts/extract-icons.mjs` + `emit-icons.mjs` — ערכת האייקונים. השמות בטבלה
+  ב-emitter נכתבו על ידי Claude, ממופים לפי חתימת הצורה כדי שלא יזוזו.
 
 ---
 
 ## שכבה 4 · השרת
 
-`server/` · Express + Prisma. קורסור בנה אותו במקביל; שלוש התנגשויות מוזגו.
+`server/` · Express + Prisma + JWT. **רץ מקומית, לא באוויר.**
+
+```bash
+cd server
+cp .env.example .env          # פעם אחת
+npm install
+npx prisma migrate deploy     # יוצר server/prisma/dev.db
+npm run db:seed               # חשבון מנהלת + נתוני פתיחה
+npm run dev                   # http://localhost:3001 · מאזין ל-0.0.0.0
+npm test                      # 15 בדיקות
+```
+
+**התחברות:** השדה נקרא **`who`** (טלפון או אימייל), **לא `email`**.
+מנהלת: טלפון `0500000000`, סיסמה `changeme` (מ-`.env`).
 
 **8 טבלאות:** `User` · `PasswordReset` · `Order` · `SaleDay` · `SupplyItem` ·
 `ShoppingList` · `ProductionDish` · `Expense`
 
-**נקודות הקצה** (`server/src/app.ts`):
+**DB:** SQLite ב-`prisma/dev.db`. קורסור הוסיף `docker-compose.yml` ו-`scripts/db-mode.mjs`
+למעבר ל-Postgres מקומי. לפרודקשן — `DATABASE_URL` ל-Postgres.
 
-| בסיס | ראוטר | עיקר |
-|---|---|---|
-| `/auth` | `auth.ts` | `login` `register` `google` `forgot-password` `reset-password` `change-password` |
-| `/users` | `users.ts` | `GET/PATCH /me` |
-| `/orders` | `orders.ts` | `GET /` `POST /` `GET /:id` |
-| `/admin` | `admin.ts` | `orders` `orders/:id` `orders/:id/status` `orders/:id/qty` `customers` `customers/:id` `history` `menu` `board` |
-| `/admin/days` | `adminDays.ts` | `GET/PUT /:date` `GET/PUT /active` `POST /active/close` `PATCH /:date/waste` |
-| `/admin/stock` | `adminStock.ts` | `GET/POST /supply` `PATCH/DELETE /supply/:id` |
-| `/admin/shop` | `adminShop.ts` | `GET /` `POST /` `GET /:id` |
-| `/admin` | `adminFinance.ts` | `money` `costs` `costs/:id` `costs/import/:listId` `summary` |
+### נקודות הקצה שהאפליקציה באמת קוראת
 
-הכתובת באפליקציה: `EXPO_PUBLIC_API_URL` (`mobile/src/api/config.ts`). ריק = מצב דמה.
+| מסך | נקודת קצה |
+|---|---|
+| Admin | `/admin/summary` |
+| AdminOrders | `/admin/orders` · `/admin/customers` |
+| AdminBoard | `/admin/board?date=&category=` |
+| AdminDays | `/admin/days?from=&to=` |
+| AdminMoney | `/admin/money?period=` |
+| AdminShopping | `/admin/shop/active` |
+| AdminHistory | `/admin/shop/history` |
+| AdminStock | `/admin/stock/sale` · `/admin/stock/supply` |
+| AdminCustomers | `/admin/customers` |
+| AdminMenu | `/admin/menu` |
+| AdminCosts | `/admin/costs` |
+| לקוחה | `/auth/*` · `/users/me` · `/users/me/photo` · `/orders` · `/orders/:id/reorder` |
+
+> **⚠ אין `/admin/history` ואין `/admin/days/active`.** היסטוריית הקניות וסגירת
+> הרשימה יושבות תחת `/admin/shop`. גרוע מזה: `GET /admin/days/active` **לא מחזיר 404**
+> אלא מותאם ל-`/:date` עם `date="active"` ומחזיר `{"date":"active","rec":{}}` —
+> תשובה שנראית תקינה אבל ריקה. **לא תוקן.** שווה אימות פורמט תאריך.
 
 ---
 
 ## התמונות
 
 80 קבצים ב-`design/app/assets/`. **כולן `.jpg` פרט ל-`logo.png`.**
-`sync-photos.sh` בוחר לכל שם את הגרסה עם יותר פיקסלים מבין `assets/` ל-`assets/originals/`,
-ואז מקטין ליעדים שב-README. 31MB → 8.6MB.
-`check-photos.mjs` גוזר את הקבוצות מ-`photos.ts` עצמו · **69 מתוך 80 בשימוש.**
+`sync-photos.sh` בוחר לכל שם את הגרסה עם יותר פיקסלים, ואז מקטין. 31MB → 8.6MB.
+`check-photos.mjs` גוזר את הקבוצות מ-`photos.ts` עצמו.
 
-- **3 תמונות חסרות** (שקד סימנה באדום): ממשותף לאישי · שולחן קינוחים מעוצב ·
-  חבילת שתייה ללא הגבלה
-- `Photo.tsx` נופל בחזרה למציין המקום המקווקו ״תמונה״ כשקובץ חסר
-
----
-
-## שאלות פתוחות — מחכות להחלטה של שקד
-
-1. **מע״מ:** `Admin` מציג ״לפני/כולל מע״מ״ אבל `AdminMoney` אומר עוסק פטור בלי פיצול מע״מ
-2. **רווח חודשי:** 9,140 ב-`Admin` מול 19,660 ב-`AdminMoney`
-3. **שלוש עלויות הסלטים ב-`AdminMenu`** (19.9/30.8/213.3) לא מסכימות עם `AdminCosts` (21.3/43.8/244.3) — זה פער בין קנבס לקנבס, לא באג בהעברה
-4. **`home-1..10` לא בשימוש** — רצועת התמונות בקנבס משתמשת בחמש תמונות הקטגוריות. איפה התמונות האלה אמורות לשבת?
-5. **קרוסלת השף:** 14 תמונות → 14 נקודות; בקנבס יש 3
-6. **״שולם בפועל״ ב-`AdminShopping`** — האם צריך להיות ניתן לעריכה? בקנבס אין ממשק עריכה
-7. **שורת הסיכומים ב-`AdminBoard`** — בקנבס היא מוסטת ב-114px. יישרתי אותה בהעברה. להשאיר או להתאים לפגם?
+- **`home-1..10`** — רצועת התמונות הרצה בדף הבית.
+- **`cat-*`** (5) — כרטיסי הקרוסלה.
+- **`chef-1..14`** — קרוסלת השף. **`tabon-1..12`** — קרוסלת הטאבון (12, לא 11).
+  מוצגת אחת בכל פעם לפי הלשונית. **בלי נקודות** — מעל 6 תמונות הן עמוסות.
+- `Photo.tsx` נופל למציין מקום מקווקו עם אייקון תמונה (בלי טקסט — בקנבס אין שם מילה).
 
 ---
 
-## מה עוד אין
+## החלטות שהתקבלו — לא לפתוח מחדש
 
-- **סליקה · וואטסאפ** — תהליכי אישור של שבועות. **על שקד להתחיל אותם עכשיו.**
-- **3 התמונות החסרות**
-- **כל הנתונים ב-`mobile/src/data/admin*.ts` הם דמה** — הגיעו מהקנבס, לא מהשרת
-- **בדיקות** — אין
+1. **מע״מ** — אין. הוסר לגמרי מ-`Admin`. עוסק פטור.
+2. **רווח** — הכנסות פחות הוצאות. `Admin` ו-`AdminMoney` מסכימים.
+   `extract-admin-home` נכשל אם החשבון לא נסגר.
+3. **עלויות `AdminMenu`** — מחושבות מעץ המתכונים של `AdminCosts`.
+4. **תמונות `home`** — ברצועה הרצה. `cat-*` בכרטיסים.
+5. **קרוסלות השף** — אחת בכל פעם לפי הקטגוריה, בלי נקודות.
+6. **״שולם בפועל״ ב-`AdminShopping`** — אין צורך בשדה עריכה.
+7. **שורת הסיכומים ב-`AdminBoard`** — להשאיר מיושר.
+8. **יחיד ורבים** — שמונה ניסוחים אושרו (״הזמנה אחת״, ״פריט אחד״, ״קנייה אחת״...).
+   הלוגיקה ב-`src/text/counts.ts`, ובקנבס מוטבעת בכל מסך.
+
+---
+
+## מגבלת סביבה ידועה
+
+**כלי הלחיצה והגרירה של הדפדפן (`computer left_click` / `left_click_drag`)
+מחזיר `timeout`** בסשן הנוכחי — ״החלון של Claude מכוסה״. צילומי מסך
+ו-`javascript_tool` עובדים. לחיצות סינתטיות דרך `javascript_tool` עובדות על
+`Pressable` פשוט, אבל **לא על `PanResponder`** (גרירה) ולא תמיד על כפתורים מקוננים.
+
+**מה זה אומר:** דברים שמאחורי אינטראקציה נשארים לא מאומתים. במקרה כזה —
+לחלץ את הלוגיקה לפונקציה טהורה ולבדוק אותה ב-`node --test`, **ולהגיד לשקד
+במפורש שהמסלול הוויזואלי לא נבדק.**
+
+**שני דברים ממתינים לאימות של שקד:**
+- ההחלקה בין כרטיסי הקרוסלה בדף הבית (הלוגיקה מכוסה ב-5 בדיקות).
+- שורות המסירה — ״איסוף עצמי״ ו״משלוח״ עם האייקונים החדשים.
 
 ---
 
@@ -200,5 +296,8 @@ node scripts/extract-<x>.mjs && node scripts/emit-<x>.mjs   # → mobile/src/dat
 - עברית, ישיר, בלי להתנצל.
 - **לאמת, לא להניח.** למדוד בדפדפן ולהראות מספרים.
 - כשמשהו נשבר — להגיד מה, למה, ואיך תוקן.
-- כשמשהו לא נבדק — להגיד את זה במפורש.
+- **כשמשהו לא נבדק — להגיד את זה במפורש.** זה קרה בסשן הזה: דיווחתי על
+  ״באג בלקוחות״ שהתבסס על קטע טקסט קטוע, ולא היה שום באג.
 - להציע במקום להוסיף מיוזמתי.
+- **חלוקה מול קורסור:** הוא על השרת, Claude על האפליקציה, הקנבס והצינורות.
+  קורסור לא נוגע ב-`mobile/src/data/` ולא ב-`design/app/`.
