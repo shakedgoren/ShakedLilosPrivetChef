@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -59,6 +60,7 @@ for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith('.dc.html')).sor
       screens: new Set(),
       strokeWidths: new Map(),
       sizes: new Map(),
+      strokes: new Map(),
       filled: false,
     };
     prev.uses++;
@@ -67,6 +69,9 @@ for (const file of fs.readdirSync(DIR).filter((f) => f.endsWith('.dc.html')).sor
     prev.strokeWidths.set(sw, (prev.strokeWidths.get(sw) ?? 0) + 1);
     const size = head.width ?? '24';
     prev.sizes.set(size, (prev.sizes.get(size) ?? 0) + 1);
+    /* צבע הקו · הערך השכיח הופך לברירת המחדל של האייקון באפליקציה */
+    const stroke = head.stroke ?? '';
+    if (stroke && !stroke.includes('{{')) prev.strokes.set(stroke, (prev.strokes.get(stroke) ?? 0) + 1);
     if (head.fill && head.fill !== 'none') prev.filled = true;
     icons.set(key, prev);
   }
@@ -78,11 +83,14 @@ const list = [...icons.values()]
   .sort((a, b) => b.uses - a.uses)
   .map((ic, i) => ({
     idx: i + 1,
+    /* חתימה יציבה · השמות ב-emit נקשרים אליה ולא לסדר, שתלוי בשכיחות */
+    sig: crypto.createHash('md5').update(JSON.stringify(ic.shapes)).digest('hex').slice(0, 8),
     shapes: ic.shapes,
     uses: ic.uses,
     screens: [...ic.screens].sort(),
     strokeWidth: common(ic.strokeWidths),
     size: common(ic.sizes),
+    stroke: ic.strokes.size ? common(ic.strokes) : '#2A2430',
     filled: ic.filled,
   }));
 
@@ -92,6 +100,7 @@ console.log('אייקונים ייחודיים:', list.length, '· מופעים:
 for (const ic of list) {
   const d = ic.shapes.map((s) => s.attrs.d ?? `<${s.tag}>`).join(' ');
   console.log(
+    ic.sig,
     String(ic.idx).padStart(3) + '.',
     String(ic.uses).padStart(3) + '×',
     'עובי ' + ic.strokeWidth.padEnd(4),

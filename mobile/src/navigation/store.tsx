@@ -33,6 +33,8 @@ export const SCREENS = [
   'adminCosts',
   'adminHistory',
   'adminBoard',
+  /* מסך בדיקה · גיליון האייקונים שנוצרו מהקנבס */
+  'icons',
 ] as const;
 
 export type Screen = (typeof SCREENS)[number];

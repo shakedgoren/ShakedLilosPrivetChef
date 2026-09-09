@@ -7,6 +7,7 @@ import { applyFonts } from './src/theme/applyFonts';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
@@ -56,6 +57,7 @@ function Router() {
   const gated = ADMIN_SCREENS.includes(screen) && apiEnabled && user?.role !== 'admin';
   const view = gated ? 'main' : screen;
 
+  if (view === 'icons') return <IconSheetScreen />;
   if (view === 'guest' || view === 'main') return <HomeScreen />;
   if (view === 'login') return <LoginScreen mode="in" />;
   if (view === 'signup') return <LoginScreen mode="up" />;
