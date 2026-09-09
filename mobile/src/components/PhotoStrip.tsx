@@ -12,6 +12,9 @@ type Props = {
   rgb?: string;
 };
 
+/* מעל הסף הזה הנקודות נעשות עמוסות · מחליקים בלעדיהן */
+const MAX_DOTS = 6;
+
 /** קרוסלת תמונות אופקית · בית, שף וטאבון */
 export function PhotoStrip({ names, height, tileWidth, rgb }: Props) {
   const [i, setI] = useState(0);
@@ -45,7 +48,7 @@ export function PhotoStrip({ names, height, tileWidth, rgb }: Props) {
           />
         ))}
       </ScrollView>
-      {paging && names.length > 1 ? (
+      {paging && names.length > 1 && names.length <= MAX_DOTS ? (
         <View style={s.dots}>
           {names.map((name, k) => (
             <Pressable

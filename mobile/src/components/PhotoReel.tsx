@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { CATEGORIES } from '../data/categories';
+import { HOME_PHOTOS } from '../data/photos';
 import { a, surface } from '../theme/tokens';
 import { Photo } from './Photo';
 
@@ -13,16 +13,10 @@ const PITCH = TILE_W + GAP;
 /* הרצועה רצה סיבוב מלא ב-34 שניות · כמו reelRun בקנבס */
 const LOOP_MS = 34000;
 
-/** התמונה של כל קטגוריה · אותם קבצים של הכרטיסים */
-const SHOTS = [
-  { key: 'cous', name: 'קוסקוס', file: 'cat-couscous' },
-  { key: 'schn', name: 'שישניצל', file: 'cat-schnitzel' },
-  { key: 'box', name: 'ספיישל', file: 'cat-boxes' },
-  { key: 'fruit', name: 'מגשי פירות', file: 'cat-fruit' },
-  { key: 'chef', name: 'שף וטאבון', file: 'cat-chef' },
-] as const;
-
-const catOf = (key: string) => CATEGORIES.find((c) => c.key === key);
+/** עשר תמונות הבית · מגיעות מ-photos.ts, לא מוקלדות כאן */
+const SHOTS = HOME_PHOTOS;
+/* גוון המותג · הרצועה אינה שייכת לקטגוריה אחת */
+const REEL_RGB = '201,162,39';
 
 /**
  * רצועת התמונות · נגללת בלולאה אינסופית, ולחיצה פותחת את התמונה במסך מלא.
@@ -47,15 +41,14 @@ export function PhotoReel() {
   }, [x]);
 
   const open = shot >= 0 ? SHOTS[shot] : null;
-  const cat = open ? catOf(open.key) : undefined;
 
   return (
     <>
       <View style={s.reel}>
         <Animated.View style={[s.track, { transform: [{ translateX: x }] }]}>
           {[...SHOTS, ...SHOTS].map((sh, i) => (
-            <Pressable key={`${sh.key}-${i}`} onPress={() => setShot(i % SHOTS.length)} style={s.tile}>
-              <Photo name={sh.file} rgb={catOf(sh.key)?.rgb} style={s.tileImg} />
+            <Pressable key={`${sh}-${i}`} onPress={() => setShot(i % SHOTS.length)} style={s.tile}>
+              <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} />
               {/* הצללה בתחתית · כמו הגרדיאנט שעל האריח בקנבס */}
               <Svg style={s.fade} width={TILE_W} height={TILE_H}>
                 <Defs>
@@ -75,14 +68,10 @@ export function PhotoReel() {
         <Modal visible transparent animationType="fade" onRequestClose={() => setShot(-1)}>
           <Pressable style={s.scrim} onPress={() => setShot(-1)} />
           <View style={s.shotWrap} pointerEvents="box-none">
-            <View style={s.shotHead}>
-              <Text style={s.shotName}>{open.name}</Text>
-              <Text style={s.shotSub}>{cat?.sub}</Text>
-            </View>
             <Photo
-              name={open.file}
-              rgb={cat?.rgb}
-              style={[s.shotImg, { backgroundColor: a(cat?.rgb ?? '123,92,188', 0.2) }]}
+              name={open}
+              rgb={REEL_RGB}
+              style={[s.shotImg, { backgroundColor: a(REEL_RGB, 0.2) }]}
             />
           </View>
           <Pressable onPress={() => setShot(-1)} style={s.close} hitSlop={8}>
@@ -121,9 +110,6 @@ const s = StyleSheet.create({
     gap: 14,
     paddingHorizontal: 24,
   },
-  shotHead: { alignItems: 'center' },
-  shotName: { fontSize: 24, fontWeight: '700', color: '#FFFFFF' },
-  shotSub: { fontSize: 13, fontWeight: '300', color: 'rgba(255,255,255,0.78)', marginTop: 3 },
   shotImg: {
     width: '100%',
     height: 400,
