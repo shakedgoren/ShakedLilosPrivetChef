@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { HOME_PHOTOS } from '../data/photos';
+import { IS_RTL } from '../theme/rtl';
 import { a, surface } from '../theme/tokens';
 import { Photo } from './Photo';
 
@@ -27,10 +28,11 @@ export function PhotoReel() {
   const x = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const span = SHOTS.length * PITCH;
+    /* ב-RTL הרצועה זורמת לכיוון ההפוך · translateX שלילי מוציא אותה מהמסך */
+    const span = SHOTS.length * PITCH * (IS_RTL ? 1 : -1);
     const run = Animated.loop(
       Animated.timing(x, {
-        toValue: -span,
+        toValue: span,
         duration: LOOP_MS,
         easing: Easing.linear,
         useNativeDriver: true,

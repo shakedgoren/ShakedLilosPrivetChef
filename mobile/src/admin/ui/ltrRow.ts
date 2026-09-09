@@ -1,4 +1,4 @@
-import { I18nManager } from 'react-native';
+import { IS_RTL } from '../../theme/rtl';
 import type { FlexStyle } from 'react-native';
 
 /**
@@ -7,4 +7,4 @@ import type { FlexStyle } from 'react-native';
  * ב-React Native אין `direction` בסגנון; RTL הופך גם `row` וגם `row-reverse`,
  * ולכן `row-reverse` תחת RTL מצייר בפועל משמאל לימין.
  */
-export const LTR_ROW: FlexStyle['flexDirection'] = I18nManager.isRTL ? 'row-reverse' : 'row';
+export const LTR_ROW: FlexStyle['flexDirection'] = IS_RTL ? 'row-reverse' : 'row';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { I18nManager, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { FONTS } from './src/theme/fonts';
@@ -28,12 +28,11 @@ import { AdminCostsScreen } from './src/admin/AdminCostsScreen';
 import { AdminHistoryScreen } from './src/admin/AdminHistoryScreen';
 import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
 import { AdminNav } from './src/admin/AdminNav';
+import { enableRTL } from './src/theme/rtl';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
 
-/* האפליקציה בעברית · RTL נדלק פעם אחת בעליית התהליך */
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+enableRTL();
 
 const CATEGORY_SCREENS: CategoryKey[] = ['cous', 'schn', 'box', 'fruit', 'chef'];
 
