@@ -4,6 +4,7 @@ import { BOXES_FULFILLMENT } from '../../data/boxes';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { BOX_PHOTOS } from '../../data/photos';
+import { BOXES_TITLE, INTRO_BODY, INTRO_CTA, INTRO_TITLE } from '../../data/boxesCopy';
 import { LoginGate } from '../../components/LoginGate';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
@@ -76,8 +77,14 @@ export function BoxesScreen() {
         </>
       ) : (
         <>
-          <CategoryHeader title="מארזי ספיישל" date="לכל אירוע" />
+          <CategoryHeader title={BOXES_TITLE} />
           <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+            <View style={s.intro}>
+              <Text style={s.introTitle}>{INTRO_TITLE}</Text>
+              <Text style={s.introBody}>{INTRO_BODY}</Text>
+              <Text style={s.introCta}>{INTRO_CTA}</Text>
+            </View>
+
             {o.boxes.map((b, i) => (
               <Pressable key={b.key} onPress={() => o.openBox(i)} style={s.card}>
                 <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} />
@@ -121,6 +128,11 @@ export function BoxesScreen() {
 }
 
 const s = StyleSheet.create({
+  intro: { gap: 6, marginBottom: 12 },
+  introTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20, color: surface.ink },
+  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
+  introCta: { fontSize: 13, fontWeight: '500', lineHeight: 18, color: ACCENT.deep },
+
   page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
   back: {
     position: 'absolute',

@@ -5,6 +5,14 @@ import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { PhotoStrip } from '../../components/PhotoStrip';
 import { CHEF_PHOTOS, TABON_PHOTOS } from '../../data/photos';
+import {
+  CARO,
+  CHEF_MENU_TITLE,
+  INTRO_BODY,
+  INTRO_CTA,
+  INTRO_TITLE,
+  PICK_CTA,
+} from '../../data/chefCopy';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -21,6 +29,8 @@ const ACCENT = hues.chef;
 export function ChefScreen() {
   const { go, loggedIn } = useNav();
   const o = useChefOrder();
+  /* הלשונית הפתוחה בתפריט · ארוחת שף או עמדת טאבון */
+  const [tab, setTab] = useState(0);
   const f = useFulfillment(CHEF_FULFILLMENT);
 
   const onNext = () => {
@@ -30,22 +40,56 @@ export function ChefScreen() {
   };
 
   if (!o.pkg) {
+    const chosen = o.packages[tab];
     return (
       <View style={s.page}>
-        <CategoryHeader title="ארוחת שף ועמדת טאבון" date="חוויה אישית" />
+        <CategoryHeader title={CHEF_MENU_TITLE} />
         <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
-          {o.packages.map((p, i) => (
-            <Pressable key={p.key} onPress={() => o.openPackage(i)} style={s.card}>
-              <Photo name={p.key === 'chef' ? CHEF_PHOTOS[0] : TABON_PHOTOS[0]} rgb={ACCENT.rgb} style={s.shot} />
-              <View style={s.cardText}>
-                <Text style={s.name}>{p.name}</Text>
-                <Text style={s.desc} numberOfLines={3}>
-                  {p.desc}
+          <View style={s.intro}>
+            <Text style={s.introTitle}>{INTRO_TITLE}</Text>
+            <Text style={s.introBody}>{INTRO_BODY}</Text>
+            <Text style={s.introCta}>{INTRO_CTA}</Text>
+          </View>
+
+          {/* שתי לשוניות · ארוחת שף מול עמדת טאבון */}
+          <View style={s.modes}>
+            {o.packages.map((p, i) => (
+              <Pressable
+                key={p.key}
+                onPress={() => setTab(i)}
+                style={[s.mode, tab === i && s.modeOn]}
+              >
+                <Text style={[s.modeText, tab === i && s.modeTextOn]}>{p.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* כרטיס המסלול · קרוסלה ואחריה שורות הפירוט */}
+          <View style={s.pkgCard}>
+            <PhotoStrip
+              names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
+              height={CARO.height}
+            />
+            <View style={s.pkgLines}>
+              {(chosen.intro ?? []).map((line) => (
+                <Text
+                  key={line.text}
+                  style={{
+                    fontWeight: line.w as '300' | '500' | '600',
+                    fontSize: parseFloat(line.size),
+                    color: line.fg,
+                    lineHeight: parseFloat(line.size) * 1.45,
+                  }}
+                >
+                  {line.text}
                 </Text>
-                <Text style={s.price}>{p.price}</Text>
-              </View>
+              ))}
+            </View>
+
+            <Pressable onPress={() => o.openPackage(tab)} style={s.pickCta}>
+              <Text style={s.pickCtaText}>{PICK_CTA}</Text>
             </Pressable>
-          ))}
+          </View>
         </ScrollView>
       </View>
     );
@@ -125,6 +169,44 @@ export function ChefScreen() {
 }
 
 const s = StyleSheet.create({
+  intro: { gap: 6, marginBottom: 12 },
+  introTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20, color: surface.ink },
+  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
+  introCta: { fontSize: 13, fontWeight: '500', lineHeight: 18, color: ACCENT.deep },
+
+  modes: {
+    flexDirection: 'row',
+    height: 52,
+    padding: 5,
+    borderRadius: 18,
+    backgroundColor: 'rgba(130,112,162,0.08)',
+    marginBottom: 14,
+  },
+  mode: { flex: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  modeOn: { backgroundColor: '#FFFFFF' },
+  modeText: { fontSize: 14.5, color: surface.faint },
+  modeTextOn: { fontWeight: '600', color: ACCENT.deep },
+
+  pkgCard: {
+    borderRadius: 22,
+    padding: 12,
+    gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+  },
+  pkgLines: { gap: 3, paddingHorizontal: 4 },
+  pickCta: {
+    alignSelf: 'center',
+    height: 44,
+    paddingHorizontal: 26,
+    borderRadius: radius.pill,
+    backgroundColor: a(ACCENT.rgb, 0.14),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pickCtaText: { fontSize: 14.5, fontWeight: '600', color: ACCENT.deep },
+
   page: { flex: 1, backgroundColor: surface.ground, paddingHorizontal: space.lg, paddingTop: 88 },
   back: {
     position: 'absolute',
