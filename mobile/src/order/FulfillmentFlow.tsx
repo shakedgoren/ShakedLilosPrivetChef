@@ -9,6 +9,7 @@ import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
+import { Close } from '../icons';
 
 type Props = {
   f: Fulfillment;
@@ -60,7 +61,7 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
           <View style={s.head}>
             <Text style={s.title}>{titleFor(f)}</Text>
             <Pressable onPress={f.reset} hitSlop={10}>
-              <Text style={s.close}>✕</Text>
+              <Close size={13} color="#6E6478" strokeWidth={2.6} />
             </Pressable>
           </View>
 

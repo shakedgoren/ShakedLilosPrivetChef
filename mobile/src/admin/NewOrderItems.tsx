@@ -4,6 +4,7 @@ import { surface } from '../theme/tokens';
 import { HUES, MENU, ROLL, SCH_ROLLS } from '../data/adminOrders';
 import { FieldLabel } from './ui/Field';
 import type { NewOrderDraft } from './orderMath';
+import { Close, Minus, Plus } from '../icons';
 
 const SCHN = HUES.schn;
 
@@ -31,7 +32,7 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
                 onPress={() => onBump(it.id, 1)}
                 style={[s.round, { backgroundColor: `rgba(${hue.rgb},0.13)` }]}
               >
-                <Text style={[s.sign, { color: hue.deep }]}>+</Text>
+                <Plus size={13} color={hue.deep} strokeWidth={2.4} />
               </Pressable>
               <Text
                 style={[
@@ -45,7 +46,7 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
                 onPress={() => onBump(it.id, -1)}
                 style={[s.round, s.minus, { opacity: n > 0 ? 1 : 0.35 }]}
               >
-                <Text style={s.sign}>−</Text>
+                <Minus size={13} color="#2A2430" strokeWidth={2.4} />
               </Pressable>
             </View>
           </View>
@@ -75,7 +76,7 @@ export function RollPicker({ draft, onAdd, onEdit, onDrop }: RollsProps) {
           </Pressable>
           <Text style={s.rollPrice}>{`${ROLL[r.type].price} ₪`}</Text>
           <Pressable onPress={() => onDrop(i)} hitSlop={8}>
-            <Text style={s.rollDrop}>✕</Text>
+            <Close size={12} color="#B95349" strokeWidth={2.4} />
           </Pressable>
         </View>
       ))}

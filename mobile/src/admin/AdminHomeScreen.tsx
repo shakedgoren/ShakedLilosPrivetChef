@@ -20,6 +20,7 @@ import { TileRail } from './home/TileRail';
 import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
 import { useAdminHome } from './home/useAdminHome';
 import { LTR_ROW } from './ui/ltrRow';
+import { Plus } from '../icons';
 
 /** כל אריח מצביע על מסך ניהול · אותה מפה שבקנבס, בשמות של הניווט */
 const TILE_ROUTES: Record<TileKey, Screen> = {
@@ -65,7 +66,7 @@ export function AdminHomeScreen() {
       <View style={s.row}>
         <Pressable onPress={() => go('adminOrders')} style={s.manual}>
           <View style={s.manualIcon}>
-            <Text style={s.manualPlus}>+</Text>
+            <Plus size={15} color="#43307A" strokeWidth={2.8} />
           </View>
           <View>
             <Text style={s.manualTitle}>{MANUAL_TITLE}</Text>

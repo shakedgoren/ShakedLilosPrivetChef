@@ -14,6 +14,7 @@ import {
 } from '../../data/adminStock';
 import { ProgressBar } from '../ui/ProgressBar';
 import type { useAdminStock } from './useAdminStock';
+import { Minus, Plus } from '../../icons';
 
 const AMBER = '#A65E2A';
 
@@ -81,7 +82,7 @@ export function SaleStock({ admin }: Props) {
                     onPress={() => admin.bumpWaste(r.key, r.room, 1)}
                     style={[s.round, s.amberBg, { opacity: r.left > 0 ? 1 : 0.35 }]}
                   >
-                    <Text style={[s.sign, { color: AMBER }]}>+</Text>
+                    <Plus size={13} color={AMBER} strokeWidth={2.4} />
                   </Pressable>
                   <Text
                     style={[
@@ -95,7 +96,7 @@ export function SaleStock({ admin }: Props) {
                     onPress={() => admin.bumpWaste(r.key, r.room, -1)}
                     style={[s.round, s.greyBg, { opacity: r.waste > 0 ? 1 : 0.35 }]}
                   >
-                    <Text style={s.sign}>−</Text>
+                    <Minus size={13} color="#2A2430" strokeWidth={2.4} />
                   </Pressable>
                 </View>
               </View>

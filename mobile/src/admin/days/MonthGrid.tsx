@@ -4,6 +4,7 @@ import { surface } from '../../theme/tokens';
 import { CATS, DOWS, LEGEND, MONTHS, type DayRecord } from '../../data/adminDays';
 import { dayKey } from './useAdminDays';
 import { LTR_ROW } from '../ui/ltrRow';
+import { ChevronLeft, ChevronRight } from '../../icons';
 
 const CELL_GAP = 4;
 const PLUM = '#43307A';
@@ -56,11 +57,11 @@ export function MonthGrid({ year, month, selected, days, onStep, onSelect }: Pro
     <View>
       <View style={s.nav}>
         <Pressable onPress={() => onStep(1)} style={s.arrow} hitSlop={6}>
-          <Text style={s.arrowGlyph}>‹</Text>
+          <ChevronLeft size={13} color="#6E6478" strokeWidth={2.4} />
         </Pressable>
         <Text style={s.month}>{`${MONTHS[month]} ${year}`}</Text>
         <Pressable onPress={() => onStep(-1)} style={s.arrow} hitSlop={6}>
-          <Text style={s.arrowGlyph}>›</Text>
+          <ChevronRight size={13} color="#6E6478" strokeWidth={2.4} />
         </Pressable>
       </View>
 

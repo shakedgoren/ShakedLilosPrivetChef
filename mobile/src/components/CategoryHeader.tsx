@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChevronRight } from '../icons';
 import { surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 
@@ -9,7 +10,7 @@ export function CategoryHeader({ title, date }: { title: string; date?: string }
   return (
     <>
       <Pressable onPress={back} style={s.back} hitSlop={8}>
-        <Text style={s.glyph}>›</Text>
+        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
       </Pressable>
       <View style={s.head}>
         <Text style={s.title}>{title}</Text>
@@ -32,7 +33,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 2,
   },
-  glyph: { fontSize: 24, color: '#6E6478', lineHeight: 26 },
   head: { alignItems: 'center', gap: 2 },
   title: { fontSize: 20, fontWeight: '600', color: surface.ink },
   date: { fontSize: type.label, color: '#7A7080' },

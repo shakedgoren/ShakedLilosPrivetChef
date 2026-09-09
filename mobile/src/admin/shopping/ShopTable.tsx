@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import { COLS, EMPTY_LABEL, EMPTY_SUB } from '../../data/adminShopping';
 import { lineSum, nf, type ShopRow } from './useAdminShopping';
+import { Close } from '../../icons';
 
 /* רוחבי העמודות · הועתקו מהקנבס */
 const W_BOX = 18;
@@ -90,7 +91,7 @@ export function ShopTable({ groups, onToggle, onDrop }: Props) {
               <Text style={[s.sum, s.colSum]}>{nf(lineSum(x))}</Text>
 
               <Pressable onPress={() => onDrop(x.id)} style={s.dropSlot} hitSlop={6}>
-                <Text style={s.dropGlyph}>✕</Text>
+                <Close size={12} color="#B95349" strokeWidth={2.4} />
               </Pressable>
             </View>
           ))}

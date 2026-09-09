@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { surface } from '../../theme/tokens';
+import { Close } from '../../icons';
 
 type Props = {
   title: string;
@@ -23,7 +24,7 @@ export function Sheet({ title, sub, onClose, children, style }: Props) {
             {sub ? <Text style={s.sub}>{sub}</Text> : null}
           </View>
           <Pressable onPress={onClose} style={s.close} hitSlop={8}>
-            <Text style={s.closeGlyph}>✕</Text>
+            <Close size={13} color="#6E6478" strokeWidth={2.6} />
           </Pressable>
         </View>
         {children}

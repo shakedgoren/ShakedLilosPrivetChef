@@ -16,6 +16,7 @@ import {
 import { Chip } from '../ui/Chip';
 import { ToggleRow } from '../ui/Toggle';
 import type { useAdminDays } from './useAdminDays';
+import { Minus, Plus } from '../../icons';
 
 /** ראשון, 8 בספטמבר */
 function dayTitle(key: string) {
@@ -111,14 +112,14 @@ export function DayPanel({ admin }: Props) {
                       onPress={() => admin.bumpQuota(q.id, 1)}
                       style={[s.round, { backgroundColor: `rgba(${cat.rgb},0.13)` }]}
                     >
-                      <Text style={[s.sign, { color: cat.deep }]}>+</Text>
+                      <Plus size={13} color={cat.deep} strokeWidth={2.4} />
                     </Pressable>
                     <Text style={s.quotaNum}>{q.n}</Text>
                     <Pressable
                       onPress={() => admin.bumpQuota(q.id, -1)}
                       style={[s.round, s.minus, { opacity: q.n > 0 ? 1 : 0.4 }]}
                     >
-                      <Text style={s.sign}>−</Text>
+                      <Minus size={13} color="#2A2430" strokeWidth={2.4} />
                     </Pressable>
                   </View>
                 </View>

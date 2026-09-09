@@ -4,6 +4,7 @@ import { CATEGORIES } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import type { CategoryKey } from '../theme/tokens';
+import { ChevronRight } from '../icons';
 
 /**
  * שלד מסך הקטגוריה · הכותרת, החזרה וחסם ההתחברות עובדים.
@@ -30,7 +31,7 @@ export function CategoryScreen({ categoryKey }: { categoryKey: CategoryKey }) {
   return (
     <View style={s.page}>
       <Pressable onPress={back} style={s.back}>
-        <Text style={s.backGlyph}>›</Text>
+        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
       </Pressable>
 
       <View style={s.head}>

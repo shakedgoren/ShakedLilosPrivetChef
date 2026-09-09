@@ -24,6 +24,7 @@ import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
 import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import type { CancelNote } from './useAdminOrders';
+import { ChevronRight, Close } from '../icons';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -132,7 +133,7 @@ export function AdminBoardScreen() {
     <View style={s.root}>
       <View style={s.head}>
         <Pressable onPress={back} style={s.back}>
-          <Text style={s.backGlyph}>‹</Text>
+          <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
         </Pressable>
         <View style={s.headText}>
           <Text style={s.title}>{BOARD_CAT.name}</Text>
@@ -206,7 +207,7 @@ export function AdminBoardScreen() {
                         );
                       })}
                       <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
-                        <Text style={s.x}>×</Text>
+                        <Close size={12} color="#B95349" strokeWidth={2.4} />
                       </Pressable>
                     </View>
                   </View>

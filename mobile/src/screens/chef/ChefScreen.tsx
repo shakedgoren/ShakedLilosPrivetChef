@@ -19,6 +19,7 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
 import { ChefSectionRenderer } from './ChefSectionRenderer';
+import { ChevronRight } from '../../icons';
 
 const ACCENT = hues.chef;
 
@@ -98,7 +99,7 @@ export function ChefScreen() {
   return (
     <View style={s.page}>
       <Pressable onPress={o.prev} style={s.back} hitSlop={8}>
-        <Text style={s.backGlyph}>›</Text>
+        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
       </Pressable>
 
       <View style={s.head}>
