@@ -79,3 +79,12 @@ export const TILE_STOPS = ['rgba(255,255,255,0.72)', 'rgba(255,255,255,0.44)'] a
 export const TILE_EDGE = 'rgba(255,255,255,0.74)';
 export const TILE_SHADOW =
   'inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px -24px rgba(96,80,132,0.6)';
+
+/**
+ * ההילה של הכפתור הראשי · אינה מהקנבס.
+ * ⚠ שקד ביקשה זוהר לכפתור ״להתחברות והזמנה״. בקנבס יש לו רק צל
+ * עדין, ולכן ההילה בנויה באותה שפה של הבועות — סגול המותג, מטושטש.
+ */
+export const CTA_GLOW_RGB = '118,92,174';
+export const CTA_GLOW_SPREAD = 18;
+export const CTA_GLOW_BLUR = 12;

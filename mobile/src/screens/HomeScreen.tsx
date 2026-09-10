@@ -48,7 +48,7 @@ export function HomeScreen() {
         onOpen={(key) => go(key as Screen)}
       />
 
-      <CategoryRail items={CATEGORIES} activeKey={CATEGORIES[active].key} onPick={setActive} />
+      <CategoryRail items={CATEGORIES} active={active} onActiveChange={setActive} />
 
       {!loggedIn && (
         <View style={s.cta}>

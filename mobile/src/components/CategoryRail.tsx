@@ -5,27 +5,41 @@ import { orbShadow } from '../theme/glass';
 import type { Category } from '../data/categories';
 import { CategoryIcon } from './CategoryIcon';
 import { Orb } from './Orb';
+import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
 
 /**
- * שורת הבועות מתחת לכרטיס · לחיצה מחליפה את הקטגוריה הפעילה.
- * הבועה, ההילה והאייקון מגיעים מאותה שפה שבקנבס — בועה של 56
- * פיקסלים שמתרוממת ב-5 ומתנפחת ל-1.07 כשהיא הפעילה.
+ * שורת הבועות מתחת לכרטיס · לחיצה מחליפה קטגוריה, וגם החלקה
+ * לרוחב השורה מחליפה — אותה מחווה בדיוק כמו על הכרטיס.
+ *
+ * ⚠ הבועה קטנה מזו שבקנבס (46 במקום 56) והשורה יורדת ב-RAIL_DROP.
+ * שקד ביקשה את שניהם: הבועות חתכו את תחתית הכרטיס ואת ההילה שלו.
  */
-type Props = { items: Category[]; activeKey: string; onPick: (i: number) => void };
+type Props = {
+  items: Category[];
+  active: number;
+  onActiveChange: (next: number) => void;
+};
 
-/** מידות הבועה והאייקון · מהקנבס */
-const ORB = 56;
-const GLYPH = 27;
+/** מידות הבועה והאייקון */
+const ORB = 46;
+const GLYPH = 22;
+/** המרווח שמפריד את השורה מהכרטיס · מפנה מקום להילה של שניהם */
+const RAIL_DROP = 26;
+/** ההתרוממות של הבועה הפעילה · מהקנבס */
+const LIFT = -5;
+const POP = 1.07;
 
-export function CategoryRail({ items, activeKey, onPick }: Props) {
+export function CategoryRail({ items, active, onActiveChange }: Props) {
+  const pan = useCategorySwipe({ active, count: items.length, onChange: onActiveChange });
+
   return (
-    <View style={s.row}>
+    <View {...pan.panHandlers} style={[s.row, SWIPE_SURFACE]}>
       {items.map((it, i) => {
-        const on = it.key === activeKey;
+        const on = i === active;
         const ink = on ? it.hue : a(it.rgb, 0.55);
         return (
-          <Pressable key={it.key} onPress={() => onPick(i)} style={s.col}>
-            <View style={[s.lift, { transform: [{ translateY: on ? -5 : 0 }, { scale: on ? 1.07 : 1 }] }]}>
+          <Pressable key={it.key} onPress={() => onActiveChange(i)} style={s.col}>
+            <View style={[s.lift, { transform: [{ translateY: on ? LIFT : 0 }, { scale: on ? POP : 1 }] }]}>
               <Orb
                 rgb={it.rgb}
                 size={ORB}
@@ -49,7 +63,7 @@ export function CategoryRail({ items, activeKey, onPick }: Props) {
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 2 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 2, paddingTop: RAIL_DROP },
   col: { width: 68, alignItems: 'center', gap: 8 },
   lift: { width: ORB, height: ORB },
   name: { fontSize: type.tiny, textAlign: 'center', lineHeight: type.tiny * 1.25 },

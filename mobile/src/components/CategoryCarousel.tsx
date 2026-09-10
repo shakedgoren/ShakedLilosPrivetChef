@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, PanResponder, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 import { CARD, CategoryCard } from './CategoryCard';
+import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
 import type { Category } from '../data/categories';
-import { space } from '../theme/tokens';
 
 /**
  * קרוסלת הקטגוריות בדף הבית.
@@ -12,42 +12,20 @@ import { space } from '../theme/tokens';
  * (0 עד ‎-1419), האינדקס שחושב ממנו נחתך ל-0, ושורת הבועות שמתחת
  * לא התעדכנה אף פעם. המסלול המוזז פותר את זה בשתי הפלטפורמות.
  *
- * ⚠ תיקון שני · הכרטיס עצמו הוא Pressable, והוא תפס את ה-responder
- * כבר בנגיעה. ברגע שילד הוא ה-responder, ההורה כבר לא נשאל שוב
- * ב-`onMoveShouldSetPanResponder` — רק שלב ה-capture רץ לפניו.
- * בלי `onMoveShouldSetPanResponderCapture` הגרירה לא הגיעה לעולם
- * למסלול, והקרוסלה לא זזה בכלל. ה-capture מחזיר true רק אחרי
- * DRAG_SLOP אופקי, כך שלחיצה רגילה על הכרטיס ממשיכה לעבוד.
+ * ⚠ אין כאן `overflow: hidden` · הכרטיס הפעיל נושא הילה של 40px
+ * וצל של 44px, והחלון החתוך גזר אותם מלמעלה ומלמטה. הכרטיסים
+ * הרדומים נחתכים ממילא בקצה המסך על ידי גלילת הדף.
  */
 
-/** מרחק ההחלקה שממנו מחליפים כרטיס · SWIPE_MIN בקנבס */
-const SWIPE_MIN = 45;
-/** תזוזה קטנה מזו נחשבת ללחיצה ולא לגרירה · DRAG_SLOP בקנבס */
-const DRAG_SLOP = 6;
 /** המרחק בין מרכזי כרטיסים · רוחב הכרטיס ועוד המרווח */
 const PITCH = CARD.width + CARD.gap;
 /** מעבר הכרטיס · 560ms בקנבס */
 const GLIDE_MS = 560;
-
 /**
- * גרירה אופקית · רק אם היא אופקית בבירור. ScrollView אנכי עוטף את
- * הקרוסלה, ובלי הבדיקה הזו גלילה אנכית הייתה מזיזה כרטיסים.
+ * מקום לזוהר · הצל הארוך של הכרטיס הפעיל הוא 0 22px 44px,
+ * וההילה 40px. בלי הריפוד הזה הם נחתכים בקצה הרכיב.
  */
-export function isHorizontal(dx: number, dy: number): boolean {
-  return Math.abs(dx) > DRAG_SLOP && Math.abs(dx) > Math.abs(dy);
-}
-
-/**
- * הכרטיס שאליו עוברים אחרי החלקה.
- * ⚠ ב-RTL הכרטיס הבא יושב משמאל · החלקה ימינה (dx חיובי) מושכת אותו
- * פנימה, בדיוק כמו dragEnd בקנבס. מיוצא כדי שאפשר יהיה לבדוק אותו.
- */
-export function nextIndex(active: number, dx: number, count: number): number {
-  const clamp = (n: number) => Math.max(0, Math.min(count - 1, n));
-  if (dx > SWIPE_MIN) return clamp(active + 1);
-  if (dx < -SWIPE_MIN) return clamp(active - 1);
-  return active;
-}
+const GLOW_ROOM = 46;
 
 type Props = {
   items: Category[];
@@ -59,12 +37,8 @@ type Props = {
 export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Props) {
   /* מיקום המסלול · ערך אנימציה אחד שגם הגרירה וגם המעבר כותבים אליו */
   const x = useRef(new Animated.Value(active * PITCH)).current;
-  /* ה-ref מחזיק את הערך העדכני · ה-PanResponder נבנה פעם אחת */
-  const activeRef = useRef(active);
-  activeRef.current = active;
 
-  /* החלקה למקום · גם אחרי מעבר כרטיס וגם בחזרה כשההחלקה לא הספיקה */
-  const glideTo = React.useCallback(
+  const glideTo = useCallback(
     (index: number) => {
       Animated.timing(x, {
         toValue: index * PITCH,
@@ -77,31 +51,16 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
 
   useEffect(() => glideTo(active), [active, glideTo]);
 
-  const pan = useMemo(
-    () =>
-      PanResponder.create({
-        /* לחיצה רגילה ממשיכה לכרטיס · רק תנועה נחטפת */
-        onStartShouldSetPanResponderCapture: () => false,
-        onMoveShouldSetPanResponderCapture: (_e, g) => isHorizontal(g.dx, g.dy),
-        onMoveShouldSetPanResponder: (_e, g) => isHorizontal(g.dx, g.dy),
-        /* ה-ScrollView האנכי לא ייקח את הגרירה באמצע */
-        onPanResponderTerminationRequest: () => false,
-        onPanResponderMove: (_e, g) => x.setValue(activeRef.current * PITCH + g.dx),
-        onPanResponderRelease: (_e, g) => {
-          const next = nextIndex(activeRef.current, g.dx, items.length);
-          /* גם כשההחלקה לא הספיקה צריך להחזיר את המסלול · אחרת הוא
-             נשאר תקוע במקום שאליו נגררה האצבע, כי active לא השתנה */
-          glideTo(next);
-          onActiveChange(next);
-        },
-        onPanResponderTerminate: () => glideTo(activeRef.current),
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items.length, glideTo, onActiveChange],
-  );
+  const pan = useCategorySwipe({
+    active,
+    count: items.length,
+    onChange: onActiveChange,
+    onDrag: (dx) => x.setValue(active * PITCH + dx),
+    onSettle: glideTo,
+  });
 
   return (
-    <View style={s.window}>
+    <View style={[s.window, SWIPE_SURFACE]}>
       <Animated.View {...pan.panHandlers} style={[s.track, { transform: [{ translateX: x }] }]}>
         {items.map((c, i) => (
           <CategoryCard key={c.key} item={c} active={i === active} onPress={() => onOpen(c.key)} />
@@ -113,6 +72,10 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
 
 const s = StyleSheet.create({
   /* החלון גולש אל מחוץ לריפוד הדף · כמו margin שלילי בקנבס */
-  window: { marginHorizontal: -18, paddingHorizontal: 18, paddingVertical: space.lg, overflow: 'hidden' },
+  window: {
+    marginHorizontal: -18,
+    paddingHorizontal: 18,
+    paddingVertical: GLOW_ROOM,
+  },
   track: { flexDirection: 'row', gap: CARD.gap },
 });
