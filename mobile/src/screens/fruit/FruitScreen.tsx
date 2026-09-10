@@ -16,23 +16,23 @@ import {
 import { TRAY_PHOTOS } from '../../data/photos';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
-import { LoginGate } from '../../components/LoginGate';
 import { Stepper } from '../../components/Stepper';
-import { FulfillmentFlow } from '../../order/FulfillmentFlow';
-import { useFulfillment } from '../../order/useFulfillment';
-import { a, hues, radius, space, surface, type } from '../../theme/tokens';
-import { useNav } from '../../navigation/store';
+import { Phone } from '../../icons';
+import { a, hues, radius, space, surface } from '../../theme/tokens';
 import type { OrderLine } from '../../order/types';
+import { whatsappLink } from './whatsappOrder';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.fruit;
 
+/** אייקון הטלפון לצד המספר · 13 פיקסלים, כמו שאר האייקונים הקטנים */
+const PHONE_GLYPH = 13;
+/* ⚠ נכתב על ידי Claude · הכפתור כבר לא ממשיך לזרימת מסירה */
+const ORDER_LABEL = 'להזמנה בוואטסאפ';
+
 /** מגשי פירות · בחירת מגשים ואז זרימת המסירה המשותפת */
 export function FruitScreen() {
-  const { go, loggedIn } = useNav();
   const [qty, setQty] = useState<number[]>(() => FRUIT_TRAYS.map(() => 0));
-  const f = useFulfillment(FRUIT_FULFILLMENT);
-  const [gate, setGate] = useState(false);
   /* רוחב הכרטיס נמדד · בקנבס הנוסחה היא (100% − רווח) ÷ 2, ול-RN אין calc */
   const [gridW, setGridW] = useState(0);
   const cardW = gridW ? (gridW - CARD.gap) / 2 : undefined;
@@ -50,9 +50,12 @@ export function FruitScreen() {
     [qty],
   );
 
+  /**
+   * ⚠ אין התחברות ואין שרת · המגשים נעשים אצל מיכל ולא עוברים
+   * במערכת ההזמנות. הכפתור פותח וואטסאפ עם ההזמנה כתובה בפנים.
+   */
   const onContinue = () => {
-    if (!loggedIn) setGate(true);
-    else if (total > 0) f.open();
+    if (total > 0) void Linking.openURL(whatsappLink(lines, total));
   };
 
   return (
@@ -67,7 +70,9 @@ export function FruitScreen() {
         <Text style={s.introBody}>{INTRO_BODY}</Text>
         <Text style={s.disclaimer}>{DISCLAIMER}</Text>
 
-        <Pressable onPress={() => Linking.openURL(PHONE_HREF)} style={s.phone}>
+        {/* לחיצה מחייגת · האייקון והמספר יחד הם הכפתור */}
+        <Pressable onPress={() => void Linking.openURL(PHONE_HREF)} style={s.phone}>
+          <Phone size={PHONE_GLYPH} color={ACCENT.deep} strokeWidth={1.9} />
           <Text style={s.phoneText}>{PHONE_LABEL}</Text>
         </Pressable>
 
@@ -81,7 +86,13 @@ export function FruitScreen() {
               <Text style={s.serves}>{t.serves}</Text>
               <View style={s.grow} />
               <Text style={s.price}>{t.price} ₪</Text>
-              <Stepper value={qty[i]} onChange={(n) => bump(i, n)} />
+              <Stepper
+                value={qty[i]}
+                onChange={(n) => bump(i, n)}
+                wide
+                keyColor={ACCENT.hue}
+                glyphColor={ACCENT.deep}
+              />
             </View>
           ))}
         </View>
@@ -98,31 +109,9 @@ export function FruitScreen() {
           disabled={total === 0}
           style={[s.cta, { backgroundColor: a(ACCENT.rgb, 0.5), opacity: total === 0 ? 0.45 : 1 }]}
         >
-          <Text style={[s.ctaText, { color: ACCENT.deep }]}>המשך</Text>
+          <Text style={[s.ctaText, { color: ACCENT.deep }]}>{ORDER_LABEL}</Text>
         </Pressable>
       </View>
-
-      <FulfillmentFlow
-        f={f}
-        lines={lines}
-        total={total}
-        accent={ACCENT}
-        details={{ category: 'fruit', qty }}
-        onHome={() => {
-          f.reset();
-          go(loggedIn ? 'main' : 'guest');
-        }}
-      />
-
-      <LoginGate
-        visible={gate}
-        accent={ACCENT}
-        onCancel={() => setGate(false)}
-        onLogin={() => {
-          setGate(false);
-          go('login');
-        }}
-      />
     </View>
   );
 }
@@ -132,10 +121,32 @@ const s = StyleSheet.create({
   list: { paddingVertical: space.lg, gap: 6 },
   hours: { fontSize: 12, color: '#7A7080', textAlign: 'center' },
 
-  introTitle: { fontSize: 15, fontWeight: '600', color: surface.ink, marginTop: 10, lineHeight: 20 },
-  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
-  disclaimer: { fontSize: 11, fontWeight: '300', lineHeight: 16, color: surface.faint },
+  introTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: surface.ink,
+    marginTop: 10,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  introBody: {
+    fontSize: 13,
+    fontWeight: '300',
+    lineHeight: 21,
+    color: surface.inkSoft,
+    textAlign: 'center',
+  },
+  disclaimer: {
+    fontSize: 11,
+    fontWeight: '300',
+    lineHeight: 16,
+    color: surface.faint,
+    textAlign: 'center',
+  },
   phone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
     alignSelf: 'center',
     marginTop: 6,
     borderRadius: radius.pill,
@@ -151,6 +162,7 @@ const s = StyleSheet.create({
     borderRadius: CARD.radius,
     padding: CARD.padding,
     gap: CARD.inner,
+    alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderWidth: 1.5,
     borderColor: TILE_EDGE,
@@ -158,12 +170,12 @@ const s = StyleSheet.create({
   },
   cardOn: { backgroundColor: a(ACCENT.rgb, 0.1), borderColor: a(ACCENT.rgb, 0.42) },
   shot: { width: '100%', height: CARD.shotHeight, borderRadius: CARD.shotRadius, overflow: 'hidden' },
-  name: { fontSize: 13.5, fontWeight: '500', color: surface.ink, lineHeight: 18 },
+  name: { fontSize: 13.5, fontWeight: '500', color: surface.ink, lineHeight: 18, textAlign: 'center' },
   nameOn: { fontWeight: '700', color: ACCENT.deep },
-  desc: { fontSize: 10.5, fontWeight: '300', lineHeight: 15, color: surface.muted },
-  serves: { fontSize: 10.5, fontWeight: '400', lineHeight: 15, color: surface.muted },
-  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.deep, paddingTop: 2 },
-  grow: { flex: 1 },
+  desc: { fontSize: 10.5, fontWeight: '300', lineHeight: 15, color: surface.muted, textAlign: 'center' },
+  serves: { fontSize: 10.5, fontWeight: '400', lineHeight: 15, color: surface.muted, textAlign: 'center' },
+  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.deep, paddingTop: 2, textAlign: 'center' },
+  grow: { flex: 1, alignSelf: 'stretch' },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
