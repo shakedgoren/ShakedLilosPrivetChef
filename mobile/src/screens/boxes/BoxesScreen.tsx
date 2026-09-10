@@ -6,6 +6,7 @@ import { Photo } from '../../components/Photo';
 import { BOX_PHOTOS } from '../../data/photos';
 import { BOXES_TITLE, INTRO_BODY, INTRO_CTA, INTRO_TITLE } from '../../data/boxesCopy';
 import { LoginGate } from '../../components/LoginGate';
+import { ChevronLeft } from '../../icons';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -15,6 +16,11 @@ import { SectionRenderer } from './SectionRenderer';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.box;
+
+/** החץ שבקצה כרטיס המארז · 15 פיקסלים בקנבס */
+const CHEV = 15;
+const CHEV_INK = '#C1BBCB';
+const CHEV_STROKE = 2.4;
 
 /** מארזי ספיישל · רשימת המארזים, ובתוך כל מארז הסעיפים שלו */
 export function BoxesScreen() {
@@ -42,14 +48,23 @@ export function BoxesScreen() {
           </View>
 
           <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
-            {o.box.intro?.map((t, i) => (
-              <Text
-                key={i}
-                style={{ fontSize: parseFloat(t.size), fontWeight: t.w as any, color: t.fg, lineHeight: 20 }}
-              >
-                {t.text}
-              </Text>
-            ))}
+            {/* המבוא של המארז · ממורכז, line-height 1.6, כמו בקנבס */}
+            <View style={s.boxIntro}>
+              {o.box.intro?.map((t, i) => {
+                const size = parseFloat(t.size);
+                return (
+                  <Text
+                    key={i}
+                    style={[
+                      s.boxIntroText,
+                      { fontSize: size, lineHeight: size * 1.6, fontWeight: t.w as never, color: t.fg },
+                    ]}
+                  >
+                    {t.text}
+                  </Text>
+                );
+              })}
+            </View>
 
             {o.box.sections.map((sec, i) => (
               <SectionRenderer
@@ -88,14 +103,15 @@ export function BoxesScreen() {
 
             {o.boxes.map((b, i) => (
               <Pressable key={b.key} onPress={() => o.openBox(i)} style={s.card}>
-                <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} />
+                <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} zoom={false} />
                 <View style={s.cardText}>
                   <Text style={s.name}>{b.name}</Text>
-                  <Text style={s.desc} numberOfLines={3}>
-                    {b.desc}
-                  </Text>
+                  <Text style={s.desc}>{b.desc}</Text>
+                  {/* המחיר בפינה השמאלית התחתונה · text-align: left בקנבס */}
                   <Text style={s.price}>{b.price}</Text>
                 </View>
+                {/* החץ הקטן בקצה השורה · 15 פיקסלים, בדיוק כמו בקנבס */}
+                <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
               </Pressable>
             ))}
           </ScrollView>
@@ -129,10 +145,29 @@ export function BoxesScreen() {
 }
 
 const s = StyleSheet.create({
-  intro: { gap: 6, marginBottom: 12 },
-  introTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20, color: surface.ink },
-  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
-  introCta: { fontSize: 13, fontWeight: '500', lineHeight: 18, color: ACCENT.deep },
+  /* המבוא · ממורכז ובאותו מרווח של הקוסקוס · gap 3 ואז 12 */
+  intro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
+  introTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 24,
+    color: surface.ink,
+    textAlign: 'center',
+  },
+  introBody: {
+    fontSize: 13,
+    fontWeight: '300',
+    lineHeight: 20.8,
+    color: surface.inkSoft,
+    textAlign: 'center',
+  },
+  introCta: {
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 20.8,
+    color: ACCENT.deep,
+    textAlign: 'center',
+  },
 
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   back: {
@@ -162,23 +197,27 @@ const s = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '600', color: surface.ink, textAlign: 'center' },
   date: { fontSize: type.label, color: '#7A7080' },
 
-  body: { paddingVertical: space.lg, gap: space.sm },
-  list: { paddingVertical: space.lg, gap: space.md },
+  body: { paddingBottom: space.lg, gap: 6 },
+  boxIntro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
+  boxIntroText: { textAlign: 'center' },
+  list: { paddingBottom: space.lg, gap: space.sm },
   card: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: space.md,
     borderRadius: 22,
-    padding: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
-  shot: { width: 76, height: 76, borderRadius: radius.field, overflow: 'hidden' },
-  cardText: { flex: 1, gap: 3 },
-  name: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
-  desc: { fontSize: 12, color: surface.muted, lineHeight: 17 },
-  price: { fontSize: type.label, fontWeight: '600', color: ACCENT.deep },
+  shot: { width: 60, height: 60, borderRadius: radius.field, overflow: 'hidden' },
+  cardText: { flex: 1, minWidth: 0, gap: 4 },
+  name: { fontSize: 14.5, fontWeight: '600', lineHeight: 18, color: surface.ink },
+  desc: { fontSize: 11, fontWeight: '300', color: surface.muted, lineHeight: 16 },
+  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.hue, textAlign: 'left' },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },

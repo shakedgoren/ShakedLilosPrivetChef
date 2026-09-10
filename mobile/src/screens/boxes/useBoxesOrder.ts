@@ -4,6 +4,13 @@ import type { OrderLine } from '../../order/types';
 
 export type Picks = Record<string, any>;
 
+/**
+ * מארזים שלא מוצגים באתר · שקד ביקשה להוריד את מארז הפרימיום.
+ * הנתונים נשארים ב-boxes.ts כדי שאפשר יהיה להחזיר אותו בשורה אחת.
+ */
+const HIDDEN = ['premium'];
+const VISIBLE_BOXES: Box[] = BOXES.filter((b) => !HIDDEN.includes(b.key));
+
 /** סכום הכמויות בסעיף מרובה־כמות (row / count) */
 export const sumOf = (v: unknown): number =>
   v && typeof v === 'object' ? Object.values(v as Record<string, number>).reduce((s, n) => s + n, 0) : 0;
@@ -25,7 +32,9 @@ export function useBoxesOrder() {
   const [current, setCurrent] = useState<number | null>(null);
   const [picks, setPicks] = useState<Picks>({});
 
-  const box: Box | null = current === null ? null : BOXES[current];
+  /* ⚠ האינדקס חייב להיות של הרשימה המוצגת · הסינון מזיז את המפתחות,
+     ובלי זה ״טעם של שנה טובה״ היה פותח את המארז שהוסתר */
+  const box: Box | null = current === null ? null : VISIBLE_BOXES[current];
 
   const openBox = useCallback((i: number) => {
     setCurrent(i);
@@ -88,7 +97,7 @@ export function useBoxesOrder() {
   }, [box, picks, total]);
 
   return {
-    boxes: BOXES,
+    boxes: VISIBLE_BOXES,
     current, box, openBox, backToList,
     picks, select, setText, setNumber, setQty,
     total, ready, lines,

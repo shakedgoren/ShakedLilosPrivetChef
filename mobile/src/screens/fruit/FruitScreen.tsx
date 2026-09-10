@@ -90,8 +90,12 @@ export function FruitScreen() {
                 value={qty[i]}
                 onChange={(n) => bump(i, n)}
                 wide
-                keyColor={ACCENT.hue}
-                glyphColor={ACCENT.deep}
+                tone={{
+                  plusBg: ACCENT.hue,
+                  plusInk: ACCENT.deep,
+                  minusBg: ACCENT.hue,
+                  minusInk: ACCENT.deep,
+                }}
               />
             </View>
           ))}
