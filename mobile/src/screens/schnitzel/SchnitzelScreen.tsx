@@ -37,7 +37,7 @@ const ACCENT = hues.schn;
 
 /** אייקון המתנה · 19 פיקסלים בקנבס */
 const GIFT_GLYPH = 19;
-/* ⚠ נכתב על ידי Claude · אין כותרת לגוש הזה בקנבס */
+/* נוסח שכתב Claude (אין כותרת לגוש בקנבס) · ✅ שקד אישרה ב-11 בספטמבר 2026 · אין לשנות */
 const PICK_FORM_LABEL = 'בחירת צורה';
 const PICK_BOX_LABEL = 'בחירת מארז';
 

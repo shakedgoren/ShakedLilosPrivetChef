@@ -1,7 +1,16 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { CTA_GLOW_BLUR, CTA_GLOW_RGB, CTA_GLOW_SPREAD, CTA_KNOB_SHADOW, CTA_SHADOW, CTA_STOPS } from '../theme/glass';
+import {
+  CTA_GLOW_BLUR,
+  CTA_GLOW_CORE_ALPHA,
+  CTA_GLOW_MID_ALPHA,
+  CTA_GLOW_RGB,
+  CTA_GLOW_SPREAD,
+  CTA_KNOB_SHADOW,
+  CTA_SHADOW,
+  CTA_STOPS,
+} from '../theme/glass';
 import { a, radius } from '../theme/tokens';
 import { ArrowLeft } from '../icons';
 
@@ -33,9 +42,9 @@ export function PrimaryButton({ label, onPress }: Props) {
         <Svg width="100%" height="100%">
           <Defs>
             <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" stopColor={a(CTA_GLOW_RGB, 0.5)} />
-              <Stop offset="0.55" stopColor={a(CTA_GLOW_RGB, 0.18)} />
-              <Stop offset="0.82" stopColor={a(CTA_GLOW_RGB, 0)} />
+              <Stop offset="0" stopColor={a(CTA_GLOW_RGB, CTA_GLOW_CORE_ALPHA)} />
+              <Stop offset="0.55" stopColor={a(CTA_GLOW_RGB, CTA_GLOW_MID_ALPHA)} />
+              <Stop offset="0.88" stopColor={a(CTA_GLOW_RGB, 0)} />
             </RadialGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}h)`} />
