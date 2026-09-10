@@ -218,6 +218,15 @@ export const BOXES: Box[] = [
     ],
     "sections": [
       {
+        "kind": "images",
+        "count": 1,
+        "h": "84px",
+        "names": [
+          "box-free"
+        ],
+        "square": true
+      },
+      {
         "kind": "title",
         "label": "חלה משפחתית"
       },
@@ -370,6 +379,15 @@ export const BOXES: Box[] = [
       }
     ],
     "sections": [
+      {
+        "kind": "images",
+        "count": 1,
+        "h": "84px",
+        "names": [
+          "box-celebration-salads"
+        ],
+        "square": true
+      },
       {
         "kind": "title",
         "label": "חלות",
