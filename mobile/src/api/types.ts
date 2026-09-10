@@ -72,7 +72,8 @@ export type SchnitzelDetails = {
   category: 'schn';
   mode: 'unit' | 'box';
   rolls: { type: number; tops: string[] }[];
-  box: { type: number; tops: string[] } | null;
+  /* רשימה · אפשר להזמין כמה מארזים באותה הזמנה, כמו החלות הבודדות */
+  boxes: { type: number; tops: string[] }[];
   cocottes: number[];
 };
 export type FruitDetails = { category: 'fruit'; qty: number[] };

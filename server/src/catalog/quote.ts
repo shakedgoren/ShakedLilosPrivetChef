@@ -47,7 +47,8 @@ export type CustomerDetails =
       category: 'schn';
       mode: 'unit' | 'box';
       rolls: { type: number; tops: string[] }[];
-      box: { type: number; tops: string[] } | null;
+      /* רשימה · אפשר להזמין כמה מארזים באותה הזמנה */
+      boxes: { type: number; tops: string[] }[];
       cocottes: number[];
     }
   | { category: 'fruit'; qty: number[] }
@@ -108,11 +109,13 @@ function linesOfSchnitzel(d: Extract<CustomerDetails, { category: 'schn' }>): Qu
       lines.push({ qty: 1, name: `חלה ${i + 1} · ${spec.short}`, sum: spec.unit });
     });
   } else {
-    if (!d.box) throw badRequest('invalid_order', 'empty box');
-    assertTops(d.box.type, d.box.tops);
-    const spec = SCHNITZEL_TYPES[d.box.type];
-    itemsTotal += spec.box;
-    lines.push({ qty: 1, name: `מארז · ${spec.short}`, sum: spec.box });
+    if (!d.boxes.length) throw badRequest('invalid_order', 'empty box');
+    d.boxes.forEach((b, i) => {
+      assertTops(b.type, b.tops);
+      const spec = SCHNITZEL_TYPES[b.type];
+      itemsTotal += spec.box;
+      lines.push({ qty: 1, name: `מארז ${i + 1} · ${spec.short}`, sum: spec.box });
+    });
   }
 
   d.cocottes.forEach((n, i) => {

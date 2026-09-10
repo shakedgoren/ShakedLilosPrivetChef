@@ -7,7 +7,8 @@ export const detailsSchema = z.discriminatedUnion('category', [
     category: z.literal('schn'),
     mode: z.enum(['unit', 'box']),
     rolls: z.array(z.object({ type: z.number().int().nonnegative(), tops: z.array(z.string()) })),
-    box: z.object({ type: z.number().int().nonnegative(), tops: z.array(z.string()) }).nullable(),
+    /* רשימה · אפשר להזמין כמה מארזים באותה הזמנה */
+    boxes: z.array(z.object({ type: z.number().int().nonnegative(), tops: z.array(z.string()) })),
     cocottes: z.array(z.number().int().nonnegative()),
   }),
   z.object({ category: z.literal('fruit'), qty: z.array(z.number().int().nonnegative()) }),

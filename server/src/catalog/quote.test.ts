@@ -15,10 +15,33 @@ test('schnitzel · חלה דקה + קוקוט', () => {
     category: 'schn',
     mode: 'unit',
     rolls: [{ type: 0, tops: ['טחינה'] }],
-    box: null,
+    boxes: [],
     cocottes: [0, 1, 0],
   });
   assert.equal(q.total, 50 + 3);
+});
+
+test('schnitzel · שני מארזים באותה הזמנה מסתכמים יחד', () => {
+  const q = quoteCustomer({
+    category: 'schn',
+    mode: 'box',
+    rolls: [],
+    boxes: [
+      { type: 0, tops: ['טחינה'] },
+      { type: 1, tops: ['עלי רוקט'] },
+    ],
+    cocottes: [0, 0, 0],
+  });
+  assert.equal(q.total, 200 + 250);
+  assert.equal(q.lines.length, 2);
+  assert.equal(q.lines[0].name, 'מארז 1 · שניצל דק');
+  assert.equal(q.lines[1].name, 'מארז 2 · פילה עוף');
+});
+
+test('schnitzel · מצב מארז בלי מארז נדחה', () => {
+  assert.throws(() =>
+    quoteCustomer({ category: 'schn', mode: 'box', rolls: [], boxes: [], cocottes: [0, 0, 0] }),
+  );
 });
 
 test('fruit · מגש מרובע', () => {

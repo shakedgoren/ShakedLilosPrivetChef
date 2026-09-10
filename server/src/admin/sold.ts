@@ -29,9 +29,11 @@ export function qtyOfCustomerDetails(details: CustomerDetails): QtyMap {
         const id = SCHN_UNIT[r.type];
         if (id) out[id] = (out[id] ?? 0) + 1;
       }
-    } else if (details.box) {
-      const id = SCHN_BOX[details.box.type];
-      if (id) out[id] = (out[id] ?? 0) + 1;
+    } else {
+      for (const b of details.boxes ?? []) {
+        const id = SCHN_BOX[b.type];
+        if (id) out[id] = (out[id] ?? 0) + 1;
+      }
     }
     return out;
   }

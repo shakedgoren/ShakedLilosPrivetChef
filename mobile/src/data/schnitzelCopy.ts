@@ -45,7 +45,13 @@ export const PANEL = { radius: 22, padding: 14, gap: 11, stackGap: 12 } as const
  * ⚠ לא מהקנבס · שקד ביקשה להוריד אותו עוד מעט ולקרב אליו את מה
  * שאחריו, כי הרווח שנפתח בין השניים היה גדול מדי.
  */
-export const GIFT_SPACE = { before: 30, after: 12 } as const;
+export const GIFT_SPACE = { before: 14, after: 6 } as const;
+
+/**
+ * שורת הרטב בקוקוט · ⚠ לא מהקנבס · שקד ביקשה שורות צרות יותר.
+ * בקנבס השורה משתמשת באותו ריפוד של שורת החלה.
+ */
+export const COCOTTE_ROW = { padV: 7, padH: 12, radius: 16 } as const;
 
 /** כרטיס התוספת בחלונית · שלוש עמודות, השורה האחרונה ממורכזת */
-export const TOP_CARD = { columns: 3, gap: 8, minHeight: 58, radius: 16 } as const;
+export const TOP_CARD = { columns: 3, boxColumns: 2, gap: 8, minHeight: 58, radius: 16 } as const;

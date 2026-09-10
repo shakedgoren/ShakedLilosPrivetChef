@@ -7,20 +7,22 @@ import {
 } from '../../data/schnitzel';
 import type { OrderLine } from '../../order/types';
 
-/** החלונית של בחירת התוספות · target קובע אם היא נכנסת לחלות או למארז */
+/** החלונית של בחירת התוספות · target קובע אם היא נכנסת לחלות או למארזים */
 export type Pop = {
   target: 'unit' | 'box';
   type: number;
   tops: string[];
-  /** אינדקס החלה שנערכת, 'box' לעריכת המארז, null להוספה חדשה */
-  edit: number | 'box' | null;
+  /** אינדקס הפריט שנערך · null להוספה חדשה */
+  edit: number | null;
 } | null;
 
 export function useSchnitzelOrder() {
   /* 0 = לפי יחידה · 1 = מארז */
   const [mode, setMode] = useState(0);
   const [basket, setBasket] = useState<Roll[]>([]);
-  const [box, setBox] = useState<Roll | null>(null);
+  /* המארזים · רשימה בדיוק כמו החלות הבודדות, ולא מארז יחיד.
+     שקד ביקשה שאפשר יהיה להזמין כמה מארזים באותה הזמנה. */
+  const [boxes, setBoxes] = useState<Roll[]>([]);
   /* צורת המארז · 0 = חמש חלות אישיות · 1 = חלה משפחתית · SCHNITZEL_FORMS בקנבס */
   const [form, setForm] = useState(0);
   const [cocottes, setCocottes] = useState<number[]>(() => COCOTTES.map(() => 0));
@@ -41,19 +43,19 @@ export function useSchnitzelOrder() {
     [basket],
   );
 
-  const openBox = useCallback(
-    (type: number) => {
-      /* אותו סוג · שומרים את התוספות שכבר נבחרו */
-      const keep = box && box.type === type ? [...box.tops] : [];
-      setPop({ target: 'box', type, tops: keep, edit: null });
-    },
-    [box],
-  );
+  /* כל בחירת סוג מוסיפה מארז חדש · אין ״שומרים את הקודם״ */
+  const openBox = useCallback((type: number) => {
+    setPop({ target: 'box', type, tops: [], edit: null });
+  }, []);
 
-  const openBoxEdit = useCallback(() => {
-    if (!box) return;
-    setPop({ target: 'box', type: box.type, tops: [...box.tops], edit: 'box' });
-  }, [box]);
+  const openBoxEdit = useCallback(
+    (i: number) => {
+      const b = boxes[i];
+      if (!b) return;
+      setPop({ target: 'box', type: b.type, tops: [...b.tops], edit: i });
+    },
+    [boxes],
+  );
 
   const closePop = useCallback(() => setPop(null), []);
 
@@ -69,9 +71,9 @@ export function useSchnitzelOrder() {
     setPop((p) => {
       if (!p) return null;
       const row: Roll = { type: p.type, tops: [...p.tops] };
-      if (p.target === 'box') setBox(row);
-      else if (p.edit === null) setBasket((b) => [...b, row]);
-      else setBasket((b) => b.map((x, j) => (j === p.edit ? row : x)));
+      const put = p.target === 'box' ? setBoxes : setBasket;
+      if (p.edit === null) put((list) => [...list, row]);
+      else put((list) => list.map((x, j) => (j === p.edit ? row : x)));
       return null;
     });
   }, []);
@@ -80,15 +82,17 @@ export function useSchnitzelOrder() {
     setBasket((b) => b.filter((_, j) => j !== i));
   }, []);
 
+  const removeBox = useCallback((i: number) => {
+    setBoxes((b) => b.filter((_, j) => j !== i));
+  }, []);
+
   const bumpCocotte = useCallback((i: number, d: number) => {
     setCocottes((c) => c.map((v, j) => (j === i ? Math.max(0, v + d) : v)));
   }, []);
 
   const itemsTotal = isUnit
     ? basket.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].unit, 0)
-    : box
-      ? SCHNITZEL_TYPES[box.type].box
-      : 0;
+    : boxes.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].box, 0);
   const cocotteTotal = cocottes.reduce((s, v) => s + v * COCOTTE_PRICE, 0);
   const total = itemsTotal + cocotteTotal;
 
@@ -99,20 +103,23 @@ export function useSchnitzelOrder() {
           name: `חלה ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
           sum: SCHNITZEL_TYPES[b.type].unit,
         }))
-      : box
-        ? [{ qty: 1, name: `מארז · ${SCHNITZEL_TYPES[box.type].short}`, sum: SCHNITZEL_TYPES[box.type].box }]
-        : [];
+      : boxes.map((b, i) => ({
+          qty: 1,
+          name: `מארז ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
+          sum: SCHNITZEL_TYPES[b.type].box,
+        }));
     const coc: OrderLine[] = cocottes
       .map((v, i) => ({ qty: v, name: `קוקוט ${COCOTTES[i]}`, sum: v * COCOTTE_PRICE }))
       .filter((l) => l.qty > 0);
     return [...main, ...coc];
-  }, [isUnit, basket, box, cocottes]);
+  }, [isUnit, basket, boxes, cocottes]);
 
   return {
     mode, setMode, isUnit,
     form, setForm,
-    basket, box, cocottes, pop,
-    openAdd, openEdit, openBox, openBoxEdit, closePop, toggleTop, commitPop, removeRoll, bumpCocotte,
+    basket, boxes, cocottes, pop,
+    openAdd, openEdit, openBox, openBoxEdit, closePop, toggleTop, commitPop,
+    removeRoll, removeBox, bumpCocotte,
     total, lines,
   };
 }

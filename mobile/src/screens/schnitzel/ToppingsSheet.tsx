@@ -13,10 +13,14 @@ type Props = { pop: Pop; onToggle: (name: string) => void; onCancel: () => void;
 export function ToppingsSheet({ pop, onToggle, onCancel, onSave }: Props) {
   const [gridW, setGridW] = useState(0);
   const t = pop ? SCHNITZEL_TYPES[pop.type] : undefined;
-  /* כל הכרטיסים באותו רוחב · שליש מהשורה פחות המרווחים */
-  const chipW = gridW
-    ? (gridW - TOP_CARD.gap * (TOP_CARD.columns - 1)) / TOP_CARD.columns
-    : undefined;
+  /**
+   * שלוש בשורה בחלה הבודדת, שתיים בשורה במארז.
+   * שקד ביקשה שבמארז ייצאו איולי עמבה ואיולי עשבי תיבול בשורה
+   * אחת, ועלי רוקט ומלפפון חמוץ בשורה שמתחת — וזה בדיוק סדר
+   * התוספות של פילה עוף בשתי עמודות.
+   */
+  const columns = pop?.target === 'box' ? TOP_CARD.boxColumns : TOP_CARD.columns;
+  const chipW = gridW ? (gridW - TOP_CARD.gap * (columns - 1)) / columns : undefined;
   if (!pop || !t) return null;
 
   return (
@@ -70,8 +74,8 @@ export function ToppingsSheet({ pop, onToggle, onCancel, onSave }: Props) {
 const s = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(42,36,48,0.34)', justifyContent: 'center', padding: space.lg },
   sheet: { maxHeight: '80%', borderRadius: 28, backgroundColor: '#FEFCFB', padding: space.lg, gap: 4 },
-  title: { fontSize: 17, fontWeight: '600', color: surface.ink, lineHeight: 22 },
-  sub: { fontSize: type.label, color: surface.muted },
+  title: { fontSize: 17, fontWeight: '600', color: surface.ink, lineHeight: 22, textAlign: 'center' },
+  sub: { fontSize: type.label, color: surface.muted, textAlign: 'center' },
   list: { marginTop: space.md },
   /* justifyContent מרכז את השורה האחרונה כשהיא לא מלאה */
   grid: {

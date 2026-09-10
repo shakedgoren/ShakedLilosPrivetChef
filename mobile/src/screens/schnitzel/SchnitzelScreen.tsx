@@ -16,8 +16,8 @@ import { SCHNITZEL_BOX_PHOTOS, SCHNITZEL_UNIT_PHOTOS } from '../../data/photos';
 import {
   FORM_CARD,
   GIFT_NOTE,
+  COCOTTE_ROW,
   GIFT_SPACE,
-
   PICK_TYPE_LABEL,
   SCHNITZEL_DATE,
   SCHNITZEL_INTRO,
@@ -113,7 +113,7 @@ export function SchnitzelScreen() {
                   onPress={() => o.openAdd(k)}
                   style={[s.typeCard, { width: typeCardW }]}
                 >
-                  <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} />
+                  <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
                   <Text style={s.typeName}>{t.name}</Text>
                   <Text style={s.typePrice}>{t.unit} ₪</Text>
                 </Pressable>
@@ -141,39 +141,47 @@ export function SchnitzelScreen() {
               })}
             </View>
 
-            {/* המארזים · אותו כרטיס בדיוק של ״בחר סוג חלה״ */}
+            {/* המארזים שנבחרו · שורה לכל מארז, בדיוק כמו החלות הבודדות */}
+            {o.boxes.map((b, i) => (
+              <View key={`${b.type}-${i}`} style={s.row}>
+                <Photo name={SCHNITZEL_BOX_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
+                <View style={s.rowText}>
+                  <Text style={s.name}>
+                    מארז {i + 1} · {SCHNITZEL_TYPES[b.type].short}
+                  </Text>
+                  <Text style={s.tops}>{b.tops.length ? b.tops.join(' · ') : 'בלי תוספות'}</Text>
+                </View>
+                <Text style={s.price}>{SCHNITZEL_TYPES[b.type].box} ₪</Text>
+                <Pressable onPress={() => o.openBoxEdit(i)} hitSlop={8}>
+                  <Text style={s.action}>עריכה</Text>
+                </Pressable>
+                <Pressable onPress={() => o.removeBox(i)} hitSlop={8}>
+                  <Text style={s.remove}>✕</Text>
+                </Pressable>
+              </View>
+            ))}
+
+            {/* בחירת מארז · אותו כרטיס בדיוק של ״בחר סוג חלה״ */}
             <Text style={s.sectionTitle}>{PICK_BOX_LABEL}</Text>
             <View style={s.grid}>
-              {SCHNITZEL_TYPES.map((t, k) => {
-                const on = o.box?.type === k;
-                return (
-                  <Pressable
-                    key={t.name}
-                    onPress={() => o.openBox(k)}
-                    style={[s.typeCard, { width: typeCardW }, on && s.pickOn]}
-                  >
-                    <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} />
-                    <Text style={s.typeName}>{t.name}</Text>
-                    <Text style={s.typePrice}>{t.box} ₪</Text>
-                    {on && (
-                      <Text style={s.tops}>{o.box!.tops.length ? o.box!.tops.join(' · ') : 'בלי תוספות'}</Text>
-                    )}
-                  </Pressable>
-                );
-              })}
+              {SCHNITZEL_TYPES.map((t, k) => (
+                <Pressable
+                  key={t.name}
+                  onPress={() => o.openBox(k)}
+                  style={[s.typeCard, { width: typeCardW }]}
+                >
+                  <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
+                  <Text style={s.typeName}>{t.name}</Text>
+                  <Text style={s.typePrice}>{t.box} ₪</Text>
+                </Pressable>
+              ))}
             </View>
-
-            {o.box && (
-              <Pressable onPress={o.openBoxEdit} style={s.boxEdit}>
-                <Text style={s.action}>עריכת מה שנכנס פנימה</Text>
-              </Pressable>
-            )}
           </>
         )}
 
         <Text style={s.sectionTitle}>רטבים בקוקוט · {COCOTTE_PRICE} ₪ ליחידה</Text>
         {COCOTTES.map((name, i) => (
-          <View key={name} style={s.row}>
+          <View key={name} style={[s.row, s.cocotteRow]}>
             <Text style={[s.name, s.rowText]}>{name}</Text>
             <Stepper value={o.cocottes[i]} onChange={(n) => o.bumpCocotte(i, n - o.cocottes[i])} />
           </View>
@@ -206,7 +214,7 @@ export function SchnitzelScreen() {
           category: 'schn',
           mode: o.isUnit ? 'unit' : 'box',
           rolls: o.basket,
-          box: o.box,
+          boxes: o.boxes,
           cocottes: o.cocottes,
         }}
         onHome={() => {
@@ -269,14 +277,6 @@ const s = StyleSheet.create({
   pickOn: { backgroundColor: a(ACCENT.rgb, 0.1), borderColor: a(ACCENT.rgb, 0.42) },
   pickOff: { backgroundColor: 'rgba(255,255,255,0.7)', borderColor: 'rgba(130,112,162,0.16)' },
   pickedText: { color: ACCENT.deep, fontWeight: '600' },
-  boxEdit: {
-    alignSelf: 'center',
-    marginTop: space.sm,
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: radius.pill,
-    backgroundColor: a(ACCENT.rgb, 0.12),
-  },
   typeCard: {
     borderRadius: TYPE_CARD.radius,
     paddingVertical: TYPE_CARD.padV,
@@ -300,7 +300,7 @@ const s = StyleSheet.create({
   modes: {
     flexDirection: 'row',
     alignSelf: 'center',
-    marginTop: space.md,
+    marginTop: space.sm,
     padding: 3,
     borderRadius: radius.pill,
     backgroundColor: 'rgba(130,112,162,0.09)',
@@ -309,13 +309,19 @@ const s = StyleSheet.create({
   modeOn: { backgroundColor: '#FFFFFF' },
   modeText: { fontSize: 14, color: '#8A8194' },
 
-  list: { paddingVertical: space.lg, gap: space.sm },
+  list: { paddingTop: space.sm, paddingBottom: space.lg, gap: space.sm },
   sectionTitle: {
     fontSize: type.label,
     color: surface.muted,
     textAlign: 'center',
-    marginTop: space.md,
+    marginTop: space.sm,
     marginBottom: 2,
+  },
+  /* שורת הרטב · נמוכה יותר משורת החלה, לבקשת שקד */
+  cocotteRow: {
+    paddingVertical: COCOTTE_ROW.padV,
+    paddingHorizontal: COCOTTE_ROW.padH,
+    borderRadius: COCOTTE_ROW.radius,
   },
   row: {
     flexDirection: 'row',
