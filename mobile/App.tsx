@@ -7,6 +7,7 @@ import { applyFonts } from './src/theme/applyFonts';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
 import { PageWash } from './src/components/PageWash';
+import { LightboxProvider } from './src/components/Lightbox';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
@@ -116,12 +117,14 @@ export default function App() {
 
   return (
     <NavProvider>
-      <SafeAreaView style={s.root}>
-        <StatusBar style="dark" />
-        <Wash />
-        <Router />
-        <Chrome />
-      </SafeAreaView>
+      <LightboxProvider>
+        <SafeAreaView style={s.root}>
+          <StatusBar style="dark" />
+          <Wash />
+          <Router />
+          <Chrome />
+        </SafeAreaView>
+      </LightboxProvider>
     </NavProvider>
   );
 }

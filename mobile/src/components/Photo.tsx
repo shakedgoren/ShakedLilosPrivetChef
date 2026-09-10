@@ -1,7 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { photo } from '../data/photos';
 import { Image as ImageIcon } from '../icons';
+import { useLightbox } from './Lightbox';
 import { a, deepRgbOf } from '../theme/tokens';
 
 type Props = {
@@ -12,6 +13,12 @@ type Props = {
   rgb?: string;
   /** cover ממלא את המסגרת וחותך · ברירת המחדל בכל המסכים */
   resizeMode?: 'cover' | 'contain';
+  /**
+   * לחיצה מגדילה את התמונה · דלוק כברירת מחדל בכל האפליקציה.
+   * מכובה כשהתמונה יושבת בתוך כרטיס שכולו כפתור, כדי שהלחיצה
+   * תמשיך לעשות מה שהכרטיס אמור לעשות.
+   */
+  zoom?: boolean;
 };
 
 /* מציין המקום בקנבס · אייקון בגודל 26 בגוון הכהה של הקטגוריה */
@@ -27,8 +34,9 @@ const EDGE_ALPHA = 0.34;
  * ⚠ מציין המקום הראה את המילה ״תמונה״ · היא לא קיימת בקנבס, שבו
  * יש רק את האייקון בתוך המסגרת המקווקוות. הוסרה כדי להתאים.
  */
-export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover' }: Props) {
+export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover', zoom = true }: Props) {
   const src = name ? photo(name) : undefined;
+  const lightbox = useLightbox();
 
   if (!src) {
     return (
@@ -38,10 +46,21 @@ export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover' }
     );
   }
 
-  return <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />;
+  if (!zoom || !lightbox || !name) {
+    return <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />;
+  }
+
+  /* המסגרת עוברת ל-Pressable והתמונה ממלאת אותה · כך הפינות,
+     החיתוך והמיקום שהמסך ביקש נשמרים, והלחיצה תופסת את כל השטח */
+  return (
+    <Pressable onPress={() => lightbox.open(name)} style={style as ViewStyle}>
+      <Image source={src} style={s.fill} resizeMode={resizeMode} />
+    </Pressable>
+  );
 }
 
 const s = StyleSheet.create({
+  fill: { width: '100%', height: '100%' },
   placeholder: {
     borderWidth: 1.5,
     borderStyle: 'dashed',

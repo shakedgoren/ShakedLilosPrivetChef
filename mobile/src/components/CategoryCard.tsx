@@ -75,7 +75,8 @@ export function CategoryCard({ item, active, onPress }: Props) {
       {/* המדליה · בועה זוהרת שהתמונה יושבת בתוכה, וחרוזים על השפה */}
       <View style={s.medal}>
         <Orb rgb={item.rgb} size={MEDAL} shadow={cardOrbShadow(item.rgb)} tint={0.26} halo={0.46}>
-          <Photo name={PHOTO_BY_CATEGORY[item.key]} rgb={item.rgb} style={s.shot} />
+          {/* אין הגדלה · הכרטיס כולו הוא כפתור המעבר לקטגוריה */}
+          <Photo name={PHOTO_BY_CATEGORY[item.key]} rgb={item.rgb} style={s.shot} zoom={false} />
         </Orb>
         {BEADS.map((b, i) => (
           <View

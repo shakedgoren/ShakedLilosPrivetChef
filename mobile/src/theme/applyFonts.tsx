@@ -1,8 +1,9 @@
 import { StyleSheet, Text, TextInput } from 'react-native';
 import { DEFAULT_FAMILY, fontFor } from './fonts';
+import { IS_RTL } from './rtl';
 
 /**
- * מחיל את Assistant על כל טקסט באפליקציה.
+ * מחיל את Assistant ואת כיוון הכתיבה על כל טקסט באפליקציה.
  *
  * באפליקציה מאות רכיבי Text, וכל אחד מגדיר fontWeight משלו. במקום
  * להוסיף fontFamily בכל אחד — ולשכוח באחד — עוטפים כאן את Text ואת
@@ -11,6 +12,13 @@ import { DEFAULT_FAMILY, fontFor } from './fonts';
  * ההזרקה נעשית ל-props בכניסה ולא לאלמנט ביציאה, כי ביציאה כבר יש
  * אלמנט DOM שלא יודע לקרוא מערך סגנונות. הסגנון המקורי נשאר אחרון
  * ולכן סגנון שמגדיר fontFamily בעצמו (הכותרת ב-Anton) עדיין גובר.
+ *
+ * ⚠ כיוון הכתיבה · react-native-web גוזר את כיוון הטקסט מהתוכן.
+ * מחרוזת שמתחילה בספרה — ״45 ₪״, ״052-2958511״, כל מחיר וכל מונה —
+ * מסומנת ltr, ואז `text-align: start` מיישר אותה שמאלה בזמן ששאר
+ * הטקסט מיושר ימינה. המחיר בקוסקוס נראה תלוי באוויר בגלל זה.
+ * `writingDirection` נכפה כאן פעם אחת על כל Text, ולכן אף מחרוזת
+ * מספרית באפליקציה לא תיפול שוב לכיוון ההפוך.
  */
 type Renderable = { render?: (props: { style?: unknown }, ref: unknown) => unknown };
 
@@ -26,7 +34,11 @@ export function applyFonts() {
 
     Comp.render = function patchedRender(props, ref) {
       const flat = StyleSheet.flatten(props.style) as { fontWeight?: string } | undefined;
-      const withFont = { ...props, style: [{ fontFamily: fontFor(flat?.fontWeight) }, props.style] };
+      const base = {
+        fontFamily: fontFor(flat?.fontWeight),
+        writingDirection: IS_RTL ? ('rtl' as const) : ('ltr' as const),
+      };
+      const withFont = { ...props, style: [base, props.style] };
       return original.call(this, withFont, ref);
     };
   }
