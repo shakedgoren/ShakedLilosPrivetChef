@@ -223,7 +223,17 @@ const s = StyleSheet.create({
     zIndex: 2,
   },
   backGlyph: { fontSize: 24, color: '#7A5B3D', lineHeight: 26 },
-  head: { alignItems: 'center', gap: 2 },
+  /* מרחפת ב-top 30 · אותה שפה של CategoryHeader, כדי שהתוכן
+     של כל המסכים הפנימיים יתחיל באותו גובה בדיוק */
+  head: {
+    position: 'absolute',
+    top: 30,
+    right: 74,
+    left: 74,
+    alignItems: 'center',
+    gap: 1,
+    zIndex: 1,
+  },
   title: { fontSize: 20, fontWeight: '600', color: surface.ink, textAlign: 'center' },
   step: { fontSize: type.label, color: '#7A7080' },
   track: {

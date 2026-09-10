@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHNITZEL_TYPES } from '../../data/schnitzel';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
+import { TOP_CARD } from '../../data/schnitzelCopy';
 import type { Pop } from './useSchnitzelOrder';
 
 const ACCENT = hues.schn;
@@ -10,9 +11,13 @@ const ACCENT = hues.schn;
 type Props = { pop: Pop; onToggle: (name: string) => void; onCancel: () => void; onSave: () => void };
 
 export function ToppingsSheet({ pop, onToggle, onCancel, onSave }: Props) {
-  if (!pop) return null;
-  const t = SCHNITZEL_TYPES[pop.type];
-  if (!t) return null;
+  const [gridW, setGridW] = useState(0);
+  const t = pop ? SCHNITZEL_TYPES[pop.type] : undefined;
+  /* כל הכרטיסים באותו רוחב · שליש מהשורה פחות המרווחים */
+  const chipW = gridW
+    ? (gridW - TOP_CARD.gap * (TOP_CARD.columns - 1)) / TOP_CARD.columns
+    : undefined;
+  if (!pop || !t) return null;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
@@ -21,7 +26,12 @@ export function ToppingsSheet({ pop, onToggle, onCancel, onSave }: Props) {
           <Text style={s.title}>{t.name}</Text>
           <Text style={s.sub}>מה שמים בחלה?</Text>
 
-          <ScrollView style={s.list} contentContainerStyle={s.listPad}>
+          {/* שלוש בשורה · השורה האחרונה ממורכזת, וכל הכרטיסים באותו גודל */}
+          <ScrollView
+            style={s.list}
+            contentContainerStyle={s.grid}
+            onLayout={(e) => setGridW(e.nativeEvent.layout.width)}
+          >
             {t.tops.map((name) => {
               const on = pop.tops.includes(name);
               return (
@@ -30,6 +40,7 @@ export function ToppingsSheet({ pop, onToggle, onCancel, onSave }: Props) {
                   onPress={() => onToggle(name)}
                   style={[
                     s.chip,
+                    { width: chipW },
                     {
                       backgroundColor: on ? a(ACCENT.rgb, 0.1) : 'rgba(255,255,255,0.7)',
                       borderColor: on ? a(ACCENT.rgb, 0.42) : 'rgba(130,112,162,0.16)',
@@ -62,9 +73,24 @@ const s = StyleSheet.create({
   title: { fontSize: 17, fontWeight: '600', color: surface.ink, lineHeight: 22 },
   sub: { fontSize: type.label, color: surface.muted },
   list: { marginTop: space.md },
-  listPad: { gap: space.sm, paddingBottom: space.sm },
-  chip: { borderRadius: radius.field, borderWidth: 1.5, paddingVertical: 12, paddingHorizontal: 14 },
-  chipText: { fontSize: 14.5, color: surface.inkSoft },
+  /* justifyContent מרכז את השורה האחרונה כשהיא לא מלאה */
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: TOP_CARD.gap,
+    paddingBottom: space.sm,
+  },
+  chip: {
+    minHeight: TOP_CARD.minHeight,
+    borderRadius: TOP_CARD.radius,
+    borderWidth: 1.5,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipText: { fontSize: 13.5, lineHeight: 17, textAlign: 'center', color: surface.inkSoft },
   row: { flexDirection: 'row', gap: 9, marginTop: space.md },
   btn: { flex: 1, height: 46, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
   ghost: { backgroundColor: 'rgba(130,112,162,0.09)' },

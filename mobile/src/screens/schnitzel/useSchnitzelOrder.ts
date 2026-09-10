@@ -21,6 +21,8 @@ export function useSchnitzelOrder() {
   const [mode, setMode] = useState(0);
   const [basket, setBasket] = useState<Roll[]>([]);
   const [box, setBox] = useState<Roll | null>(null);
+  /* צורת המארז · 0 = חמש חלות אישיות · 1 = חלה משפחתית · SCHNITZEL_FORMS בקנבס */
+  const [form, setForm] = useState(0);
   const [cocottes, setCocottes] = useState<number[]>(() => COCOTTES.map(() => 0));
   const [pop, setPop] = useState<Pop>(null);
 
@@ -108,6 +110,7 @@ export function useSchnitzelOrder() {
 
   return {
     mode, setMode, isUnit,
+    form, setForm,
     basket, box, cocottes, pop,
     openAdd, openEdit, openBox, openBoxEdit, closePop, toggleTop, commitPop, removeRoll, bumpCocotte,
     total, lines,

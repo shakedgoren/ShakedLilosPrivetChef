@@ -14,6 +14,8 @@ import {
   COUSCOUS_INTRO,
   COUSCOUS_TITLE,
   DISH_ROW,
+  INTRO_GAP,
+  LIST_GAP,
   PICKLE_NOTE,
   TOTAL_LABEL,
   mealsLabel,
@@ -46,6 +48,9 @@ export function CouscousScreen() {
   const addonW = gridW
     ? (gridW - ADDON_CARD.gap * (ADDON_CARD.columns - 1)) / ADDON_CARD.columns
     : undefined;
+  /* גובה מפורש · aspectRatio על <Image> לא נתפס ב-React Native Web
+     והתמונה נמתחה לפס אנכי שמראה רק את השולחן מסביב לקערה */
+  const addonShotSize = addonW ? addonW - ADDON_CARD.padding * 2 : undefined;
 
   return (
     <View style={s.page}>
@@ -73,6 +78,12 @@ export function CouscousScreen() {
         <View style={s.addonGrid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
           {addons.map(({ it, i }) => (
             <View key={it.name} style={[s.addon, { width: addonW }]}>
+              {/* התמונה יושבת בתוך הכרטיס מעל השם · שקד ביקשה, אין כזו בקנבס */}
+              <Photo
+                name={COUSCOUS_PHOTOS[i]}
+                rgb={ACCENT.rgb}
+                style={[s.addonShot, { width: addonShotSize, height: addonShotSize }]}
+              />
               <Text style={s.addonName}>{it.name}</Text>
               <Text style={s.addonPrice}>{it.price} ₪</Text>
               <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
@@ -124,12 +135,15 @@ export function CouscousScreen() {
 }
 
 const s = StyleSheet.create({
+  /* התיאור · ממורכז, בדיוק כמו text-align: center בקנבס */
   intro: {
     fontSize: 13.5,
     fontWeight: '300',
     lineHeight: 22,
-    color: surface.inkSoft,
-    marginBottom: 6,
+    color: surface.muted,
+    textAlign: 'center',
+    paddingHorizontal: 4,
+    marginBottom: INTRO_GAP,
   },
   pickle: { fontSize: 12.5, fontWeight: '300', color: surface.muted, marginTop: 4 },
   addonsLabel: {
@@ -137,6 +151,7 @@ const s = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 2.3,
     color: surface.faint,
+    textAlign: 'center',
     marginTop: 14,
     marginBottom: 4,
   },
@@ -151,27 +166,29 @@ const s = StyleSheet.create({
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
+  addonShot: { borderRadius: ADDON_CARD.shotRadius, overflow: 'hidden', marginBottom: 2 },
   addonName: { fontSize: 12.5, fontWeight: '600', lineHeight: 15, textAlign: 'center', color: surface.ink },
   addonPrice: { fontSize: 12, fontWeight: '600', color: ACCENT.hue },
 
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
-  list: { paddingVertical: space.lg, gap: space.md },
+  list: { paddingBottom: space.lg, gap: LIST_GAP },
   row: {
     height: DISH_ROW.height,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
     borderRadius: DISH_ROW.radius,
-    paddingHorizontal: 14,
+    paddingHorizontal: DISH_ROW.padding,
     backgroundColor: 'rgba(255,255,255,0.72)',
     borderWidth: 1,
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
   shot: { width: DISH_ROW.shotSize, height: DISH_ROW.shotSize, borderRadius: DISH_ROW.shotRadius, overflow: 'hidden' },
-  rowText: { flex: 1, gap: 2 },
-  name: { fontSize: 15.5, fontWeight: '500', color: surface.ink },
-  price: { fontSize: type.label, color: surface.muted },
+  rowText: { flex: 1, minWidth: 0, gap: 3 },
+  name: { fontSize: 15.5, fontWeight: '600', lineHeight: 18.6, color: surface.ink },
+  /* המחיר · 13.5 בגוון הקטגוריה ובמשקל 600 · כך הוא בקנבס */
+  price: { fontSize: 13.5, fontWeight: '600', color: ACCENT.hue },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },

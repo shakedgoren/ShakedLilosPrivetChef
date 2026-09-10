@@ -4,6 +4,7 @@ import {
   COCOTTES,
   COCOTTE_PRICE,
   SCHNITZEL_FULFILLMENT,
+  SCHNITZEL_FORMS,
   SCHNITZEL_MODES,
   SCHNITZEL_TYPES,
 } from '../../data/schnitzel';
@@ -13,7 +14,10 @@ import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
 import { SCHNITZEL_BOX_PHOTOS, SCHNITZEL_UNIT_PHOTOS } from '../../data/photos';
 import {
+  FORM_CARD,
   GIFT_NOTE,
+  GIFT_SPACE,
+
   PICK_TYPE_LABEL,
   SCHNITZEL_DATE,
   SCHNITZEL_INTRO,
@@ -26,9 +30,16 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { ToppingsSheet } from './ToppingsSheet';
+import { Gift, PlatterFamily, PlatterSingles } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.schn;
+
+/** אייקון המתנה · 19 פיקסלים בקנבס */
+const GIFT_GLYPH = 19;
+/* ⚠ נכתב על ידי Claude · אין כותרת לגוש הזה בקנבס */
+const PICK_FORM_LABEL = 'בחירת צורה';
+const PICK_BOX_LABEL = 'בחירת מארז';
 
 /** שישי של מטעמים · חלות בודדות או מארז, עם תוספות וקוקוטים */
 export function SchnitzelScreen() {
@@ -66,7 +77,9 @@ export function SchnitzelScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+        {/* כרטיס המתנה · האייקון היה בקנבס ולא הועבר */}
         <View style={s.gift}>
+          <Gift size={GIFT_GLYPH} color={ACCENT.hue} strokeWidth={1.6} />
           <Text style={s.giftText}>{GIFT_NOTE}</Text>
         </View>
 
@@ -93,7 +106,7 @@ export function SchnitzelScreen() {
 
             <Text style={s.sectionTitle}>{PICK_TYPE_LABEL}</Text>
             {/* שתי עמודות · תמונה מלמעלה, בדיוק כמו בקנבס */}
-            <View style={s.typeGrid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+            <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
               {SCHNITZEL_TYPES.map((t, k) => (
                 <Pressable
                   key={t.name}
@@ -109,29 +122,52 @@ export function SchnitzelScreen() {
           </>
         ) : (
           <>
-            <Text style={s.sectionTitle}>בחירת מארז</Text>
-            {SCHNITZEL_TYPES.map((t, k) => {
-              const on = o.box?.type === k;
-              return (
-                <Pressable
-                  key={t.name}
-                  onPress={() => o.openBox(k)}
-                  style={[s.pick, on && { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) }]}
-                >
-                  <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.shot} />
-                  <View style={s.rowText}>
-                    <Text style={s.name}>{t.name}</Text>
-                    <Text style={s.price}>{t.box} ₪</Text>
-                    {on && <Text style={s.tops}>{o.box!.tops.length ? o.box!.tops.join(' · ') : 'בלי תוספות'}</Text>}
-                  </View>
-                  {on && (
-                    <Pressable onPress={o.openBoxEdit} hitSlop={8}>
-                      <Text style={s.action}>עריכה</Text>
-                    </Pressable>
-                  )}
-                </Pressable>
-              );
-            })}
+            {/* צורת המארז · SCHNITZEL_FORMS בקנבס · קדם לבחירת המארז */}
+            <Text style={s.sectionTitle}>{PICK_FORM_LABEL}</Text>
+            <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+              {SCHNITZEL_FORMS.map((name, k) => {
+                const on = o.form === k;
+                const Glyph = k === 0 ? PlatterSingles : PlatterFamily;
+                return (
+                  <Pressable
+                    key={name}
+                    onPress={() => o.setForm(k)}
+                    style={[s.formCard, { width: typeCardW }, on ? s.pickOn : s.pickOff]}
+                  >
+                    <Glyph size={FORM_CARD.glyph} color={on ? ACCENT.deep : '#8A8194'} strokeWidth={1.6} />
+                    <Text style={[s.formName, on && s.pickedText]}>{name}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* המארזים · אותו כרטיס בדיוק של ״בחר סוג חלה״ */}
+            <Text style={s.sectionTitle}>{PICK_BOX_LABEL}</Text>
+            <View style={s.grid}>
+              {SCHNITZEL_TYPES.map((t, k) => {
+                const on = o.box?.type === k;
+                return (
+                  <Pressable
+                    key={t.name}
+                    onPress={() => o.openBox(k)}
+                    style={[s.typeCard, { width: typeCardW }, on && s.pickOn]}
+                  >
+                    <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} />
+                    <Text style={s.typeName}>{t.name}</Text>
+                    <Text style={s.typePrice}>{t.box} ₪</Text>
+                    {on && (
+                      <Text style={s.tops}>{o.box!.tops.length ? o.box!.tops.join(' · ') : 'בלי תוספות'}</Text>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {o.box && (
+              <Pressable onPress={o.openBoxEdit} style={s.boxEdit}>
+                <Text style={s.action}>עריכת מה שנכנס פנימה</Text>
+              </Pressable>
+            )}
           </>
         )}
 
@@ -203,18 +239,44 @@ const s = StyleSheet.create({
     marginBottom: 12,
   },
   gift: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
     borderRadius: 18,
     paddingVertical: 13,
     paddingHorizontal: 15,
     backgroundColor: a(ACCENT.rgb, 0.08),
     borderWidth: 1,
     borderColor: a(ACCENT.rgb, 0.2),
-    marginBottom: 18,
+    marginTop: GIFT_SPACE.before,
+    marginBottom: GIFT_SPACE.after,
   },
-  giftText: { fontSize: 14.5, fontWeight: '600', lineHeight: 20, color: ACCENT.deep },
+  giftText: { flex: 1, fontSize: 14.5, fontWeight: '600', lineHeight: 20, color: ACCENT.deep },
 
-  /* שתי עמודות · תמונה מלמעלה */
-  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: TYPE_CARD.gridGap },
+  /* שתי עמודות · תמונה מלמעלה · משותפת לחלות, לצורות ולמארזים */
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: TYPE_CARD.gridGap },
+  formCard: {
+    height: FORM_CARD.height,
+    borderRadius: FORM_CARD.radius,
+    padding: FORM_CARD.padding,
+    gap: FORM_CARD.gap,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  formName: { fontSize: 12.5, textAlign: 'center', lineHeight: 15.6, color: '#8A8194' },
+  /* הנבחר והלא-נבחר · chip() בקנבס */
+  pickOn: { backgroundColor: a(ACCENT.rgb, 0.1), borderColor: a(ACCENT.rgb, 0.42) },
+  pickOff: { backgroundColor: 'rgba(255,255,255,0.7)', borderColor: 'rgba(130,112,162,0.16)' },
+  pickedText: { color: ACCENT.deep, fontWeight: '600' },
+  boxEdit: {
+    alignSelf: 'center',
+    marginTop: space.sm,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: radius.pill,
+    backgroundColor: a(ACCENT.rgb, 0.12),
+  },
   typeCard: {
     borderRadius: TYPE_CARD.radius,
     paddingVertical: TYPE_CARD.padV,
@@ -248,7 +310,13 @@ const s = StyleSheet.create({
   modeText: { fontSize: 14, color: '#8A8194' },
 
   list: { paddingVertical: space.lg, gap: space.sm },
-  sectionTitle: { fontSize: type.label, color: surface.muted, marginTop: space.md, marginBottom: 2 },
+  sectionTitle: {
+    fontSize: type.label,
+    color: surface.muted,
+    textAlign: 'center',
+    marginTop: space.md,
+    marginBottom: 2,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -260,17 +328,6 @@ const s = StyleSheet.create({
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
-  pick: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    borderRadius: 20,
-    padding: 14,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1.5,
-    borderColor: TILE_EDGE,
-    boxShadow: TILE_SHADOW,
-  },
   shot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
   rowText: { flex: 1, gap: 2 },
   name: { fontSize: 15, fontWeight: '500', color: surface.ink },
@@ -278,7 +335,6 @@ const s = StyleSheet.create({
   price: { fontSize: type.label, color: surface.muted },
   action: { fontSize: 12.5, fontWeight: '600', color: ACCENT.deep },
   remove: { fontSize: 14, color: '#B95349' },
-  plus: { fontSize: 20, color: ACCENT.deep, fontWeight: '600' },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },

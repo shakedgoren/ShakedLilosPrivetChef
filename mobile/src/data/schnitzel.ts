@@ -35,6 +35,12 @@ export const SCHNITZEL_TYPES: SchnitzelType[] = [
 /** שתי דרכי ההזמנה · חלות בודדות או מארז */
 export const SCHNITZEL_MODES = ['לפי יחידה', 'מארז'] as const;
 
+/**
+ * צורת המארז · SCHNITZEL_FORMS בקנבס.
+ * היה קיים במרקאפ מהיום הראשון ופשוט לא הועבר לאפליקציה.
+ */
+export const SCHNITZEL_FORMS = ['5 חלות אישיות', 'חלה משפחתית'] as const;
+
 /** רטבים בקוקוט לצד ההזמנה */
 export const COCOTTES = ['איולי עמבה', 'איולי כוסברה', 'טחינה'];
 export const COCOTTE_PRICE = 3;

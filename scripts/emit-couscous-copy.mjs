@@ -21,21 +21,41 @@ export const COUNT_ONE = ${j(d.countOne)};
 export const COUNT_MANY = ${j(d.countMany)};
 export const mealsLabel = (n: number) => (n === 1 ? COUNT_ONE : n + COUNT_MANY);
 
-/** שורת המנה · מהמרקאפ של הקנבס */
+/**
+ * שורת המנה · הפינה מהקנבס.
+ * ⚠ לא מהקנבס · שקד ביקשה תמונות גדולות יותר וצמודות לקצוות.
+ * בקנבס: תמונה ${d.shotSize}, גובה ${d.rowHeight}, ריפוד 14.
+ */
 export const DISH_ROW = {
-  height: ${d.rowHeight},
+  height: 88,
   radius: ${d.rowRadius},
-  shotSize: ${d.shotSize},
-  shotRadius: ${d.shotRadius},
+  shotSize: 70,
+  shotRadius: 18,
+  padding: 9,
 } as const;
 
-/** כרטיס התוספת · שלוש עמודות, בלי תמונה */
+/**
+ * כרטיס התוספת · שלוש עמודות.
+ * ⚠ לא מהקנבס · שקד ביקשה תמונה מעל שם התוספת בתוך הכרטיס.
+ * בקנבס הכרטיס ריק מתמונה.
+ */
 export const ADDON_CARD = {
   radius: ${d.addonRadius},
   padding: ${d.addonPad},
   gap: ${d.addonGap},
   columns: 3,
+  /* ריבועית · תמונות התוספות הן צילומי קערה מלמעלה במסגרת ריבועית,
+     וחיתוך לפס נמוך הראה רק את השולחן מסביב */
+  shotAspect: 1,
+  shotRadius: 12,
 } as const;
+
+/**
+ * הרווח בין התיאור לרשימת המנות · מרווח של 16 בקנבס.
+ * הכותרת מרחפת ב-top 30 ואזור הגלילה מתחיל ב-88.
+ */
+export const INTRO_GAP = 16;
+export const LIST_GAP = 10;
 `;
 const OUT = '/Users/shakedgoren/Downloads/files/mobile/src/data/couscousCopy.ts';
 fs.writeFileSync(OUT, ts);
