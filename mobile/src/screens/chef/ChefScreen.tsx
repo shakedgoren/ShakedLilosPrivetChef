@@ -80,7 +80,8 @@ export function ChefScreen() {
                     fontWeight: line.w as '300' | '500' | '600',
                     fontSize: parseFloat(line.size),
                     color: line.fg,
-                    lineHeight: parseFloat(line.size) * 1.45,
+                    lineHeight: parseFloat(line.size) * 1.6,
+                    textAlign: 'center',
                   }}
                 >
                   {line.text}
@@ -171,10 +172,29 @@ export function ChefScreen() {
 }
 
 const s = StyleSheet.create({
-  intro: { gap: 6, marginBottom: 12 },
-  introTitle: { fontSize: 15, fontWeight: '600', lineHeight: 20, color: surface.ink },
-  introBody: { fontSize: 13, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
-  introCta: { fontSize: 13, fontWeight: '500', lineHeight: 18, color: ACCENT.deep },
+  /* המבוא · ממורכז ובאותם מרווחים של הקוסקוס · gap 3 ואז 12 */
+  intro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
+  introTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 24,
+    color: surface.ink,
+    textAlign: 'center',
+  },
+  introBody: {
+    fontSize: 13,
+    fontWeight: '300',
+    lineHeight: 20.8,
+    color: surface.inkSoft,
+    textAlign: 'center',
+  },
+  introCta: {
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 20.8,
+    color: ACCENT.deep,
+    textAlign: 'center',
+  },
 
   modes: {
     flexDirection: 'row',
@@ -245,8 +265,8 @@ const s = StyleSheet.create({
   },
   fill: { height: 4, borderRadius: 999, backgroundColor: a(ACCENT.rgb, 0.6) },
 
-  body: { paddingVertical: space.lg, gap: space.sm },
-  list: { paddingVertical: space.lg, gap: space.md },
+  body: { paddingBottom: space.lg, gap: 6 },
+  list: { paddingBottom: space.lg, gap: space.md },
   card: {
     flexDirection: 'row',
     gap: space.md,

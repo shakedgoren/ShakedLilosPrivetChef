@@ -50,17 +50,20 @@ export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover', 
     return <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />;
   }
 
-  /* המסגרת עוברת ל-Pressable והתמונה ממלאת אותה · כך הפינות,
-     החיתוך והמיקום שהמסך ביקש נשמרים, והלחיצה תופסת את כל השטח */
+  /**
+   * ⚠ אותו סגנון לשניהם · אם התמונה מקבלת רק ‎100%‎ והעטיפה היא
+   * שנושאת את המידות, אז כשהמסך לא נותן רוחב מפורש העטיפה מתכווצת
+   * לאפס והתמונה נעלמת. זה הפיל את קרוסלת השף. כשהסגנון עובר
+   * לשניהם התמונה שומרת על הרוחב הטבעי שלה כמו לפני העטיפה.
+   */
   return (
     <Pressable onPress={() => lightbox.open(name)} style={style as ViewStyle}>
-      <Image source={src} style={s.fill} resizeMode={resizeMode} />
+      <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  fill: { width: '100%', height: '100%' },
   placeholder: {
     borderWidth: 1.5,
     borderStyle: 'dashed',

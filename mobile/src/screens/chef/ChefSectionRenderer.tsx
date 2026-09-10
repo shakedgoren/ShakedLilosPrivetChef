@@ -10,6 +10,16 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.chef;
 
+/* גווני הסטפר · המינוס אפור והפלוס בגוון הקטגוריה, כמו בקנבס */
+const STEP_TONE = {
+  plusBg: a(ACCENT.rgb, 0.13),
+  plusInk: ACCENT.deep,
+  minusBg: 'rgba(130,112,162,0.09)',
+  minusInk: '#6E6478',
+  key: 32,
+  glyph: 13,
+} as const;
+
 type Api = {
   picks: Picks;
   select: (id: string, v: string) => void;
@@ -31,8 +41,8 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
         <View style={st.headRow}>
           <Text style={st.head}>{s.label}</Text>
           {s.cap != null && s.link ? (
-            <Text style={st.cap}>
-              {(api.picks[s.link] || []).length} / {s.cap}
+            <Text style={st.headHint}>
+              {(api.picks[s.link] || []).length} מתוך {s.cap}
             </Text>
           ) : null}
         </View>
@@ -43,8 +53,8 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
         <View style={st.titleRow}>
           <Text style={st.title}>{s.label}</Text>
           {s.cap != null && s.link ? (
-            <Text style={st.cap}>
-              {(api.picks[s.link] || []).length} / {s.cap}
+            <Text style={st.hint}>
+              {(api.picks[s.link] || []).length} מתוך {s.cap}
             </Text>
           ) : null}
         </View>
@@ -114,12 +124,11 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
     case 'stepper': {
       const v = api.picks[s.id] ?? s.min ?? 0;
       return (
-        <View style={st.stepperRow}>
-          <Text style={st.stepperUnit}>{s.unit}</Text>
-          <View style={st.grow} />
+        <View style={st.stepperBox}>
           <Stepper
             value={v}
             min={s.min ?? 0}
+            tone={STEP_TONE}
             onChange={(n) => {
               const step = s.step ?? 1;
               const raw = n > v ? v + step : v - step;
@@ -128,6 +137,7 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
               api.setValue(s.id, Math.max(lo, Math.min(hi, raw)));
             }}
           />
+          {s.unit ? <Text style={st.stepperUnit}>{s.unit}</Text> : null}
         </View>
       );
     }
@@ -211,15 +221,46 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
 }
 
 const st = StyleSheet.create({
-  headRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: space.lg },
-  head: { flex: 1, fontSize: 17, fontWeight: '600', color: surface.ink },
-  titleRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: space.md },
-  title: { flex: 1, fontSize: 14.5, fontWeight: '600', color: surface.ink },
-  cap: { fontSize: type.label, fontWeight: '600', color: ACCENT.deep },
-  note: { fontSize: 12.5, color: surface.muted, lineHeight: 18 },
+  /* כותרות · ממורכזות עם הרמז לצידן · 18 ו-15.5 בקנבס */
+  headRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 2,
+    paddingTop: 2,
+  },
+  head: { fontSize: 18, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  headHint: { fontSize: 13, fontWeight: '600', color: ACCENT.hue },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 2,
+  },
+  title: { fontSize: 15.5, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  hint: { fontSize: 11.5, fontWeight: '400', color: ACCENT.hue },
+  note: {
+    fontSize: 12.5,
+    fontWeight: '300',
+    lineHeight: 20,
+    color: surface.muted,
+    textAlign: 'center',
+    paddingHorizontal: 2,
+  },
   tight: { marginTop: -4 },
-  fine: { fontSize: 11, color: surface.faint },
-  gap: { height: space.md },
+  fine: {
+    fontSize: 11,
+    fontWeight: '400',
+    fontStyle: 'italic',
+    lineHeight: 16.5,
+    color: '#9A93A6',
+    textAlign: 'center',
+    paddingHorizontal: 6,
+  },
+  /* המרווח בקנבס · 14 פיקסלים */
+  gap: { height: 14 },
 
   field: {
     minHeight: 64,
@@ -235,38 +276,53 @@ const st = StyleSheet.create({
   },
   oneLine: { minHeight: 46, paddingVertical: 12 },
   pairText: { flexDirection: 'row', gap: space.sm },
-  smallLabel: { fontSize: 11.5, color: surface.faint, marginBottom: 4 },
+  smallLabel: { fontSize: 11.5, color: surface.faint, marginBottom: 4, textAlign: 'center' },
   grow: { flex: 1 },
 
-  stepperRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
-  stepperUnit: { fontSize: type.label, color: surface.muted },
-
-  chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.sm },
-  chip: {
-    minWidth: 92,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderColor: TILE_EDGE,
-    boxShadow: TILE_SHADOW,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+  stepperBox: {
+    alignSelf: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  chipText: { fontSize: 13.5, color: surface.inkSoft, textAlign: 'center' },
-
-  cards: { gap: space.sm },
-  card: {
+    gap: 10,
     borderRadius: 18,
-    borderWidth: 1.5,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 1,
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    padding: 13,
-    gap: 3,
   },
-  cardName: { fontSize: 14.5, fontWeight: '500', color: surface.ink },
-  cardDesc: { fontSize: 12, color: surface.muted, lineHeight: 17 },
+  stepperUnit: { fontSize: 12.5, color: surface.muted },
+
+  /* גלולות · גובה מזערי 40, פינה 14, ריפוד 6/12 · מהקנבס */
+  chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 7, paddingHorizontal: 2 },
+  chip: {
+    minHeight: 40,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(130,112,162,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipText: { fontSize: 12.5, color: surface.inkSoft, textAlign: 'center' },
+
+  /* שורות בחירה · פינה 16, ריפוד 9/12, הכל ממורכז · מהקנבס */
+  cards: { gap: 7 },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(130,112,162,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 2,
+  },
+  cardName: { fontSize: 13, fontWeight: '400', lineHeight: 17, color: surface.ink, textAlign: 'center' },
+  cardDesc: { fontSize: 11.5, fontWeight: '300', color: surface.muted, lineHeight: 16, textAlign: 'center' },
 
   on: { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) },
   onText: { color: ACCENT.deep, fontWeight: '600' },
