@@ -17,6 +17,11 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.box;
 
+/** הכותרת נגמרת ב-54 ברשימה · ועוד 14 כמו בקוסקוס */
+const LIST_TOP = 70;
+/** מסך המארז · כותרת בת שתי שורות, ולכן חוזרים ל-88 */
+const DETAIL_PAD = 18;
+
 /** החץ שבקצה כרטיס המארז · 15 פיקסלים בקנבס */
 const CHEV = 15;
 const CHEV_INK = '#C1BBCB';
@@ -169,7 +174,13 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
 
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
+  /**
+   * הריפוד הוא של הרשימה · שם הכותרת שורה אחת, ולכן היא נגמרת
+   * ב-54 והתיאור מתחיל 14 אחריה — בדיוק הרווח שיש בקוסקוס בין
+   * התאריך לתיאור. במסך המארז הכותרת בת שתי שורות, ולכן הוא
+   * מוסיף DETAIL_PAD ומגיע חזרה ל-88.
+   */
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: LIST_TOP },
   back: {
     position: 'absolute',
     top: 30,
@@ -197,7 +208,7 @@ const s = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '600', color: surface.ink, textAlign: 'center' },
   date: { fontSize: type.label, color: '#7A7080' },
 
-  body: { paddingBottom: space.lg, gap: 6 },
+  body: { paddingTop: DETAIL_PAD, paddingBottom: space.lg, gap: 6 },
   boxIntro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
   boxIntroText: { textAlign: 'center' },
   list: { paddingBottom: space.lg, gap: space.sm },

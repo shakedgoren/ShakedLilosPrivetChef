@@ -51,19 +51,22 @@ export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover', 
   }
 
   /**
-   * ⚠ אותו סגנון לשניהם · אם התמונה מקבלת רק ‎100%‎ והעטיפה היא
-   * שנושאת את המידות, אז כשהמסך לא נותן רוחב מפורש העטיפה מתכווצת
-   * לאפס והתמונה נעלמת. זה הפיל את קרוסלת השף. כשהסגנון עובר
-   * לשניהם התמונה שומרת על הרוחב הטבעי שלה כמו לפני העטיפה.
+   * המסגרת על ה-Pressable והתמונה ממלאת אותה.
+   *
+   * ⚠ המסך חייב לתת לתמונה מידות · בלי רוחב או גובה העטיפה
+   * מתכווצת לאפס והתמונה נעלמת. הניסיון להעביר את אותו סגנון
+   * לשניהם פתר את זה אבל מתח את התמונה ל-800 פיקסלים וחתך אותה,
+   * ולכן הוא לא הדרך. במקום זה כל קורא מספק מידות.
    */
   return (
     <Pressable onPress={() => lightbox.open(name)} style={style as ViewStyle}>
-      <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />
+      <Image source={src} style={s.fill} resizeMode={resizeMode} />
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
+  fill: { width: '100%', height: '100%' },
   placeholder: {
     borderWidth: 1.5,
     borderStyle: 'dashed',

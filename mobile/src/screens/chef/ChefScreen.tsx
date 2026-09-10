@@ -24,6 +24,9 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.chef;
 
+/** הריפודים עד הקרוסלה · 18 מהעמוד ועוד 12 מהכרטיס, משני הצדדים */
+const CARO_INSET = (space.lg + 12) * 2;
+
 /**
  * שף וטאבון · שתי חבילות, כל אחת שאלון של שישה עמודים.
  * זו הקטגוריה היחידה שפתוחה עד הסוף גם בלי חשבון — החלטה של שקד.
@@ -71,6 +74,7 @@ export function ChefScreen() {
             <PhotoStrip
               names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
               height={CARO.height}
+              inset={CARO_INSET}
             />
             <View style={s.pkgLines}>
               {(chosen.intro ?? []).map((line) => (
@@ -122,6 +126,7 @@ export function ChefScreen() {
             names={o.pkg.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
             height={180}
             rgb={ACCENT.rgb}
+            inset={space.lg * 2}
           />
         ) : null}
 
@@ -129,7 +134,13 @@ export function ChefScreen() {
           o.pkg.intro?.map((t, i) => (
             <Text
               key={i}
-              style={{ fontSize: parseFloat(t.size), fontWeight: t.w as any, color: t.fg, lineHeight: 20 }}
+              style={{
+                fontSize: parseFloat(t.size),
+                fontWeight: t.w as never,
+                color: t.fg,
+                lineHeight: parseFloat(t.size) * 1.6,
+                textAlign: 'center',
+              }}
             >
               {t.text}
             </Text>

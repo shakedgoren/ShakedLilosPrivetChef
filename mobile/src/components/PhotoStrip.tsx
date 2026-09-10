@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Photo } from './Photo';
 import { ChevronLeft, ChevronRight } from '../icons';
 import { IS_RTL } from '../theme/rtl';
@@ -12,6 +12,13 @@ type Props = {
   /** רוחב אריח · בלי זה כל תמונה ממלאת את הרוחב */
   tileWidth?: number;
   rgb?: string;
+  /**
+   * כמה פיקסלים תופסים הריפודים משני הצדדים עד לקרוסלה.
+   * ⚠ נחוץ · onLayout על העוטף מחזיר כאן 0, ו-Photo עוטפת את
+   * התמונה ב-Pressable בשביל ההגדלה — עטיפה בלי רוחב מתכווצת
+   * לאפס והקרוסלה נעלמת. הרוחב נגזר מרוחב המסך פחות הריפודים.
+   */
+  inset?: number;
 };
 
 /* מעל הסף הזה הנקודות נעשות עמוסות · מחליקים בלעדיהן */
@@ -33,14 +40,16 @@ const ARROW_STROKE = 2.4;
 const DIR = IS_RTL ? -1 : 1;
 
 /** קרוסלת תמונות אופקית · בית, שף וטאבון */
-export function PhotoStrip({ names, height, tileWidth, rgb }: Props) {
+export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) {
   const [i, setI] = useState(0);
   const [pageW, setPageW] = useState(0);
   const strip = useRef<ScrollView>(null);
+  const win = useWindowDimensions();
   if (names.length === 0) return null;
 
   const paging = tileWidth == null;
-  const shotW = tileWidth ?? (pageW || undefined);
+  /* המדידה גוברת כשהיא מגיעה · אחרת רוחב המסך פחות הריפודים */
+  const shotW = tileWidth ?? (pageW || Math.max(0, win.width - inset));
   /* מרווח בין מרכזי אריחים · זהה לחישוב ב-onMomentumScrollEnd */
   const pitch = tileWidth ? tileWidth + TILE_GAP : pageW;
 
@@ -56,16 +65,16 @@ export function PhotoStrip({ names, height, tileWidth, rgb }: Props) {
   };
 
   return (
-    <View>
+    /**
+     * ⚠ הרוחב חייב להימדד כאן · Photo עוטפת את התמונה ב-Pressable
+     * בשביל ההגדלה, ועטיפה בלי מידות מתכווצת לאפס. כשהמדידה על
+     * ה-ScrollView או על גודל התוכן נוצר מעגל — הרוחב תלוי בילדים
+     * והילדים תלויים ברוחב — והקרוסלה קרסה.
+     */
+    <View onLayout={(e) => setPageW(e.nativeEvent.layout.width)}>
       <ScrollView
         ref={strip}
         horizontal
-        /**
-         * ⚠ הרוחב נגזר מגודל התוכן · onLayout החזיר 0 גם על העוטף
-         * וגם על ה-ScrollView, ולכן הפיץ' חושב מרוחב כל האריחים
-         * חלקי מספרם. זו המדידה היחידה שנמצאה אמינה כאן.
-         */
-        onContentSizeChange={(w) => setPageW(w / names.length)}
         pagingEnabled={paging}
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"

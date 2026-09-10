@@ -144,6 +144,18 @@ export const EVENT_ADD: Record<string, number> = {
 
 export type Section = {
   kind: string;
+  /**
+   * ⚠ לא מהקנבס · שמות התמונות של סעיף images.
+   * בקנבס הסעיף מציג מציין מקום ריק ולא בוחר קבצים. שקד ביקשה
+   * תמונות מסוימות במארזים ״חגיגה בשולחן · עיקרית״ ו״הכל עלינו״.
+   */
+  names?: string[];
+  /**
+   * ⚠ לא מהקנבס · מסגרת ריבועית במקום גובה קבוע.
+   * קבצי המקור הם 480×480, ומסגרת שוכבת בגובה 84 חתכה מהם פס
+   * אופקי צר. ריבוע מראה את התמונה כולה בפרופורציה שלה.
+   */
+  square?: boolean;
   id?: string;
   label?: string;
   options?: any;
@@ -515,7 +527,13 @@ export const BOXES: Box[] = [
       {
         "kind": "images",
         "count": 3,
-        "h": "84px"
+        "h": "84px",
+        "names": [
+          "box-celebration-main-2-cuscus",
+          "box-celebration-main-5-chicken",
+          "box-celebration-main-5-mafrum"
+        ],
+        "square": true
       },
       {
         "kind": "title",
@@ -597,8 +615,23 @@ export const BOXES: Box[] = [
     "sections": [
       {
         "kind": "images",
+        "count": 1,
+        "h": "84px",
+        "names": [
+          "box-celebration-salads"
+        ],
+        "square": true
+      },
+      {
+        "kind": "images",
         "count": 3,
-        "h": "84px"
+        "h": "84px",
+        "names": [
+          "box-celebration-main-2-cuscus",
+          "box-celebration-main-5-chicken",
+          "box-celebration-main-5-mafrum"
+        ],
+        "square": true
       },
       {
         "kind": "title",

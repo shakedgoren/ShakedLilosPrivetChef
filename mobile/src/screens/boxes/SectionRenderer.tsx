@@ -130,13 +130,23 @@ export function SectionRenderer({ s, api, photos = [] }: Props) {
 
 const optionName = (o: unknown) => (typeof o === 'string' ? o : (o as { n: string }).n);
 
-/** תמונות המארז · שורה של מסגרות ברוחב שווה, הגובה מהסעיף */
+/**
+ * תמונות המארז · שורה של מסגרות ברוחב שווה.
+ * `names` בוחר קבצים מסוימים, ובלעדיו נלקחות תמונות הגלריה לפי הסדר.
+ * `square` נותן מסגרת ריבועית · קבצי המקור הם 480×480, ומסגרת
+ * שוכבת בגובה 84 חתכה מהם פס אופקי צר.
+ */
 function Images({ s, photos }: { s: Section; photos: string[] }) {
-  const h = parseInt(s.h ?? '84px', 10);
+  const names = s.names ?? photos;
+  const n = s.names ? s.names.length : (s.count ?? 1);
+  const [w, setW] = React.useState(0);
+  const cellW = w ? (w - GRID_GAP * (n - 1)) / n : undefined;
+  const h = s.square ? cellW : parseInt(s.h ?? '84px', 10);
+
   return (
-    <View style={st.images}>
-      {Array.from({ length: s.count ?? 1 }).map((_, i) => (
-        <Photo key={i} name={photos[i]} rgb={ACCENT.rgb} style={[st.shot, { height: h }]} />
+    <View style={st.images} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+      {Array.from({ length: n }).map((_, i) => (
+        <Photo key={i} name={names[i]} rgb={ACCENT.rgb} style={[st.shot, { height: h }]} />
       ))}
     </View>
   );
