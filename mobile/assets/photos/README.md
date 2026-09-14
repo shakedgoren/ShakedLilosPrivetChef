@@ -9,5 +9,6 @@ bash scripts/sync-photos.sh
 node scripts/emit-photos.mjs
 ```
 
-שלוש תמונות עדיין חסרות (שקד סימנה באדום, יגיעו בהמשך):
-ממשותף לאישי · שולחן קינוחים מעוצב · חבילת שתייה ללא הגבלה
+שלוש התמונות שהיו חסרות הגיעו ב-14 בספטמבר:
+hagasha-ishit · kinuhim-table · drink-no-limit
+המיפוי שלהן לשמות השדרוגים יושב ב-mobile/src/data/extraPhotos.ts.

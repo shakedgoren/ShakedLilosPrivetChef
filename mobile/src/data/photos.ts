@@ -6,7 +6,7 @@
  */
 import type { ImageSourcePropType } from 'react-native';
 
-export type PhotoKey = 'arichat-shulhan' | 'box-all-2-cuscus' | 'box-all-5-chicken' | 'box-all-5-mafrum' | 'box-all-salads' | 'box-all' | 'box-celebration-main-2-cuscus' | 'box-celebration-main-5-chicken' | 'box-celebration-main-5-mafrum' | 'box-celebration-main' | 'box-celebration-salads' | 'box-challah-1' | 'box-challah-2' | 'box-challah-3' | 'box-challah-4' | 'box-challah' | 'box-free' | 'box-shana-1' | 'box-shana-2' | 'cat-boxes' | 'cat-chef' | 'cat-couscous' | 'cat-fruit' | 'cat-schnitzel' | 'chef-1' | 'chef-2' | 'chef-3' | 'chef-4' | 'chef-5' | 'chef-6' | 'chef-7' | 'chef-8' | 'chef-9' | 'chef-10' | 'chef-11' | 'chef-12' | 'chef-13' | 'chef-14' | 'dish-couscous-chicken' | 'dish-couscous-mafroum' | 'dish-couscous-only-chicken' | 'dish-couscous-only-mafroum' | 'dish-couscous-only-veg' | 'dish-couscous-veg' | 'dish-schnitzel-tampura' | 'dish-schnitzel-thin' | 'home-1' | 'home-2' | 'home-3' | 'home-4' | 'home-5' | 'home-6' | 'home-7' | 'home-8' | 'home-9' | 'home-10' | 'logo-wide' | 'logo' | 'parking-1' | 'parking-2' | 'parking-3' | 'parking-4' | 'schnitzel-tampura-box' | 'schnitzel-thin-box' | 'tabon-1' | 'tabon-2' | 'tabon-3' | 'tabon-4' | 'tabon-5' | 'tabon-6' | 'tabon-7' | 'tabon-8' | 'tabon-9' | 'tabon-10' | 'tabon-11' | 'tabon-12' | 'tray-agol-xl' | 'tray-boat' | 'tray-malben-large' | 'tray-meruba-large';
+export type PhotoKey = 'arichat-shulhan' | 'box-all-2-cuscus' | 'box-all-5-chicken' | 'box-all-5-mafrum' | 'box-all-salads' | 'box-all' | 'box-celebration-main-2-cuscus' | 'box-celebration-main-5-chicken' | 'box-celebration-main-5-mafrum' | 'box-celebration-main' | 'box-celebration-salads' | 'box-challah-1' | 'box-challah-2' | 'box-challah-3' | 'box-challah-4' | 'box-challah' | 'box-free' | 'box-shana-1' | 'box-shana-2' | 'cat-boxes' | 'cat-chef' | 'cat-couscous' | 'cat-fruit' | 'cat-schnitzel' | 'chef-1' | 'chef-2' | 'chef-3' | 'chef-4' | 'chef-5' | 'chef-6' | 'chef-7' | 'chef-8' | 'chef-9' | 'chef-10' | 'chef-11' | 'chef-12' | 'chef-13' | 'chef-14' | 'dish-couscous-chicken' | 'dish-couscous-mafroum' | 'dish-couscous-only-chicken' | 'dish-couscous-only-mafroum' | 'dish-couscous-only-veg' | 'dish-couscous-veg' | 'dish-schnitzel-tampura' | 'dish-schnitzel-thin' | 'drink-no-limit' | 'hagasha-ishit' | 'home-1' | 'home-2' | 'home-3' | 'home-4' | 'home-5' | 'home-6' | 'home-7' | 'home-8' | 'home-9' | 'home-10' | 'kinuhim-table' | 'logo-wide' | 'logo' | 'parking-1' | 'parking-2' | 'parking-3' | 'parking-4' | 'schnitzel-tampura-box' | 'schnitzel-thin-box' | 'tabon-1' | 'tabon-2' | 'tabon-3' | 'tabon-4' | 'tabon-5' | 'tabon-6' | 'tabon-7' | 'tabon-8' | 'tabon-9' | 'tabon-10' | 'tabon-11' | 'tabon-12' | 'tray-agol-xl' | 'tray-boat' | 'tray-malben-large' | 'tray-meruba-large';
 
 export const PHOTOS: Record<PhotoKey, ImageSourcePropType> = {
   'arichat-shulhan': require('../../assets/photos/arichat-shulhan.jpg'),
@@ -55,6 +55,8 @@ export const PHOTOS: Record<PhotoKey, ImageSourcePropType> = {
   'dish-couscous-veg': require('../../assets/photos/dish-couscous-veg.jpg'),
   'dish-schnitzel-tampura': require('../../assets/photos/dish-schnitzel-tampura.jpg'),
   'dish-schnitzel-thin': require('../../assets/photos/dish-schnitzel-thin.jpg'),
+  'drink-no-limit': require('../../assets/photos/drink-no-limit.png'),
+  'hagasha-ishit': require('../../assets/photos/hagasha-ishit.png'),
   'home-1': require('../../assets/photos/home-1.jpg'),
   'home-2': require('../../assets/photos/home-2.jpg'),
   'home-3': require('../../assets/photos/home-3.jpg'),
@@ -65,6 +67,7 @@ export const PHOTOS: Record<PhotoKey, ImageSourcePropType> = {
   'home-8': require('../../assets/photos/home-8.jpg'),
   'home-9': require('../../assets/photos/home-9.jpg'),
   'home-10': require('../../assets/photos/home-10.jpg'),
+  'kinuhim-table': require('../../assets/photos/kinuhim-table.png'),
   'logo-wide': require('../../assets/photos/logo-wide.jpg'),
   'logo': require('../../assets/photos/logo.png'),
   'parking-1': require('../../assets/photos/parking-1.jpg'),
@@ -101,10 +104,7 @@ export const CHEF_PHOTOS = ["chef-1","chef-2","chef-3","chef-4","chef-5","chef-6
 export const TABON_PHOTOS = ["tabon-1","tabon-2","tabon-3","tabon-4","tabon-5","tabon-6","tabon-7","tabon-8","tabon-9","tabon-10","tabon-11","tabon-12"] as const;
 export const PARKING_PHOTOS = ["parking-1","parking-2","parking-3","parking-4"] as const;
 
-/**
- * גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts.
- * שלוש תמונות מהשף עדיין חסרות · ראו MISSING_PHOTOS.
- */
+/** גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts. */
 export const BOX_PHOTOS: Record<string, string[]> = {
   "free": [
     "box-free"
@@ -141,15 +141,14 @@ export const BOX_PHOTOS: Record<string, string[]> = {
   ]
 };
 
-/** תמונות ששקד סימנה באדום · יגיעו בהמשך. המסך מציג מציין מקום. */
-export const MISSING_PHOTOS = [
-  'ממשותף לאישי',
-  'שולחן קינוחים מעוצב',
-  'חבילת שתייה ללא הגבלה',
-] as const;
+/**
+ * תמונות ששקד סימנה באדום · שלושתן הגיעו ב-14 בספטמבר
+ * (hagasha-ishit, kinuhim-table, drink-no-limit) ומופו
+ * ב-extraPhotos.ts. הרשימה נשארת ריקה לתמונה הבאה שתחסר.
+ */
+export const MISSING_PHOTOS: readonly string[] = [];
 
-export const isMissingPhoto = (name: string) =>
-  (MISSING_PHOTOS as readonly string[]).includes(name);
+export const isMissingPhoto = (name: string) => MISSING_PHOTOS.includes(name);
 
 /** מנות הקוסקוס · לפי סדר COUSCOUS_MENU */
 export const COUSCOUS_PHOTOS = [

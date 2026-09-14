@@ -72,21 +72,17 @@ export const CHEF_PHOTOS = ${JSON.stringify(groups.chef)} as const;
 export const TABON_PHOTOS = ${JSON.stringify(groups.tabon)} as const;
 export const PARKING_PHOTOS = ${JSON.stringify(groups.parking)} as const;
 
-/**
- * גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts.
- * שלוש תמונות מהשף עדיין חסרות · ראו MISSING_PHOTOS.
- */
+/** גלריית כל מארז ספיישל · לפי מפתח המארז ב-boxes.ts. */
 export const BOX_PHOTOS: Record<string, string[]> = ${JSON.stringify(boxPhotos, null, 2)};
 
-/** תמונות ששקד סימנה באדום · יגיעו בהמשך. המסך מציג מציין מקום. */
-export const MISSING_PHOTOS = [
-  'ממשותף לאישי',
-  'שולחן קינוחים מעוצב',
-  'חבילת שתייה ללא הגבלה',
-] as const;
+/**
+ * תמונות ששקד סימנה באדום · שלושתן הגיעו ב-14 בספטמבר
+ * (hagasha-ishit, kinuhim-table, drink-no-limit) ומופו
+ * ב-extraPhotos.ts. הרשימה נשארת ריקה לתמונה הבאה שתחסר.
+ */
+export const MISSING_PHOTOS: readonly string[] = [];
 
-export const isMissingPhoto = (name: string) =>
-  (MISSING_PHOTOS as readonly string[]).includes(name);
+export const isMissingPhoto = (name: string) => MISSING_PHOTOS.includes(name);
 
 /** מנות הקוסקוס · לפי סדר COUSCOUS_MENU */
 export const COUSCOUS_PHOTOS = [

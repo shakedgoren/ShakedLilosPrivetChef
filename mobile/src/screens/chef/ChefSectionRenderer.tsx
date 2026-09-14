@@ -1,14 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { ChefSection } from '../../data/chef';
-import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
-import { isMissingPhoto } from '../../data/photos';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
 import type { PastaPick } from './PastaPopup';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { OptionGrid } from '../../components/OptionGrid';
+import { ChefExtraCard } from '../../components/ChefExtraCard';
 
 const ACCENT = hues.chef;
 
@@ -56,6 +55,9 @@ const maxWidthFor = (s: ChefSection): number | undefined => {
 
 /** רוחב הרשת המוצרת בקנבס */
 const NARROW = 272;
+
+/** המרווח בין כרטיסי השדרוגים · `--g: 10px` בקנבס */
+const CARD_GAP = 10;
 
 const nameOf = (o: unknown) => (typeof o === 'string' ? o : (o as { n: string }).n);
 const descOf = (o: unknown) => (typeof o === 'string' ? undefined : (o as { d?: string }).d);
@@ -228,18 +230,41 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       );
     }
 
+    /* כרטיסי השדרוגים · תמונה עם מדרג, מחיר ותג · `isCards` בקנבס */
+    case 'cards': {
+      const opts = (s.options ?? []) as { n: string; d?: string; p?: string; add?: string }[];
+      const multi = !!s.multi;
+      const cur: string[] = multi ? api.picks[s.id] || [] : [];
+      const one = !!s.one;
+      return (
+        <OptionGrid cols={colsFor(s, opts.length)} gap={CARD_GAP}>
+          {opts.map((o) => (
+            <ChefExtraCard
+              key={o.n}
+              name={o.n}
+              desc={o.d}
+              /* `add` בקנבס · ״+X ש״ח ליח׳״, ואם אין — המחיר עצמו */
+              badge={o.add ? `+${o.add} ש״ח ליח׳` : o.p}
+              one={one}
+              on={multi ? cur.includes(o.n) : api.picks[s.id] === o.n}
+              onPress={() => (multi ? api.toggle(s.id, o.n, s.cap ?? null, s.note) : api.select(s.id, o.n))}
+            />
+          ))}
+        </OptionGrid>
+      );
+    }
+
     /* בחירה מרובה · עם מכסה או בלי */
     case 'multi':
     case 'multicap':
-    case 'sauces':
-    case 'cards': {
+    case 'sauces': {
       const opts: unknown[] = s.options ?? [];
       const cur: string[] = api.picks[s.id] || [];
 
       const cap = s.cap ?? null;
       /* ⚠ `multicap` ו-`sauces` הם `isRows` בקנבס · שורות ברוחב מלא,
          ולא גלולות ברוחב התוכן. ככה הסלטים, הפסטה והקינוחים יוצאים
-         ברוחב אחיד. `multi` הוא רשת עמודות, ו-`cards` כרטיס רחב. */
+         ברוחב אחיד. `multi` הוא רשת עמודות. */
       const asRows = s.kind !== 'multi';
 
       /**
@@ -257,7 +282,6 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
         const d = descOf(o);
         const mine = picked(n);
         const on = isSauce ? !!mine : cur.includes(n);
-        const missing = isMissingPhoto(n);
         /* ״פנה · רביולי גבינות • שדרוג״ · בדיוק `extra` בקנבס */
         const extra = mine
           ? [mine.shape, mine.up ? `${mine.up} • שדרוג` : ''].filter(Boolean).join(' · ')
@@ -266,19 +290,11 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
           <Pressable
             key={n}
             onPress={() => (isSauce ? api.pickSauce(s, n) : api.toggle(s.id, n, cap, s.note))}
-            style={[
-              st.grow,
-              asRows ? st.card : st.chip,
-              on && st.on,
-              missing && st.missingRow,
-            ]}
+            style={[st.grow, asRows ? st.card : st.chip, on && st.on]}
           >
-            {missing ? <Photo rgb={ACCENT.rgb} style={st.missingShot} /> : null}
-            <View style={missing ? st.grow : undefined}>
-              <Text style={[asRows ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
-              {d ? <Text style={st.cardDesc}>{d}</Text> : null}
-              {extra ? <Text style={st.extra}>{extra}</Text> : null}
-            </View>
+            <Text style={[asRows ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
+            {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+            {extra ? <Text style={st.extra}>{extra}</Text> : null}
           </Pressable>
         );
       };
@@ -429,6 +445,4 @@ const st = StyleSheet.create({
   on: { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) },
   onText: { color: ACCENT.deep, fontWeight: '600' },
   blocked: { opacity: 0.4 },
-  missingRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
-  missingShot: { width: 58, height: 58, borderRadius: radius.field, overflow: 'hidden' },
 });

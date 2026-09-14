@@ -29,3 +29,5 @@ mobile/public/canvas/
 # תוצרי אימות של Playwright — לא נכנסים לגיט
 .playwright-mcp/
 chef-main.png
+taboon-upgrades.png
+chef-upgrades.png
