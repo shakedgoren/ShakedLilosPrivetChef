@@ -10,6 +10,10 @@ import { HALO_BLUR, HALO_INSET } from '../theme/glass';
  * ארבע שכבות, בדיוק כמו בקנבס:
  * הילה מטושטשת מסביב · גוף הבועה עם שני גרדיאנטים רדיאליים ·
  * נקודת אור קטנה למעלה־שמאל · והאייקון במרכז.
+ *
+ * ⚠ `spark` מכבה את נקודת האור. בקנבס היא קיימת בשתי הבועות
+ * (`Guest.dc.html` שורות 160 ו-181), ושקד ביקשה להסיר אותה
+ * משורת הקטגוריות בלבד — שם היא נקראה כנקודה ולא כברק.
  */
 type Props = {
   /** שלישיית ה-rgb של גוון הקטגוריה */
@@ -21,13 +25,15 @@ type Props = {
   tint: number;
   /** עוצמת ההילה · 0 מכבה אותה */
   halo: number;
+  /** נקודת האור הקטנה למעלה־שמאל · ברירת המחדל היא כמו בקנבס */
+  spark?: boolean;
   children?: React.ReactNode;
 };
 
 let seq = 0;
 const nextId = () => `orb${(seq += 1)}`;
 
-export function Orb({ rgb, size, shadow, tint, halo, children }: Props) {
+export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: Props) {
   const id = React.useMemo(nextId, []);
   const r = size / 2;
 
@@ -75,20 +81,22 @@ export function Orb({ rgb, size, shadow, tint, halo, children }: Props) {
       </View>
 
       {/* נקודת האור · אליפסה קטנה ומטושטשת, המידות מהקנבס באחוזים */}
-      <View
-        pointerEvents="none"
-        style={[
-          styles.spark,
-          {
-            left: size * 0.26,
-            top: size * 0.16,
-            width: size * 0.23,
-            height: size * 0.17,
-            borderRadius: size * 0.12,
-            filter: 'blur(2.5px)',
-          },
-        ]}
-      />
+      {spark && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.spark,
+            {
+              left: size * 0.26,
+              top: size * 0.16,
+              width: size * 0.23,
+              height: size * 0.17,
+              borderRadius: size * 0.12,
+              filter: 'blur(2.5px)',
+            },
+          ]}
+        />
+      )}
 
       <View style={styles.center} pointerEvents="none">
         {children}
