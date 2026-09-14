@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CHEF_FULFILLMENT } from '../../data/chef';
 import { CategoryHeader } from '../../components/CategoryHeader';
@@ -49,7 +50,10 @@ export function ChefScreen() {
     return (
       <View style={s.page}>
         <CategoryHeader title={CHEF_MENU_TITLE} />
-        <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={[s.list, loggedIn && s.scrollPadNav]}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={s.intro}>
             <Text style={s.introTitle}>{INTRO_TITLE}</Text>
             <Text style={s.introBody}>{INTRO_BODY}</Text>
@@ -151,7 +155,7 @@ export function ChefScreen() {
         ))}
       </ScrollView>
 
-      <View style={s.bar}>
+      <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
           <Text style={s.total}>{o.total}</Text>
@@ -295,6 +299,10 @@ const s = StyleSheet.create({
   price: { fontSize: type.label, fontWeight: '600', color: ACCENT.deep },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
+  /* כשהנאב-בר מוצג השורה עולה מעליו · המיקום מהקנבס */
+  barWithNav: { marginBottom: BAR_BOTTOM_WITH_NAV },
+  /* אזור גלילה שנגמר בתחתית · חייב לפנות מקום לנאב */
+  scrollPadNav: { paddingBottom: SCROLL_PAD_NAV },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },
   total: { fontSize: 19, fontWeight: '600', color: surface.ink },

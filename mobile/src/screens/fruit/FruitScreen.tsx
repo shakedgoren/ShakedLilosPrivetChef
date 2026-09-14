@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
+import { useNav } from '../../navigation/store';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   BY_APPOINTMENT,
@@ -41,6 +43,8 @@ const ORDER_LABEL = 'להזמנה בוואטסאפ';
 
 /** מגשי פירות · בחירת מגשים ואז זרימת המסירה המשותפת */
 export function FruitScreen() {
+  /* אין כאן התחברות · המצב נדרש רק כדי לפנות מקום לנאב-בר */
+  const { loggedIn } = useNav();
   const [qty, setQty] = useState<number[]>(() => FRUIT_TRAYS.map(() => 0));
   /* רוחב הכרטיס נמדד · בקנבס הנוסחה היא (100% − רווח) ÷ 2, ול-RN אין calc */
   const [gridW, setGridW] = useState(0);
@@ -111,7 +115,7 @@ export function FruitScreen() {
         </View>
       </ScrollView>
 
-      <View style={s.bar}>
+      <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
           <Text style={s.total}>{total}</Text>
@@ -191,6 +195,8 @@ const s = StyleSheet.create({
   grow: { flex: 1, alignSelf: 'stretch' },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
+  /* כשהנאב-בר מוצג השורה עולה מעליו · המיקום מהקנבס */
+  barWithNav: { marginBottom: BAR_BOTTOM_WITH_NAV },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },
   total: { fontSize: 19, fontWeight: '600', color: surface.ink },

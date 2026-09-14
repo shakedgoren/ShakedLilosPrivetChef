@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Modal, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { FONTS } from './src/theme/fonts';
@@ -108,6 +108,22 @@ function Chrome() {
   return showAdmin ? <AdminNav /> : <BottomNav />;
 }
 
+/**
+ * שכבת ההתחברות · נפתחת מעל המסך הנוכחי מתוך חסם ההתחברות.
+ * ⚠ חייבת להיות שכבה ולא מסך · מעבר אמיתי מפרק את מסך ההזמנה
+ * ומאפס את הבחירות, בניגוד למה שהחסם מבטיח.
+ */
+function LoginOverlay() {
+  const { loginOverlay, closeLogin } = useNav();
+  if (!loginOverlay) return null;
+  return (
+    <Modal visible transparent={false} animationType="slide" onRequestClose={closeLogin}>
+      <PageWash />
+      <LoginScreen mode="in" />
+    </Modal>
+  );
+}
+
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
   /* הגופן מוחל פעם אחת · לפני הרינדור הראשון של טקסט כלשהו */
@@ -123,6 +139,7 @@ export default function App() {
           <Wash />
           <Router />
           <Chrome />
+          <LoginOverlay />
         </SafeAreaView>
       </LightboxProvider>
     </NavProvider>

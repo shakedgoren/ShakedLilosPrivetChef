@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   COCOTTES,
@@ -45,7 +46,7 @@ const MY_ORDER_LABEL = 'ההזמנה שלי';
 
 /** שישי של מטעמים · חלות בודדות או מארז, עם תוספות וקוקוטים */
 export function SchnitzelScreen() {
-  const { go, loggedIn } = useNav();
+  const { go, goLogin, loggedIn } = useNav();
   const o = useSchnitzelOrder();
   /* רוחב הכרטיס נמדד · הנוסחה בקנבס היא (100% − רווח) ÷ 2 */
   const [gridW, setGridW] = useState(0);
@@ -193,7 +194,7 @@ export function SchnitzelScreen() {
         ))}
       </ScrollView>
 
-      <View style={s.bar}>
+      <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
           <Text style={s.total}>{o.total}</Text>
@@ -234,7 +235,8 @@ export function SchnitzelScreen() {
         onCancel={() => setGate(false)}
         onLogin={() => {
           setGate(false);
-          go('login');
+          /* goLogin ולא go · כך ההתחברות מחזירה בדיוק לכאן */
+          goLogin();
         }}
       />
     </View>
@@ -350,6 +352,8 @@ const s = StyleSheet.create({
   remove: { fontSize: 14, color: '#B95349' },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
+  /* כשהנאב-בר מוצג השורה עולה מעליו · המיקום מהקנבס */
+  barWithNav: { marginBottom: BAR_BOTTOM_WITH_NAV },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },
   total: { fontSize: 19, fontWeight: '600', color: surface.ink },

@@ -28,7 +28,7 @@ import {
 
 /** מסך הכניסה וההרשמה · הטאב הפתוח נקבע לפי המסך שממנו הגענו */
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
-  const { go, signIn } = useNav();
+  const { go, signIn, closeLogin, loginOverlay } = useNav();
   const [tab, setTab] = useState<'in' | 'up'>(mode);
   /* טופס אחד לשני הטאבים · השדות מגיעים מהקנבס */
   const [form, setForm] = useState<Record<string, string>>({});
@@ -186,7 +186,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
       {err ? <Text style={s.err}>{err}</Text> : null}
 
-      <Pressable onPress={() => go('guest')}>
+      {/* בשכבה · סגירה מחזירה למסך שמאחוריה ולא לדף האורחת */}
+      <Pressable onPress={() => (loginOverlay ? closeLogin() : go('guest'))}>
         <Text style={s.link}>{GUEST_LABEL}</Text>
       </Pressable>
 

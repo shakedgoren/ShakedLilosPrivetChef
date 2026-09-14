@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { apiEnabled, API_URL } from '../../api/config';
 import { changePassword, updateMe } from '../../api/auth';
@@ -217,7 +218,10 @@ export function ProfileScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[s.body, s.scrollPadNav]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={s.hero}>
           <View style={s.avatar}>
             {avatarSrc ? (
@@ -410,6 +414,9 @@ function Field({
 }
 
 const s = StyleSheet.create({
+  /* ⚠ שני המסכים האלה מוצגים רק למשתמשת מחוברת, ולכן הריפוד
+     לנאב-בר קבוע ולא מותנה. בלעדיו התוכן האחרון נחתך מתחתיו. */
+  scrollPadNav: { paddingBottom: SCROLL_PAD_NAV },
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: space.xxl },
   head: {
     flexDirection: 'row',

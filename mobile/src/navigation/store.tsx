@@ -47,6 +47,12 @@ type Nav = {
   user: PublicUser | null;
   apiEnabled: boolean;
   go: (to: Screen) => void;
+  /** פתיחת ההתחברות כשכבה מעל המסך הנוכחי · המסך נשאר חי מאחוריה */
+  goLogin: () => void;
+  /** סגירת שכבת ההתחברות בלי להתחבר */
+  closeLogin: () => void;
+  /** האם שכבת ההתחברות פתוחה כרגע */
+  loginOverlay: boolean;
   back: () => void;
   signIn: (session?: Session) => void;
   signOut: () => void;
@@ -71,6 +77,14 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [stack, setStack] = useState<Screen[]>([]);
   const [loggedIn, setLoggedIn] = useState(false);
+  /**
+   * שכבת ההתחברות.
+   * ⚠ חסם ההתחברות מבטיח ״הבחירות שלך נשמרות · אחרי ההתחברות חוזרים
+   * בדיוק לכאן״. מעבר אמיתי למסך ההתחברות מפרק את מסך ההזמנה ומאפס
+   * את הבחירות — נמדד ב-14 בספטמבר: חזרנו לקוסקוס עם סל ריק.
+   * לכן ההתחברות נפתחת **מעל** המסך, והמסך נשאר מרונדר מאחוריה.
+   */
+  const [loginOverlay, setLoginOverlay] = useState(false);
   const [user, setUser] = useState<PublicUser | null>(null);
 
   useEffect(() => {
@@ -84,7 +98,8 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         if (!live) return;
         setUser(meUser);
         setLoggedIn(true);
-        setScreen((cur) => (cur === 'guest' || cur === 'login' || cur === 'signup' ? 'main' : cur));
+        const home = meUser.role === 'admin' ? 'admin' : 'main';
+        setScreen((cur) => (cur === 'guest' || cur === 'login' || cur === 'signup' ? home : cur));
       } catch {
         await tokenStore.clear();
       }
@@ -96,11 +111,15 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
 
   const go = useCallback(
     (to: Screen) => {
+      setLoginOverlay(false);
       setStack((s) => [...s, screen]);
       setScreen(to);
     },
     [screen],
   );
+
+  const goLogin = useCallback(() => setLoginOverlay(true), []);
+  const closeLogin = useCallback(() => setLoginOverlay(false), []);
 
   const back = useCallback(() => {
     setStack((s) => {
@@ -110,22 +129,37 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  /* התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה */
-  const signIn = useCallback((session?: Session) => {
-    if (session) {
-      setUser(session.user);
-      void tokenStore.set(session.token);
-    }
-    setLoggedIn(true);
-    setStack([]);
-    setScreen('main');
-  }, []);
+  /**
+   * התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה,
+   * **אלא אם** הגענו להתחברות מתוך הזמנה — אז חוזרים לאותו מסך.
+   */
+  const signIn = useCallback(
+    (session?: Session) => {
+      if (session) {
+        setUser(session.user);
+        void tokenStore.set(session.token);
+      }
+      setLoggedIn(true);
+      /* התחברות מתוך שכבה · המסך שמאחוריה נשאר בדיוק כפי שהיה */
+      if (loginOverlay && session?.user.role !== 'admin') {
+        setLoginOverlay(false);
+        return;
+      }
+      setLoginOverlay(false);
+      setStack([]);
+      /* ⚠ המנהלת נכנסת לניהול · הגישה לניהול היא רק דרך ההתחברות שלה
+         (החלטה 12), ולכן כניסה עם חשבון מנהלת לא נוחתת בבית של לקוחה. */
+      setScreen(session?.user.role === 'admin' ? 'admin' : 'main');
+    },
+    [loginOverlay],
+  );
 
   const signOut = useCallback(() => {
     setLoggedIn(false);
     setUser(null);
     void tokenStore.clear();
     setStack([]);
+    setLoginOverlay(false);
     setScreen('guest');
   }, []);
 
@@ -140,13 +174,16 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       user,
       apiEnabled,
       go,
+      goLogin,
+      closeLogin,
+      loginOverlay,
       back,
       signIn,
       signOut,
       setUser: applyUser,
       canBack: stack.length > 0,
     }),
-    [screen, loggedIn, user, go, back, signIn, signOut, applyUser, stack.length],
+    [screen, loggedIn, user, go, goLogin, closeLogin, loginOverlay, back, signIn, signOut, applyUser, stack.length],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

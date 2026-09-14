@@ -17,6 +17,8 @@ const LOOP_MS = 34000;
 
 /** עשר תמונות הבית · מגיעות מ-photos.ts, לא מוקלדות כאן */
 const SHOTS = HOME_PHOTOS;
+/** המרווח מתחת לרצועה · `margin-bottom: 40px` בקנבס */
+export const REEL_BOTTOM = 40;
 /* גוון המותג · הרצועה אינה שייכת לקטגוריה אחת */
 const REEL_RGB = '201,162,39';
 
@@ -100,7 +102,7 @@ export function PhotoReel() {
 }
 
 const s = StyleSheet.create({
-  reel: { width: '100%', marginTop: 10, marginBottom: 40, borderRadius: 18, overflow: 'hidden' },
+  reel: { width: '100%', marginTop: 10, marginBottom: REEL_BOTTOM, borderRadius: 18, overflow: 'hidden' },
   track: { flexDirection: 'row', gap: GAP },
   tile: {
     width: TILE_W,

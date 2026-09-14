@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { CARD, CategoryCard } from './CategoryCard';
+import { CategoryCard, CARD, DOT, DOT_OFF, type Dot } from './CategoryCard';
 import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
 import type { Category } from '../data/categories';
 
@@ -68,11 +68,27 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
     onSettle: glideTo,
   });
 
+  /* הנקודות זהות בכל הכרטיסים · מחושבות פעם אחת, בדיוק כמו בקנבס */
+  const dots: Dot[] = items.map((_, i) => ({
+    w: i === active ? DOT.wide : DOT.size,
+    bg: i === active ? items[active].hue : DOT_OFF,
+  }));
+
   return (
-    <View style={[s.window, SWIPE_SURFACE]}>
+    /* ⚠ box-none · לחלון יש ריפוד של GLOW_ROOM ומרג׳ין שלילי, ולכן
+       הוא מכסה את שורת המכירה שמעליו. בלי זה הוא בולע את הלחיצות
+       עליה — נמדד: אף נקודה בשורה לא הגיעה אליה. המחוות ממילא
+       יושבות על המסלול הפנימי, אז החלון עצמו לא צריך מגע. */
+    <View style={[s.window, SWIPE_SURFACE]} pointerEvents="box-none">
       <Animated.View {...pan.panHandlers} style={[s.track, { transform: [{ translateX: x }] }]}>
         {items.map((c, i) => (
-          <CategoryCard key={c.key} item={c} active={i === active} onPress={() => onOpen(c.key)} />
+          <CategoryCard
+            key={c.key}
+            item={c}
+            active={i === active}
+            dots={dots}
+            onPress={() => onOpen(c.key)}
+          />
         ))}
       </Animated.View>
     </View>

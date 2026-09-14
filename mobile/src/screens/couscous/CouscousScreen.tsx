@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COUSCOUS_FULFILLMENT, COUSCOUS_MENU } from '../../data/couscous';
 import { SALE_DATE } from '../../data/shared';
@@ -31,7 +32,7 @@ const ACCENT = hues.cous;
 
 /** שלישי של קוסקוס · בחירת מנות ואז זרימת המסירה המשותפת */
 export function CouscousScreen() {
-  const { go, loggedIn } = useNav();
+  const { go, goLogin, loggedIn } = useNav();
   const o = useCouscousOrder();
   const f = useFulfillment({ ...COUSCOUS_FULFILLMENT, meals: o.meals });
   const [gate, setGate] = useState(false);
@@ -92,7 +93,7 @@ export function CouscousScreen() {
         </View>
       </ScrollView>
 
-      <View style={s.bar}>
+      <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.mealsCount}>{mealsLabel(o.meals)}</Text>
           <Text style={s.totalLabel}>·</Text>
@@ -127,7 +128,8 @@ export function CouscousScreen() {
         onCancel={() => setGate(false)}
         onLogin={() => {
           setGate(false);
-          go('login');
+          /* goLogin ולא go · כך ההתחברות מחזירה בדיוק לכאן */
+          goLogin();
         }}
       />
     </View>
@@ -191,6 +193,8 @@ const s = StyleSheet.create({
   price: { fontSize: 13.5, fontWeight: '600', color: ACCENT.hue },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
+  /* כשהנאב-בר מוצג השורה עולה מעליו · המיקום מהקנבס */
+  barWithNav: { marginBottom: BAR_BOTTOM_WITH_NAV },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   mealsCount: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { listMyOrders, reorderOrder } from '../../api/orders';
 import { apiEnabled } from '../../api/config';
@@ -98,7 +99,10 @@ export function MyOrdersScreen() {
           </Pressable>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={[s.list, s.scrollPadNav]}
+          showsVerticalScrollIndicator={false}
+        >
           {err ? <Text style={s.err}>{err}</Text> : null}
           {live.map((o) => (
             <OrderCard
@@ -202,6 +206,9 @@ function OrderCard({
 }
 
 const s = StyleSheet.create({
+  /* ⚠ שני המסכים האלה מוצגים רק למשתמשת מחוברת, ולכן הריפוד
+     לנאב-בר קבוע ולא מותנה. בלעדיו התוכן האחרון נחתך מתחתיו. */
+  scrollPadNav: { paddingBottom: SCROLL_PAD_NAV },
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: space.xxl },
   head: {
     flexDirection: 'row',
