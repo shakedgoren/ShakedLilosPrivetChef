@@ -9,6 +9,8 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { OptionGrid } from '../../components/OptionGrid';
 import { ChefExtraCard } from '../../components/ChefExtraCard';
 import { ChefTierCard } from '../../components/ChefTierCard';
+import { DateCalendar } from '../../components/DateCalendar';
+import { dayPartOpen } from '../../data/calendar';
 
 const ACCENT = hues.chef;
 
@@ -134,15 +136,9 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       );
 
     case 'cal':
-      return (
-        <TextInput
-          value={api.picks[s.id] ?? ''}
-          onChangeText={(v) => api.setValue(s.id, v)}
-          placeholder="תאריך האירוע · למשל 12.9"
-          placeholderTextColor="#B3ABBD"
-          style={[st.field, st.oneLine]}
-        />
-      );
+      /* ⚠ היה שדה טקסט חופשי · הקנבס מגדיר לוח שנה מלא, והוא פשוט
+         לא הועבר לאפליקציה. עכשיו הוא כאן, עם הימים החסומים באפור. */
+      return <DateCalendar value={api.picks[s.id]} onPick={(k) => api.setValue(s.id, k)} />;
 
     case 'pairtext':
       return (
@@ -226,6 +222,12 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
        * הסגנונות הזמינים תלויים בציר · בשרי פותח את כולם.
        */
       const allowed = s.id === 'style' ? api.stylesFor(api.picks.concept) : null;
+      /**
+       * ⚠ **חסימה לפי התאריך** · שקד ביקשה ״שישי ערב חסום, שבת בוקר
+       * וצהריים חסומים״. זו חסימה ברמת חלק היום ולא ברמת היום, ולכן
+       * שבת נשארת פתוחה בלוח והחסימה יורדת לכאן.
+       */
+      const byDate = s.id === 'daypart' ? (n: string) => !dayPartOpen(api.picks.date, n) : null;
       const boxy = s.kind !== 'pair';
       return (
         <OptionGrid cols={colsFor(s, opts.length)} maxWidth={maxWidthFor(s)}>
@@ -233,7 +235,8 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
             const n = nameOf(o);
             const d = descOf(o);
             const on = api.picks[s.id] === n;
-            const off = locked || (allowed != null && !allowed.includes(n));
+            const off =
+              locked || (allowed != null && !allowed.includes(n)) || (byDate != null && byDate(n));
             return (
               <Pressable
                 key={n}

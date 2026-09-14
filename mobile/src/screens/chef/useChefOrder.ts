@@ -10,6 +10,7 @@ import {
 } from '../../data/chef';
 import type { OrderLine } from '../../order/types';
 import type { PastaPick } from './PastaPopup';
+import { dayPartOpen } from '../../data/calendar';
 
 export type Picks = Record<string, any>;
 
@@ -183,7 +184,15 @@ export function useChefOrder() {
   }, [pasta, seen]);
 
   const setValue = useCallback((id: string, value: unknown) => {
-    setPicks((p) => ({ ...p, [id]: value }));
+    setPicks((p) => {
+      const next = { ...p, [id]: value };
+      /* ⚠ שינוי תאריך מאפס חלק יום שנחסם · בלי זה אפשר היה להישאר
+         עם ״ערב״ מסומן אחרי מעבר לשישי, והוא אפור אבל עדיין נבחר */
+      if (id === 'date' && next.daypart && !dayPartOpen(String(value), next.daypart)) {
+        delete next.daypart;
+      }
+      return next;
+    });
   }, []);
 
   const pageReady = useMemo(
