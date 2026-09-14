@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import type { ChefSection } from '../../data/chef';
+import { TIER_LINES, tierPrices, type ChefSection } from '../../data/chef';
 import { Stepper } from '../../components/Stepper';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
@@ -8,6 +8,7 @@ import type { PastaPick } from './PastaPopup';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { OptionGrid } from '../../components/OptionGrid';
 import { ChefExtraCard } from '../../components/ChefExtraCard';
+import { ChefTierCard } from '../../components/ChefTierCard';
 
 const ACCENT = hues.chef;
 
@@ -189,40 +190,74 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       );
     }
 
-    /* בחירה יחידה · הסגנונות מסתננים לפי הציר שנבחר */
-    case 'grid':
-    case 'tiers':
-    case 'pair': {
-      let opts: unknown[] = s.options ?? [];
-      /* הסגנונות הזמינים תלויים בציר · בשרי פותח את כולם */
-      if (s.id === 'style') {
-        const allowed = api.stylesFor(api.picks.concept);
-        opts = opts.filter((o) => allowed.includes(nameOf(o)));
-      }
-      /* סעיף נעול · נפתח רק אחרי שהבחירה שהוא תלוי בה נעשתה */
+    /* שלוש הדרגות · כל כרטיס מציג את המחיר לסועד שלו */
+    case 'tiers': {
+      const opts = (s.options ?? []) as string[];
+      /* ⚠ נעול ולא מוסתר · הכרטיסים נשארים על המסך באפור, כמו בקנבס */
       const locked = !!s.lock && !api.picks[s.lock];
+      const prices = tierPrices(api.picks);
+      return (
+        <OptionGrid cols={colsFor(s, opts.length)} maxWidth={maxWidthFor(s)}>
+          {opts.map((n, k) => (
+            <ChefTierCard
+              key={n}
+              name={n}
+              lines={TIER_LINES[k] ?? []}
+              price={prices[k] ?? null}
+              on={api.picks[s.id] === n}
+              locked={locked}
+              onPress={() => api.select(s.id, n)}
+            />
+          ))}
+        </OptionGrid>
+      );
+    }
+
+    /* בחירה יחידה · הסגנונות שאינם זמינים נשארים על המסך, באפור */
+    case 'grid':
+    case 'pair': {
+      const opts: unknown[] = s.options ?? [];
+      /* סעיף נעול · עוד לא נבחרה הבחירה שהוא תלוי בה */
+      const locked = !!s.lock && !api.picks[s.lock];
+      /**
+       * ⚠ **אין סינון** · הגרסה הקודמת השמיטה סגנונות שאינם זמינים,
+       * ושקד ביקשה שכולם יישארו על המסך. בקנבס האפשרות שאינה זמינה
+       * מקבלת רקע, מסגרת וטקסט אפורים ואטימות 0.55 — ולא נעלמת.
+       * הסגנונות הזמינים תלויים בציר · בשרי פותח את כולם.
+       */
+      const allowed = s.id === 'style' ? api.stylesFor(api.picks.concept) : null;
       const boxy = s.kind !== 'pair';
       return (
-        <OptionGrid
-          cols={colsFor(s, opts.length)}
-          maxWidth={maxWidthFor(s)}
-          style={locked ? st.blocked : undefined}
-          /* ⚠ הנעילה על העוטף · `box-none` היה מעביר את המגע לילדים */
-          pointerEvents={locked ? 'none' : 'auto'}
-        >
+        <OptionGrid cols={colsFor(s, opts.length)} maxWidth={maxWidthFor(s)}>
           {opts.map((o) => {
             const n = nameOf(o);
             const d = descOf(o);
             const on = api.picks[s.id] === n;
+            const off = locked || (allowed != null && !allowed.includes(n));
             return (
               <Pressable
                 key={n}
-                onPress={() => api.select(s.id, n)}
+                onPress={off ? undefined : () => api.select(s.id, n)}
+                disabled={off}
                 /* `grow` מותח את הכרטיס לרוחב שהרשת קבעה ולגובה השכן */
-                style={[st.grow, boxy ? st.chip : st.card, s.boxy && st.boxy, on && st.on]}
+                style={[
+                  st.grow,
+                  boxy ? st.chip : st.card,
+                  s.boxy && st.boxy,
+                  on && !off && st.on,
+                  off && st.off,
+                ]}
               >
-                <Text style={[boxy ? st.chipText : st.cardName, on && st.onText]}>{n}</Text>
-                {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+                <Text
+                  style={[
+                    boxy ? st.chipText : st.cardName,
+                    on && !off && st.onText,
+                    off && st.offText,
+                  ]}
+                >
+                  {n}
+                </Text>
+                {d ? <Text style={[st.cardDesc, off && st.offText]}>{d}</Text> : null}
               </Pressable>
             );
           })}
@@ -444,5 +479,14 @@ const st = StyleSheet.create({
 
   on: { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) },
   onText: { color: ACCENT.deep, fontWeight: '600' },
-  blocked: { opacity: 0.4 },
+  /**
+   * אפשרות שאינה זמינה · הערכים מהקנבס: רקע, מסגרת וטקסט אפורים
+   * ואטימות 0.55. ⚠ החליף את `blocked` שהחשיך את כל הרשת ב-0.4.
+   */
+  off: {
+    backgroundColor: 'rgba(130,112,162,0.05)',
+    borderColor: 'rgba(130,112,162,0.12)',
+    opacity: 0.55,
+  },
+  offText: { color: '#BDB7C6', fontWeight: '400' },
 });

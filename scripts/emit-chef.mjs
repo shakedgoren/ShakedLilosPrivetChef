@@ -70,6 +70,16 @@ export const CHEF_FULFILLMENT = {
 
 const bracketOf = (g: number) => (g <= 4 ? '2-4' : g <= 11 ? '5-11' : '12-16');
 
+/**
+ * המחיר לסועד בכל אחת משלוש הדרגות · null כשהציר עוד לא נבחר,
+ * ואז הקנבס מציג ״—״. נדרש כדי שכל כרטיס דרגה יציג את מחירו.
+ */
+export function tierPrices(picks: Record<string, any>): (number | null)[] {
+  const fam = CONCEPT_FAM[picks.concept];
+  if (!fam) return TIERS.map(() => null);
+  return CHEF_PRICES[fam][bracketOf(picks.guests || 2)];
+}
+
 /** מחיר לסועד בארוחת שף · לפי ציר, מספר סועדים ומסלול */
 export function chefPerGuest(picks: Record<string, any>): number {
   const fam = CONCEPT_FAM[picks.concept];
