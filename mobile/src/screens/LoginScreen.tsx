@@ -7,6 +7,7 @@ import { forgotPassword, googleStub, login, register } from '../api/auth';
 import { authError, COPY } from '../api/copy';
 import { ApiError } from '../api/types';
 import { Photo } from '../components/Photo';
+import { EyeToggle } from '../components/EyeToggle';
 import {
   BRAND,
   BRAND_SUB,
@@ -39,6 +40,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  /* ⚠ לא מהקנבס · שקד ביקשה מתג ״הצג סיסמה״ בשורת הסיסמה */
+  const [showPass, setShowPass] = useState(false);
 
   const isIn = tab === 'in';
   /* כל שדה חייב להתמלא · ובהרשמה גם אימות הסיסמה חייב להתאים */
@@ -140,21 +143,34 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         <View style={s.orLine} />
       </View>
 
-      {fields.map((f) => (
-        <View key={f.id} style={s.fieldBlock}>
-          <Text style={s.fieldLabel}>{f.label}</Text>
-          <TextInput
-            value={form[f.id] ?? ''}
-            onChangeText={(v) => setField(f.id, v)}
-            placeholder={f.placeholder}
-            placeholderTextColor="#B3ABBD"
-            secureTextEntry={f.type === 'password'}
-            keyboardType={f.type === 'tel' ? 'phone-pad' : f.type === 'email' ? 'email-address' : 'default'}
-            autoCapitalize="none"
-            style={s.field}
-          />
-        </View>
-      ))}
+      {fields.map((f) => {
+        const isPass = f.type === 'password';
+        return (
+          <View key={f.id} style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>{f.label}</Text>
+            <View>
+              <TextInput
+                value={form[f.id] ?? ''}
+                onChangeText={(v) => setField(f.id, v)}
+                placeholder={f.placeholder}
+                placeholderTextColor="#B3ABBD"
+                secureTextEntry={isPass && !showPass}
+                keyboardType={
+                  f.type === 'tel' ? 'phone-pad' : f.type === 'email' ? 'email-address' : 'default'
+                }
+                autoCapitalize="none"
+                style={[s.field, isPass && s.fieldWithEye]}
+              />
+              {/* ⚠ לא מהקנבס · המתג יושב בקצה השמאלי של השורה, כבקשת שקד */}
+              {isPass ? (
+                <View style={s.eye}>
+                  <EyeToggle shown={showPass} onToggle={() => setShowPass((v) => !v)} />
+                </View>
+              ) : null}
+            </View>
+          </View>
+        );
+      })}
 
       {isIn ? (
         <Pressable onPress={onForgot} style={s.forgotWrap}>
@@ -213,6 +229,9 @@ const s = StyleSheet.create({
   orLine: { flex: 1, height: 1, backgroundColor: 'rgba(130,112,162,0.16)' },
   orText: { fontSize: 12, color: surface.faint },
   fieldBlock: { gap: 5, marginBottom: 12 },
+  /* מפנה מקום למתג העין כדי שהטקסט לא ייכנס מתחתיו */
+  fieldWithEye: { paddingLeft: 42 },
+  eye: { position: 'absolute', left: 11, top: 0, bottom: 0, justifyContent: 'center' },
   fieldLabel: { fontSize: 11.5, fontWeight: '500', color: surface.faint },
   forgotWrap: { alignSelf: 'flex-start' },
   grow: { flex: 1 },
