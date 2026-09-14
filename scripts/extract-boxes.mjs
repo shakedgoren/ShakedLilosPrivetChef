@@ -7,6 +7,6 @@ const mod = head + '\nexport { BOXES, SALADS, COATS, CAKES, WINES, MAINS, EVENTS
 const m = await import('data:text/javascript;base64,' + Buffer.from(mod).toString('base64'));
 const out = {};
 for (const k of Object.keys(m)) out[k] = m[k];
-fs.writeFileSync('/private/tmp/claude-501/-Users-shakedgoren-Downloads-files/5277944c-663e-4ec8-97a6-1bc89cfdb41a/scratchpad/boxes.json', JSON.stringify(out, null, 2));
+fs.writeFileSync('/private/tmp/claude-501/-Users-shakedgoren-Downloads-files/366d8caa-e13d-4300-9bf7-7599d0accc10/scratchpad/boxes.json', JSON.stringify(out, null, 2));
 console.log('מארזים:', m.BOXES.length, '· סלטים:', m.SALADS.length, '· אירועים:', m.EVENTS.length);
 console.log('סוגי סעיפים:', [...new Set(m.BOXES.flatMap(b=>b.sections.map(s=>s.kind)))].join(', '));
