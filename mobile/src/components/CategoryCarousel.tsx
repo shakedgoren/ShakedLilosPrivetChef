@@ -30,9 +30,11 @@ const GLOW_ROOM = 46;
  * ⚠ לא מהקנבס · שקד ביקשה לצמצם את הרווח מעל הכרטיס (מהכיתוב
  * ״אוכל ביתי · ארוחות שף · עמדת טאבון״) ומתחתיו (לשורת הקטגוריות).
  * הריפוד של GLOW_ROOM נשאר כדי שהצל וההילה לא ייחתכו, והמרווח
- * הנראה מצטמצם במרג׳ין שלילי. נמדד: 58→44 מעל, 46→32 מתחת.
+ * הנראה מצטמצם במרג׳ין שלילי.
+ * נמדד: מעל 58→44→32, מתחת 46→32.
  */
-const TIGHTEN = 14;
+const TIGHTEN_TOP = 26;
+const TIGHTEN_BOTTOM = 14;
 
 type Props = {
   items: Category[];
@@ -81,7 +83,8 @@ const s = StyleSheet.create({
   /* החלון גולש אל מחוץ לריפוד הדף · כמו margin שלילי בקנבס */
   window: {
     marginHorizontal: -18,
-    marginVertical: -TIGHTEN,
+    marginTop: -TIGHTEN_TOP,
+    marginBottom: -TIGHTEN_BOTTOM,
     paddingHorizontal: 18,
     paddingVertical: GLOW_ROOM,
   },

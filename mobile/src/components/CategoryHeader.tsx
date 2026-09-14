@@ -13,8 +13,17 @@ import { useNav } from '../navigation/store';
  * ירד ב-58 פיקסלים מתחת למקום שלו. עכשיו היא מרחפת כמו בקנבס,
  * וכל חמשת המסכים עלו יחד.
  */
-export function CategoryHeader({ title, date }: { title: string; date?: string }) {
+/**
+ * `date` מקבל גם מערך · מסך הפירות מציג שם שתי שורות במקום תאריך
+ * אחד, כדי ששורות הפעילות יישבו בדיוק במקום של ״שלישי · 25 באוגוסט״
+ * במסך הקוסקוס. בקשה מפורשת של שקד.
+ */
+type Props = { title: string; date?: string | readonly string[] };
+
+export function CategoryHeader({ title, date }: Props) {
   const { back } = useNav();
+  const dateLines = date === undefined ? [] : typeof date === 'string' ? [date] : date;
+
   return (
     <>
       <Pressable onPress={back} style={s.back} hitSlop={8}>
@@ -22,7 +31,11 @@ export function CategoryHeader({ title, date }: { title: string; date?: string }
       </Pressable>
       <View style={s.head}>
         <Text style={s.title}>{title}</Text>
-        {date ? <Text style={s.date}>{date}</Text> : null}
+        {dateLines.map((line) => (
+          <Text key={line} style={s.date}>
+            {line}
+          </Text>
+        ))}
       </View>
     </>
   );

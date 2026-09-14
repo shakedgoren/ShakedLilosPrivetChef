@@ -25,6 +25,15 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.fruit;
 
+/**
+ * תחילת אזור הגלילה.
+ * ⚠ 105 ולא 88 כמו בשאר המסכים · במסך הקוסקוס יש שורת תאריך אחת
+ * מתחת לכותרת, וכאן יש שתי שורות פעילות. נמדד בדפדפן: שם התיאור
+ * מתחיל 14 פיקסלים אחרי שורת התאריך (74→88); כאן השורה השנייה
+ * נגמרת ב-91, ולכן 91+14=105. ב-88 התיאור חפף את שורת הפעילות.
+ */
+const FRUIT_SCROLL_TOP = 105;
+
 /** אייקון הטלפון לצד המספר · 13 פיקסלים, כמו שאר האייקונים הקטנים */
 const PHONE_GLYPH = 13;
 /* נוסח שכתב Claude · ✅ שקד אישרה אותו ב-11 בספטמבר 2026 · אין לשנות */
@@ -60,12 +69,12 @@ export function FruitScreen() {
 
   return (
     <View style={s.page}>
-      <CategoryHeader title={FRUIT_TITLE} />
+      {/* ⚠ שורות הפעילות עברו אל תוך גוש הכותרת · שקד ביקשה שיישבו
+          בדיוק במקום של ״שלישי · 25 באוגוסט״ במסך הקוסקוס, ושגוש
+          התיאור יתחיל באותו גובה כמו התיאור שם. */}
+      <CategoryHeader title={FRUIT_TITLE} date={[FRUIT_HOURS, BY_APPOINTMENT]} />
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
-        <Text style={s.hours}>{FRUIT_HOURS}</Text>
-        <Text style={s.hours}>{BY_APPOINTMENT}</Text>
-
         <Text style={s.introTitle}>{INTRO_TITLE}</Text>
         <Text style={s.introBody}>{INTRO_BODY}</Text>
         <Text style={s.disclaimer}>{DISCLAIMER}</Text>
@@ -121,15 +130,15 @@ export function FruitScreen() {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
-  list: { paddingVertical: space.lg, gap: 6 },
-  hours: { fontSize: 12, color: '#7A7080', textAlign: 'center' },
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: FRUIT_SCROLL_TOP },
+  /* ⚠ היה paddingVertical · הריפוד העליון דחף את התיאור 18 פיקסלים
+     מתחת למקום שלו בקוסקוס. */
+  list: { paddingBottom: space.lg, gap: 6 },
 
   introTitle: {
     fontSize: 15,
     fontWeight: '600',
     color: surface.ink,
-    marginTop: 10,
     lineHeight: 20,
     textAlign: 'center',
   },
