@@ -40,6 +40,8 @@ const GIFT_GLYPH = 19;
 /* נוסח שכתב Claude (אין כותרת לגוש בקנבס) · ✅ שקד אישרה ב-11 בספטמבר 2026 · אין לשנות */
 const PICK_FORM_LABEL = 'בחירת צורה';
 const PICK_BOX_LABEL = 'בחירת מארז';
+/** כותרת גוש ההזמנה · שקד כתבה את הנוסח · מוצגת רק כשיש מה להציג */
+const MY_ORDER_LABEL = 'ההזמנה שלי';
 
 /** שישי של מטעמים · חלות בודדות או מארז, עם תוספות וקוקוטים */
 export function SchnitzelScreen() {
@@ -85,6 +87,7 @@ export function SchnitzelScreen() {
 
         {o.isUnit ? (
           <>
+            {o.basket.length > 0 && <Text style={s.sectionTitle}>{MY_ORDER_LABEL}</Text>}
             {o.basket.map((b, i) => (
               <View key={`${b.type}-${i}`} style={s.row}>
                 <Photo name={SCHNITZEL_UNIT_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
@@ -122,26 +125,9 @@ export function SchnitzelScreen() {
           </>
         ) : (
           <>
-            {/* צורת המארז · SCHNITZEL_FORMS בקנבס · קדם לבחירת המארז */}
-            <Text style={s.sectionTitle}>{PICK_FORM_LABEL}</Text>
-            <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
-              {SCHNITZEL_FORMS.map((name, k) => {
-                const on = o.form === k;
-                const Glyph = k === 0 ? PlatterSingles : PlatterFamily;
-                return (
-                  <Pressable
-                    key={name}
-                    onPress={() => o.setForm(k)}
-                    style={[s.formCard, { width: typeCardW }, on ? s.pickOn : s.pickOff]}
-                  >
-                    <Glyph size={FORM_CARD.glyph} color={on ? ACCENT.deep : '#8A8194'} strokeWidth={1.6} />
-                    <Text style={[s.formName, on && s.pickedText]}>{name}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* המארזים שנבחרו · שורה לכל מארז, בדיוק כמו החלות הבודדות */}
+            {/* ⚠ שקד ביקשה שהמארזים שנבחרו יופיעו מעל ״בחירת צורה״ · בקנבס
+                הם יושבים מתחתיה. שורה לכל מארז, בדיוק כמו החלות הבודדות. */}
+            {o.boxes.length > 0 && <Text style={s.sectionTitle}>{MY_ORDER_LABEL}</Text>}
             {o.boxes.map((b, i) => (
               <View key={`${b.type}-${i}`} style={s.row}>
                 <Photo name={SCHNITZEL_BOX_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
@@ -160,6 +146,25 @@ export function SchnitzelScreen() {
                 </Pressable>
               </View>
             ))}
+
+            {/* צורת המארז · SCHNITZEL_FORMS בקנבס · קדם לבחירת המארז */}
+            <Text style={s.sectionTitle}>{PICK_FORM_LABEL}</Text>
+            <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
+              {SCHNITZEL_FORMS.map((name, k) => {
+                const on = o.form === k;
+                const Glyph = k === 0 ? PlatterSingles : PlatterFamily;
+                return (
+                  <Pressable
+                    key={name}
+                    onPress={() => o.setForm(k)}
+                    style={[s.formCard, { width: typeCardW }, on ? s.pickOn : s.pickOff]}
+                  >
+                    <Glyph size={FORM_CARD.glyph} color={on ? ACCENT.deep : '#8A8194'} strokeWidth={1.6} />
+                    <Text style={[s.formName, on && s.pickedText]}>{name}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
 
             {/* בחירת מארז · אותו כרטיס בדיוק של ״בחר סוג חלה״ */}
             <Text style={s.sectionTitle}>{PICK_BOX_LABEL}</Text>
@@ -294,7 +299,8 @@ const s = StyleSheet.create({
     overflow: 'hidden',
   },
   typeName: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center', color: surface.ink },
-  typePrice: { fontSize: 13, fontWeight: '600', color: ACCENT.deep },
+  /* ⚠ שקד ביקשה שהמחירים יובלטו · המשקל עלה מ-600 ל-700 */
+  typePrice: { fontSize: 13, fontWeight: '700', color: ACCENT.deep },
 
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   modes: {
@@ -338,7 +344,8 @@ const s = StyleSheet.create({
   rowText: { flex: 1, gap: 2 },
   name: { fontSize: 15, fontWeight: '500', color: surface.ink },
   tops: { fontSize: 12, color: surface.muted },
-  price: { fontSize: type.label, color: surface.muted },
+  /* ⚠ שקד ביקשה שהמחירים יובלטו · היה ללא משקל ובגוון מעומעם */
+  price: { fontSize: type.label, fontWeight: '700', color: surface.ink },
   action: { fontSize: 12.5, fontWeight: '600', color: ACCENT.deep },
   remove: { fontSize: 14, color: '#B95349' },
 

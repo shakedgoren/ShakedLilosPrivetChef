@@ -11,9 +11,10 @@ import { HALO_BLUR, HALO_INSET } from '../theme/glass';
  * הילה מטושטשת מסביב · גוף הבועה עם שני גרדיאנטים רדיאליים ·
  * נקודת אור קטנה למעלה־שמאל · והאייקון במרכז.
  *
- * ⚠ `spark` מכבה את נקודת האור. בקנבס היא קיימת בשתי הבועות
- * (`Guest.dc.html` שורות 160 ו-181), ושקד ביקשה להסיר אותה
- * משורת הקטגוריות בלבד — שם היא נקראה כנקודה ולא כברק.
+ * ⚠ `spark` מכבה את **שתי** שכבות האור — גם גרדיאנט הברק שעל גוף
+ * הבועה וגם האליפסה שמעליו. שקד ביקשה להסיר אותן משורת הקטגוריות
+ * בלבד. בקנבס שתיהן קיימות (`Guest.dc.html` שורות 160 ו-181);
+ * הגרדיאנט הוא זה שנקרא על המסך כ״נקודה״.
  */
 type Props = {
   /** שלישיית ה-rgb של גוון הקטגוריה */
@@ -69,14 +70,16 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
               <Stop offset="0.4" stopColor={a(rgb, tint * 0.27)} />
               <Stop offset="1" stopColor={a(rgb, tint)} />
             </RadialGradient>
-            {/* הברק העליון · דועך במהירות */}
-            <RadialGradient id={`${id}s`} cx="30%" cy="22%" r="30%">
-              <Stop offset="0" stopColor="rgba(255,255,255,0.96)" />
-              <Stop offset="1" stopColor="rgba(255,255,255,0)" />
-            </RadialGradient>
+            {/* הברק העליון · דועך במהירות · זו ״הנקודה״ שנראית על הבועה */}
+            {spark && (
+              <RadialGradient id={`${id}s`} cx="30%" cy="22%" r="30%">
+                <Stop offset="0" stopColor="rgba(255,255,255,0.96)" />
+                <Stop offset="1" stopColor="rgba(255,255,255,0)" />
+              </RadialGradient>
+            )}
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" rx={r} fill={`url(#${id}b)`} />
-          <Rect x="0" y="0" width="100%" height="100%" rx={r} fill={`url(#${id}s)`} />
+          {spark && <Rect x="0" y="0" width="100%" height="100%" rx={r} fill={`url(#${id}s)`} />}
         </Svg>
       </View>
 

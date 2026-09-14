@@ -26,6 +26,13 @@ const GLIDE_MS = 560;
  * וההילה 40px. בלי הריפוד הזה הם נחתכים בקצה הרכיב.
  */
 const GLOW_ROOM = 46;
+/**
+ * ⚠ לא מהקנבס · שקד ביקשה לצמצם את הרווח מעל הכרטיס (מהכיתוב
+ * ״אוכל ביתי · ארוחות שף · עמדת טאבון״) ומתחתיו (לשורת הקטגוריות).
+ * הריפוד של GLOW_ROOM נשאר כדי שהצל וההילה לא ייחתכו, והמרווח
+ * הנראה מצטמצם במרג׳ין שלילי. נמדד: 58→44 מעל, 46→32 מתחת.
+ */
+const TIGHTEN = 14;
 
 type Props = {
   items: Category[];
@@ -74,6 +81,7 @@ const s = StyleSheet.create({
   /* החלון גולש אל מחוץ לריפוד הדף · כמו margin שלילי בקנבס */
   window: {
     marginHorizontal: -18,
+    marginVertical: -TIGHTEN,
     paddingHorizontal: 18,
     paddingVertical: GLOW_ROOM,
   },

@@ -86,9 +86,12 @@ export const TILE_SHADOW =
  * עדין, ולכן ההילה בנויה באותה שפה של הבועות — סגול המותג, מטושטש.
  */
 export const CTA_GLOW_RGB = '118,92,174';
-export const CTA_GLOW_SPREAD = 30;
-export const CTA_GLOW_BLUR = 18;
+export const CTA_GLOW_SPREAD = 42;
+export const CTA_GLOW_BLUR = 24;
 
-/** עוצמת ההילה · שקד ביקשה עוד זוהר מעבר לגרסה הראשונה (11 בספטמבר). */
-export const CTA_GLOW_CORE_ALPHA = 0.68;
-export const CTA_GLOW_MID_ALPHA = 0.3;
+/**
+ * עוצמת ההילה · שקד ביקשה עוד זוהר פעמיים:
+ * 11 בספטמבר 0.5→0.68, ו-14 בספטמבר 0.68→0.82.
+ */
+export const CTA_GLOW_CORE_ALPHA = 0.82;
+export const CTA_GLOW_MID_ALPHA = 0.42;
