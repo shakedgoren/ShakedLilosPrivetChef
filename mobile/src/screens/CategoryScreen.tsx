@@ -5,6 +5,7 @@ import { a, radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import type { CategoryKey } from '../theme/tokens';
 import { ChevronRight } from '../icons';
+import { ContinueButton } from '../components/ContinueButton';
 
 /**
  * שלד מסך הקטגוריה · הכותרת, החזרה וחסם ההתחברות עובדים.
@@ -45,9 +46,7 @@ export function CategoryScreen({ categoryKey }: { categoryKey: CategoryKey }) {
         </Text>
       </View>
 
-      <Pressable onPress={onContinue} style={[s.cta, { backgroundColor: a(cat.rgb, 0.5) }]}>
-        <Text style={[s.ctaText, { color: cat.deep }]}>המשך</Text>
-      </Pressable>
+      <ContinueButton onPress={onContinue} accent={cat} style={s.ctaPlace} />
 
       <Modal visible={gate} transparent animationType="fade" onRequestClose={() => setGate(false)}>
         <Pressable style={s.scrim} onPress={() => setGate(false)}>
@@ -103,15 +102,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   stubText: { fontSize: type.label, textAlign: 'center' },
-  cta: {
-    marginTop: 'auto',
-    marginBottom: 40,
-    height: 52,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ctaText: { fontSize: 16, fontWeight: '600' },
+  /* מיקום בלבד · הכפתור נדחף לתחתית המסך, כמו קודם */
+  ctaPlace: { marginTop: 'auto', marginBottom: 40, alignSelf: 'center' },
 
   scrim: { flex: 1, backgroundColor: 'rgba(42,36,48,0.34)', justifyContent: 'center', padding: 30 },
   sheet: { borderRadius: radius.card, padding: 22, backgroundColor: '#FEFCFB', alignItems: 'center', gap: 8 },

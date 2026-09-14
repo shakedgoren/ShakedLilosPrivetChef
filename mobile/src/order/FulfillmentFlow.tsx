@@ -11,6 +11,7 @@ import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
 import { Bag, ChevronLeft, Close, Truck } from '../icons';
 import { TILE_SHADOW } from '../theme/glass';
+import { ContinueButton } from '../components/ContinueButton';
 
 /* מידות שורות המסירה · מהקנבס · האיסוף בגוון הקטגוריה, המשלוח אפור */
 const OPTION_ICON = 21;
@@ -157,9 +158,7 @@ function ClockStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
         />
         <Text style={s.hint}>בין {hhmm(f.cfg.pickupFrom)} ל־{hhmm(f.cfg.pickupTo)}</Text>
       </View>
-      <Pressable onPress={f.clockNext} style={[s.cta, { backgroundColor: a(accent.rgb, 0.5) }]}>
-        <Text style={[s.ctaText, { color: accent.deep }]}>המשך</Text>
-      </Pressable>
+      <ContinueButton onPress={f.clockNext} accent={accent} />
     </View>
   );
 }
@@ -203,13 +202,7 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
         style={s.field}
       />
 
-      <Pressable
-        onPress={f.addressNext}
-        disabled={!f.addressOk}
-        style={[s.cta, { backgroundColor: a(accent.rgb, 0.5), opacity: f.addressOk ? 1 : 0.45 }]}
-      >
-        <Text style={[s.ctaText, { color: accent.deep }]}>המשך</Text>
-      </Pressable>
+      <ContinueButton onPress={f.addressNext} accent={accent} disabled={!f.addressOk} />
     </View>
   );
 }
@@ -284,9 +277,10 @@ function ConfirmStep({
         {!f.isDelivery && <PickupMaps rgb={accent.rgb} ink={accent.deep} />}
       </View>
 
-      <Pressable onPress={onHome} style={[s.cta, { backgroundColor: a(accent.rgb, 0.5) }]}>
-        <Text style={[s.ctaText, { color: accent.deep }]}>חזרה לדף הבית</Text>
-      </Pressable>
+      {/* ⚠ שקד לא ביקשה לשנות את הכפתור הזה · הוא חלק את אותו סגנון
+          בדיוק עם ״המשך״, ולהשאיר אותו בגובה 46 היה מותיר כפתור יחיד
+          וחריג במסך האישור. דווח לה. */}
+      <ContinueButton onPress={onHome} accent={accent} label="חזרה לדף הבית" style={s.homeCta} />
     </View>
   );
 }
@@ -358,11 +352,12 @@ const s = StyleSheet.create({
   },
 
   cta: { height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { fontSize: 15.5, fontWeight: '600' },
 
   doneNote: { fontSize: type.body, color: surface.muted, textAlign: 'center' },
   summary: { borderRadius: 24, padding: space.lg, backgroundColor: 'rgba(255,255,255,0.8)', gap: 8 },
   summaryHead: { fontSize: 10.5, letterSpacing: 2, fontWeight: '600', color: '#A69EAE' },
+  /* מיקום בלבד · הכפתור במסך האישור ממורכז עם רווח מעליו */
+  homeCta: { alignSelf: 'center', marginTop: 6 },
   line: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
   lineQty: { fontSize: type.body, fontWeight: '500', color: surface.inkSoft },
   lineName: { flex: 1, fontSize: type.body, color: surface.inkSoft },

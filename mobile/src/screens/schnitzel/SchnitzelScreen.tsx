@@ -33,6 +33,7 @@ import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { ToppingsSheet } from './ToppingsSheet';
 import { Gift, PlatterFamily, PlatterSingles } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
+import { ContinueButton } from '../../components/ContinueButton';
 
 const ACCENT = hues.schn;
 
@@ -200,13 +201,7 @@ export function SchnitzelScreen() {
           <Text style={s.total}>{o.total}</Text>
           <Text style={s.currency}>₪</Text>
         </View>
-        <Pressable
-          onPress={onContinue}
-          disabled={o.total === 0}
-          style={[s.cta, { backgroundColor: a(ACCENT.rgb, 0.5), opacity: o.total === 0 ? 0.45 : 1 }]}
-        >
-          <Text style={[s.ctaText, { color: ACCENT.deep }]}>המשך</Text>
-        </Pressable>
+        <ContinueButton onPress={onContinue} accent={ACCENT} disabled={o.total === 0} />
       </View>
 
       <ToppingsSheet pop={o.pop} onToggle={o.toggleTop} onCancel={o.closePop} onSave={o.commitPop} />
@@ -358,6 +353,4 @@ const s = StyleSheet.create({
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },
   total: { fontSize: 19, fontWeight: '600', color: surface.ink },
   currency: { fontSize: 15, color: '#7A7080' },
-  cta: { height: 46, paddingHorizontal: 18, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  ctaText: { fontSize: 15.5, fontWeight: '600' },
 });
