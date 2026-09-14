@@ -80,9 +80,10 @@ const s = StyleSheet.create({
     alignSelf: 'flex-start',
     alignItems: 'center',
     justifyContent: 'center',
-    /* מקום לידית משמאל, וריפוד צר מימין · רוחב מינימלי */
+    /* מקום לידית משמאל, וריפוד מימין · שקד ביקשה ״מעט רוחב״
+       אחרי שראתה את הגרסה הצרה, ולכן 14 → 24 */
     paddingLeft: KNOB_INSET + KNOB + 4,
-    paddingRight: 14,
+    paddingRight: 24,
   },
   label: { fontSize: 15, fontWeight: '600' },
   knob: {

@@ -7,6 +7,7 @@ import { a, hues, radius, space, surface } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
 import { Photo } from '../../components/Photo';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
+import { eventPhoto } from './eventPhotos';
 
 const ACCENT = hues.box;
 
@@ -100,8 +101,15 @@ export function SectionRenderer({ s, api, photos = [] }: Props) {
             min={s.min ?? 0}
             tone={COUNT_TONE}
             onChange={(n) => api.setNumber(s.id!, Math.max(s.min ?? 0, n))}
+            /* היחידה יושבת **מתחת** למספר ולא לצידו · כך בקנבס
+               (`Boxes.dc.html:189`), ושקד ביקשה ליישר לזה. */
+            center={
+              <View style={st.stepperStack}>
+                <Text style={st.stepperNum}>{v}</Text>
+                {s.unit ? <Text style={st.stepperUnit}>{s.unit}</Text> : null}
+              </View>
+            }
           />
-          {s.unit ? <Text style={st.stepperUnit}>{s.unit}</Text> : null}
         </View>
       );
     }
@@ -228,9 +236,10 @@ function Cards({ s, api }: { s: Section; api: Api }) {
             onPress={() => api.select(s.id!, o.n)}
             style={[st.card, { width: cellW, borderColor: on ? SEL_BD : IDLE_BD }]}
           >
-            {/* ⚠ בלי שם · בקנבס הכרטיס מציג מציין מקום מקווקו, כי
-                לתמונות האירוע עדיין אין קבצים. Photo נופלת לשם לבד. */}
-            <Photo rgb={ACCENT.rgb} style={st.cardShot} />
+            {/* ⚠ המיפוי אינו מהקנבס · שם הכרטיס מצויר כמציין מקום
+                מקווקו, ושקד שלחה איזו תמונה שייכת לאיזה אירוע.
+                אירוע בלי מיפוי נשאר עם מציין המקום. */}
+            <Photo name={eventPhoto(o.n)} rgb={ACCENT.rgb} style={st.cardShot} zoom={false} />
             <View style={st.cardFoot}>
               <Text style={st.cardName}>{o.n}</Text>
               {o.d ? <Text style={st.cardDesc}>{o.d}</Text> : null}
@@ -364,7 +373,17 @@ const st = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 2,
   },
-  title: { fontSize: 15.5, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  /* ⚠ הריפוד העליון חסר היה באפליקציה · בקנבס `padding: 12px 2px 0`
+     (Boxes.dc.html:101). שקד ביקשה מרווח מעל ״ציפוי החלה״,
+     ״סוג האירוע״ ו״מיתוג/הקדשה אישית״ — שלושתם כותרות. */
+  title: {
+    fontSize: 15.5,
+    fontWeight: '600',
+    color: surface.ink,
+    textAlign: 'center',
+    paddingTop: 12,
+    paddingHorizontal: 2,
+  },
   hint: { fontSize: 11.5, fontWeight: '400', color: ACCENT.hue },
 
   note: {
@@ -417,17 +436,27 @@ const st = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderRadius: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     backgroundColor: IDLE_BG,
     borderWidth: 1,
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
-  stepperUnit: { fontSize: 12.5, color: surface.muted },
+  /* המספר והיחידה · המידות מ-Boxes.dc.html:189 · slim */
+  stepperStack: { minWidth: 46, alignItems: 'center', gap: 0 },
+  stepperNum: { fontSize: 18, fontWeight: '600', lineHeight: 19.8, letterSpacing: -0.36 },
+  stepperUnit: { fontSize: 10.5, fontWeight: '300', color: '#7D7488' },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: GRID_GAP },
-  narrow: { maxWidth: NARROW, alignSelf: 'center' },
+  /**
+   * ⚠ `width: '100%'` הכרחי · בלעדיו `alignSelf: 'center'` מכווץ את
+   * המסגרת לרוחב התוכן, `onLayout` מחזיר רוחב זעיר, וממנו נגזר רוחב
+   * התא — לולאה שהוציאה את כרטיסי ״סוג חלה״ ברוחב 60 במקום 132.
+   * זו הסיבה ששקד ביקשה ״להגדיל את הכרטיסייה״. בקנבס כתוב
+   * `width: 100%; max-width: 272px; align-self: center` (Boxes.dc.html:112).
+   */
+  narrow: { width: '100%', maxWidth: NARROW, alignSelf: 'center' },
   gridCell: {
     minHeight: 44,
     borderWidth: 1.5,
