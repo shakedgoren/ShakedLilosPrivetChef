@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { HOME_PHOTOS } from '../data/photos';
 import { IS_RTL } from '../theme/rtl';
 import { Photo } from './Photo';
+import { useLightboxOpen } from './Lightbox';
+import { photoTitle } from '../data/photoTitles';
 
 /* המידות מהקנבס · אריח 116×140, מרווח 10, פינה 18 */
 const TILE_W = 116;
@@ -19,26 +21,59 @@ const SHOTS = HOME_PHOTOS;
 const REEL_RGB = '201,162,39';
 
 /**
- * רצועת התמונות · נגללת בלולאה אינסופית, ולחיצה פותחת את התמונה במסך מלא.
+ * רצועת התמונות · נגללת בלולאה אינסופית, ולחיצה פותחת את התמונה במסך מלא
+ * **ועוצרת את הריצה** עד שהתמונה נסגרת.
  * הרצועה מוכפלת כדי שהלולאה תיסגר בלי קפיצה, בדיוק כמו בקנבס.
  */
 export function PhotoReel() {
   const x = useRef(new Animated.Value(0)).current;
+  /* המיקום הנוכחי · נדרש כדי להמשיך מאותה נקודה אחרי עצירה */
+  const at = useRef(0);
+  const anim = useRef<Animated.CompositeAnimation | null>(null);
+  /**
+   * ⚠ שקד ביקשה שהרצועה תיעצר כשנפתחת תמונה. `Animated.loop` לא
+   * ניתן להשהיה ולהמשך, ולכן הלולאה נבנית ידנית: כל סיבוב הוא
+   * timing אחד שמפעיל את הבא. עצירה משאירה את המיקום, וההמשך
+   * מחשב את הזמן שנותר לפי המרחק שנותר.
+   */
+  const paused = useLightboxOpen();
 
-  useEffect(() => {
-    /* ב-RTL הרצועה זורמת לכיוון ההפוך · translateX שלילי מוציא אותה מהמסך */
-    const span = SHOTS.length * PITCH * (IS_RTL ? 1 : -1);
-    const run = Animated.loop(
-      Animated.timing(x, {
+  /* ב-RTL הרצועה זורמת לכיוון ההפוך · translateX שלילי מוציא אותה מהמסך */
+  const span = SHOTS.length * PITCH * (IS_RTL ? 1 : -1);
+
+  const runFrom = useCallback(
+    (from: number) => {
+      const left = 1 - Math.abs(from) / Math.abs(span);
+      x.setValue(from);
+      const step = Animated.timing(x, {
         toValue: span,
-        duration: LOOP_MS,
+        duration: Math.max(0, LOOP_MS * left),
         easing: Easing.linear,
         useNativeDriver: true,
-      }),
-    );
-    run.start();
-    return () => run.stop();
+      });
+      anim.current = step;
+      step.start(({ finished }) => {
+        if (finished) runFrom(0);
+      });
+    },
+    [span, x],
+  );
+
+  useEffect(() => {
+    const id = x.addListener(({ value }) => {
+      at.current = value;
+    });
+    return () => x.removeListener(id);
   }, [x]);
+
+  useEffect(() => {
+    if (paused) {
+      anim.current?.stop();
+      return;
+    }
+    runFrom(at.current);
+    return () => anim.current?.stop();
+  }, [paused, runFrom]);
 
   return (
     <View style={s.reel}>
@@ -46,7 +81,7 @@ export function PhotoReel() {
           {[...SHOTS, ...SHOTS].map((sh, i) => (
             <View key={`${sh}-${i}`} style={s.tile}>
               {/* ההגדלה מגיעה מ-Photo · הרצועה כבר לא מחזיקה חלונית משלה */}
-              <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} />
+              <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} title={photoTitle(sh)} />
               {/* הצללה בתחתית · כמו הגרדיאנט שעל האריח בקנבס */}
               <Svg style={s.fade} width={TILE_W} height={TILE_H} pointerEvents="none">
                 <Defs>

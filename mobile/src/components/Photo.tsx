@@ -19,6 +19,8 @@ type Props = {
    * תמשיך לעשות מה שהכרטיס אמור לעשות.
    */
   zoom?: boolean;
+  /** שם התמונה · מוצג מעל התמונה כשהיא נפתחת בגודל מלא */
+  title?: string;
 };
 
 /* מציין המקום בקנבס · אייקון בגודל 26 בגוון הכהה של הקטגוריה */
@@ -34,7 +36,14 @@ const EDGE_ALPHA = 0.34;
  * ⚠ מציין המקום הראה את המילה ״תמונה״ · היא לא קיימת בקנבס, שבו
  * יש רק את האייקון בתוך המסגרת המקווקוות. הוסרה כדי להתאים.
  */
-export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover', zoom = true }: Props) {
+export function Photo({
+  name,
+  style,
+  rgb = '130,112,162',
+  resizeMode = 'cover',
+  zoom = true,
+  title,
+}: Props) {
   const src = name ? photo(name) : undefined;
   const lightbox = useLightbox();
 
@@ -59,7 +68,7 @@ export function Photo({ name, style, rgb = '130,112,162', resizeMode = 'cover', 
    * ולכן הוא לא הדרך. במקום זה כל קורא מספק מידות.
    */
   return (
-    <Pressable onPress={() => lightbox.open(name)} style={style as ViewStyle}>
+    <Pressable onPress={() => lightbox.open(name, title)} style={style as ViewStyle}>
       <Image source={src} style={s.fill} resizeMode={resizeMode} />
     </Pressable>
   );

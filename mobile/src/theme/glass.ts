@@ -35,6 +35,15 @@ export const CTA_SHADOW =
 export const CTA_KNOB_SHADOW =
   'inset 0 1.5px 0 #FFFFFF, 0 4px 9px -4px rgba(90,70,140,0.55)';
 
+/**
+ * הילת הכרטיס הפעיל.
+ * ⚠ לא מהקנבס · שם ההילה היא `0 0 40px -6px` בשקיפות 0.3.
+ * שקד ביקשה עוד זוהר בכרטיסייה הראשית (14 בספטמבר).
+ */
+export const CARD_GLOW_BLUR = 64;
+export const CARD_GLOW_SPREAD = -4;
+export const CARD_GLOW_ALPHA = 0.46;
+
 /** כרטיס הקטגוריה בקרוסלה · הפעיל זוהר, הרדומים כמעט שטוחים */
 export const cardShadow = (rgb: string, active: boolean): string =>
   active
@@ -43,7 +52,7 @@ export const cardShadow = (rgb: string, active: boolean): string =>
       ', inset 3px 0 3px rgba(255,255,255,0.6)' +
       `, inset -3px 0 4px ${a(rgb, 0.12)}` +
       ', 0 0 0 1px rgba(255,255,255,0.45)' +
-      `, 0 0 40px -6px ${a(rgb, 0.3)}` +
+      `, 0 0 ${CARD_GLOW_BLUR}px ${CARD_GLOW_SPREAD}px ${a(rgb, CARD_GLOW_ALPHA)}` +
       `, 0 22px 44px -22px ${a(rgb, 0.6)}`
     : `inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 24px -22px ${a(rgb, 0.4)}`;
 
