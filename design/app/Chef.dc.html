@@ -333,7 +333,7 @@
 
   <sc-if value="{{ noticeOpen }}" hint-placeholder-val="{{ true }}"><div onClick="{{ noticeClose }}" style="position: absolute; inset: 0; z-index: 34; background: rgba(42,36,48,0.34); backdrop-filter: blur(7px) saturate(120%); -webkit-backdrop-filter: blur(7px) saturate(120%);"></div>
   <div style="position: absolute; z-index: 35; top: 240px; right: 30px; left: 30px; border-radius: 26px; padding: 22px 20px; background: #FEFCFB; box-shadow: 0 26px 60px -22px rgba(60,48,84,0.72); display: flex; flex-direction: column; align-items: center; gap: 7px;">
-    <div style="font-size: 14.5px; font-weight: 600; color: #2A2430; text-align: center; line-height: 1.4;">בחרתם את הכמות המותרת,</div>
+    <div style="font-size: 14.5px; font-weight: 600; color: #2A2430; text-align: center; line-height: 1.4;">נבחרה הכמות המקסימלית,</div>
     <div style="font-size: 13px; font-weight: 400; color: #6B3F22; text-align: center; line-height: 1.5;">{{ noticeNote }}</div>
     <div onClick="{{ noticeClose }}" class="press" style="align-self: center; height: 46px; margin-top: 10px; padding: 0 32px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(168deg, #F2D8C0 0%, #E2BC97 100%); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 12px 24px -14px rgba(150,100,55,0.75);">
       <div style="color: #7A3D18; font-weight: 600; font-size: 15px; white-space: nowrap;">הבנתי</div>
@@ -734,7 +734,7 @@ const PASTA_BASE = 2, PASTA_EXTRA = 25, PASTA_UP_EXTRA = 15;
 const DESSERT_BASE = 2, DESSERT_EXTRA = 20;
 const FIRST_EXTRA = 25;
 
-const T_FIRSTS = ['קרפצ׳יו סלק', 'פילה חציל', 'ארטישוק א-לה רומנה', 'אנטיפסטי בטאבון'];
+const T_FIRSTS = ['קרפצ׳יו סלק', 'חציל בפנקו מטוגן', 'קרפצ׳יו חציל', 'ארטישוק א-לה רומנה', 'אנטיפסטי בטאבון', 'כרובית מטוגנת', 'מגש גבינות', 'מגש ירקות'];
 
 /* שדרוגי הטאבון · שלושה לסועד ואחד סה״כ לפי מדרגות הסועדים */
 const T_TABLE = [[15, 250], [20, 350], [25, 450]];
@@ -939,23 +939,25 @@ const BOXES = [
         { kind: 'title', label: 'מספר סועדים', flush: true },
         { kind: 'note',  label: 'בין 10 ל-25 סועדים.', tight: true },
         { kind: 'stepper', id: 'guests', min: 10, max: 25, step: 1, unit: 'סועדים', slim: true },
+        { kind: 'price', live: 'taboon' },
+        { kind: 'fine',  label: '* המחיר משתנה בהתאם לכמות הסועדים *' },
         { kind: 'title', label: 'סלטים', link: 'salads', cap: SALAD_BASE },
         { kind: 'note',  label: 'כל סלט נוסף בתוספת של 20 ₪ לסועד.', tight: true },
         { kind: 'multicap', id: 'salads', options: T_SALADS, cap: SALAD_BASE, req: true,
-          note: 'כל בחירת סלט נוסף בתוספת 20 ש״ח לסועד.' }
+          note: 'כל בחירה נוספת היא שדרוג ובעלות נוספת.' }
       ],
       [
         { kind: 'head',  label: 'פסטות', link: 'pastas', cap: PASTA_BASE },
         { kind: 'note',  label: 'כל פסטה נוספת בתוספת של 25 ₪ לסועד.', tight: true },
         { kind: 'fine',  label: 'בחרו רוטב על מנת לבחור את סוג הפסטה' },
         { kind: 'sauces', id: 'pastas', options: T_PASTAS, cap: PASTA_BASE, req: true,
-          note: 'כל בחירת פסטה נוספת בתוספת 25 ש״ח לסועד.' }
+          note: 'כל בחירה נוספת היא שדרוג ובעלות נוספת.' }
       ],
       [
         { kind: 'head',  label: 'קינוחים', link: 'desserts', cap: DESSERT_BASE },
         { kind: 'note',  label: 'כל קינוח נוסף בתוספת של 20 ₪ לסועד.', tight: true },
         { kind: 'multicap', id: 'desserts', options: T_DESSERTS, cap: DESSERT_BASE, req: true,
-          note: 'כל בחירת קינוח נוסף בתוספת 20 ש״ח לסועד.' }
+          note: 'כל בחירה נוספת היא שדרוג ובעלות נוספת.' }
       ],
       [
         { kind: 'head',  label: 'אפשר גם להעלות הילוך' },
@@ -1440,7 +1442,13 @@ class Component extends DCLogic {
     }
     if (s.kind === 'head')  return Object.assign(base, { isHead: true });
     if (s.kind === 'note')  return Object.assign(base, { isNote: true, mt: s.tight ? '-5px' : '0px' });
-    if (s.kind === 'price') return Object.assign(base, { isPrice: true });
+    if (s.kind === 'price') return Object.assign(base, {
+      isPrice: true,
+      /* `live` · המחיר לסועד נגזר ממדרגות הסועדים בזמן אמת */
+      label: s.live === 'taboon'
+        ? taboonPerHead(this.state.picks.guests || 0) + ' ש״ח לסועד'
+        : s.label
+    });
     if (s.kind === 'hidden') return base;   /* הציפוי נבחר בחלונית בלבד */
     if (s.kind === 'fine')   return Object.assign(base, { isFine: true });
 

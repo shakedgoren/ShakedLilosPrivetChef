@@ -33,6 +33,12 @@ export const PASTA_UP_EXTRA = ${d.PASTA_UP_EXTRA};
 export const DESSERT_BASE = ${d.DESSERT_BASE};
 export const DESSERT_EXTRA = ${d.DESSERT_EXTRA};
 export const FIRST_EXTRA = ${d.FIRST_EXTRA};
+
+/* שבע צורות הפסטה · כל צורה היא רשימת קווים, הפנימיים דקים יותר.
+   מוצגות בחלונית שנפתחת אחרי בחירת רוטב. */
+export type PastaShape = { n: string; paths: { d: string; thin?: boolean }[] };
+export const PASTA_SHAPES: PastaShape[] = ${j(d.PASTA_SHAPES)};
+export const T_PASTA_UPS: string[] = ${j(d.T_PASTA_UPS)};
 export const EXTRA_TABLE: Record<string, number> = ${j(d.EXTRA_TABLE)};
 export const EXTRA_DRINK = ${d.EXTRA_DRINK};
 

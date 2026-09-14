@@ -6,6 +6,7 @@ import { Stepper } from '../../components/Stepper';
 import { isMissingPhoto } from '../../data/photos';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
+import type { PastaPick } from './PastaPopup';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { OptionGrid } from '../../components/OptionGrid';
 
@@ -23,8 +24,11 @@ const STEP_TONE = {
 
 type Api = {
   picks: Picks;
+  perHead: number;
   select: (id: string, v: string) => void;
-  toggle: (id: string, v: string, cap?: number | null) => void;
+  toggle: (id: string, v: string, cap?: number | null, note?: string) => void;
+  /** בחירת רוטב · פותחת את חלונית הצורה/שדרוג */
+  pickSauce: (s: ChefSection, sauce: string) => void;
   setValue: (id: string, v: unknown) => void;
   stylesFor: (concept: string) => string[];
 };
@@ -88,6 +92,14 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
 
     case 'note':
       return <Text style={[st.note, s.tight && st.tight]}>{s.label}</Text>;
+
+    case 'price':
+      /* `live: 'taboon'` · המחיר לסועד משתנה עם מספר הסועדים */
+      return (
+        <Text style={st.price}>
+          {s.live === 'taboon' ? `${api.perHead} ש״ח לסועד` : s.label}
+        </Text>
+      );
 
     case 'fine':
       return <Text style={st.fine}>{s.label}</Text>;
@@ -223,28 +235,41 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
     case 'cards': {
       const opts: unknown[] = s.options ?? [];
       const cur: string[] = api.picks[s.id] || [];
+
       const cap = s.cap ?? null;
-      const full = cap != null && cur.length >= cap;
       /* ⚠ `multicap` ו-`sauces` הם `isRows` בקנבס · שורות ברוחב מלא,
          ולא גלולות ברוחב התוכן. ככה הסלטים, הפסטה והקינוחים יוצאים
          ברוחב אחיד. `multi` הוא רשת עמודות, ו-`cards` כרטיס רחב. */
       const asRows = s.kind !== 'multi';
 
+      /**
+       * ⚠ בפסטות הרשימה היא אובייקטים (`{sauce, shape, up}`) ולא שמות,
+       * ולכן הסימון נבדק לפי `sauce`. הלחיצה פותחת את החלונית.
+       */
+      const isSauce = s.kind === 'sauces';
+      const picked = (name: string) =>
+        isSauce
+          ? (cur as unknown as PastaPick[]).find((x) => x.sauce === name)
+          : undefined;
+
       const tile = (o: unknown) => {
         const n = nameOf(o);
         const d = descOf(o);
-        const on = cur.includes(n);
-        const blocked = full && !on;
+        const mine = picked(n);
+        const on = isSauce ? !!mine : cur.includes(n);
         const missing = isMissingPhoto(n);
+        /* ״פנה · רביולי גבינות • שדרוג״ · בדיוק `extra` בקנבס */
+        const extra = mine
+          ? [mine.shape, mine.up ? `${mine.up} • שדרוג` : ''].filter(Boolean).join(' · ')
+          : '';
         return (
           <Pressable
             key={n}
-            onPress={() => api.toggle(s.id, n, cap)}
+            onPress={() => (isSauce ? api.pickSauce(s, n) : api.toggle(s.id, n, cap, s.note))}
             style={[
               st.grow,
               asRows ? st.card : st.chip,
               on && st.on,
-              blocked && st.blocked,
               missing && st.missingRow,
             ]}
           >
@@ -252,6 +277,7 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
             <View style={missing ? st.grow : undefined}>
               <Text style={[asRows ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
               {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+              {extra ? <Text style={st.extra}>{extra}</Text> : null}
             </View>
           </Pressable>
         );
@@ -259,7 +285,9 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
 
       return (
         <>
-          {s.note ? <Text style={st.note}>{s.note}</Text> : null}
+          {/* ⚠ אין כאן שורת `s.note` · בקנבס היא מזינה רק את חלונית
+              הכמות המקסימלית. הדפסתה כאן שכפלה את שורת ה-`note`
+              שמעל הרשימה — זו ״השורה הכפולה״ שביקשת למחוק. */}
           {asRows ? (
             <View style={st.cards}>{opts.map(tile)}</View>
           ) : (
@@ -308,6 +336,15 @@ const st = StyleSheet.create({
     paddingHorizontal: 2,
   },
   tight: { marginTop: -4 },
+  /* `isPrice` בקנבס · 12.5, משקל 600, בגוון השף */
+  price: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    lineHeight: 18.75,
+    color: ACCENT.hue,
+    textAlign: 'center',
+    paddingHorizontal: 2,
+  },
   fine: {
     fontSize: 11,
     fontWeight: '400',
@@ -386,6 +423,8 @@ const st = StyleSheet.create({
   },
   cardName: { fontSize: 13, fontWeight: '400', lineHeight: 17, color: surface.ink, textAlign: 'center' },
   cardDesc: { fontSize: 11.5, fontWeight: '300', color: surface.muted, lineHeight: 16, textAlign: 'center' },
+  /* הצורה והשדרוג שנבחרו לרוטב · 11.5/600 בגוון השף, כמו בקנבס */
+  extra: { fontSize: 11.5, fontWeight: '600', color: ACCENT.hue, lineHeight: 16, textAlign: 'center' },
 
   on: { borderColor: a(ACCENT.rgb, 0.42), backgroundColor: a(ACCENT.rgb, 0.1) },
   onText: { color: ACCENT.deep, fontWeight: '600' },

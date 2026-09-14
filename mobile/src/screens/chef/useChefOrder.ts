@@ -4,10 +4,12 @@ import {
   STYLES,
   STYLES_ALL,
   priceOfPackage,
+  taboonPerHead,
   type ChefPackage,
   type ChefSection,
 } from '../../data/chef';
 import type { OrderLine } from '../../order/types';
+import type { PastaPick } from './PastaPopup';
 
 export type Picks = Record<string, any>;
 
@@ -25,7 +27,14 @@ const sectionReady = (s: ChefSection, picks: Picks): boolean => {
   if (SINGLE.includes(s.kind)) return !!v;
   if (MULTI.includes(s.kind)) {
     const n = Array.isArray(v) ? v.length : 0;
-    return s.cap != null ? n === s.cap : n > 0;
+    /* ⚠ `>=` ולא `===` · מאז שהמכסה לא נועלת אפשר לבחור מעבר לה,
+       ובחירה רביעית מתוך שלוש נעלה את ״המשך״. כך גם בקנבס. */
+    if (s.cap != null && n < s.cap) return false;
+    if (s.kind === 'sauces') {
+      /* כל פסטה חייבת צורה או שדרוג · נבחרים בחלונית */
+      return n > 0 && (v as { shape?: string; up?: string }[]).every((x) => !!(x.shape || x.up));
+    }
+    return n > 0;
   }
   if (s.kind === 'stepper') return typeof v === 'number' && v > 0;
   if (s.kind === 'cal' || s.kind === 'addr') return !!v;
@@ -50,6 +59,18 @@ export function useChefOrder() {
   const [current, setCurrent] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [picks, setPicks] = useState<Picks>({});
+  /**
+   * ⚠ החלונית של הכמות המקסימלית · שקד ביקשה **לא לנעול** את שאר
+   * האפשרויות כשהמכסה מלאה, אלא להסביר שכל בחירה נוספת היא שדרוג.
+   * `seen` דואג שהיא תופיע פעם אחת לכל סעיף, בדיוק כמו בקנבס.
+   */
+  const [notice, setNotice] = useState<string | null>(null);
+  const [seen, setSeen] = useState<Record<string, boolean>>({});
+  /**
+   * חלונית הפסטה · נפתחת מיד אחרי בחירת רוטב, כמו `pickSauce` בקנבס.
+   * `sec` נשמר כדי שהאישור יידע לאיזה סעיף להחזיר את הבחירה.
+   */
+  const [pasta, setPasta] = useState<(PastaPick & { sec: string; cap?: number | null; note?: string }) | null>(null);
 
   const pkg: ChefPackage | null = current === null ? null : CHEF_PACKAGES[current];
   const sections: ChefSection[] = pkg ? (pkg.pages[page] ?? []) : [];
@@ -58,12 +79,18 @@ export function useChefOrder() {
     setCurrent(i);
     setPage(0);
     setPicks(seedPicks(CHEF_PACKAGES[i]));
+    setSeen({});
+    setNotice(null);
+    setPasta(null);
   }, []);
 
   const backToList = useCallback(() => {
     setCurrent(null);
     setPage(0);
     setPicks({});
+    setSeen({});
+    setNotice(null);
+    setPasta(null);
   }, []);
 
   /** הסגנונות שנפתחים תלויים בציר · בשרי פותח את כולם */
@@ -86,14 +113,74 @@ export function useChefOrder() {
     [stylesFor],
   );
 
-  const toggle = useCallback((id: string, value: string, cap?: number | null) => {
-    setPicks((p) => {
-      const cur: string[] = Array.isArray(p[id]) ? p[id] : [];
-      const on = cur.includes(value);
-      if (!on && cap != null && cur.length >= cap) return p;
-      return { ...p, [id]: on ? cur.filter((x) => x !== value) : [...cur, value] };
+  /**
+   * `toggleCap` של הקנבס · לחיצה תמיד מסמנת או מבטלת, גם מעבר למכסה.
+   * ⚠ הגרסה הקודמת החזירה את המצב כמו שהוא כשהמכסה התמלאה, ולכן שאר
+   * האפשרויות היו נעולות. שקד ביקשה במפורש שלא יינעלו.
+   */
+  const toggle = useCallback(
+    (id: string, value: string, cap?: number | null, note?: string) => {
+      setPicks((p) => {
+        const cur: string[] = Array.isArray(p[id]) ? p[id] : [];
+        const on = cur.includes(value);
+        const list = on ? cur.filter((x) => x !== value) : [...cur, value];
+        /* בדיוק `capReached` בקנבס · רק ברגע שנוגעים במכסה, ופעם אחת */
+        if (!on && cap != null && list.length === cap && !seen[id]) {
+          setSeen((v) => ({ ...v, [id]: true }));
+          setNotice(note ?? null);
+        }
+        return { ...p, [id]: list };
+      });
+    },
+    [seen],
+  );
+
+  /**
+   * בחירת רוטב · אם הוא כבר ברשימה הלחיצה מסירה אותו, ואחרת
+   * נפתחת חלונית הצורה/שדרוג. בדיוק `pickSauce` בקנבס.
+   */
+  const pickSauce = useCallback(
+    (sec: ChefSection, sauce: string) => {
+      const cur: PastaPick[] = picks[sec.id] || [];
+      const mine = cur.find((x) => x.sauce === sauce);
+      if (mine) {
+        /* לחיצה על רוטב שכבר נבחר · פותחת אותו לעריכה */
+        setPasta({ ...mine, edit: true, sec: sec.id, cap: sec.cap, note: sec.note });
+        return;
+      }
+      setPasta({ sauce, shape: null, up: null, sec: sec.id, cap: sec.cap, note: sec.note });
+    },
+    [picks],
+  );
+
+  /** ⚠ או צורה או שדרוג · בחירה באחד מנקה את השני, ולחיצה חוזרת מבטלת */
+  const pastaPick = useCallback((field: 'shape' | 'up', value: string) => {
+    setPasta((p) => {
+      if (!p) return p;
+      const other = field === 'shape' ? 'up' : 'shape';
+      const next = { ...p, [field]: p[field] === value ? null : value };
+      if (next[field]) next[other] = null;
+      return next;
     });
   }, []);
+
+  const pastaCommit = useCallback(() => {
+    if (!pasta || (!pasta.shape && !pasta.up)) return;
+    const entry: PastaPick = { sauce: pasta.sauce, shape: pasta.shape, up: pasta.up };
+    setPicks((p) => {
+      const cur: PastaPick[] = p[pasta.sec] || [];
+      const list = pasta.edit
+        ? cur.map((x) => (x.sauce === pasta.sauce ? entry : x))
+        : [...cur, entry];
+      /* אותה חלונית מכסה כמו בסלטים · פעם אחת לכל סעיף */
+      if (!pasta.edit && pasta.cap != null && list.length === pasta.cap && !seen[pasta.sec]) {
+        setSeen((v) => ({ ...v, [pasta.sec]: true }));
+        setNotice(pasta.note ?? null);
+      }
+      return { ...p, [pasta.sec]: list };
+    });
+    setPasta(null);
+  }, [pasta, seen]);
 
   const setValue = useCallback((id: string, value: unknown) => {
     setPicks((p) => ({ ...p, [id]: value }));
@@ -117,6 +204,8 @@ export function useChefOrder() {
   }, [page, backToList]);
 
   const total = pkg ? priceOfPackage(pkg, picks) : 0;
+  /** המחיר לסועד לפי מדרגות הסועדים · מזין את סעיף ה-`price` החי */
+  const perHead = taboonPerHead(picks.guests || 0);
 
   const lines: OrderLine[] = useMemo(() => {
     if (!pkg) return [];
@@ -142,6 +231,8 @@ export function useChefOrder() {
     current, pkg, page, sections, openPackage, backToList,
     picks, select, toggle, setValue, stylesFor,
     pageReady, lastPage, next, prev,
-    total, lines,
+    total, lines, perHead,
+    notice, closeNotice: () => setNotice(null),
+    pasta, pickSauce, pastaPick, pastaCommit, closePasta: () => setPasta(null),
   };
 }

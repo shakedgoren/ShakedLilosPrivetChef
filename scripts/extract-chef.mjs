@@ -11,5 +11,6 @@ const out = {}; for (const k of have) out[k] = m[k];
 fs.writeFileSync('/private/tmp/claude-501/-Users-shakedgoren-Downloads-files/5277944c-663e-4ec8-97a6-1bc89cfdb41a/scratchpad/chef.json', JSON.stringify(out, null, 2));
 console.log('נחלצו:', have.length, 'קבועים');
 console.log('חבילות:', m.BOXES.map(b=>b.key).join(', '));
-m.BOXES.forEach(b => console.log('  ', b.key, '· עמודים:', (b.pages||[]).length, '· סעיפים:', (b.pages||[]).reduce((s,p)=>s+p.sections.length,0)));
-console.log('סוגי סעיפים:', [...new Set(m.BOXES.flatMap(b=>(b.pages||[]).flatMap(p=>p.sections.map(s=>s.kind))))].join(', '));
+/* ⚠ `pages` הוא מערך של מערכי סעיפים · לא אובייקטים עם `.sections` */
+m.BOXES.forEach(b => console.log('  ', b.key, '· עמודים:', (b.pages||[]).length, '· סעיפים:', (b.pages||[]).reduce((s,p)=>s+p.length,0)));
+console.log('סוגי סעיפים:', [...new Set(m.BOXES.flatMap(b=>(b.pages||[]).flatMap(p=>p.map(s=>s.kind))))].join(', '));

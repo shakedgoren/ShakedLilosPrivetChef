@@ -24,6 +24,8 @@ import { ChevronRight } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
 import { BackButton } from '../../components/BackButton';
+import { CapNotice } from './CapNotice';
+import { PastaPopup } from './PastaPopup';
 
 const ACCENT = hues.chef;
 
@@ -154,6 +156,17 @@ export function ChefScreen() {
           label={o.lastPage ? 'לבקשת הצעה' : 'המשך'}
         />
       </View>
+
+      {/* חלונית הכמות המקסימלית · מוסברת ולא נועלת */}
+      <CapNotice note={o.notice} onClose={o.closeNotice} />
+
+      {/* חלונית סוג הפסטה · נפתחת מיד אחרי בחירת רוטב */}
+      <PastaPopup
+        pop={o.pasta}
+        onPick={o.pastaPick}
+        onClose={o.closePasta}
+        onCommit={o.pastaCommit}
+      />
 
       <FulfillmentFlow
         f={f}
