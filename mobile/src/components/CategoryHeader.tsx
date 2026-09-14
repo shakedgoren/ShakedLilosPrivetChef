@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from '../icons';
 import { surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
+import { BackButton } from './BackButton';
 
 /**
  * כותרת מסך הקטגוריה · חץ החזרה, השם והתאריך.
@@ -26,9 +27,7 @@ export function CategoryHeader({ title, date }: Props) {
 
   return (
     <>
-      <Pressable onPress={back} style={s.back} hitSlop={8}>
-        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
-      </Pressable>
+      <BackButton onPress={back} tint="#F4F0FA" />
       <View style={s.head}>
         <Text style={s.title}>{title}</Text>
         {dateLines.map((line) => (

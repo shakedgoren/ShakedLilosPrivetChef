@@ -23,6 +23,7 @@ import { ChefSectionRenderer } from './ChefSectionRenderer';
 import { ChevronRight } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
+import { BackButton } from '../../components/BackButton';
 
 const ACCENT = hues.chef;
 
@@ -109,9 +110,7 @@ export function ChefScreen() {
 
   return (
     <View style={s.page}>
-      <Pressable onPress={o.prev} style={s.back} hitSlop={8}>
-        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
-      </Pressable>
+      <BackButton onPress={o.prev} tint="#F7F1EA" />
 
       <View style={s.head}>
         <Text style={s.title}>{o.pkg.title}</Text>

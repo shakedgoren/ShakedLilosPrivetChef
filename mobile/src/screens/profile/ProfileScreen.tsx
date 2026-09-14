@@ -5,7 +5,6 @@ import { apiEnabled, API_URL } from '../../api/config';
 import { changePassword, updateMe } from '../../api/auth';
 import { COPY } from '../../api/copy';
 import { ApiError, type PublicUser } from '../../api/types';
-import { LogoutConfirm } from '../../components/LogoutConfirm';
 import { CITIES } from '../../data/shared';
 import { PLACES } from '../../data/profile';
 
@@ -87,7 +86,6 @@ export function ProfileScreen() {
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const [outOpen, setOutOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
   const [pass, setPass] = useState({ cur: '', next: '', again: '' });
   const [passErr, setPassErr] = useState('');
@@ -213,9 +211,6 @@ export function ProfileScreen() {
     <View style={s.page}>
       <View style={s.head}>
         <Text style={s.title}>אזור אישי</Text>
-        <Pressable onPress={() => setOutOpen(true)} style={s.authBtn} hitSlop={8}>
-          <Text style={s.authGlyph}>⎋</Text>
-        </Pressable>
       </View>
 
       <ScrollView
@@ -371,7 +366,6 @@ export function ProfileScreen() {
         </Pressable>
       </Modal>
 
-      <LogoutConfirm open={outOpen} onCancel={() => setOutOpen(false)} onConfirm={signOut} />
     </View>
   );
 }

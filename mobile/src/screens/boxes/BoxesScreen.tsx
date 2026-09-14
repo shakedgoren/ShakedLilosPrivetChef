@@ -16,6 +16,7 @@ import { useBoxesOrder } from './useBoxesOrder';
 import { SectionRenderer } from './SectionRenderer';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
+import { BackButton } from '../../components/BackButton';
 
 const ACCENT = hues.box;
 
@@ -46,9 +47,9 @@ export function BoxesScreen() {
     <View style={s.page}>
       {o.box ? (
         <>
-          <Pressable onPress={o.backToList} style={s.back} hitSlop={8}>
-            <Text style={s.backGlyph}>›</Text>
-          </Pressable>
+          {/* ⚠ היה תו טקסט ״›״ ולא אייקון · המסמך סימן את זה כפגם
+              ידוע, והמעבר לרכיב המשותף מיישר אותו לשאר המסכים. */}
+          <BackButton onPress={o.backToList} tint="#F0F6F2" ink="#4E6B58" />
           <View style={s.head}>
             <Text style={s.title}>{o.box.title}</Text>
             <Text style={s.date}>{o.box.price}</Text>

@@ -6,6 +6,7 @@ import { useNav } from '../navigation/store';
 import type { CategoryKey } from '../theme/tokens';
 import { ChevronRight } from '../icons';
 import { ContinueButton } from '../components/ContinueButton';
+import { BackButton } from '../components/BackButton';
 
 /**
  * שלד מסך הקטגוריה · הכותרת, החזרה וחסם ההתחברות עובדים.
@@ -31,9 +32,7 @@ export function CategoryScreen({ categoryKey }: { categoryKey: CategoryKey }) {
 
   return (
     <View style={s.page}>
-      <Pressable onPress={back} style={s.back}>
-        <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
-      </Pressable>
+      <BackButton onPress={back} tint="#F4F0FA" />
 
       <View style={s.head}>
         <Text style={s.title}>{cat.sub}</Text>

@@ -5,7 +5,6 @@ import { listMyOrders, reorderOrder } from '../../api/orders';
 import { apiEnabled } from '../../api/config';
 import { COPY, orderError } from '../../api/copy';
 import { ApiError, type Order } from '../../api/types';
-import { LogoutConfirm } from '../../components/LogoutConfirm';
 import { useNav, type Screen } from '../../navigation/store';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import {
@@ -33,7 +32,6 @@ export function MyOrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [err, setErr] = useState('');
   const [open, setOpen] = useState<string | null>(null);
-  const [outOpen, setOutOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!apiEnabled) {
@@ -83,9 +81,6 @@ export function MyOrdersScreen() {
           <Text style={s.title}>{MY_ORDERS_TITLE}</Text>
           {!empty ? <Text style={s.count}>{countLabel(live.length, past.length)}</Text> : null}
         </View>
-        <Pressable onPress={() => setOutOpen(true)} style={s.authBtn} hitSlop={8}>
-          <Text style={s.authGlyph}>⎋</Text>
-        </Pressable>
       </View>
 
       {empty ? (
@@ -127,7 +122,6 @@ export function MyOrdersScreen() {
         </ScrollView>
       )}
 
-      <LogoutConfirm open={outOpen} onCancel={() => setOutOpen(false)} onConfirm={signOut} />
     </View>
   );
 }
