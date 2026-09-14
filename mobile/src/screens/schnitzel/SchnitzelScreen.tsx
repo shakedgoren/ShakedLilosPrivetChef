@@ -52,7 +52,8 @@ export function SchnitzelScreen() {
   /* רוחב הכרטיס נמדד · הנוסחה בקנבס היא (100% − רווח) ÷ 2 */
   const [gridW, setGridW] = useState(0);
   const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
-  const f = useFulfillment(SCHNITZEL_FULFILLMENT);
+  /* `meals` נדרש למינימום המשלוח · מארז נחשב חמש מנות */
+  const f = useFulfillment({ ...SCHNITZEL_FULFILLMENT, meals: o.meals });
   const [gate, setGate] = useState(false);
 
   const onContinue = () => {
@@ -87,28 +88,54 @@ export function SchnitzelScreen() {
           <Text style={s.giftText}>{GIFT_NOTE}</Text>
         </View>
 
+        {/**
+          * ⚠ **ההזמנה שלי יצאה מהלשוניות** · קודם כל לשונית הציגה רק את
+          * הפריטים שלה, ולכן הסה״כ המאוחד היה מראה סכום של פריטים שאינם
+          * על המסך. עכשיו הרשימה אחת: חלות בודדות ומארזים יחד, והלשוניות
+          * מחליפות רק את הבורר שמתחת.
+          */}
+        {o.basket.length + o.boxes.length > 0 && (
+          <Text style={s.sectionTitle}>{MY_ORDER_LABEL}</Text>
+        )}
+        {o.basket.map((b, i) => (
+          <View key={`roll-${b.type}-${i}`} style={s.row}>
+            <Photo name={SCHNITZEL_UNIT_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
+            <View style={s.rowText}>
+              <Text style={s.name}>
+                חלה {i + 1} · {SCHNITZEL_TYPES[b.type].short}
+              </Text>
+              <Text style={s.tops}>{b.tops.length ? b.tops.join(' · ') : 'בלי תוספות'}</Text>
+            </View>
+            <Text style={s.price}>{SCHNITZEL_TYPES[b.type].unit} ₪</Text>
+            <Pressable onPress={() => o.openEdit(i)} hitSlop={8}>
+              <Text style={s.action}>עריכה</Text>
+            </Pressable>
+            <Pressable onPress={() => o.removeRoll(i)} hitSlop={8}>
+              <Text style={s.remove}>✕</Text>
+            </Pressable>
+          </View>
+        ))}
+        {o.boxes.map((b, i) => (
+          <View key={`box-${b.type}-${i}`} style={s.row}>
+            <Photo name={SCHNITZEL_BOX_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
+            <View style={s.rowText}>
+              <Text style={s.name}>
+                מארז {i + 1} · {SCHNITZEL_TYPES[b.type].short}
+              </Text>
+              <Text style={s.tops}>{b.tops.length ? b.tops.join(' · ') : 'בלי תוספות'}</Text>
+            </View>
+            <Text style={s.price}>{SCHNITZEL_TYPES[b.type].box} ₪</Text>
+            <Pressable onPress={() => o.openBoxEdit(i)} hitSlop={8}>
+              <Text style={s.action}>עריכה</Text>
+            </Pressable>
+            <Pressable onPress={() => o.removeBox(i)} hitSlop={8}>
+              <Text style={s.remove}>✕</Text>
+            </Pressable>
+          </View>
+        ))}
+
         {o.isUnit ? (
           <>
-            {o.basket.length > 0 && <Text style={s.sectionTitle}>{MY_ORDER_LABEL}</Text>}
-            {o.basket.map((b, i) => (
-              <View key={`${b.type}-${i}`} style={s.row}>
-                <Photo name={SCHNITZEL_UNIT_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
-                <View style={s.rowText}>
-                  <Text style={s.name}>
-                    חלה {i + 1} · {SCHNITZEL_TYPES[b.type].short}
-                  </Text>
-                  <Text style={s.tops}>{b.tops.length ? b.tops.join(' · ') : 'בלי תוספות'}</Text>
-                </View>
-                <Text style={s.price}>{SCHNITZEL_TYPES[b.type].unit} ₪</Text>
-                <Pressable onPress={() => o.openEdit(i)} hitSlop={8}>
-                  <Text style={s.action}>עריכה</Text>
-                </Pressable>
-                <Pressable onPress={() => o.removeRoll(i)} hitSlop={8}>
-                  <Text style={s.remove}>✕</Text>
-                </Pressable>
-              </View>
-            ))}
-
             <Text style={s.sectionTitle}>{PICK_TYPE_LABEL}</Text>
             {/* שתי עמודות · תמונה מלמעלה, בדיוק כמו בקנבס */}
             <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
@@ -128,27 +155,7 @@ export function SchnitzelScreen() {
         ) : (
           <>
             {/* ⚠ שקד ביקשה שהמארזים שנבחרו יופיעו מעל ״בחירת צורה״ · בקנבס
-                הם יושבים מתחתיה. שורה לכל מארז, בדיוק כמו החלות הבודדות. */}
-            {o.boxes.length > 0 && <Text style={s.sectionTitle}>{MY_ORDER_LABEL}</Text>}
-            {o.boxes.map((b, i) => (
-              <View key={`${b.type}-${i}`} style={s.row}>
-                <Photo name={SCHNITZEL_BOX_PHOTOS[b.type]} rgb={ACCENT.rgb} style={s.shot} />
-                <View style={s.rowText}>
-                  <Text style={s.name}>
-                    מארז {i + 1} · {SCHNITZEL_TYPES[b.type].short}
-                  </Text>
-                  <Text style={s.tops}>{b.tops.length ? b.tops.join(' · ') : 'בלי תוספות'}</Text>
-                </View>
-                <Text style={s.price}>{SCHNITZEL_TYPES[b.type].box} ₪</Text>
-                <Pressable onPress={() => o.openBoxEdit(i)} hitSlop={8}>
-                  <Text style={s.action}>עריכה</Text>
-                </Pressable>
-                <Pressable onPress={() => o.removeBox(i)} hitSlop={8}>
-                  <Text style={s.remove}>✕</Text>
-                </Pressable>
-              </View>
-            ))}
-
+                הם יושבים מתחתיה. הרשימה עלתה לגוש ההזמנה המשותף שמעל. */}
             {/* צורת המארז · SCHNITZEL_FORMS בקנבס · קדם לבחירת המארז */}
             <Text style={s.sectionTitle}>{PICK_FORM_LABEL}</Text>
             <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>

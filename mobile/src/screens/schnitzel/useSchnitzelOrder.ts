@@ -3,6 +3,7 @@ import {
   COCOTTES,
   COCOTTE_PRICE,
   SCHNITZEL_TYPES,
+  schnitzelMeals,
   type Roll,
 } from '../../data/schnitzel';
 import type { OrderLine } from '../../order/types';
@@ -90,29 +91,36 @@ export function useSchnitzelOrder() {
     setCocottes((c) => c.map((v, j) => (j === i ? Math.max(0, v + d) : v)));
   }, []);
 
-  const itemsTotal = isUnit
-    ? basket.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].unit, 0)
-    : boxes.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].box, 0);
+  /**
+   * ⚠ **הזמנה אחת** · הסה״כ סופר חלות בודדות ומארזים יחד, ולא רק
+   * את מה שהלשונית הפעילה מציגה. קודם הוא היה `isUnit ? basket : boxes`,
+   * ולכן מעבר ללשונית השנייה העלים את מה שכבר נבחר מהסכום.
+   */
+  const itemsTotal =
+    basket.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].unit, 0) +
+    boxes.reduce((s, b) => s + SCHNITZEL_TYPES[b.type].box, 0);
   const cocotteTotal = cocottes.reduce((s, v) => s + v * COCOTTE_PRICE, 0);
   const total = itemsTotal + cocotteTotal;
 
+  /** מניין המנות למשלוח · מארז נחשב BOX_MEALS מנות */
+  const meals = schnitzelMeals(basket, boxes);
+
   const lines: OrderLine[] = useMemo(() => {
-    const main: OrderLine[] = isUnit
-      ? basket.map((b, i) => ({
-          qty: 1,
-          name: `חלה ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
-          sum: SCHNITZEL_TYPES[b.type].unit,
-        }))
-      : boxes.map((b, i) => ({
-          qty: 1,
-          name: `מארז ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
-          sum: SCHNITZEL_TYPES[b.type].box,
-        }));
+    const rolls: OrderLine[] = basket.map((b, i) => ({
+      qty: 1,
+      name: `חלה ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
+      sum: SCHNITZEL_TYPES[b.type].unit,
+    }));
+    const packs: OrderLine[] = boxes.map((b, i) => ({
+      qty: 1,
+      name: `מארז ${i + 1} · ${SCHNITZEL_TYPES[b.type].short}`,
+      sum: SCHNITZEL_TYPES[b.type].box,
+    }));
     const coc: OrderLine[] = cocottes
       .map((v, i) => ({ qty: v, name: `קוקוט ${COCOTTES[i]}`, sum: v * COCOTTE_PRICE }))
       .filter((l) => l.qty > 0);
-    return [...main, ...coc];
-  }, [isUnit, basket, boxes, cocottes]);
+    return [...rolls, ...packs, ...coc];
+  }, [basket, boxes, cocottes]);
 
   return {
     mode, setMode, isUnit,
@@ -120,6 +128,6 @@ export function useSchnitzelOrder() {
     basket, boxes, cocottes, pop,
     openAdd, openEdit, openBox, openBoxEdit, closePop, toggleTop, commitPop,
     removeRoll, removeBox, bumpCocotte,
-    total, lines,
+    total, meals, lines,
   };
 }

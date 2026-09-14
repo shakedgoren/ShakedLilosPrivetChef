@@ -9,6 +9,7 @@ import {
   COCOTTE_PRICE,
   SCHNITZEL_FULFILLMENT,
   SCHNITZEL_TYPES,
+  schnitzelMeals,
 } from '../../../mobile/src/data/schnitzel.ts';
 import { FRUIT_FULFILLMENT, FRUIT_TRAYS } from '../../../mobile/src/data/fruit.ts';
 import { BOXES, BOXES_FULFILLMENT, priceOfBox } from '../../../mobile/src/data/boxes.ts';
@@ -100,23 +101,23 @@ function linesOfSchnitzel(d: Extract<CustomerDetails, { category: 'schn' }>): Qu
   const lines: OrderLine[] = [];
   let itemsTotal = 0;
 
-  if (d.mode === 'unit') {
-    if (!d.rolls.length && d.cocottes.every((n) => n === 0)) throw badRequest('invalid_order', 'empty');
-    d.rolls.forEach((r, i) => {
-      assertTops(r.type, r.tops);
-      const spec = SCHNITZEL_TYPES[r.type];
-      itemsTotal += spec.unit;
-      lines.push({ qty: 1, name: `חלה ${i + 1} · ${spec.short}`, sum: spec.unit });
-    });
-  } else {
-    if (!d.boxes.length) throw badRequest('invalid_order', 'empty box');
-    d.boxes.forEach((b, i) => {
-      assertTops(b.type, b.tops);
-      const spec = SCHNITZEL_TYPES[b.type];
-      itemsTotal += spec.box;
-      lines.push({ qty: 1, name: `מארז ${i + 1} · ${spec.short}`, sum: spec.box });
-    });
-  }
+  /**
+   * ⚠ **הזמנה אחת** · חלות בודדות ומארזים נספרים יחד ולא לפי `mode`.
+   * הפיצול הישן הפיל את מה שלא היה בלשונית הפעילה, ולכן השרת והלקוח
+   * יכלו להגיע לשני סכומים שונים לאותה הזמנה.
+   */
+  d.rolls.forEach((r, i) => {
+    assertTops(r.type, r.tops);
+    const spec = SCHNITZEL_TYPES[r.type];
+    itemsTotal += spec.unit;
+    lines.push({ qty: 1, name: `חלה ${i + 1} · ${spec.short}`, sum: spec.unit });
+  });
+  d.boxes.forEach((b, i) => {
+    assertTops(b.type, b.tops);
+    const spec = SCHNITZEL_TYPES[b.type];
+    itemsTotal += spec.box;
+    lines.push({ qty: 1, name: `מארז ${i + 1} · ${spec.short}`, sum: spec.box });
+  });
 
   d.cocottes.forEach((n, i) => {
     if (n <= 0) return;
@@ -126,7 +127,9 @@ function linesOfSchnitzel(d: Extract<CustomerDetails, { category: 'schn' }>): Qu
   });
 
   if (itemsTotal <= 0) throw badRequest('invalid_order', 'empty');
-  return { lines, itemsTotal, meals: 0, shippingFee: 0, total: itemsTotal };
+  /* מארז נחשב חמש מנות · קובע אם המשלוח נפתח */
+  const meals = schnitzelMeals(d.rolls, d.boxes);
+  return { lines, itemsTotal, meals, shippingFee: 0, total: itemsTotal };
 }
 
 function linesOfFruit(qty: number[]): Quote {

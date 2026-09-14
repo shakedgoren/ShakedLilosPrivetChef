@@ -49,10 +49,29 @@ const PICKUP_FROM = 11 * 60;
 const PICKUP_TO = 15 * 60;
 const DELIVERY_STEP_MINUTES = 20;
 
+/**
+ * מתחת לכמות הזאת של מנות אין משלוח, רק איסוף עצמי.
+ * שקד: ״לחסום משלוח מתחת ל-5 מנות או מתחת למארז אחד״ — כלומר
+ * חמש חלות בודדות **או** מארז אחד פותחים משלוח.
+ */
+export const DELIVERY_MIN_MEALS = 5;
+
+/**
+ * כמה מנות סופר מארז · ⚠ **לא מהקנבס** · נגזר מכך שהמארז הוא
+ * ״5 חלות אישיות״ (`SCHNITZEL_FORMS`), ולכן מארז אחד לבדו מגיע
+ * בדיוק למינימום למשלוח — בדיוק כמו שביקשה.
+ */
+export const BOX_MEALS = 5;
+
+/** מניין המנות בהזמנה · חלות בודדות ומארזים יחד, לשני הצדדים */
+export const schnitzelMeals = (rolls: unknown[], boxes: unknown[]): number =>
+  rolls.length + boxes.length * BOX_MEALS;
+
 export const SCHNITZEL_FULFILLMENT = {
   pickupFrom: PICKUP_FROM,
   pickupTo: PICKUP_TO,
   deliverySlots: buildSlots(11 * 60, 15 * 60, DELIVERY_STEP_MINUTES),
+  minMealsForDelivery: DELIVERY_MIN_MEALS,
 } as const;
 
 /** חלה אחת שנבחרה · סוג ותוספות */
