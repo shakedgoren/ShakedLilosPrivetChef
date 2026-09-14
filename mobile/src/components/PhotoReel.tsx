@@ -6,6 +6,7 @@ import { IS_RTL } from '../theme/rtl';
 import { Photo } from './Photo';
 import { useLightboxOpen } from './Lightbox';
 import { photoTitle } from '../data/photoTitles';
+import { PhotoCaption } from './PhotoCaption';
 
 /* המידות מהקנבס · אריח 116×140, מרווח 10, פינה 18 */
 const TILE_W = 116;
@@ -21,6 +22,8 @@ const SHOTS = HOME_PHOTOS;
 export const REEL_BOTTOM = 40;
 /* גוון המותג · הרצועה אינה שייכת לקטגוריה אחת */
 const REEL_RGB = '201,162,39';
+/* ⚠ האריח ברוחב 116 בלבד · שם ארוך נשבר כאן להרבה שורות */
+const CAPTION = 10.5;
 
 /**
  * רצועת התמונות · נגללת בלולאה אינסופית, ולחיצה פותחת את התמונה במסך מלא
@@ -94,6 +97,8 @@ export function PhotoReel() {
                 </Defs>
                 <Rect x={0} y={0} width={TILE_W} height={TILE_H} fill="url(#tileFade)" />
               </Svg>
+              {/* ⚠ לא מהקנבס · שקד ביקשה שם על כל תמונה בקרוסלה */}
+              <PhotoCaption text={photoTitle(sh)} size={CAPTION} />
             </View>
           ))}
       </Animated.View>

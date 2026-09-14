@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } f
 import { photo } from '../data/photos';
 import { Image as ImageIcon } from '../icons';
 import { useLightbox } from './Lightbox';
+import { photoTitle } from '../data/photoTitles';
 import { a, deepRgbOf } from '../theme/tokens';
 
 type Props = {
@@ -19,7 +20,11 @@ type Props = {
    * תמשיך לעשות מה שהכרטיס אמור לעשות.
    */
   zoom?: boolean;
-  /** שם התמונה · מוצג מעל התמונה כשהיא נפתחת בגודל מלא */
+  /**
+   * שם התמונה · מוצג מעל התמונה כשהיא נפתחת בגודל מלא.
+   * כשלא מועבר — נשלף לבד מ-`photoTitles.ts` לפי שם הקובץ,
+   * ולכן כל תמונה באפליקציה מקבלת את שמה בלי שהמסך יטפל בזה.
+   */
   title?: string;
 };
 
@@ -46,6 +51,7 @@ export function Photo({
 }: Props) {
   const src = name ? photo(name) : undefined;
   const lightbox = useLightbox();
+  const shotTitle = title ?? (name ? photoTitle(name) : undefined);
 
   if (!src) {
     return (
@@ -68,7 +74,7 @@ export function Photo({
    * ולכן הוא לא הדרך. במקום זה כל קורא מספק מידות.
    */
   return (
-    <Pressable onPress={() => lightbox.open(name, title)} style={style as ViewStyle}>
+    <Pressable onPress={() => lightbox.open(name, shotTitle)} style={style as ViewStyle}>
       <Image source={src} style={s.fill} resizeMode={resizeMode} />
     </Pressable>
   );

@@ -4,6 +4,8 @@ import { Photo } from './Photo';
 import { ChevronLeft, ChevronRight } from '../icons';
 import { IS_RTL } from '../theme/rtl';
 import { radius } from '../theme/tokens';
+import { PhotoCaption } from './PhotoCaption';
+import { photoTitle } from '../data/photoTitles';
 
 type Props = {
   names: readonly string[];
@@ -25,6 +27,8 @@ type Props = {
 const MAX_DOTS = 6;
 /* המרווח בין אריחים · חייב להתאים ל-s.gap */
 const TILE_GAP = 10;
+/* הכיתוב על התמונה · האריח כאן רחב, ולכן גדול יותר מברצועה */
+const CAPTION = 15;
 
 /**
  * חצי הניווט · המידות מהקרוסלה של מפות ההגעה בקנבס — עיגול 30,
@@ -88,12 +92,19 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
         }}
       >
         {names.map((name) => (
-          <Photo
-            key={name}
-            name={name}
-            rgb={rgb}
-            style={[s.shot, { height, width: shotW, borderRadius: radius.tile }]}
-          />
+          /**
+           * ⚠ `zoom={false}` · שקד ביקשה שבקרוסלת פינת השף לא תהיה
+           * הגדלה בלחיצה, ושהשם יופיע על התמונה עצמה במקום.
+           */
+          <View key={name} style={{ width: shotW }}>
+            <Photo
+              name={name}
+              rgb={rgb}
+              zoom={false}
+              style={[s.shot, { height, width: shotW, borderRadius: radius.tile }]}
+            />
+            <PhotoCaption text={photoTitle(name)} size={CAPTION} />
+          </View>
         ))}
       </ScrollView>
 
