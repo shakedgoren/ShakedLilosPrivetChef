@@ -25,3 +25,7 @@ mobile/.env
 mobile/.env.local
 .canvas-preview/
 mobile/public/canvas/
+
+# תוצרי אימות של Playwright — לא נכנסים לגיט
+.playwright-mcp/
+chef-main.png

@@ -30,6 +30,14 @@ const ACCENT = hues.chef;
 /** הריפודים עד הקרוסלה · 18 מהעמוד ועוד 12 מהכרטיס, משני הצדדים */
 const CARO_INSET = (space.lg + 12) * 2;
 
+/** ⚠ אינם מהקנבס · שלושת המרווחים שביקשה שקד בפינת השף */
+/* כותרת↔תיאור · 5 בקנבס, צמוד יותר לבקשתה */
+const INTRO_GAP = 2;
+/* המרווח מעל ״בוחרים את המסלול שלכם״ */
+const CTA_GAP = 12;
+/* המרווח בין פס ההתקדמות לסעיפים */
+const TRACK_GAP = 14;
+
 /**
  * שף וטאבון · שתי חבילות, כל אחת שאלון של שישה עמודים.
  * זו הקטגוריה היחידה שפתוחה עד הסוף גם בלי חשבון — החלטה של שקד.
@@ -125,31 +133,9 @@ export function ChefScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
-        {o.page === 0 ? (
-          <PhotoStrip
-            names={o.pkg.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
-            height={180}
-            rgb={ACCENT.rgb}
-            inset={space.lg * 2}
-          />
-        ) : null}
-
-        {o.page === 0 &&
-          o.pkg.intro?.map((t, i) => (
-            <Text
-              key={i}
-              style={{
-                fontSize: parseFloat(t.size),
-                fontWeight: t.w as never,
-                color: t.fg,
-                lineHeight: parseFloat(t.size) * 1.6,
-                textAlign: 'center',
-              }}
-            >
-              {t.text}
-            </Text>
-          ))}
-
+        {/* ⚠ אין כאן קרוסלה ואין תיאור · בקנבס ענף `isOpts` מתחיל
+            ישר בסעיפים, ושקד ביקשה את זה מפורשות. הקרוסלה והתיאור
+            חיים רק בעמוד הראשי, לפני בחירת המסלול. */}
         {o.sections.map((sec, i) => (
           <ChefSectionRenderer key={`${sec.kind}-${sec.id ?? i}`} s={sec} api={o} />
         ))}
@@ -186,12 +172,14 @@ export function ChefScreen() {
 }
 
 const s = StyleSheet.create({
-  /* המבוא · ממורכז ובאותם מרווחים של הקוסקוס · gap 3 ואז 12 */
-  intro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
+  /* ⚠ המרווחים כאן אינם מהקנבס · בקנבס שלוש השורות ב-gap 5 אחיד.
+     שקד ביקשה שהכותרת והתיאור יהיו צמודים יותר, ושהשורה
+     ״בוחרים את המסלול שלכם״ תקבל מרווח עליון ותהיה גדולה ומודגשת. */
+  intro: { gap: INTRO_GAP, paddingHorizontal: 4, marginBottom: 12 },
   introTitle: {
     fontSize: 15,
     fontWeight: '600',
-    lineHeight: 24,
+    lineHeight: 21,
     color: surface.ink,
     textAlign: 'center',
   },
@@ -203,11 +191,12 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   introCta: {
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 20.8,
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 22,
     color: ACCENT.deep,
     textAlign: 'center',
+    marginTop: CTA_GAP,
   },
 
   modes: {
@@ -270,11 +259,14 @@ const s = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: '600', color: surface.ink, textAlign: 'center' },
   step: { fontSize: type.label, color: '#7A7080' },
+  /* ⚠ המרווח התחתון אינו מהקנבס · שקד ביקשה רווח בין פס
+     ההתקדמות לשאר המסך, ובקנבס אין פס התקדמות בכלל */
   track: {
     height: 4,
     borderRadius: 999,
     backgroundColor: 'rgba(130,112,162,0.12)',
     marginTop: space.md,
+    marginBottom: TRACK_GAP,
     overflow: 'hidden',
   },
   fill: { height: 4, borderRadius: 999, backgroundColor: a(ACCENT.rgb, 0.6) },

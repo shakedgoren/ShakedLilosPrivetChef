@@ -31,10 +31,13 @@ const TILE_GAP = 10;
 const CAPTION = 15;
 
 /**
- * חצי הניווט · המידות מהקרוסלה של מפות ההגעה בקנבס — עיגול 30,
- * לבן 0.92 עם צל, וחץ 15 בעובי 2.4.
+ * חצי הניווט · המידות מהקרוסלה של מפות ההגעה בקנבס — עיגול 30
+ * וחץ 15 בעובי 2.4.
  * ⚠ הכיוון שונה מהקנבס · שם החצים מצביעים פנימה, ושקד ביקשה
  * שיצביעו החוצה — ימינה בצד ימין ושמאלה בצד שמאל.
+ * ⚠ **אינם מהקנבס** · שקד ביקשה כפתורים מרחפים שקופים למחצה
+ * שעובדים תמיד בשני הכיוונים. לכן הרקע 0.55 ולא 0.92, שני החצים
+ * תמיד פעילים, והם מקיפים מהסוף להתחלה ובחזרה.
  */
 const ARROW = 30;
 const ARROW_GLYPH = 15;
@@ -46,6 +49,12 @@ const DIR = IS_RTL ? -1 : 1;
 /** קרוסלת תמונות אופקית · בית, שף וטאבון */
 export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) {
   const [i, setI] = useState(0);
+  /**
+   * ⚠ המראה של האינדקס · לחיצות רצופות על החץ קראו את `i` מתוך
+   * ה-closure של הרינדור הקודם, ולכן שתי לחיצות מהירות זו אחר זו
+   * קפצו לאותה תמונה. נמדד בדפדפן. הצעד נגזר מכאן ולא מ-`i`.
+   */
+  const iRef = useRef(0);
   const [pageW, setPageW] = useState(0);
   const strip = useRef<ScrollView>(null);
   const win = useWindowDimensions();
@@ -57,11 +66,13 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
   /* מרווח בין מרכזי אריחים · זהה לחישוב ב-onMomentumScrollEnd */
   const pitch = tileWidth ? tileWidth + TILE_GAP : pageW;
 
-  const last = names.length - 1;
 
   /* לחיצה על נקודה או על חץ מגלגלת לתמונה · בלי זה המחוון זז והתמונה נשארת */
   const jump = (k: number) => {
-    const next = Math.max(0, Math.min(last, k));
+    /* ⚠ מחזורי · חיתוך ל-[0, last] השאיר את החץ בקצה מחוסר תועלת,
+       ושקד ביקשה ששני הכיוונים יעבדו תמיד */
+    const next = ((k % names.length) + names.length) % names.length;
+    iRef.current = next;
     setI(next);
     /* ⚠ בלי animated · גלילה חלקה אל היסט שלילי ב-RTL נחסמת בדפדפן
        והמסלול נשאר במקום. השמה ישירה עובדת, ונמדדה. */
@@ -88,7 +99,9 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
           const w = tileWidth ? tileWidth + TILE_GAP : e.nativeEvent.layoutMeasurement.width;
           if (!w) return;
           /* ⚠ ב-RTL ההיסט יוצא שלילי · בלי abs האינדקס נחתך ל-0 */
-          setI(Math.round(Math.abs(e.nativeEvent.contentOffset.x) / w));
+          const k = Math.round(Math.abs(e.nativeEvent.contentOffset.x) / w);
+          iRef.current = k;
+          setI(k);
         }}
       >
         {names.map((name) => (
@@ -112,15 +125,15 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
       {names.length > 1 ? (
         <>
           <Pressable
-            onPress={() => jump(i - 1)}
-            style={[s.arrow, s.arrowRight, { top: height / 2 - ARROW / 2 }, i === 0 && s.arrowOff]}
+            onPress={() => jump(iRef.current - 1)}
+            style={[s.arrow, s.arrowRight, { top: height / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronRight size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
           </Pressable>
           <Pressable
-            onPress={() => jump(i + 1)}
-            style={[s.arrow, s.arrowLeft, { top: height / 2 - ARROW / 2 }, i === last && s.arrowOff]}
+            onPress={() => jump(iRef.current + 1)}
+            style={[s.arrow, s.arrowLeft, { top: height / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronLeft size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
@@ -145,6 +158,8 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
 
 /** גוון החץ · הכתום הכהה של השף, כמו בקנבס */
 const ARROW_INK = '#7A3D18';
+/** ⚠ שקוף למחצה · בקשה של שקד, בקנבס הכפתור אטום (0.92) */
+const ARROW_BG = 'rgba(255,255,255,0.55)';
 
 const s = StyleSheet.create({
   gap: { gap: TILE_GAP },
@@ -153,14 +168,13 @@ const s = StyleSheet.create({
     width: ARROW,
     height: ARROW,
     borderRadius: ARROW / 2,
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: ARROW_BG,
     boxShadow: '0 3px 9px -4px rgba(20,16,12,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   arrowRight: { right: 8 },
   arrowLeft: { left: 8 },
-  arrowOff: { opacity: 0.35 },
   shot: { overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.5)' },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 8 },
   dot: { height: 5, borderRadius: 999, backgroundColor: '#A85A28' },

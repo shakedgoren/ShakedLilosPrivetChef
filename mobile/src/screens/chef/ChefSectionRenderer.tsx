@@ -7,6 +7,7 @@ import { isMissingPhoto } from '../../data/photos';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
+import { OptionGrid } from '../../components/OptionGrid';
 
 const ACCENT = hues.chef;
 
@@ -27,6 +28,30 @@ type Api = {
   setValue: (id: string, v: unknown) => void;
   stylesFor: (concept: string) => string[];
 };
+
+/**
+ * מספר העמודות לכל סוג סעיף · הנוסחאות מ-`Chef.dc.html`:
+ * `grid` → `cols || (n <= 3 ? n : 2)` · `multi` → `cols || 3`
+ * `tiers` → תמיד 3 · `pair` → `cols || 2` · `cards` → `one ? 1 : 2`
+ */
+const colsFor = (s: ChefSection, n: number): number => {
+  if (s.cols) return +s.cols;
+  if (s.kind === 'tiers') return 3;
+  if (s.kind === 'pair') return 2;
+  if (s.kind === 'cards') return s.one ? 1 : 2;
+  if (s.kind === 'multi') return 3;
+  /* grid · עד שלוש אפשרויות בשורה אחת, מעבר לזה שתי עמודות */
+  return n <= 3 ? n : 2;
+};
+
+/** הצרת הרשת · `narrow` בקנבס הוא 272, ו-`maxw` נותן ערך מפורש */
+const maxWidthFor = (s: ChefSection): number | undefined => {
+  if (s.maxw) return parseFloat(String(s.maxw));
+  return s.narrow ? NARROW : undefined;
+};
+
+/** רוחב הרשת המוצרת בקנבס */
+const NARROW = 272;
 
 const nameOf = (o: unknown) => (typeof o === 'string' ? o : (o as { n: string }).n);
 const descOf = (o: unknown) => (typeof o === 'string' ? undefined : (o as { d?: string }).d);
@@ -50,7 +75,8 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
 
     case 'title':
       return (
-        <View style={st.titleRow}>
+        /* `12px 2px 0` בקנבס · `flush: true` מבטל את המרווח העליון */
+        <View style={[st.titleRow, !s.flush && st.titlePad]}>
           <Text style={st.title}>{s.label}</Text>
           {s.cap != null && s.link ? (
             <Text style={st.hint}>
@@ -129,6 +155,14 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
             value={v}
             min={s.min ?? 0}
             tone={STEP_TONE}
+            /* המספר והיחידה טור אחד · בקנבס היחידה יושבת מתחת למספר
+               בתוך אותה עמודה, ולא לצידו */
+            center={
+              <View style={st.numCol}>
+                <Text style={st.num}>{v}</Text>
+                {s.unit ? <Text style={st.stepperUnit}>{s.unit}</Text> : null}
+              </View>
+            }
             onChange={(n) => {
               const step = s.step ?? 1;
               const raw = n > v ? v + step : v - step;
@@ -137,7 +171,6 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
               api.setValue(s.id, Math.max(lo, Math.min(hi, raw)));
             }}
           />
-          {s.unit ? <Text style={st.stepperUnit}>{s.unit}</Text> : null}
         </View>
       );
     }
@@ -156,7 +189,13 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       const locked = !!s.lock && !api.picks[s.lock];
       const boxy = s.kind !== 'pair';
       return (
-        <View style={[boxy ? st.chips : st.cards, locked && st.blocked]} pointerEvents={locked ? 'none' : 'auto'}>
+        <OptionGrid
+          cols={colsFor(s, opts.length)}
+          maxWidth={maxWidthFor(s)}
+          style={locked ? st.blocked : undefined}
+          /* ⚠ הנעילה על העוטף · `box-none` היה מעביר את המגע לילדים */
+          pointerEvents={locked ? 'none' : 'auto'}
+        >
           {opts.map((o) => {
             const n = nameOf(o);
             const d = descOf(o);
@@ -165,14 +204,15 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
               <Pressable
                 key={n}
                 onPress={() => api.select(s.id, n)}
-                style={[boxy ? st.chip : st.card, on && st.on]}
+                /* `grow` מותח את הכרטיס לרוחב שהרשת קבעה ולגובה השכן */
+                style={[st.grow, boxy ? st.chip : st.card, s.boxy && st.boxy, on && st.on]}
               >
                 <Text style={[boxy ? st.chipText : st.cardName, on && st.onText]}>{n}</Text>
                 {d ? <Text style={st.cardDesc}>{d}</Text> : null}
               </Pressable>
             );
           })}
-        </View>
+        </OptionGrid>
       );
     }
 
@@ -185,32 +225,48 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       const cur: string[] = api.picks[s.id] || [];
       const cap = s.cap ?? null;
       const full = cap != null && cur.length >= cap;
-      const asCards = s.kind === 'cards';
+      /* ⚠ `multicap` ו-`sauces` הם `isRows` בקנבס · שורות ברוחב מלא,
+         ולא גלולות ברוחב התוכן. ככה הסלטים, הפסטה והקינוחים יוצאים
+         ברוחב אחיד. `multi` הוא רשת עמודות, ו-`cards` כרטיס רחב. */
+      const asRows = s.kind !== 'multi';
+
+      const tile = (o: unknown) => {
+        const n = nameOf(o);
+        const d = descOf(o);
+        const on = cur.includes(n);
+        const blocked = full && !on;
+        const missing = isMissingPhoto(n);
+        return (
+          <Pressable
+            key={n}
+            onPress={() => api.toggle(s.id, n, cap)}
+            style={[
+              st.grow,
+              asRows ? st.card : st.chip,
+              on && st.on,
+              blocked && st.blocked,
+              missing && st.missingRow,
+            ]}
+          >
+            {missing ? <Photo rgb={ACCENT.rgb} style={st.missingShot} /> : null}
+            <View style={missing ? st.grow : undefined}>
+              <Text style={[asRows ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
+              {d ? <Text style={st.cardDesc}>{d}</Text> : null}
+            </View>
+          </Pressable>
+        );
+      };
+
       return (
         <>
           {s.note ? <Text style={st.note}>{s.note}</Text> : null}
-          <View style={asCards ? st.cards : st.chips}>
-            {opts.map((o) => {
-              const n = nameOf(o);
-              const d = descOf(o);
-              const on = cur.includes(n);
-              const blocked = full && !on;
-              const missing = isMissingPhoto(n);
-              return (
-                <Pressable
-                  key={n}
-                  onPress={() => api.toggle(s.id, n, cap)}
-                  style={[asCards ? st.card : st.chip, on && st.on, blocked && st.blocked, missing && st.missingRow]}
-                >
-                  {missing ? <Photo rgb={ACCENT.rgb} style={st.missingShot} /> : null}
-                  <View style={missing ? st.grow : undefined}>
-                    <Text style={[asCards ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
-                    {d ? <Text style={st.cardDesc}>{d}</Text> : null}
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
+          {asRows ? (
+            <View style={st.cards}>{opts.map(tile)}</View>
+          ) : (
+            <OptionGrid cols={colsFor(s, opts.length)} maxWidth={maxWidthFor(s)}>
+              {opts.map(tile)}
+            </OptionGrid>
+          )}
         </>
       );
     }
@@ -240,6 +296,8 @@ const st = StyleSheet.create({
     paddingHorizontal: 2,
   },
   title: { fontSize: 15.5, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  /* המרווח העליון של כותרת פנימית · `12px 2px 0` בקנבס */
+  titlePad: { paddingTop: 12 },
   hint: { fontSize: 11.5, fontWeight: '400', color: ACCENT.hue },
   note: {
     fontSize: 12.5,
@@ -292,7 +350,10 @@ const st = StyleSheet.create({
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
-  stepperUnit: { fontSize: 12.5, color: surface.muted },
+  /* המספר והיחידה · טור אחד ברוחב 46 כמו `numW` הדק בקנבס */
+  numCol: { minWidth: 46, alignItems: 'center' },
+  num: { fontSize: 18, fontWeight: '600', color: surface.ink, lineHeight: 20 },
+  stepperUnit: { fontSize: 10.5, fontWeight: '300', color: surface.muted },
 
   /* גלולות · גובה מזערי 40, פינה 14, ריפוד 6/12 · מהקנבס */
   chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 7, paddingHorizontal: 2 },
@@ -308,6 +369,8 @@ const st = StyleSheet.create({
     justifyContent: 'center',
   },
   chipText: { fontSize: 12.5, color: surface.inkSoft, textAlign: 'center' },
+  /* `boxy: true` בקנבס · פינה 18 במקום גלולה */
+  boxy: { borderRadius: 18 },
 
   /* שורות בחירה · פינה 16, ריפוד 9/12, הכל ממורכז · מהקנבס */
   cards: { gap: 7 },
