@@ -1,5 +1,6 @@
 import type { OrderLine } from '../../order/types';
 import { FRUIT_SHIPPING } from '../../data/fruit';
+import { shippingFeeFor } from '../../data/shared';
 import { DOWS, dowOf } from '../../data/calendar';
 import type { FruitDetails } from './FruitOrderSheet';
 
@@ -37,13 +38,11 @@ const FEE_LABEL = 'דמי משלוח';
 
 /**
  * דמי המשלוח לעיר שנבחרה.
- * ⚠ **החלוקה לשתי המדרגות היא שלי** · הקנבס כותב ״משלוחים בתוך
- * יבנה״ מול ״משלוחים באזור השפלה״, ולכן יבנה מקבלת את המדרגה
- * הקרובה וכל שאר הערים את הרחוקה. הסכומים עצמם מהקנבס.
+ * ✅ **אושר על ידי שקד** ב-15 בספטמבר 2026 · 20 ש״ח בתוך יבנה,
+ * 60 ש״ח מחוץ ליבנה. החישוב עבר ל-`shared.ts`, שהוא המקור היחיד
+ * לכל האפליקציה ולשרת.
  */
-const NEAR_CITY = 'יבנה';
-export const shippingFee = (city: string): number =>
-  city === NEAR_CITY ? FRUIT_SHIPPING.near.fee : FRUIT_SHIPPING.far.fee;
+export const shippingFee = shippingFeeFor;
 
 /** תאריך קריא · ״17.09.2026 (יום ה׳)״ במקום מפתח ISO */
 export function humanDate(key: string): string {

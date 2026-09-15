@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { quoteCustomer, quoteAdminDraft, assertFulfillment, assertQuote } from './quote.ts';
 import { DAYPARTS, dateOpen, dayPartOpen, dayKey } from '../../../mobile/src/data/calendar.ts';
 import { EXTRAS } from '../../../mobile/src/data/chef.ts';
+import { deliveryFee, shippingFeeFor } from '../../../mobile/src/data/shared.ts';
 
 test('couscous · 2 צמחוני + 1 עוף', () => {
   const q = quoteCustomer({ category: 'cous', qty: [2, 1, 0, 0, 0, 0] });
@@ -212,4 +213,15 @@ test('שף · עיצוב שולחן חד־פעמי וחבילת שתייה לכ�
   assert.equal(q.total, base + table + drink);
   assert.equal(q.lines.find((l) => l.name.startsWith(EXTRAS[1].n))?.sum, drink);
   assert.equal(q.lines.find((l) => l.name.startsWith(EXTRAS[0].n))?.sum, table);
+});
+
+test('דמי משלוח · 20 בתוך יבנה, 60 מחוצה לה', () => {
+  assert.equal(shippingFeeFor('יבנה'), 20);
+  for (const c of ['אשדוד', 'גדרה', 'נס ציונה', 'רחובות', 'ראשון לציון', 'תל אביב']) {
+    assert.equal(shippingFeeFor(c), 60, c);
+  }
+  /* איסוף עצמי · בלי תוספת בכלל */
+  assert.equal(deliveryFee('self', 'ראשון לציון'), 0);
+  assert.equal(deliveryFee('deliv', 'יבנה'), 20);
+  assert.equal(deliveryFee('deliv', 'ראשון לציון'), 60);
 });

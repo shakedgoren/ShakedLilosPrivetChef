@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { CITIES, PAYMENTS, SALE_DATE } from '../data/shared';
+import { CITIES, PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -23,6 +23,10 @@ const PICKUP_EDGE = 0.3;
 const CHEV = 14;
 const CHEV_INK = '#C1BBCB';
 const CHEV_STROKE = 2.4;
+
+/* דמי המשלוח · לתצוגה בלבד, החישוב ב-`deliveryFee` */
+const SHIP_NEAR = shippingFeeFor('יבנה');
+const SHIP_FAR = shippingFeeFor('אחר');
 
 type Props = {
   f: Fulfillment;
@@ -133,6 +137,11 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
           <Text style={s.optionSub}>
             {minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}
             {first}–{last}
+          </Text>
+          {/* ⚠ המחירון נוסף כאן · הלקוחה לא ידעה כמה עולה משלוח
+              עד שההזמנה כבר נשלחה */}
+          <Text style={s.optionSub}>
+            {SHIP_NEAR} ₪ בתוך יבנה · {SHIP_FAR} ₪ מחוצה לה
           </Text>
         </View>
         <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
@@ -246,6 +255,8 @@ function ConfirmStep({
   accent: Accent;
   onHome: () => void;
 }) {
+  const fee = deliveryFee(f.ship ?? '', f.city);
+
   return (
     <View style={s.stack}>
       <Text style={s.doneNote}>נשלח לך אישור לוואטסאפ</Text>
@@ -261,10 +272,20 @@ function ConfirmStep({
           </View>
         ))}
 
+        {/* ⚠ **שורה חדשה** · דמי המשלוח לא הופיעו בסיכום בכלל,
+            והלקוחה ראתה רק את מחיר הפריטים. 20 בתוך יבנה, 60
+            מחוצה לה — נמסר על ידי שקד ב-15 בספטמבר 2026. */}
+        {fee > 0 ? (
+          <View style={s.line}>
+            <Text style={s.lineName}>משלוח · {f.city}</Text>
+            <Text style={s.lineSum}>{fee} ₪</Text>
+          </View>
+        ) : null}
+
         <View style={s.rule} />
         <View style={s.line}>
           <Text style={s.totalLabel}>סה״כ</Text>
-          <Text style={s.total}>{total}</Text>
+          <Text style={s.total}>{total + fee}</Text>
           <Text style={s.currency}>₪</Text>
         </View>
 

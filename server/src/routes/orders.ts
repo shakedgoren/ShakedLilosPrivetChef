@@ -21,6 +21,7 @@ import {
 import { isoDate } from '../admin/sold.ts';
 import { serializeOrder } from '../orders/serialize.ts';
 import { readJson } from '../json.ts';
+import { deliveryFee } from '../../../mobile/src/data/shared.ts';
 
 export const ordersRouter = Router();
 
@@ -108,6 +109,16 @@ async function placeCustomerOrder(opts: {
     assertFulfillment(category, quote.meals, { ship, time, city, address, pay });
   }
 
+  /**
+   * דמי משלוח · 20 בתוך יבנה, 60 מחוצה לה. נמסר על ידי שקד
+   * ב-15 בספטמבר 2026.
+   * ⚠ **היה 0 בכל הזמנת לקוחה** · הסכום חושב רק בהזמנות הידניות
+   * של מסך הניהול, ולכן לקוחה במשלוח שילמה כמו באיסוף.
+   * ⚠ בקשת הצעה (שף וטאבון) פטורה · אין שם משלוח אלא הגעה של השף,
+   * והמחיר מתואם בשיחה.
+   */
+  const shippingFee = isQuoteCategory(category) ? 0 : deliveryFee(ship, city ?? '');
+
   const name = (opts.name ?? opts.userName ?? '').trim();
   const phone = (opts.phone ?? opts.userPhone ?? '').trim();
 
@@ -134,8 +145,8 @@ async function placeCustomerOrder(opts: {
         itemsJson: JSON.stringify(quote.lines),
         detailsJson: JSON.stringify(opts.details),
         itemsTotal: quote.itemsTotal,
-        shippingFee: 0,
-        total: quote.total,
+        shippingFee,
+        total: quote.total + shippingFee,
       },
     });
   });
