@@ -470,6 +470,27 @@ for (const r of ['day', 'week', 'month', 'half']) {
 }
 
 /**
+ * מגמת הכספים · עיצוב ״הגלים״ מצייר ממנה את שני הגלים, ולכן כל
+ * טווח חייב להחזיר סלים עם מחזור והוצאות.
+ */
+for (const [p, least] of [['month', 28], ['quart', 3], ['year', 12]] as const) {
+  const hit = await api(`/admin/money?period=${p}`, { headers: { authorization: `Bearer ${adminToken}` } });
+  if (hit.status !== 200) fail(`money ${p}`, hit);
+  const b = hit.body as { revenue: number; expenses: number; points: { k: string; rev: number; exp: number }[] };
+  if (!Array.isArray(b.points) || b.points.length < least) fail(`money points ${p}`, b.points);
+  for (const pt of b.points) {
+    if (typeof pt.k !== 'string' || typeof pt.rev !== 'number' || typeof pt.exp !== 'number') {
+      fail(`money point shape ${p}`, pt);
+    }
+  }
+  /* הסלים חייבים להסתכם בדיוק בסך התקופה · אחרת הגרף מספר סיפור אחר מהמספר */
+  const sumRev = b.points.reduce((t, pt) => t + pt.rev, 0);
+  const sumExp = b.points.reduce((t, pt) => t + pt.exp, 0);
+  if (sumRev !== b.revenue) fail(`money points sum != revenue (${p})`, { sumRev, revenue: b.revenue });
+  if (sumExp !== b.expenses) fail(`money points sum != expenses (${p})`, { sumExp, expenses: b.expenses });
+}
+
+/**
  * פנקס ההכנסות · ההזמנה שנוצרה למעלה חייבת להופיע בו, ביום
  * המכירה שלה ובסכום ששולם.
  */

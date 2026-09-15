@@ -99,6 +99,8 @@ export const adminMoney = (period: string) =>
     profit: number;
     margin: number;
     cats: { id: string; n: string; hue: string; deep: string; v: number; pct: number }[];
+    /** מגמת המחזור וההוצאות · סלים לפי הטווח, לגלים של מסך הכספים */
+    points: { k: string; rev: number; exp: number }[];
     expenseRows: { k: string; sub: string; v: number }[];
   }>(`/admin/money?period=${period}`);
 

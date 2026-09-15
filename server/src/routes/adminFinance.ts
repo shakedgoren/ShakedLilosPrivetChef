@@ -17,6 +17,9 @@ import { dishPrices } from '../admin/prices.ts';
 import { EXPENSE_CATS } from '../admin/expenseCats.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 
+/** קיצורי החודשים לתוויות הגרף · שלוש אותיות כמו בדף הבית */
+const MONTH_SHORT = ['ינו', 'פבר', 'מרץ', 'אפר', 'מאי', 'יוני', 'יולי', 'אוג', 'ספט', 'אוק', 'נוב', 'דצמ'];
+
 export const adminFinanceRouter = Router();
 adminFinanceRouter.use(requireAuth, requireAdmin);
 
@@ -68,6 +71,42 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
     const profit = revenue - expTotal;
     const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
 
+    /**
+     * ⚠ **מגמת המחזור וההוצאות** · שקד בחרה (15 בספטמבר 2026) את
+     * עיצוב ״הגלים״, שבו הגרף הוא הרקע של הכרטיס. החודש מחולק
+     * לימים, והרבעון והשנה לחודשים — כל טווח והסלים שלו.
+     */
+    const byDay = key === 'month';
+    const bucketOf = (d: Date) => (byDay ? String(d.getDate()) : monthKey(d));
+    const order: string[] = [];
+    const seen = new Set<string>();
+    for (const cur = new Date(from); cur < to; byDay ? cur.setDate(cur.getDate() + 1) : cur.setMonth(cur.getMonth() + 1)) {
+      const k = bucketOf(cur);
+      if (!seen.has(k)) {
+        seen.add(k);
+        order.push(k);
+      }
+    }
+    const revBy: Record<string, number> = {};
+    const expBy: Record<string, number> = {};
+    for (const k of order) {
+      revBy[k] = 0;
+      expBy[k] = 0;
+    }
+    for (const o of orders) {
+      const k = bucketOf(o.createdAt);
+      if (k in revBy) revBy[k] += o.total;
+    }
+    for (const e of expenses) {
+      const k = bucketOf(e.createdAt);
+      if (k in expBy) expBy[k] += e.amount;
+    }
+    const points = order.map((k) => ({
+      k: byDay ? k : MONTH_SHORT[Number(k.slice(5, 7)) - 1] ?? k,
+      rev: revBy[k],
+      exp: expBy[k],
+    }));
+
     const cats = MONEY_CATS.map((c) => {
       const v = byCat[c.id] ?? 0;
       const share = revenue > 0 ? v / revenue : c.share;
@@ -83,6 +122,7 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
       profit,
       margin,
       cats,
+      points,
       expenseRows: EXPENSES.map((e) => ({ k: e.k, sub: e.sub, v: grouped[e.k] ?? 0 })),
     });
   } catch (err) {
