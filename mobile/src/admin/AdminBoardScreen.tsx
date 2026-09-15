@@ -179,7 +179,7 @@ export function AdminBoardScreen() {
    * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
    */
   const w = pad
-    ? { time: 58, who: 116, item: 50, sum: 62, pay: 66, status: 118 }
+    ? { time: 58, who: 116, item: 50, sum: 62, pay: 66, status: 134 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
@@ -525,10 +525,16 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.2)',
   },
-  steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center' },
+  steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center', flexShrink: 0 },
   /* ⚠ ריבוע אייקון · בקנבס 34×30 עם מסגרת, והפעיל נצבע מלא */
+  /**
+   * ⚠ **ה-X נחתך** · שלושת האייקונים (34 כל אחד), שלושת הרווחים
+   * וכפתור הביטול דרשו 143 פיקסלים בעוד שעמודת הסטטוס הייתה 118,
+   * והעודף נחתך בקצה. האייקון ירד ל-30 והעמודה עלתה ל-134:
+   * 3×30 + 3×5 + 18 + 10 = 133.
+   */
   step: {
-    width: 34,
+    width: 30,
     height: 30,
     borderRadius: 9,
     borderWidth: 1,
