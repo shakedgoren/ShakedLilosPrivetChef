@@ -46,23 +46,18 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
   const { back, canBack, go } = useNav();
   return (
     <View style={s.root}>
-      {/* ⚠ **מעל הכותרת ולא לצידה** · שקד ביקשה (15 בספטמבר 2026)
-          שהחץ יישב מעט מעל הכותרת הראשית. תמיד מוצג — כשאין
-          מחסנית (כניסה ישירה לכתובת) הוא מחזיר לדף הניהול. */}
-      <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
-        <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
-      </Pressable>
-      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026) לכל
-          הכותרות בצד הניהולי. כפתורי הפעולה יצאו מזרימת השורה
-          ויושבים עליה — אחרת הם היו דוחפים את הכותרת מהמרכז. */}
-      <View style={s.head}>
-        <View style={s.headText}>
-          {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
-          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
-            {title}
-          </Text>
-          {sub ? <Text style={s.sub}>{sub}</Text> : null}
-        </View>
+      {/* ⚠ **שורת הפעולות** · חץ החזרה בפינה הימנית והכפתורים בפינה
+          השמאלית, בשורה שמעל הכותרת. שקד ביקשה (15 בספטמבר 2026)
+          שהכפתורים יחזרו לפינה השמאלית העליונה שממנה זזו כשמירכזנו
+          את הכותרות. נמדד בדפדפן שבמסך ההזמנות הכפתורים תופסים 183
+          פיקסלים והכותרת הממורכזת 166→224 — בשורה אחת הם דורסים את
+          הכותרת, ולכן הם יושבים בשורה נפרדת.
+          ⚠ החץ הוא `ChevronRight` ולא תו ‹ · תווי חץ נהפכים ב-RTL.
+          תמיד מוצג — כשאין מחסנית הוא מחזיר לדף הניהול. */}
+      <View style={s.topRow}>
+        <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
+          <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
+        </Pressable>
         <View style={s.actions}>
         {actions.map((act) => (
           <Pressable
@@ -96,6 +91,18 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
         ))}
         </View>
       </View>
+      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026) לכל
+          הכותרות בצד הניהולי. השורה כולה שלה, ולכן שום כפתור לא
+          יכול לרדת עליה. */}
+      <View style={s.head}>
+        <View style={s.headText}>
+          {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
+          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
+            {title}
+          </Text>
+          {sub ? <Text style={s.sub}>{sub}</Text> : null}
+        </View>
+      </View>
       {children}
     </View>
   );
@@ -126,19 +133,15 @@ const s = StyleSheet.create({
   /* ⚠ הריפוד העליון ירד ל-18 · החץ תופס את השורה שמעל הכותרת */
   root: { flex: 1, paddingTop: 18, paddingHorizontal: 18, gap: 12 },
   head: { justifyContent: 'center', minHeight: 44 },
-  /* הפעולות מרחפות בקצה · לא משתתפות במרכוז */
-  actions: {
-    position: 'absolute',
-    end: 0,
-    top: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  /**
+   * ⚠ **`space-between` ולא `end: 0`** · בדפדפן `I18nManager.isRTL`
+   * כבוי, ולכן ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה
+   * שהעיף את הכפתורים לצד ימין ועל הכותרת. סידור בזרימה נפתר מול
+   * `direction: rtl` של הדף: החץ בימין, הכפתורים בשמאל.
+   */
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: -2 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   back: {
-    alignSelf: 'flex-start',
-    marginBottom: -2,
     width: 34,
     height: 34,
     borderRadius: 17,

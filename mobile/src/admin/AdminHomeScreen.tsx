@@ -49,13 +49,13 @@ export function AdminHomeScreen() {
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026).
-          הכפתורים יצאו מזרימת השורה ויושבים בקצותיה. */}
+      {/* ⚠ **הכותרת ממורכזת והכפתורים בשורה שמעליה** · שקד ביקשה
+          (15 בספטמבר 2026) כותרת ממורכזת, ואז שהכפתורים יחזרו
+          לפינה השמאלית העליונה שממנה זזו. נמדד בדפדפן שהכפתורים
+          תופסים 158 פיקסלים והכותרת הממורכזת 175→215 — כלומר
+          בשורה אחת של 354 הם דורסים זה את זה. לכן הם נפרדו
+          לשתי שורות: כפתורים למעלה משמאל, כותרת ממורכזת מתחת. */}
       <View style={s.head}>
-        <View style={s.headText}>
-          <Text style={s.title}>{HOME_TITLE}</Text>
-          <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
-        </View>
         {/* ⚠ **״לחנות״ ירד וכאן יושבת הזמנה חדשה** · שקד ביקשה
             (15 בספטמבר 2026) כפתור שממנו היא מכניסה הזמנה של לקוחה
             שהתקשרה או כתבה בוואטסאפ, בלי שהלקוחה נרשמת לאתר.
@@ -82,6 +82,11 @@ export function AdminHomeScreen() {
         >
           <LogOut size={17} color={LAV.dim} strokeWidth={1.9} />
         </Pressable>
+        </View>
+
+        <View style={s.headText}>
+          <Text style={s.title}>{HOME_TITLE}</Text>
+          <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
         </View>
       </View>
 
@@ -239,11 +244,16 @@ const s = StyleSheet.create({
   /* ⚠ רקע הדף · מתחת לכל הכרטיסים, בגוון של ערכת לבנדר */
   root: { flex: 1, backgroundColor: LAV.page },
   pad: { paddingTop: 30, paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
-  head: { justifyContent: 'center', minHeight: 46 },
+  head: { gap: 8 },
   headText: { alignItems: 'center', gap: 2 },
-  /* הכפתורים מרחפים · לא דוחפים את הכותרת מהמרכז */
-  headStart: { position: 'absolute', start: 0, top: 0, bottom: 0, justifyContent: 'center' },
-  headEnd: { position: 'absolute', end: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  /**
+   * ⚠ **`flex-end` ולא `end: 0`** · בדפדפן `I18nManager.isRTL` כבוי,
+   * ולכן ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה שהעיף את
+   * הכפתורים לצד ימין ועל הכותרת. `justifyContent` עובר כמו שהוא
+   * ל-CSS, ושם הוא נפתר מול `direction: rtl` של הדף — כלומר צד
+   * שמאל הפיזי, גם בדפדפן וגם באפליקציה.
+   */
+  headEnd: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'flex-end' },
   title: { fontSize: 21, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
   sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
   newChip: {

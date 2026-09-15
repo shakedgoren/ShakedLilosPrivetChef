@@ -225,15 +225,13 @@ export function AdminBoardScreen() {
 
   return (
     <View style={s.root}>
-      <View style={s.head}>
+      {/* ⚠ **שורת הפעולות** · חץ החזרה בימין והפקדים בשמאל, מעל
+          הכותרת הממורכזת — כמו בשאר מסכי הניהול. */}
+      <View style={s.topRow}>
         <Pressable onPress={back} style={s.back}>
           <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
         </Pressable>
-        {/* ⚠ **ממורכזת** · בקשה של שקד לכל הכותרות בצד הניהולי */}
-        <View style={s.headText}>
-          <Text style={s.title}>{BOARD_CAT.name}</Text>
-          <Text style={s.sub}>{BOARD_LIVE}</Text>
-        </View>
+        <View style={s.tools}>
         {/* ⚠ מתג התצוגה · בקשה של שקד, אינו בקנבס */}
         <View style={s.views}>
           {VIEWS.map((v) => {
@@ -265,6 +263,15 @@ export function AdminBoardScreen() {
           })}
         </View>
         {gone > 0 ? <Text style={s.gone}>{`${BOARD_GONE} ${gone}`}</Text> : null}
+        </View>
+      </View>
+
+      {/* ⚠ **ממורכזת** · בקשה של שקד לכל הכותרות בצד הניהולי */}
+      <View style={s.head}>
+        <View style={s.headText}>
+          <Text style={s.title}>{BOARD_CAT.name}</Text>
+          <Text style={s.sub}>{BOARD_LIVE}</Text>
+        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={pad} style={s.stock}>
@@ -500,12 +507,22 @@ export function AdminBoardScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, paddingTop: 18, paddingHorizontal: 14, gap: 8, backgroundColor: surface.ground },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
-  back: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(130,112,162,0.09)', alignItems: 'center', justifyContent: 'center' },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 1 },
+  head: { alignItems: 'center' },
+  back: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(130,112,162,0.09)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   backGlyph: { fontSize: 20, color: '#6E6478' },
-  headText: { flex: 1 },
-  title: { fontSize: 20, fontWeight: '600', color: surface.ink },
-  sub: { fontSize: 12, color: surface.faint },
+  headText: { alignItems: 'center', gap: 2 },
+  title: { fontSize: 20, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  sub: { fontSize: 12, color: surface.faint, textAlign: 'center' },
   /* המיכל האפור · הגלולה הלבנה מרחפת בתוכו */
   modes: {
     flexDirection: 'row',
