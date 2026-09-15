@@ -5,6 +5,7 @@ import { Stepper } from '../../components/Stepper';
 import { Check } from '../../icons';
 import { a, hues, radius, space, surface } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from '../../components/Photo';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { eventPhoto } from './eventPhotos';
@@ -232,6 +233,13 @@ function Cards({ s, api }: { s: Section; api: Api }) {
   const opts = (s.options ?? []) as { n: string; d?: string; add?: number }[];
   const [w, setW] = React.useState(0);
   const cellW = w ? (w - CARD_GAP) / 2 : undefined;
+  /**
+   * ⚠ הגובה חייב להיות מספר · `aspectRatio` לבדו לא מחזיק כאן,
+   * ונמדד 168×800 — כלומר הגובה הטבעי של הקובץ ניצח. הצלע היא
+   * רוחב הכרטיס פחות המסגרת משני הצדדים, ולכן התמונה יוצאת מרובעת
+   * בדיוק כמו קובץ המקור.
+   */
+  const shotSide = cellW ? cellW - CARD_BORDER * 2 : undefined;
 
   return (
     <View style={st.cards} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
@@ -246,8 +254,30 @@ function Cards({ s, api }: { s: Section; api: Api }) {
             {/* ⚠ המיפוי אינו מהקנבס · שם הכרטיס מצויר כמציין מקום
                 מקווקו, ושקד שלחה איזו תמונה שייכת לאיזה אירוע.
                 אירוע בלי מיפוי נשאר עם מציין המקום. */}
-            <Photo name={eventPhoto(o.n)} rgb={ACCENT.rgb} style={st.cardShot} zoom={false} />
+            <Photo
+              name={eventPhoto(o.n)}
+              rgb={ACCENT.rgb}
+              style={[st.cardShot, { height: shotSide }]}
+              zoom={false}
+            />
             <View style={st.cardFoot}>
+              {/* ⚠ הייתה כאן מלבן ירוק אטום · בקנבס זה
+                  `linear-gradient(to top, …0.96 → 0.9 → 0.55 → 0)`,
+                  כלומר הכף מתמוססת כלפי מעלה והתמונה נראית דרכה.
+                  ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
+                  ב-SVG מתחת לטקסט. */}
+              <View style={st.footFill} pointerEvents="none">
+                <Svg width="100%" height="100%">
+                  <Defs>
+                    <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">
+                      {FOOT_STOPS.map(([at, op]) => (
+                        <Stop key={at} offset={at} stopColor={FOOT_RGB} stopOpacity={op} />
+                      ))}
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0" y="0" width="100%" height="100%" fill="url(#cardFoot)" />
+                </Svg>
+              </View>
               <Text style={st.cardName}>{o.n}</Text>
               {o.d ? <Text style={st.cardDesc}>{o.d}</Text> : null}
               <View style={st.addPill}>
@@ -370,10 +400,22 @@ const ROW_GAP = 8;
 /** רוחב מרבי לסעיף narrow · 272 בקנבס */
 const NARROW = 272;
 
-/* כרטיס אירוע · 208 בקנבס, והכף נמדדה ב-92 */
+/* כרטיס אירוע · 208 בקנבס, מסגרת 2 */
 const CARD_H = 208;
-const CARD_FOOT_H = 92;
-const SHOT_LIFT = CARD_FOOT_H / 2;
+const CARD_BORDER = 2;
+/**
+ * ⚠ הריפוד העליון של הכף · 26 בקנבס, וצומצם ל-12 לבקשת שקד,
+ * כדי שהכף תסתיר פחות מהתמונה המרובעת.
+ */
+const FOOT_PAD_TOP = 12;
+/* עצירות הגרדיאנט של הכף · `linear-gradient(to top, …)` בקנבס */
+const FOOT_RGB = 'rgb(198,228,211)';
+const FOOT_STOPS: [number, number][] = [
+  [0, 0.96],
+  [0.46, 0.9],
+  [0.78, 0.55],
+  [1, 0],
+];
 
 const st = StyleSheet.create({
   /* כותרת הסעיף · ממורכזת, עם רמז המכסה לצידה */
@@ -491,7 +533,13 @@ const st = StyleSheet.create({
   chipText: { fontSize: 12.5 },
 
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
-  card: { height: CARD_H, borderRadius: 20, overflow: 'hidden', borderWidth: 2, backgroundColor: IDLE_BG },
+  card: {
+    height: CARD_H,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: CARD_BORDER,
+    backgroundColor: IDLE_BG,
+  },
   /**
    * ⚠ `width`/`height` חייבים להיות כאן · עם `top/right/bottom/left`
    * לבד ה-Image ב-React Native Web יוצא בגודל הטבעי של הקובץ. נמדד:
@@ -502,13 +550,21 @@ const st = StyleSheet.create({
    * ובלי ההסטה מרכז הצילום נופל מתחתיה. ההסטה היא חצי מגובה הכף,
    * ולכן מרכז הצילום נוחת במרכז החלק הגלוי.
    */
+  /**
+   * ⚠ `width` חייב להיות כאן · עם `top/right/bottom/left` לבד ה-Image
+   * ב-React Native Web יוצא בגודל הטבעי של הקובץ. נמדד 800×800 בתוך
+   * כרטיס של 172×208, ולכן נראתה רק הפינה השמאלית העליונה שלו.
+   *
+   * ⚠ **מרובעת** · קבצי המקור מרובעים, ושקד ביקשה שהתמונה תישאר
+   * בגודלה המרובע ותיראה במלואה. לכן היא נצמדת לראש הכרטיס ברוחב
+   * מלא, והגובה מגיע מ-`shotSide` — ולא נמתחת לגובה המלבן.
+   */
   cardShot: {
     position: 'absolute',
-    top: -SHOT_LIFT,
+    top: 0,
     right: 0,
     left: 0,
     width: '100%',
-    height: CARD_H,
   },
   /* כיתוב על גרדיאנט ירוק בתחתית · הערכים מהקנבס */
   cardFoot: {
@@ -516,13 +572,13 @@ const st = StyleSheet.create({
     right: 0,
     left: 0,
     bottom: 0,
-    paddingTop: 26,
+    paddingTop: FOOT_PAD_TOP,
     paddingHorizontal: 10,
     paddingBottom: 11,
-    backgroundColor: 'rgba(198,228,211,0.93)',
     alignItems: 'center',
     gap: 3,
   },
+  footFill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   cardName: { fontSize: 13, fontWeight: '600', color: '#22452F', lineHeight: 15.6, textAlign: 'center' },
   cardDesc: { fontSize: 10, fontWeight: '300', lineHeight: 14.5, color: '#37634A', textAlign: 'center' },
   addPill: {
