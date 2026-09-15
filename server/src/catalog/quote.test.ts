@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { quoteCustomer, quoteAdminDraft, assertFulfillment } from './quote.ts';
+import { quoteCustomer, quoteAdminDraft, assertFulfillment, assertQuote } from './quote.ts';
+import { DAYPARTS, dateOpen, dayPartOpen, dayKey } from '../../../mobile/src/data/calendar.ts';
+import { EXTRAS } from '../../../mobile/src/data/chef.ts';
 
 test('couscous · 2 צמחוני + 1 עוף', () => {
   const q = quoteCustomer({ category: 'cous', qty: [2, 1, 0, 0, 0, 0] });
@@ -128,4 +130,86 @@ test('admin couscous · משלוח יבנה גובה דמי משלוח', () => {
   assert.equal(q.itemsTotal, 180);
   assert.equal(q.shippingFee, 20);
   assert.equal(q.total, 200);
+});
+
+
+/* ── בקשת הצעה · שף וטאבון ── */
+
+/**
+ * התאריך הפתוח הבא · הבדיקות לא יכולות לקודד תאריך, כי `dateOpen`
+ * חוסם כל מה שעבר. סורקים קדימה עד שנמצא יום פתוח עם חלק יום פתוח.
+ */
+const nextOpenSlot = (): { date: string; part: string } => {
+  const now = new Date();
+  for (let i = 0; i < 400; i += 1) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const k = dayKey(d.getFullYear(), d.getMonth(), d.getDate());
+    if (!dateOpen(k)) continue;
+    const part = DAYPARTS.find((p) => dayPartOpen(k, p));
+    if (part) return { date: k, part };
+  }
+  throw new Error('לא נמצא תאריך פתוח');
+};
+
+const QUOTE = () => {
+  const { date, part } = nextOpenSlot();
+  return {
+    name: 'שקד', phone: '0522958511', date, daypart: part, addr: 'נופר 25, יבנה',
+    guests: 6, concept: 'בשרי', style: 'איטלקי', tier: '10 סוגי מנות',
+  } as Record<string, unknown>;
+};
+
+test('בקשת הצעה · פרטי אירוע מלאים עוברים', () => {
+  assert.doesNotThrow(() => assertQuote(QUOTE()));
+});
+
+test('בקשת הצעה · שדה חסר נדחה בשמו', () => {
+  for (const k of ['name', 'phone', 'date', 'daypart', 'addr']) {
+    const picks = { ...QUOTE(), [k]: '' };
+    assert.throws(() => assertQuote(picks), (e: any) => e.detail === k || /invalid_order/.test(String(e.code)));
+  }
+});
+
+test('בקשת הצעה · תאריך חסום נדחה', () => {
+  assert.throws(() => assertQuote({ ...QUOTE(), date: '2026-09-21' }));
+});
+
+test('בקשת הצעה · שישי בערב נדחה', () => {
+  /* השישי הפתוח הבא · מוקדם יותר אי אפשר, כי עבר */
+  const now = new Date();
+  for (let i = 0; i < 400; i += 1) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const k = dayKey(d.getFullYear(), d.getMonth(), d.getDate());
+    if (d.getDay() !== 5 || !dateOpen(k)) continue;
+    assert.throws(() => assertQuote({ ...QUOTE(), date: k, daypart: 'ערב' }));
+    return;
+  }
+  throw new Error('לא נמצא שישי פתוח');
+});
+
+test('שף · שורות הסיכום הן הבסיס ואז כל שדרוג בנפרד', () => {
+  const q = quoteCustomer({
+    category: 'chef',
+    key: 'chef',
+    picks: { guests: 6, concept: 'בשרי', tier: '10 סוגי מנות', extras: ['שתייה'] },
+  });
+  assert.ok(q.lines.length >= 2, 'בסיס ועוד שדרוג');
+  assert.equal(q.lines[q.lines.length - 1].name.startsWith('שתייה'), true);
+  /* סכום השורות שווה לסך ההזמנה */
+  assert.equal(q.lines.reduce((s, l) => s + l.sum, 0), q.total);
+});
+
+test('שף · עיצוב שולחן חד־פעמי וחבילת שתייה לכל סועד', () => {
+  /* ⚠ באג שתוקן · חבילת השתייה קיבלה קודם את מחיר עיצוב השולחן */
+  const picks = {
+    guests: 6, concept: 'בשרי', tier: '10 סוגי מנות',
+    extras: [EXTRAS[0].n, EXTRAS[1].n],
+  };
+  const q = quoteCustomer({ category: 'chef', key: 'chef', picks });
+  const base = 6 * 550;
+  const table = 400;       /* מדרגת 5–11 */
+  const drink = 120 * 6;   /* לכל סועד */
+  assert.equal(q.total, base + table + drink);
+  assert.equal(q.lines.find((l) => l.name.startsWith(EXTRAS[1].n))?.sum, drink);
+  assert.equal(q.lines.find((l) => l.name.startsWith(EXTRAS[0].n))?.sum, table);
 });

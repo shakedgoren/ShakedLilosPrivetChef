@@ -13,7 +13,13 @@ import {
 } from '../../../mobile/src/data/schnitzel.ts';
 import { FRUIT_FULFILLMENT, FRUIT_TRAYS } from '../../../mobile/src/data/fruit.ts';
 import { BOXES, BOXES_FULFILLMENT, priceOfBox } from '../../../mobile/src/data/boxes.ts';
-import { CHEF_FULFILLMENT, CHEF_PACKAGES, priceOfPackage } from '../../../mobile/src/data/chef.ts';
+import {
+  CHEF_FULFILLMENT,
+  CHEF_PACKAGES,
+  priceOfPackage,
+  quoteLines,
+} from '../../../mobile/src/data/chef.ts';
+import { dateOpen, dayPartOpen } from '../../../mobile/src/data/calendar.ts';
 import {
   MENU,
   ROLL,
@@ -162,8 +168,8 @@ function linesOfChef(key: string, picks: Record<string, unknown>): Quote {
   if (!pkg) throw badRequest('invalid_order', 'chef key');
   const itemsTotal = priceOfPackage(pkg, picks);
   if (!Number.isFinite(itemsTotal) || itemsTotal <= 0) throw badRequest('invalid_order', 'chef price');
-  const guests = Number(picks.guests || 1);
-  const lines: OrderLine[] = [{ qty: guests || 1, name: pkg.name, sum: itemsTotal }];
+  /* אותן שורות בדיוק שהלקוחה רואה במסך הסיום · הבסיס ואז כל שדרוג */
+  const lines: OrderLine[] = quoteLines(pkg, picks).map((l) => ({ qty: 1, name: l.name, sum: l.sum }));
   return { lines, itemsTotal, meals: 0, shippingFee: 0, total: itemsTotal };
 }
 
@@ -200,6 +206,26 @@ export function assertFulfillment(category: CategoryKey, meals: number, f: Fulfi
     if (!f.city || !(CITIES as readonly string[]).includes(f.city)) throw badRequest('invalid_order', 'city');
     if (!isAddressValid(f.address ?? '')) throw badRequest('invalid_order', 'address');
   }
+}
+
+/**
+ * שף וטאבון אינם הזמנה אלא **בקשת הצעה** · אין בהם מסירה, שעה ותשלום,
+ * ולכן `assertFulfillment` לא חל עליהם. מה שכן חייב להיות הוא פרטי
+ * האירוע מטופס יצירת הקשר, והתאריך חייב להיות פתוח לפי אותם כללים
+ * שהלקוחה רואה בלוח השנה.
+ */
+export const isQuoteCategory = (category: CategoryKey) => category === 'chef';
+
+const QUOTE_FIELDS = ['name', 'phone', 'date', 'daypart', 'addr'] as const;
+
+export function assertQuote(picks: Record<string, unknown>) {
+  for (const k of QUOTE_FIELDS) {
+    const v = picks[k];
+    if (typeof v !== 'string' || v.trim() === '') throw badRequest('invalid_order', k);
+  }
+  const date = String(picks.date);
+  if (!dateOpen(date)) throw badRequest('invalid_order', 'date');
+  if (!dayPartOpen(date, String(picks.daypart))) throw badRequest('invalid_order', 'daypart');
 }
 
 export function defaultSaleDate(v?: string) {

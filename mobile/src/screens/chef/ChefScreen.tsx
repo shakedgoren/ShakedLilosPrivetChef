@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CHEF_FULFILLMENT } from '../../data/chef';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { PhotoStrip } from '../../components/PhotoStrip';
@@ -14,8 +13,11 @@ import {
   INTRO_TITLE,
   PICK_CTA,
 } from '../../data/chefCopy';
-import { FulfillmentFlow } from '../../order/FulfillmentFlow';
-import { useFulfillment } from '../../order/useFulfillment';
+import { apiEnabled } from '../../api/config';
+import { COPY, orderError } from '../../api/copy';
+import { createOrder } from '../../api/orders';
+import { ApiError } from '../../api/types';
+import { ChefConfirm } from './ChefConfirm';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
@@ -49,12 +51,40 @@ export function ChefScreen() {
   const o = useChefOrder();
   /* הלשונית הפתוחה בתפריט · ארוחת שף או עמדת טאבון */
   const [tab, setTab] = useState(0);
-  const f = useFulfillment(CHEF_FULFILLMENT);
+  /* בקשת ההצעה נשלחה · מסך הסיום פתוח */
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
-  const onNext = () => {
-    if (!o.pageReady) return;
-    if (o.lastPage) f.open();
-    else o.next();
+  /**
+   * ⚠ **אין כאן זרימת מסירה** · עד עכשיו ״לבקשת הצעה״ פתחה את
+   * ״איך תרצי לקבל?״ · שעה · כתובת · תשלום, שאין להם מקום בבקשת
+   * הצעה. בקנבס העמוד האחרון עובר ישר למסך הסיום, וזה מה שקורה כאן.
+   */
+  const onNext = async () => {
+    if (!o.pageReady || busy) return;
+    if (!o.lastPage) {
+      o.next();
+      return;
+    }
+    if (!apiEnabled || !o.pkg) {
+      setSent(true);
+      return;
+    }
+    setBusy(true);
+    setErr('');
+    try {
+      await createOrder({
+        name: String(o.picks.name ?? ''),
+        phone: String(o.picks.phone ?? ''),
+        details: { category: 'chef', key: o.pkg.key, picks: o.picks },
+      });
+      setSent(true);
+    } catch (e) {
+      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.orderFail);
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (!o.pkg) {
@@ -152,10 +182,12 @@ export function ChefScreen() {
         <ContinueButton
           onPress={onNext}
           accent={ACCENT}
-          disabled={!o.pageReady}
+          disabled={!o.pageReady || busy}
           label={o.lastPage ? 'לבקשת הצעה' : 'המשך'}
         />
       </View>
+
+      {err ? <Text style={s.err}>{err}</Text> : null}
 
       {/* חלונית הכמות המקסימלית · מוסברת ולא נועלת */}
       <CapNotice note={o.notice} onClose={o.closeNotice} />
@@ -168,18 +200,19 @@ export function ChefScreen() {
         onCommit={o.pastaCommit}
       />
 
-      <FulfillmentFlow
-        f={f}
-        lines={o.lines}
-        total={o.total}
-        accent={ACCENT}
-        details={o.pkg ? { category: 'chef', key: o.pkg.key, picks: o.picks } : undefined}
-        onHome={() => {
-          f.reset();
-          o.backToList();
-          go(loggedIn ? 'main' : 'guest');
-        }}
-      />
+      {/* מסך סיום בקשת ההצעה · `isConfirm` בקנבס */}
+      {sent && (
+        <ChefConfirm
+          pkg={o.pkg}
+          picks={o.picks}
+          total={o.total}
+          onHome={() => {
+            setSent(false);
+            o.backToList();
+            go(loggedIn ? 'main' : 'guest');
+          }}
+        />
+      )}
     </View>
   );
 }
@@ -307,6 +340,8 @@ const s = StyleSheet.create({
   barWithNav: { marginBottom: BAR_BOTTOM_WITH_NAV },
   /* אזור גלילה שנגמר בתחתית · חייב לפנות מקום לנאב */
   scrollPadNav: { paddingBottom: SCROLL_PAD_NAV },
+  /* שגיאת שליחה · מוצגת מתחת לשורת הסה״כ ולא מחליפה אותה */
+  err: { fontSize: type.label, color: '#B95349', textAlign: 'center', marginBottom: 10 },
   totalBox: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   totalLabel: { fontSize: 19, fontWeight: '600', color: surface.ink },
   total: { fontSize: 19, fontWeight: '600', color: surface.ink },

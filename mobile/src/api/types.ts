@@ -87,11 +87,15 @@ export type OrderDetails =
   | ChefDetails;
 
 export type CreateOrderBody = {
-  ship: 'self' | 'deliv';
-  time: string;
+  /**
+   * ⚠ שלושת אלה אינם חובה · בקשת הצעה לשף ולטאבון נשלחת בלעדיהם,
+   * והשרת גוזר אותם מפרטי האירוע. בכל שאר הקטגוריות הם נדרשים.
+   */
+  ship?: 'self' | 'deliv';
+  time?: string;
   city?: string;
   address?: string;
-  pay: string;
+  pay?: string;
   saleDate?: string;
   name?: string;
   phone?: string;

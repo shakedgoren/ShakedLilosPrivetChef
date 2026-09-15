@@ -293,6 +293,17 @@ export const T_PASTA_UPS: string[] = [
   "ניוקי עננים פריזאי",
   "פירה כמהין"
 ];
+/* שני השדרוגים של ארוחת השף · עיצוב שולחן וחבילת שתייה */
+export const EXTRAS = [
+  {
+    "n": "עיצוב שולחן יוקרתי",
+    "d": "סכו״ם, צלחות, כוסות, מפיות וקשים, כולל תפריט מעוצב ומודפס לכל סועד. תוספת 250-550 ₪ סה״כ בהתאם לכמות הסועדים. (השולחן והכיסאות עליכם)"
+  },
+  {
+    "n": "חבילת שתייה ללא הגבלה",
+    "d": "4 סוגי בקבוקי שתייה קלה אישיים, מים מינרליים וסודה משותפים, יין לבן או אדום. תוספת 120 ₪ לסועד."
+  }
+] as const;
 export const EXTRA_TABLE: Record<string, number> = {
   "2-4": 250,
   "5-11": 400,
@@ -1341,10 +1352,19 @@ export function chefPerGuest(picks: Record<string, any>): number {
   return CHEF_PRICES[fam][bracketOf(picks.guests || 2)][t];
 }
 
+/**
+ * מחיר שדרוג · בקנבס (extraPrice) עיצוב השולחן הוא סכום חד־פעמי לפי
+ * מדרגת הסועדים, וחבילת השתייה היא 120 ש״ח **לכל סועד**.
+ *
+ * ⚠ **תוקן באג** · הגרסה הקודמת השוותה את השם ל-״שתייה״ — מחרוזת
+ * שלא קיימת באף אפשרות — ולכן חבילת השתייה קיבלה את מחיר עיצוב
+ * השולחן, וגם בלי הכפלה במספר הסועדים. ב-6 סועדים זה 400 במקום 720.
+ * ההשוואה נעשית עכשיו לשמות עצמם, כמו EXTRAS[0] ו-EXTRAS[1] בקנבס.
+ */
 const extraPrice = (name: string, guests: number): number => {
-  if (name === 'שתייה') return EXTRA_DRINK;
-  const key = bracketOf(guests);
-  return EXTRA_TABLE[key] ?? 0;
+  if (name === EXTRAS[0].n) return EXTRA_TABLE[bracketOf(guests)] ?? 0;
+  if (name === EXTRAS[1].n) return EXTRA_DRINK * guests;
+  return 0;
 };
 
 export const extrasTotal = (picks: Record<string, any>): number =>
@@ -1391,4 +1411,109 @@ export function priceOfPackage(pkg: ChefPackage, picks: Record<string, any>): nu
   const g = picks.guests || 0;
   if (pkg.key === 'chef') return g * chefPerGuest(picks) + extrasTotal(picks);
   return g * (taboonPerHead(g) + taboonAddPerHead(picks)) + taboonFlat(picks);
+}
+
+/* ── סיכום בקשת ההצעה · מדויק ל-lines ול-recap בקנבס ── */
+
+export type QuoteLine = { name: string; sum: number };
+export type RecapRow = { k: string; v: string };
+
+/** שורת התיאור של פסטה · רוטב · צורה · שדרוג */
+const pastaLine = (x: { sauce?: string; shape?: string | null; up?: string | null }): string => {
+  if (!x.sauce) return '';
+  const bits = [x.sauce];
+  if (x.shape) bits.push(x.shape);
+  if (x.up) bits.push(x.up + ' • שדרוג');
+  return bits.join(' · ');
+};
+
+/**
+ * הפירוט המחירי של בקשת ההצעה · הבסיס ואז כל שדרוג בשורה משלו,
+ * כשכל סכום הוא כבר לכל הסועדים. זה מה שהקנבס מציג במסך הסיום,
+ * ומה שנשמר בשרת, כדי שהלקוחה והניהול יראו את אותן שורות.
+ */
+export function quoteLines(pkg: ChefPackage, picks: Record<string, any>): QuoteLine[] {
+  const q = picks;
+  const g = q.guests || 0;
+  const forG = ' עבור ' + g + ' סועדים';
+
+  if (pkg.key === 'chef') {
+    const out: QuoteLine[] = [
+      { name: pkg.short + (q.tier ? ' ' + q.tier : '') + forG, sum: g * chefPerGuest(q) },
+    ];
+    ((q.extras as string[]) || []).forEach((n) =>
+      out.push({ name: n + forG, sum: extraPrice(n, g) }),
+    );
+    return out;
+  }
+
+  /* טאבון · הבסיס, ואז כל תוספת בשורה משלה */
+  const out: QuoteLine[] = [{ name: pkg.short + forG, sum: g * taboonPerHead(g) }];
+  const over = (id: string, base: number, price: number, label: string) => {
+    const k = Math.max(0, ((q[id] as unknown[]) || []).length - base);
+    if (k > 0) out.push({ name: label + ' × ' + k + forG, sum: k * price * g });
+  };
+  over('salads', SALAD_BASE, SALAD_EXTRA, 'סלט נוסף');
+  over('desserts', DESSERT_BASE, DESSERT_EXTRA, 'קינוח נוסף');
+  const pastas: { up?: string | null }[] = q.pastas || [];
+  const kp = Math.max(0, pastas.length - PASTA_BASE);
+  if (kp > 0) out.push({ name: 'פסטה נוספת × ' + kp + forG, sum: kp * PASTA_EXTRA * g });
+  const ku = pastas.filter((x) => x.up).length;
+  if (ku > 0) out.push({ name: 'שדרוג מנת פסטה × ' + ku + forG, sum: ku * PASTA_UP_EXTRA * g });
+  ((q.firsts as string[]) || []).forEach((n) => out.push({ name: n + forG, sum: FIRST_EXTRA * g }));
+  ((q.textras as string[]) || []).forEach((n) => {
+    const e = tExtra(n);
+    if (!e) return;
+    if (e.per) out.push({ name: n + forG, sum: e.per * g });
+    else out.push({ name: n, sum: taboonTable(g) });
+  });
+  return out;
+}
+
+/** המחיר לסועד בשורת הסיכום · 0 כשאין סועדים */
+export const quotePerHead = (pkg: ChefPackage, picks: Record<string, any>): number =>
+  (picks.guests || 0) > 0 ? Math.round(priceOfPackage(pkg, picks) / picks.guests) : 0;
+
+/**
+ * הסיכום המפורט · כל מה שנבחר, בסדר שבו נשאל.
+ * שורות ריקות נשמטות, בדיוק כמו הסינון ב-recap בקנבס.
+ */
+export function quoteRecap(pkg: ChefPackage, picks: Record<string, any>): RecapRow[] {
+  const p = picks;
+  const join = (v: unknown) => (Array.isArray(v) ? v.join(', ') : v);
+
+  const rows: [string, unknown][] =
+    pkg.key === 'taboon'
+      ? [
+          ['שם', p.name], ['טלפון', p.phone],
+          ['תאריך האירוע', p.date], ['שעות', p.daypart], ['כתובת', p.addr],
+          ['סועדים', p.guests],
+          ['סלטים', join(p.salads)],
+          ['פסטות', ((p.pastas as any[]) || []).map(pastaLine).filter(Boolean).join(' | ')],
+          ['קינוחים', join(p.desserts)],
+          ['מנות ראשונות', join(p.firsts)],
+          ['שדרוגים', join(p.textras)],
+          ['אלרגיות', join(p.tAllergy)], ['פירוט האלרגיה', p.tAllergyTxt],
+          ['מגבלות תזונה', join(p.tDiet)],
+          ['לא על הפיצה', p.tDislike],
+          ['מקום העמדה', p.tSpace], ['פירוט המקום', p.tSpaceTxt],
+        ]
+      : [
+          ['שם', p.name], ['טלפון', p.phone],
+          ['תאריך האירוע', p.date], ['שעות', p.daypart], ['כתובת', p.addr],
+          ['סועדים', p.guests], ['ציר', p.concept], ['סגנון', p.style], ['מסלול', p.tier],
+          ['סוג האירוע', p.occasion],
+          ['עשיית הבשר', join(p.meatDone)], ['עשיית הדגים', join(p.fishDone)], ['דגים אהובים', join(p.fish)],
+          ['חריפות', p.spice], ['הרפתקנות', p.brave], ['טעמים אהובים', p.love],
+          ['אלרגיות', join(p.allergy)], ['פירוט האלרגיה', p.allergyTxt],
+          ['לא אוהבים', join(p.dislike)], ['עוד לא אוהבים', p.dislikeTxt],
+          ['מגבלות תזונה', join(p.diet)],
+          ['המטבח במקום', p.kitchen], ['פירוט המטבח', p.kitchenTxt],
+          ['בקשה ספציפית', p.wish], ['עוד לדעת', p.notes2],
+          ['שדרוגים', join(p.extras)],
+        ];
+
+  return rows
+    .filter((r) => r[1] !== undefined && r[1] !== null && String(r[1]).trim() !== '')
+    .map((r) => ({ k: r[0], v: String(r[1]) }));
 }

@@ -5,7 +5,9 @@ import { optionalAuth, requireAuth } from '../auth/middleware.ts';
 import { badRequest, forbidden, notFound } from '../errors.ts';
 import {
   assertFulfillment,
+  assertQuote,
   isCategory,
+  isQuoteCategory,
   quoteCustomer,
   type CustomerDetails,
 } from '../catalog/quote.ts';
@@ -16,12 +18,17 @@ import { readJson } from '../json.ts';
 
 export const ordersRouter = Router();
 
+/**
+ * ⚠ `ship`, `time` ו-`pay` אינם חובה יותר · בקשת הצעה לשף ולטאבון
+ * מגיעה בלעדיהם, והאימות שלה הוא על פרטי האירוע (`assertQuote`).
+ * לכל שאר הקטגוריות הם עדיין נדרשים — נבדק ב-`placeCustomerOrder`.
+ */
 const createSchema = z.object({
-  ship: z.enum(['self', 'deliv']),
-  time: z.string().min(4),
+  ship: z.enum(['self', 'deliv']).optional(),
+  time: z.string().min(4).optional(),
   city: z.string().optional(),
   address: z.string().optional(),
-  pay: z.string().min(1),
+  pay: z.string().min(1).optional(),
   saleDate: z.string().optional(),
   name: z.string().optional(),
   phone: z.string().optional(),
@@ -39,15 +46,30 @@ const reorderSchema = z.object({
   phone: z.string().optional(),
 });
 
+/**
+ * בקשת הצעה · אין בה מסירה, שעה ותשלום, ולכן הן נגזרות מפרטי האירוע:
+ * השף מגיע אל הלקוחה (`deliv`), ״השעה״ היא חלק היום שנבחר בשאלון,
+ * והכתובת היא זו שנכתבה בטופס. אין תשלום באפליקציה — המקדמה מתואמת
+ * בשיחה, ולכן `pay` נשאר ריק.
+ * ⚠ **המיפוי הזה אינו מהקנבס** · הקנבס לא מגדיר מה נשמר בשרת.
+ */
+const quoteFulfillment = (picks: Record<string, unknown>) => ({
+  ship: 'deliv' as const,
+  time: String(picks.daypart ?? ''),
+  city: '',
+  address: String(picks.addr ?? ''),
+  pay: '',
+});
+
 async function placeCustomerOrder(opts: {
   userId: string | null;
   userName: string;
   userPhone: string;
-  ship: 'self' | 'deliv';
-  time: string;
+  ship?: 'self' | 'deliv';
+  time?: string;
   city?: string;
   address?: string;
-  pay: string;
+  pay?: string;
   saleDate?: string;
   name?: string;
   phone?: string;
@@ -57,13 +79,28 @@ async function placeCustomerOrder(opts: {
   if (!isCategory(category)) throw badRequest('invalid_order', 'category');
 
   const quote = quoteCustomer(opts.details);
-  assertFulfillment(category, quote.meals, {
-    ship: opts.ship,
-    time: opts.time,
-    city: opts.city,
-    address: opts.address,
-    pay: opts.pay,
-  });
+
+  let ship: 'self' | 'deliv';
+  let time: string;
+  let city: string | undefined;
+  let address: string | undefined;
+  let pay: string;
+
+  if (isQuoteCategory(category)) {
+    const picks = (opts.details as { picks: Record<string, unknown> }).picks;
+    assertQuote(picks);
+    ({ ship, time, city, address, pay } = quoteFulfillment(picks));
+  } else {
+    if (!opts.ship) throw badRequest('invalid_order', 'ship');
+    if (!opts.time) throw badRequest('invalid_order', 'time');
+    if (!opts.pay) throw badRequest('invalid_order', 'pay');
+    ship = opts.ship;
+    time = opts.time;
+    city = opts.city;
+    address = opts.address;
+    pay = opts.pay;
+    assertFulfillment(category, quote.meals, { ship, time, city, address, pay });
+  }
 
   const name = (opts.name ?? opts.userName ?? '').trim();
   const phone = (opts.phone ?? opts.userPhone ?? '').trim();
@@ -81,11 +118,11 @@ async function placeCustomerOrder(opts: {
         status: 'חדשה',
         name,
         phone,
-        ship: opts.ship,
-        time: opts.time,
-        city: opts.ship === 'deliv' ? (opts.city ?? '') : '',
-        address: opts.ship === 'deliv' ? (opts.address ?? '').trim() : '',
-        pay: opts.pay,
+        ship,
+        time,
+        city: ship === 'deliv' ? (city ?? '') : '',
+        address: ship === 'deliv' ? (address ?? '').trim() : '',
+        pay,
         saleDate,
         via: '',
         itemsJson: JSON.stringify(quote.lines),
