@@ -157,7 +157,21 @@ export function AdminBoardScreen() {
    * ⚠ הרוחבים · בתצוגת אייפד בדיוק אלה של הקנבס, ובתצוגת טלפון
    * מצטמצמים כדי שהשורה תיכנס במסך צר בלי גלילה אינסופית.
    */
-  const pad = view === 'pad';
+  /**
+   * ⚠ **טבלה רחבה במסך צר** · הלוח תוכנן לאייפד (1180 רוחב), ובאייפון
+   * עמודות הכמויות, הסכום והסטטוס נשארו מחוץ למסך. שקד הציעה
+   * ״שהטבלה תהיה מוצגת במצב שוכב״.
+   *
+   * שתי הדרכים פתוחות עכשיו:
+   * · **מסובבים את המכשיר** · מרוחב 700 ומעלה הטבלה המלאה של
+   *   הקנבס נכנסת, ותצוגת הטלפון עוברת אליה מעצמה.
+   * · **מחזיקים זקוף** · כל הזמנה הופכת לכרטיס משלה, בלי גלילה
+   *   לרוחב בכלל. טבלה מסובבת ב-90 מעלות הייתה מאלצת לקרוא
+   *   בצוואר מוטה, ולכן לא עשיתי את זה.
+   */
+  const landscape = width >= 700;
+  const pad = view === 'pad' || landscape;
+  const cards = view === 'phone' && !landscape;
   const w = pad
     ? COL_W
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
@@ -222,8 +236,79 @@ export function AdminBoardScreen() {
         })}
       </ScrollView>
 
-      {/* ⚠ **רוחבי העמודות מהקנבס** · COL_W חולץ מהקוד של הארטבורד
-          ולא נמדד בעין. בתצוגת טלפון העמודות מצטמצמות כדי להיכנס. */}
+      {cards ? (
+        <ScrollView style={s.list} contentContainerStyle={s.cardPad} showsVerticalScrollIndicator={false}>
+          {shown.length === 0 ? <Text style={s.empty}>{BOARD_EMPTY}</Text> : null}
+          {shown.map((x) => {
+            const band = BOARD_BAND[x.o.status] ?? BOARD_BAND['חדשה'];
+            const picked = BOARD_CAT.items.filter((it) => (x.o.q[it.id] || 0) > 0);
+            return (
+              <View key={x.o.id ?? x.i} style={[s.oCard, { backgroundColor: band.row, borderColor: band.edge }]}>
+                <View style={s.oTop}>
+                  <Text style={[s.oTime, { color: band.ink }]}>{x.o.time}</Text>
+                  <View style={s.oWho}>
+                    <Text style={[s.who, { color: band.ink }]} numberOfLines={1}>{x.o.who}</Text>
+                    {x.o.note ? <Text style={s.note} numberOfLines={1}>{x.o.note}</Text> : null}
+                  </View>
+                  <Text style={[s.oSum, { color: band.ink }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
+                </View>
+
+                <View style={s.oItems}>
+                  {picked.length === 0 ? (
+                    <Text style={s.oNone}>אין פריטים</Text>
+                  ) : (
+                    picked.map((it) => (
+                      <View key={it.id} style={s.oChip}>
+                        <Text style={s.oChipName}>{it.sub}</Text>
+                        <TextInput
+                          value={String(x.o.q[it.id] || 0)}
+                          keyboardType="number-pad"
+                          onChangeText={(v) => setQ(x.i, it.id, v)}
+                          style={s.oChipQty}
+                        />
+                      </View>
+                    ))
+                  )}
+                </View>
+
+                <View style={s.oFoot}>
+                  <Text style={s.oPay}>{x.o.pay}</Text>
+                  <View style={s.oSteps}>
+                    {BOARD_STEPS.map((st) => {
+                      const on = x.o.status === st.id;
+                      return (
+                        <Pressable
+                          key={st.id}
+                          onPress={() => setStatus(x.i, st.id)}
+                          style={[
+                            s.step,
+                            { borderColor: on ? band.edge : 'rgba(130,112,162,0.22)' },
+                            on ? { backgroundColor: band.edge } : s.stepOff,
+                          ]}
+                        >
+                          <Svg width={17} height={17} viewBox="0 0 24 24">
+                            {st.paths.map((d) => (
+                              <Path key={d} d={d} fill="none" stroke={on ? '#FFFFFF' : '#A79FB2'}
+                                strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            ))}
+                          </Svg>
+                        </Pressable>
+                      );
+                    })}
+                    <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
+                      <Close size={13} color="#B95349" strokeWidth={2.4} />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+          <View style={s.oTotal}>
+            <Text style={s.oTotalK}>{TOTAL_LABEL}</Text>
+            <Text style={s.oTotalV}>{`${nf(grand)} ₪`}</Text>
+          </View>
+        </ScrollView>
+      ) : (
       <ScrollView horizontal>
         <View style={{ minWidth: pad ? tableWidth(BOARD_CAT.items.length) : undefined }}>
           <View style={s.cols}>
@@ -309,6 +394,7 @@ export function AdminBoardScreen() {
           </ScrollView>
         </View>
       </ScrollView>
+      )}
 
       {cancelling >= 0 && orders[cancelling] ? (
         <CancelSheet
@@ -388,6 +474,50 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   viewOn: { backgroundColor: '#C6B3EC', borderColor: '#C6B3EC' },
+
+  /* ── כרטיס הזמנה · תצוגת טלפון זקוף ── */
+  cardPad: { gap: 9, paddingBottom: 120 },
+  oCard: { borderRadius: 16, borderWidth: 1.5, padding: 11, gap: 9 },
+  oTop: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  oTime: { fontSize: 13, fontWeight: '600', width: 46 },
+  oWho: { flex: 1, minWidth: 0 },
+  oSum: { fontSize: 14, fontWeight: '700' },
+  oItems: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  oChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 30,
+    paddingStart: 9,
+    paddingEnd: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  oChipName: { fontSize: 11.5, fontWeight: '500', color: surface.inkSoft },
+  oChipQty: {
+    width: 34,
+    height: 24,
+    borderRadius: 999,
+    textAlign: 'center',
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: surface.ink,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  oNone: { fontSize: 11.5, fontWeight: '300', color: surface.faint },
+  oFoot: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  oPay: { flex: 1, fontSize: 11.5, fontWeight: '300', color: surface.muted },
+  oSteps: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  oTotal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 11,
+    paddingHorizontal: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(130,112,162,0.16)',
+  },
+  oTotalK: { flex: 1, fontSize: 13, fontWeight: '600', color: surface.inkSoft },
+  oTotalV: { fontSize: 15, fontWeight: '700', color: surface.ink },
   viewText: { fontSize: 11, fontWeight: '600', color: '#6E6478' },
   viewTextOn: { color: '#43307A' },
   x: { fontSize: 16, color: '#B95349', paddingHorizontal: 4 },
