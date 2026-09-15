@@ -172,7 +172,14 @@ function Grid({ s, api }: { s: Section; api: Api }) {
 
   return (
     <>
-      {s.label && s.kind === 'hidden' ? <Text style={st.title}>{s.label}</Text> : null}
+      {/* ⚠ הייתה כאן כותרת עירומה · שאר הכותרות עטופות ב-`titleRow`,
+          שמוסיף עוד 12 מעל הריפוד של הטקסט עצמו. לכן ״ציפוי החלה״
+          קיבל 18 מעל וכל השאר 30, ושקד ביקשה רווח קבוע. */}
+      {s.label && s.kind === 'hidden' ? (
+        <View style={st.titleRow}>
+          <Text style={st.title}>{s.label}</Text>
+        </View>
+      ) : null}
       <View
         style={[st.grid, s.narrow && st.narrow]}
         onLayout={(e) => setW(e.nativeEvent.layout.width)}
@@ -363,6 +370,11 @@ const ROW_GAP = 8;
 /** רוחב מרבי לסעיף narrow · 272 בקנבס */
 const NARROW = 272;
 
+/* כרטיס אירוע · 208 בקנבס, והכף נמדדה ב-92 */
+const CARD_H = 208;
+const CARD_FOOT_H = 92;
+const SHOT_LIFT = CARD_FOOT_H / 2;
+
 const st = StyleSheet.create({
   /* כותרת הסעיף · ממורכזת, עם רמז המכסה לצידה */
   titleRow: {
@@ -479,8 +491,25 @@ const st = StyleSheet.create({
   chipText: { fontSize: 12.5 },
 
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
-  card: { height: 208, borderRadius: 20, overflow: 'hidden', borderWidth: 2, backgroundColor: IDLE_BG },
-  cardShot: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  card: { height: CARD_H, borderRadius: 20, overflow: 'hidden', borderWidth: 2, backgroundColor: IDLE_BG },
+  /**
+   * ⚠ `width`/`height` חייבים להיות כאן · עם `top/right/bottom/left`
+   * לבד ה-Image ב-React Native Web יוצא בגודל הטבעי של הקובץ. נמדד:
+   * 800×800 בתוך כרטיס של 172×208, כלומר נראתה רק **הפינה השמאלית
+   * העליונה** של הצילום — השולחן והפרחים, בלי החלה.
+   *
+   * ⚠ ההסטה כלפי מעלה אינה מהקנבס · הכף מכסה את תחתית הכרטיס,
+   * ובלי ההסטה מרכז הצילום נופל מתחתיה. ההסטה היא חצי מגובה הכף,
+   * ולכן מרכז הצילום נוחת במרכז החלק הגלוי.
+   */
+  cardShot: {
+    position: 'absolute',
+    top: -SHOT_LIFT,
+    right: 0,
+    left: 0,
+    width: '100%',
+    height: CARD_H,
+  },
   /* כיתוב על גרדיאנט ירוק בתחתית · הערכים מהקנבס */
   cardFoot: {
     position: 'absolute',

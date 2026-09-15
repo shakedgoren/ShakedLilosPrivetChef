@@ -226,7 +226,9 @@ const s = StyleSheet.create({
   date: { fontSize: type.label, color: '#7A7080' },
 
   body: { paddingTop: DETAIL_PAD, paddingBottom: space.lg, gap: 6 },
-  boxIntro: { gap: 3, paddingHorizontal: 4, marginBottom: 12 },
+  /* ⚠ היה `marginBottom: 12` · הוא נוסף על הריפוד של הכותרת הראשונה
+     ונתן לה 42 מעל, מול 30 לכל שאר הכותרות. שקד ביקשה רווח קבוע. */
+  boxIntro: { gap: 3, paddingHorizontal: 4 },
   boxIntroText: { textAlign: 'center' },
   list: { paddingBottom: space.lg, gap: space.sm },
   card: {
