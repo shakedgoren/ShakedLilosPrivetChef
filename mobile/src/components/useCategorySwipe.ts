@@ -37,13 +37,17 @@ export function isHorizontal(dx: number, dy: number): boolean {
 
 /**
  * הקטגוריה שאליה עוברים אחרי החלקה.
- * ⚠ ב-RTL הקטגוריה הבאה יושבת משמאל · החלקה ימינה (dx חיובי) מושכת
- * אותה פנימה, בדיוק כמו dragEnd בקנבס.
+ * החלקה ימינה (dx חיובי) מקדמת לקטגוריה הבאה.
+ *
+ * ⚠ **מעגלי ולא נעצר בקצוות** · בחירה של שקד (15 בספטמבר 2026).
+ * קודם הערך נחתך ל-[0, count-1], כלומר מהקטגוריה האחרונה אי אפשר
+ * היה להתקדם — בעוד שהדק מסדר את הכרטיסים במעגל ומציג את הראשונה
+ * מציצה מאחור. הלקוחה ראתה כרטיס, ניסתה להחליק אליו, וכלום לא קרה.
  */
 export function nextIndex(active: number, dx: number, count: number): number {
-  const clamp = (n: number) => Math.max(0, Math.min(count - 1, n));
-  if (dx > SWIPE_MIN) return clamp(active + 1);
-  if (dx < -SWIPE_MIN) return clamp(active - 1);
+  const wrap = (n: number) => ((n % count) + count) % count;
+  if (dx > SWIPE_MIN) return wrap(active + 1);
+  if (dx < -SWIPE_MIN) return wrap(active - 1);
   return active;
 }
 

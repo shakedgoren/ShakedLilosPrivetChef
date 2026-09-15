@@ -31,6 +31,15 @@ const STEPS = [
 const GLIDE_MS = 480;
 
 /**
+ * הצד שבו ממתינה הקטגוריה הבאה.
+ * ⚠ **-1 · משמאל** · בחירה של שקד (15 בספטמבר 2026) מתוך השוואה
+ * של שני הכיוונים. האצבע הולכת ימינה, והתוכן זז ימינה **איתה** —
+ * הכרטיס החדש נכנס משמאל והישן יוצא ימינה, כמו דחיפת חפיסת קלפים.
+ * קודם היה הפוך, והתוכן זז נגד האצבע.
+ */
+const NEXT_SIDE = -1;
+
+/**
  * הטשטוש על השכנים · מה שמבליט את הקדמי.
  * ⚠ `filter` נתמך ב-React Native מגרסה 0.76. בדפדפן הוא נוחת
  * כמו שהוא ב-CSS. אם פלטפורמה כלשהי לא תתמוך — הכרטיס פשוט
@@ -93,7 +102,7 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
                   opacity: Math.abs(d) >= STEPS.length ? 0 : step.opacity,
                   zIndex: 5 - far,
                   transform: [
-                    { translateX: (dir * step.x * CARD.width) / 100 },
+                    { translateX: (NEXT_SIDE * dir * step.x * CARD.width) / 100 },
                     { scale: step.scale },
                   ],
                 },
