@@ -28,6 +28,9 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
   hist: 'adminHistory',
 };
 
+/** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
+const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
+
 const money = (n: number) => n.toLocaleString('en-US');
 
 /** ‎2026-09-15 → ‎15.9 · כמו התג של ״ימי מכירה״ בקנבס */
@@ -216,7 +219,9 @@ export function AdminHomeScreen() {
         </GlassCard>
       </View>
 
-      <TileRail onOpen={(key) => go(TILE_ROUTES[key])} badges={home.badges} />
+      {/* ⚠ שורה אחת · תפריט · עלויות · לקוחות · מלאי, בסדר הזה.
+          השאר עברו לנאב-בר לבקשת שקד (15 בספטמבר 2026). */}
+      <TileRail onOpen={(key) => go(TILE_ROUTES[key])} badges={home.badges} keys={HOME_TILES} />
 
       {admin.newOpen ? <NewOrderSheet admin={admin} /> : null}
 

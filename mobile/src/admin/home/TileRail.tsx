@@ -22,23 +22,30 @@ const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = 
 };
 
 /**
- * אריחי הניווט · שער לשמונת מסכי הניהול.
+ * אריחי הניווט · שער למסכי הניהול שאינם בנאב-בר.
  *
- * ⚠ **שתי שורות ולא רצועה** · שקד ביקשה (15 בספטמבר 2026) לראות
- * את כל השמונה בבת אחת: הזמנות · ימי מכירה · מלאי · קניות בשורה
- * הראשונה, ולקוחות · תפריט · עלויות · היסטוריה מתחתיה. בקנבס זו
- * רצועה אופקית נגללת, ובה ארבעת האחרונים היו מחוץ למסך.
+ * ⚠ **שורה אחת של ארבעה** · שקד ביקשה (15 בספטמבר 2026) שבדף
+ * הבית יופיעו רק תפריט · עלויות · לקוחות · מלאי. הזמנות, ימי
+ * מכירה, קניות וכספים עברו לנאב-בר.
+ *
+ * ⚠ **היסטוריית הקניות ירדה מכאן** · היא נשארת נגישה מאייקון
+ * השעון שבכותרת מסך הקניות.
  */
 export function TileRail({
   onOpen,
   badges,
+  keys,
 }: {
   onOpen: (key: TileKey) => void;
   badges?: Record<string, number | string | boolean>;
+  /** אילו אריחים להציג ובאיזה סדר · ברירת המחדל היא כל השמונה */
+  keys?: TileKey[];
 }) {
+  /* ⚠ הסדר הוא של `keys` ולא של `TILES` · שקד קבעה סדר משלה */
+  const shown = keys ? keys.map((k) => TILES.find((t) => t.key === k)!).filter(Boolean) : TILES;
   return (
     <View style={s.grid}>
-      {TILES.map((t) => {
+      {shown.map((t) => {
         const fallback = BADGES[t.key];
         const raw = badges
           ? t.key === 'costs'

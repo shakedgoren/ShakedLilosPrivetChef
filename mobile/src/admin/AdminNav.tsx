@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius } from '../theme/tokens';
 import { LAV, SOFT_SHADOW } from './home/NightSky';
-import { Bars, Box3D, Home, Receipt, type IconProps } from '../icons';
+import { Bars, Calendar, Cart, Home, Receipt, type IconProps } from '../icons';
 import { useNav, type Screen } from '../navigation/store';
 
 /**
@@ -19,10 +19,16 @@ const ON = LAV.accent;
 const OFF = LAV.faint;
 const ICON = 22;
 
+/**
+ * ⚠ **חמש לשוניות** · שקד ביקשה (15 בספטמבר 2026) בית · קניות ·
+ * ימי מכירה · הזמנות · כספים. ״מלאי״ ירד מכאן ועבר לאריחים בדף
+ * הבית, וקניות וימי מכירה עלו לכאן מהאריחים.
+ */
 const TABS: { key: Screen; label: string; Icon: (p: IconProps) => React.JSX.Element }[] = [
   { key: 'admin', label: 'בית', Icon: Home },
+  { key: 'adminShopping', label: 'קניות', Icon: Cart },
+  { key: 'adminDays', label: 'ימי מכירה', Icon: Calendar },
   { key: 'adminOrders', label: 'הזמנות', Icon: Receipt },
-  { key: 'adminStock', label: 'מלאי', Icon: Box3D },
   { key: 'adminMoney', label: 'כספים', Icon: Bars },
 ];
 
@@ -63,15 +69,16 @@ const s = StyleSheet.create({
     elevation: 8,
     zIndex: 20,
   } as never,
+  /* ⚠ צר יותר · חמש לשוניות במקום ארבע, ו-52+12 לא נכנסו */
   tab: {
-    minWidth: 52,
+    minWidth: 44,
     height: 56,
     borderRadius: radius.pill,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
   },
   tabOn: { backgroundColor: LAV.pill },
-  label: { fontSize: 11 },
+  label: { fontSize: 10.5 },
 });
