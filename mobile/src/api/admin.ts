@@ -220,3 +220,20 @@ export const adminAddExpense = (body: { category: string; amount: number; date: 
 
 export const adminDeleteExpense = (id: string) =>
   api<{ ok: true }>(`/admin/expenses/${id}`, { method: 'DELETE' });
+
+export type IncomeRow = {
+  id: string;
+  date: string;
+  label: string;
+  period: string;
+  cat: string;
+  catName: string;
+  hue: string;
+  deep: string;
+  orders: number;
+  meals: number;
+  amount: number;
+};
+
+/** פנקס ההכנסות · יום מכירה וקטגוריה, מהחדש לישן */
+export const adminIncome = () => api<{ rows: IncomeRow[] }>('/admin/income');

@@ -15,6 +15,7 @@ import { STATE } from '../../../mobile/src/data/adminHome.ts';
 import { type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
 import { dishPrices } from '../admin/prices.ts';
 import { EXPENSE_CATS } from '../admin/expenseCats.ts';
+import { qtyOfOrder } from '../admin/sold.ts';
 
 export const adminFinanceRouter = Router();
 adminFinanceRouter.use(requireAuth, requireAdmin);
@@ -100,6 +101,63 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
    לפיו, ולכן תאריך שנבחר ידנית חייב לשבת שם — אחרת ההוצאה
    תיפול על החודש שבו הוקלדה ולא על החודש שאליו היא שייכת.
    ──────────────────────────────────────────────────────────── */
+
+/**
+ * פנקס ההכנסות · כל יום מכירה וכל קטגוריה, מהחדש לישן.
+ *
+ * ⚠ **הסכום הוא `total` של ההזמנה** · בדיוק מה שהלקוחה שילמה,
+ * כולל דמי משלוח — וזה מה שמסך הכספים מסכם בכרטיס ״מחזור״, כך
+ * שהפנקס מתיישב איתו. בדף הבית ״הכנסות עבור היום״ מחושב אחרת,
+ * מנות × מחיר, לפי בקשה מפורשת של שקד.
+ *
+ * ⚠ **פירות בחוץ** · מגשי הפירות נעשים אצל מיכל גורן ואינם
+ * ההכנסה של שקד.
+ */
+adminFinanceRouter.get('/income', async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 400, 1000);
+    const orders = await prisma.order.findMany({
+      where: { status: { not: CANCELLED }, category: { not: 'fruit' } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+    const named: Record<string, { n: string; hue: string; deep: string }> = {};
+    for (const c of MONEY_CATS) named[c.id] = { n: c.n, hue: c.hue, deep: c.deep };
+
+    const buckets = new Map<
+      string,
+      { date: string; cat: string; catName: string; hue: string; deep: string; orders: number; meals: number; amount: number }
+    >();
+    for (const o of orders) {
+      /* ⚠ יום המכירה קודם · הזמנת שף אינה נושאת אחד ולכן נופלת על יום הפתיחה */
+      const date = o.saleDate || isoDate(o.createdAt);
+      const key = `${date}|${o.category}`;
+      const meta = named[o.category] ?? { n: o.category, hue: '#8A8194', deep: '#4A4254' };
+      const b = buckets.get(key) ?? {
+        date,
+        cat: o.category,
+        catName: meta.n,
+        hue: meta.hue,
+        deep: meta.deep,
+        orders: 0,
+        meals: 0,
+        amount: 0,
+      };
+      b.orders += 1;
+      b.amount += o.total;
+      b.meals += Object.values(qtyOfOrder(o)).reduce((t, n) => t + n, 0);
+      buckets.set(key, b);
+    }
+
+    const rows = [...buckets.values()]
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+      .map((b) => ({ ...b, id: `${b.date}|${b.cat}`, label: hebrewDayLabel(b.date), period: b.date.slice(0, 7) }));
+
+    res.json({ rows });
+  } catch (err) {
+    next(err);
+  }
+});
 
 const expenseBody = z.object({
   category: z.string().min(1).max(60),

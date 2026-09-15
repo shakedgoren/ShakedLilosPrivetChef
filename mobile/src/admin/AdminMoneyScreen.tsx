@@ -81,7 +81,10 @@ export function AdminMoneyScreen() {
     <AdminShell
       title={MONEY_TITLE}
       sub={view.label}
-      actions={[{ label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: FileText }]}
+      actions={[
+        { label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: FileText },
+        { label: 'פנקס ההכנסות', onPress: () => go('adminIncome'), icon: PayCash },
+      ]}
     >
       <View style={s.tabs}>
         {(Object.keys(PERIODS) as PeriodKey[]).map((k) => (
@@ -110,13 +113,13 @@ export function AdminMoneyScreen() {
             שהשורה תתחלק להכנסות, הוצאות ורווח, עם אייקון לצד כל
             תיאור. ״הוצאות״ נלחץ ופותח את מסך ההוצאות. */}
         <View style={s.row}>
-          <View style={s.tile}>
+          <Pressable onPress={() => go('adminIncome')} style={s.tile}>
             <View style={s.tileHead}>
               <PayCash size={13} color={PLUM.deep} strokeWidth={1.9} />
               <Text style={s.tileK}>{TILE_REV}</Text>
             </View>
             <Text style={[s.tileV, { color: PLUM.deep }]}>{nf(view.revenue)}</Text>
-          </View>
+          </Pressable>
           <Pressable onPress={() => go('adminExpenses')} style={s.tile}>
             <View style={s.tileHead}>
               <Cart size={13} color="#A65E2A" strokeWidth={1.9} />

@@ -34,6 +34,7 @@ export const SCREENS = [
   'adminHistory',
   'adminBoard',
   'adminExpenses',
+  'adminIncome',
   /* מסך בדיקה · גיליון האייקונים שנוצרו מהקנבס */
   'icons',
 ] as const;

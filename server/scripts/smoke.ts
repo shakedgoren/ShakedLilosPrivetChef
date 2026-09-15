@@ -470,6 +470,22 @@ for (const r of ['day', 'week', 'month', 'half']) {
 }
 
 /**
+ * פנקס ההכנסות · ההזמנה שנוצרה למעלה חייבת להופיע בו, ביום
+ * המכירה שלה ובסכום ששולם.
+ */
+const income = await api('/admin/income', { headers: { authorization: `Bearer ${adminToken}` } });
+if (income.status !== 200) fail('income ledger', income);
+const incRows = (income.body as {
+  rows: { id: string; date: string; cat: string; catName: string; orders: number; meals: number; amount: number }[];
+}).rows;
+if (!Array.isArray(incRows) || incRows.length === 0) fail('income ledger empty', income.body);
+const incMine = incRows.find((r) => r.date === order.saleDate && r.cat === order.category);
+if (!incMine) fail('income ledger misses the order sale day', incRows);
+if (incMine.orders < 1 || incMine.amount < order.total) fail('income row totals', incMine);
+if (!incMine.catName) fail('income row category name', incMine);
+if (incRows.some((r) => r.cat === 'fruit')) fail('fruit counted as income', incRows);
+
+/**
  * הוצאות · הזנה ידנית, סינון לפי החודש שנבחר, ומחיקה.
  *
  * ⚠ **התאריך קובע את החודש** · הוצאה שהוקלדה היום עם תאריך של
