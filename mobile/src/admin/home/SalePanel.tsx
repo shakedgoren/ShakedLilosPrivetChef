@@ -16,6 +16,10 @@ import type { DishRow } from './useAdminHome';
  * ⚠ **המספרים נלחצים** · בקשה מפורשת שלה — גם המלאי וגם מה
  * שנמכר. לחיצה הופכת את המספר לשדה הקלדה; שמירה ביציאה מהשדה.
  * התיקון של ״נמכר״ גובר על הספירה מההזמנות עד שמוחקים אותו.
+ *
+ * ⚠ **סדר המספרים** · שקד ביקשה (15 בספטמבר 2026): **מימין ל-/**
+ * המלאי שהוגדר ביום המכירה, **משמאל ל-/** מה שהוזמן בפועל
+ * מההזמנות של אותו תאריך.
  */
 
 /**
@@ -178,18 +182,21 @@ export function SalePanel({
                 <Text style={s.name} numberOfLines={1}>
                   {d.name}
                 </Text>
-                {/* נמכר · נלחץ להקלדה */}
+                {/* ⚠ **המלאי מימין ל-/** · בקשה מפורשת של שקד
+                    (15 בספטמבר 2026). המספר הזה הוא המלאי שהוגדר
+                    ביום המכירה — `quotasJson` של אותו תאריך.
+                    ⚠ **בלי מדרגות** · שני המספרים מתנהגים אותו דבר —
+                    לחיצה והקלדה, בלי כפתורי + ו-−. */}
+                <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone={LAV.ink} />
+                <Text style={s.slash}>/</Text>
+                {/* ⚠ **ההזמנות משמאל ל-/** · נספר מההזמנות של אותו
+                    תאריך מכירה, לפי המנה שהוזמנה. */}
                 <Editable
                   value={d.sold}
                   onSave={(n) => onSetSold(d.id, n)}
                   style={s.sold}
                   tone={d.sold > 0 ? LAV.ink : LAV.faint}
                 />
-                <Text style={s.slash}>/</Text>
-                {/* ⚠ **בלי מדרגות** · שקד ביקשה (15 בספטמבר 2026)
-                    ששני המספרים יתנהגו אותו דבר — לחיצה והקלדה,
-                    בלי כפתורי + ו-−. */}
-                <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone={LAV.ink} />
               </View>
             );
           })}
@@ -237,9 +244,9 @@ const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
   name: { flex: 1, fontSize: 11, fontWeight: '400', color: LAV.soft },
-  sold: { fontSize: 11.5, fontWeight: '700', minWidth: 16, textAlign: 'center' },
+  /* ⚠ רוחב מינימלי זהה לשניהם · כך הלוכסנים יושבים בטור אחד */
+  sold: { fontSize: 11.5, fontWeight: '700', minWidth: 22, textAlign: 'center' },
   slash: { fontSize: 11, fontWeight: '300', color: LAV.faint },
-  /* ⚠ רוחב מינימלי · המספר תופס בדיוק את מה שהוא צריך */
   quota: { minWidth: 22, textAlign: 'center', fontSize: 11.5, fontWeight: '700' },
   /* שדה ההקלדה · אותן מידות של המספר, כדי שהשורה לא תקפוץ */
   input: { width: 26, padding: 0, borderBottomWidth: 1.5, borderBottomColor: LAV.accent },
