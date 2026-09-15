@@ -66,55 +66,75 @@ export function QuotaRings({
 }
 
 /** גרף המחזור · ששת החודשים האחרונים */
-export function RevenueChart() {
+/** נקודה בגרף · תווית הציר והסכום */
+export type RevPoint = { k: string; v: number };
+
+/* מערכת הקואורדינטות של הקנבס · 322×110, עם 30 פיקסלים לציר המספרים */
+const CHART = { w: 322, h: 110, left: 30, right: 320, top: 8, base: 96 } as const;
+
+/** ‎12000 → ‎12k · כמו בקנבס */
+const axisLabel = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(Math.round(n)));
+
+/**
+ * גרף המחזור · מצויר מהנתונים ולא מנתיב קבוע.
+ *
+ * ⚠ **היה קבוע מהקנבס** · הנתיב, החודשים והסכומים היו מחרוזות
+ * שחולצו מהארטבורד, ולכן הגרף הראה תמיד את אותם ששה חודשים.
+ * שקד ביקשה (15 בספטמבר 2026) לבחור טווח — היום, השבוע, החודש
+ * או חצי שנה — ולכן הוא מקבל עכשיו נקודות ומחשב את הסקאלה בעצמו.
+ */
+export function RevenueChart({ points }: { points: RevPoint[] }) {
+  const n = points.length;
+  /* ⚠ סקאלה עגולה כלפי מעלה · אחרת הקו נוגע בתקרה */
+  const peak = Math.max(1, ...points.map((p) => p.v));
+  const step = Math.pow(10, Math.max(0, String(Math.round(peak)).length - 2));
+  const top = Math.ceil(peak / step) * step || 1;
+  const grid = [top, (top * 2) / 3, top / 3, 0];
+
+  const x = (i: number) =>
+    n <= 1 ? CHART.right : CHART.left + 12 + ((CHART.right - CHART.left - 24) * i) / (n - 1);
+  const y = (v: number) => CHART.base - (v / top) * (CHART.base - CHART.top);
+
+  const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  const area = n
+    ? `${line} L${x(n - 1).toFixed(1)},${CHART.base} L${x(0).toFixed(1)},${CHART.base} Z`
+    : '';
+
   return (
-    <Svg width="100%" height={102} viewBox="0 0 322 110">
+    <Svg width="100%" height={102} viewBox={`0 0 ${CHART.w} ${CHART.h}`}>
       <Defs>
         <LinearGradient id="revfill" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0%" stopColor="#7B5CBC" stopOpacity={0.42} />
           <Stop offset="100%" stopColor="#7B5CBC" stopOpacity={0} />
         </LinearGradient>
       </Defs>
-      {[8, 37, 67, 96].map((y, i) => (
+      {[CHART.top, 37, 67, CHART.base].map((gy, i) => (
         <Line
-          key={y}
-          x1={30}
-          y1={y}
-          x2={320}
-          y2={y}
+          key={gy}
+          x1={CHART.left}
+          y1={gy}
+          x2={CHART.right}
+          y2={gy}
           stroke={i === 3 ? 'rgba(130,112,162,0.18)' : 'rgba(130,112,162,0.1)'}
           strokeWidth={1}
         />
       ))}
-      {[8, 37, 67, 96].map((y, i) => (
-        <SvgText
-          key={`ax-${y}`}
-          x={26}
-          y={y + 3}
-          textAnchor="end"
-          fontSize={9}
-          fontWeight="300"
-          fill="#9A93A6"
-        >
-          {REVENUE.axis[i]}
+      {[CHART.top, 37, 67, CHART.base].map((gy, i) => (
+        <SvgText key={`ax-${gy}`} x={26} y={gy + 3} textAnchor="end" fontSize={9} fontWeight="300" fill="#9A93A6">
+          {axisLabel(grid[i])}
         </SvgText>
       ))}
-      <Path d={REVENUE.area} fill="url(#revfill)" />
-      <Path
-        d={REVENUE.line}
-        fill="none"
-        stroke="#7B5CBC"
-        strokeWidth={2.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {REVENUE.dots.map((p, i) => {
-        const last = i === REVENUE.dots.length - 1;
+      {n > 1 ? <Path d={area} fill="url(#revfill)" /> : null}
+      {n > 1 ? (
+        <Path d={line} fill="none" stroke="#7B5CBC" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+      ) : null}
+      {points.map((p, i) => {
+        const last = i === n - 1;
         return (
           <Circle
-            key={p.cx}
-            cx={p.cx}
-            cy={p.cy}
+            key={`${p.k}-${i}`}
+            cx={x(i)}
+            cy={y(p.v)}
             r={last ? 4.2 : 2.6}
             fill={last ? '#7B5CBC' : '#FFFFFF'}
             stroke={last ? '#FFFFFF' : '#7B5CBC'}
@@ -122,15 +142,10 @@ export function RevenueChart() {
           />
         );
       })}
-      <Rect x={222} y={0} width={66} height={19} rx={9.5} fill="#7B5CBC" />
-      <SvgText x={255} y={13.5} textAnchor="middle" fontSize={11} fontWeight="600" fill="#FFFFFF">
-        {REVENUE.tip}
-      </SvgText>
     </Svg>
   );
 }
 
-/** דונאט פילוח הקטגוריות */
 export function CategoryDonut() {
   return (
     <View style={s.donutBox}>

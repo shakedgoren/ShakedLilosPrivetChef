@@ -1,14 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
-import {
-  DONUT,
-  HOME_SUBTITLE,
-  HOME_TITLE,
-  PROFIT,
-  REVENUE,
-  type TileKey,
-} from '../data/adminHome';
+import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
 import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';
 import { useAdminOrders } from './useAdminOrders';
@@ -17,7 +10,7 @@ import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
 import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
-import { useAdminHome } from './home/useAdminHome';
+import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LTR_ROW } from './ui/ltrRow';
 import { Plus } from '../icons';
 
@@ -85,9 +78,16 @@ export function AdminHomeScreen() {
       {/* ⚠ **שני הכרטיסים של יום המכירה** · שקד ביקשה שיופיעו זה
           לצד זה, ושכל אחד ינקוב בתאריך המכירה עצמו ולא ב״היום״. */}
       <View style={s.statRow}>
+        {/* ⚠ **הזמנות ומנות יחד** · שקד ביקשה (15 בספטמבר 2026)
+            לראות גם כמה הזמנות התקבלו וגם כמה מנות נמכרו בהן —
+            עשר הזמנות של עשר מנות יופיעו ״10 | 100״. */}
         <GlassCard style={s.stat}>
-          <Text style={s.statLabel}>{`מספר הזמנות עבור ${shortDate(home.sale.date)}`}</Text>
-          <Text style={s.statValue}>{home.sale.orders}</Text>
+          <Text style={s.statLabel}>{`הזמנות ומנות עבור ${shortDate(home.sale.date)}`}</Text>
+          <View style={s.pair}>
+            <Text style={s.statValue}>{home.sale.orders}</Text>
+            <Text style={s.pipe}>|</Text>
+            <Text style={s.statValue}>{home.sale.meals}</Text>
+          </View>
         </GlassCard>
         <GlassCard style={s.stat}>
           <Text style={s.statLabel}>{`מחזור עבור ${shortDate(home.sale.date)}`}</Text>
@@ -98,23 +98,46 @@ export function AdminHomeScreen() {
         </GlassCard>
       </View>
 
+      {/* ⚠ **בחירת טווח** · שקד ביקשה (15 בספטמבר 2026) לראות את
+          המחזור של היום, של השבוע, של החודש ושל חצי השנה האחרונה.
+          קודם הגרף היה נתיב קבוע מהקנבס והראה תמיד ששה חודשים. */}
       <GlassCard style={s.revCard}>
         <View style={s.cardHead}>
-          <Text style={s.cardTitle}>{REVENUE.title}</Text>
+          <Text style={s.cardTitle}>{home.rev.label}</Text>
           <View style={s.statMoney}>
-            <Text style={s.revTotal}>{money(home.live && home.month.revenue ? home.month.revenue : REVENUE.total)}</Text>
+            <Text style={s.revTotal}>{money(home.rev.total)}</Text>
             <Text style={s.currency}>₪</Text>
           </View>
         </View>
+
+        <View style={s.ranges}>
+          {REV_RANGES.map((r) => {
+            const on = home.range === r.id;
+            return (
+              <Pressable
+                key={r.id}
+                onPress={() => home.setRange(r.id)}
+                style={[s.range, on && s.rangeOn]}
+              >
+                <Text style={[s.rangeText, on && s.rangeTextOn]}>{r.n}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <View style={s.chart}>
-          <RevenueChart />
+          <RevenueChart points={home.rev.points} />
         </View>
         <View style={s.months}>
           <View style={s.axisPad} />
           <View style={s.monthRow}>
-            {REVENUE.months.map((m, i) => (
-              <Text key={m} style={[s.month, i === REVENUE.months.length - 1 && s.monthOn]}>
-                {m}
+            {home.rev.points.map((p, i) => (
+              <Text
+                key={`${p.k}-${i}`}
+                style={[s.month, i === home.rev.points.length - 1 && s.monthOn]}
+                numberOfLines={1}
+              >
+                {p.k}
               </Text>
             ))}
           </View>
@@ -205,15 +228,34 @@ const s = StyleSheet.create({
 
   row: { flexDirection: 'row', gap: 12, height: 144 },
   statRow: { flexDirection: 'row', gap: 12, height: 62 },
-  stat: { flex: 1, paddingHorizontal: 14, justifyContent: 'center', gap: 3 },
-  statLabel: { fontSize: 11, color: '#6E6478' },
+  /* ⚠ ממורכז · בקשה של שקד (15 בספטמבר 2026) */
+  stat: { flex: 1, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  statLabel: { fontSize: 11, color: '#6E6478', textAlign: 'center' },
   statValue: { fontSize: 21, fontWeight: '600', color: surface.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   currency: { fontSize: 11, color: surface.faint },
   currencySm: { fontSize: 10, color: surface.faint },
   currencyBig: { fontSize: 12, color: surface.faint },
 
-  revCard: { height: 158, borderRadius: 22, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 },
+  /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
+  revCard: { height: 192, borderRadius: 22, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 },
+  ranges: { flexDirection: 'row', gap: 5, marginTop: 8 },
+  range: {
+    flex: 1,
+    height: 26,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(130,112,162,0.16)',
+  },
+  rangeOn: { backgroundColor: 'rgba(123,92,188,0.12)', borderColor: 'rgba(123,92,188,0.42)' },
+  rangeText: { fontSize: 11, fontWeight: '400', color: '#6E6478' },
+  rangeTextOn: { fontWeight: '600', color: '#43307A' },
+
+  pair: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+  pipe: { fontSize: 15, fontWeight: '300', color: 'rgba(130,112,162,0.5)' },
   cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
   cardTitle: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
   revTotal: { fontSize: 15, fontWeight: '600', color: surface.ink },

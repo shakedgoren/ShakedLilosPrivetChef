@@ -312,6 +312,10 @@ for (const path of [
   '/admin/summary',
   '/admin/board',
   '/admin/money?period=month',
+  '/admin/revenue?range=day',
+  '/admin/revenue?range=week',
+  '/admin/revenue?range=month',
+  '/admin/revenue?range=half',
   '/admin/stock/sale',
   '/admin/stock/supply',
   '/admin/shop/active',
@@ -338,6 +342,7 @@ const sale = (summary.body as {
     open: boolean;
     dishes: { id: string; name: string; sold: number; quota: number }[];
     orders: number;
+    meals: number;
     revenue: number;
   };
 }).sale;
@@ -350,6 +355,25 @@ for (const d of sale.dishes) {
   if (typeof d.sold !== 'number' || typeof d.quota !== 'number') fail('dish row numbers', d);
 }
 if (typeof sale.orders !== 'number' || typeof sale.revenue !== 'number') fail('sale totals', sale);
+/* ⚠ המחזור נגזר מהמנות · לא מ-total של ההזמנה */
+const byDish = sale.dishes.reduce((s2, d) => s2 + d.sold, 0);
+if (sale.meals !== byDish) fail('sale meals != dish sum', sale);
+if (sale.revenue > 0 && byDish === 0) fail('revenue without dishes', sale);
+
+/* ארבעת הטווחים · כל אחד מחזיר תווית, סכום ונקודות */
+for (const r of ['day', 'week', 'month', 'half']) {
+  const hit = await api(`/admin/revenue?range=${r}`, {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  if (hit.status !== 200) fail(`revenue ${r}`, hit);
+  const b = hit.body as { range: string; label: string; total: number; points: { k: string; v: number }[] };
+  if (b.range !== r) fail('revenue range echo', b);
+  if (!b.label || typeof b.total !== 'number') fail('revenue head', b);
+  if (!Array.isArray(b.points) || b.points.length < 2) fail('revenue points', b);
+  for (const p of b.points) {
+    if (typeof p.k !== 'string' || typeof p.v !== 'number') fail('revenue point shape', p);
+  }
+}
 
 writeFileSync(
   join(dir, 'ok.txt'),

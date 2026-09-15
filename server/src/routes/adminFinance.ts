@@ -12,6 +12,7 @@ import { soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { notFound } from '../errors.ts';
 import { STATE } from '../../../mobile/src/data/adminHome.ts';
+import { MENU, type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
 
 export const adminFinanceRouter = Router();
 adminFinanceRouter.use(requireAuth, requireAdmin);
@@ -178,6 +179,98 @@ adminFinanceRouter.post('/costs/import/:listId', async (req, res, next) => {
   }
 });
 
+/**
+ * מחזור לפי טווח · שקד ביקשה (15 בספטמבר 2026) לבחור בין היום,
+ * השבוע, החודש וחצי השנה האחרונה.
+ *
+ * כל טווח מצויר בסלים הטבעיים שלו: היום לפי שעות, השבוע לפי ימים,
+ * החודש לפי ימים, וחצי שנה לפי חודשים. הסכום הוא `total` של
+ * ההזמנות שלא בוטלו — כלומר מה שבאמת נכנס, כולל משלוחים.
+ */
+const HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const HE_DOW = ['א','ב','ג','ד','ה','ו','ש'];
+const RANGES = ['day', 'week', 'month', 'half'] as const;
+type RangeKey = (typeof RANGES)[number];
+
+const RANGE_LABEL: Record<RangeKey, string> = {
+  day: 'מחזור · היום',
+  week: 'מחזור · השבוע',
+  month: 'מחזור · החודש',
+  half: 'מחזור · ששת החודשים האחרונים',
+};
+
+/** ⚠ שעות העבודה · מחוצה להן הגרף היה מלא באפסים */
+const DAY_FROM = 8;
+const DAY_TO = 22;
+
+function rangeStart(key: RangeKey, now: Date): Date {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (key === 'day') return d;
+  if (key === 'week') {
+    /* השבוע מתחיל ביום ראשון · כמו בלוח ימי המכירה */
+    d.setDate(d.getDate() - d.getDay());
+    return d;
+  }
+  if (key === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(now.getFullYear(), now.getMonth() - 5, 1);
+}
+
+adminFinanceRouter.get('/revenue', async (req, res, next) => {
+  try {
+    const raw = typeof req.query.range === 'string' ? req.query.range : 'half';
+    const key = (RANGES as readonly string[]).includes(raw) ? (raw as RangeKey) : 'half';
+    const now = new Date();
+    const from = rangeStart(key, now);
+    const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    const orders = await prisma.order.findMany({
+      where: { createdAt: { gte: from, lt: to }, status: { not: CANCELLED } },
+      select: { createdAt: true, total: true },
+    });
+
+    const points: { k: string; v: number }[] = [];
+    const add = (k: string, v: number) => points.push({ k, v });
+
+    if (key === 'day') {
+      const byHour = new Map<number, number>();
+      for (const o of orders) {
+        const h = Math.min(DAY_TO, Math.max(DAY_FROM, o.createdAt.getHours()));
+        byHour.set(h, (byHour.get(h) ?? 0) + o.total);
+      }
+      for (let h = DAY_FROM; h <= DAY_TO; h += 2) add(`${h}:00`, byHour.get(h) ?? 0);
+    } else if (key === 'week' || key === 'month') {
+      const byDay = new Map<string, number>();
+      for (const o of orders) {
+        const k2 = isoDate(o.createdAt);
+        byDay.set(k2, (byDay.get(k2) ?? 0) + o.total);
+      }
+      for (let d = new Date(from); d < to; d.setDate(d.getDate() + 1)) {
+        const label = key === 'week' ? HE_DOW[d.getDay()] : String(d.getDate());
+        add(label, byDay.get(isoDate(d)) ?? 0);
+      }
+    } else {
+      const byMonth = new Map<string, number>();
+      for (const o of orders) {
+        const k2 = `${o.createdAt.getFullYear()}-${o.createdAt.getMonth()}`;
+        byMonth.set(k2, (byMonth.get(k2) ?? 0) + o.total);
+      }
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+        add(HE_MONTHS[d.getMonth()].slice(0, 4), byMonth.get(`${d.getFullYear()}-${d.getMonth()}`) ?? 0);
+      }
+    }
+
+    res.json({
+      range: key,
+      label: RANGE_LABEL[key],
+      total: orders.reduce((s2, o) => s2 + o.total, 0),
+      points,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 adminFinanceRouter.get('/summary', async (_req, res, next) => {
   try {
     const now = new Date();
@@ -245,8 +338,31 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
     const upOrders = await prisma.order.findMany({
       where: { saleDate: up.date, status: { not: CANCELLED } },
     });
-    const upSold = soldByDish(upOrders.filter((o) => o.category === up.cat), up.cat, up.date);
+    /**
+     * ⚠ **רק ההזמנות של הקטגוריה** · קודם נספרו כל ההזמנות שנושאות
+     * את התאריך הזה, מכל הקטגוריות, ולכן ״מחזור עבור 15.9״ הראה
+     * 31,770 ₪ בעוד שנמכרו 32 מנות בלבד.
+     */
+    const catOrders = upOrders.filter((o) => o.category === up.cat);
+    const upSold = soldByDish(catOrders, up.cat, up.date);
     const upQuota = readJson<Record<string, number>>(upDay?.quotasJson ?? '', {});
+
+    /**
+     * המחזור נגזר מהמנות שנמכרו · שקד ביקשה (15 בספטמבר 2026)
+     * שהסכום יחושב לפי כמות המנות שנמכרו באותה מכירה, ולא מתוך
+     * `total` של ההזמנה — שכולל גם דמי משלוח ופריטים אחרים.
+     */
+    const price: Record<string, number> = {};
+    for (const it of MENU[up.cat as AdminCatKey] ?? []) price[it.id] = it.price;
+    const saleDishes = upCat.dishes.map((d) => ({
+      id: d.id,
+      name: d.n,
+      sold: upSold[d.id] ?? 0,
+      quota: upQuota[d.id] ?? d.q,
+    }));
+    const saleMeals = saleDishes.reduce((s2, d) => s2 + d.sold, 0);
+    const saleRevenue = saleDishes.reduce((s2, d) => s2 + d.sold * (price[d.id] ?? 0), 0);
+
     const sale = {
       date: up.date,
       label: hebrewDayLabel(up.date),
@@ -255,14 +371,12 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       hue: upCat.hue,
       rgb: upCat.rgb,
       open: upDay?.open ?? false,
-      dishes: upCat.dishes.map((d) => ({
-        id: d.id,
-        name: d.n,
-        sold: upSold[d.id] ?? 0,
-        quota: upQuota[d.id] ?? d.q,
-      })),
-      orders: upOrders.length,
-      revenue: upOrders.reduce((s2, o) => s2 + o.total, 0),
+      dishes: saleDishes,
+      /** מספר ההזמנות שהתקבלו ליום המכירה הזה */
+      orders: catOrders.length,
+      /** כמה מנות נמכרו בהן · שקד מבקשת לראות את שני המספרים יחד */
+      meals: saleMeals,
+      revenue: saleRevenue,
     };
 
     const newOrders = await prisma.order.count({ where: { status: 'חדשה' } });

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { QUOTA_STEP, TODAY } from '../../data/adminHome';
+import { QUOTA_STEP, REVENUE } from '../../data/adminHome';
 import { CATS, DAY_NAMES, MONTHS, type DayCatKey } from '../../data/adminDays';
 import { upcomingSale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
-import { adminGetDay, adminPutDay, adminSummary } from '../../api/admin';
+import { adminGetDay, adminPutDay, adminRevenue, adminSummary } from '../../api/admin';
 import { useNav } from '../../navigation/store';
 
 /**
@@ -25,6 +25,8 @@ export type SaleView = {
   open: boolean;
   dishes: DishRow[];
   orders: number;
+  /** כמה מנות נמכרו בהזמנות האלה · שקד מבקשת את שני המספרים יחד */
+  meals: number;
   revenue: number;
 };
 
@@ -52,10 +54,33 @@ function offlineSale(): SaleView {
     rgb: cat.rgb,
     open: false,
     dishes: cat.dishes.map((d) => ({ id: d.id, name: d.n, sold: 0, quota: d.q })),
-    orders: TODAY.orders,
-    revenue: TODAY.revenue,
+    orders: 0,
+    meals: 0,
+    revenue: 0,
   };
 }
+
+/**
+ * ⚠ ערכי הנפילה-לאחור נגזרים מהנקודות של הקנבס · לגרף בארטבורד
+ * יש רק נתיב ונקודות, בלי מספרים. הציר שם הוא 0 ב-y=96 ו-12k
+ * ב-y=8, ולכן הערך מחושב חזרה מהגובה. נבדק: הנקודה האחרונה
+ * יוצאת 11,045 והתווית בקנבס אומרת ״11,000 ₪״.
+ */
+const fromCanvasDot = (cy?: number) =>
+  cy == null ? 0 : Math.round(((96 - cy) / 88) * 12000);
+
+/**
+ * טווחי המחזור · בחירה של שקד (15 בספטמבר 2026).
+ * ⚠ כל טווח מצויר בסלים שלו · היום לפי שעות, השבוע והחודש לפי
+ * ימים, וחצי שנה לפי חודשים.
+ */
+export const REV_RANGES = [
+  { id: 'day', n: 'היום' },
+  { id: 'week', n: 'השבוע' },
+  { id: 'month', n: 'החודש' },
+  { id: 'half', n: 'חצי שנה' },
+] as const;
+export type RevRange = (typeof REV_RANGES)[number]['id'];
 
 export function useAdminHome() {
   const { user } = useNav();
@@ -64,6 +89,12 @@ export function useAdminHome() {
   const [subtitle, setSubtitle] = useState('');
   const [badges, setBadges] = useState<Record<string, number | string | boolean>>({});
   const [month, setMonth] = useState({ revenue: 0, expenses: 0, profit: 0 });
+  const [range, setRange] = useState<RevRange>('half');
+  const [rev, setRev] = useState<{ label: string; total: number; points: { k: string; v: number }[] }>({
+    label: REVENUE.title,
+    total: REVENUE.total,
+    points: REVENUE.months.map((m, i) => ({ k: m, v: fromCanvasDot(REVENUE.dots[i]?.cy) })),
+  });
   const [donut, setDonut] = useState<{ total: number; shares: { name: string; color: string; v: number }[] } | null>(
     null,
   );
@@ -81,6 +112,14 @@ export function useAdminHome() {
   useEffect(() => {
     void reload().catch(() => undefined);
   }, [reload]);
+
+  /* הגרף נטען מחדש בכל החלפת טווח · הנתונים לא יושבים בזיכרון */
+  useEffect(() => {
+    if (!live) return;
+    void adminRevenue(range)
+      .then((r) => setRev({ label: r.label, total: r.total, points: r.points }))
+      .catch(() => undefined);
+  }, [live, range]);
 
   const toggleOpen = useCallback(() => {
     if (live) {
@@ -135,6 +174,9 @@ export function useAdminHome() {
     quotaTotal: quota,
     ringPct: quota ? Math.round((sold / quota) * 100) : 0,
     live,
+    range,
+    setRange,
+    rev,
     subtitle,
     badges,
     month,

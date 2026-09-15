@@ -138,12 +138,21 @@ export const adminSummary = () =>
       open: boolean;
       dishes: { id: string; name: string; sold: number; quota: number }[];
       orders: number;
+      /** כמה מנות נמכרו בהזמנות האלה */
+      meals: number;
       revenue: number;
     };
     month: { revenue: number; expenses: number; profit: number };
     badges: Record<string, number | string | boolean>;
     donut: { total: number; shares: { name: string; color: string; v: number }[] };
   }>('/admin/summary');
+
+/** מחזור לפי טווח · היום, השבוע, החודש או חצי שנה */
+export const adminRevenue = (range: 'day' | 'week' | 'month' | 'half') =>
+  api<{ range: string; label: string; total: number; points: { k: string; v: number }[] }>(
+    `/admin/revenue?range=${range}`,
+    { method: 'GET' },
+  );
 
 export const adminBoard = (date?: string) => {
   const q = date ? `?date=${date}&category=cous` : '?category=cous';
