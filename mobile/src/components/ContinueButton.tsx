@@ -45,6 +45,11 @@ type Props = {
   accent: Accent;
   label?: string;
   disabled?: boolean;
+  /**
+   * ⚠ כפתור רחב וממורכז · שקד ביקשה את זה בחלוניות של מגשי הפירות.
+   * במקום הרוחב המינימלי הכפתור נמתח לכל השורה.
+   */
+  wide?: boolean;
   /** מיקום בלבד · מרווחים ויישור מהמסך הקורא, לא עיצוב הכפתור */
   style?: StyleProp<ViewStyle>;
 };
@@ -54,6 +59,7 @@ export function ContinueButton({
   accent,
   label = 'המשך',
   disabled = false,
+  wide = false,
   style,
 }: Props) {
   return (
@@ -62,6 +68,7 @@ export function ContinueButton({
       disabled={disabled}
       style={[
         s.button,
+        wide && s.wide,
         {
           backgroundColor: a(accent.rgb, FILL_ALPHA),
           boxShadow: `${GLASS_EDGE}, 0 2px 10px ${a(accent.rgb, 0.13)}`,
@@ -93,6 +100,8 @@ const s = StyleSheet.create({
     paddingLeft: KNOB_INSET + KNOB + LABEL_GAP,
     paddingRight: PAD_END,
   },
+  /* רחב וממורכז · `alignSelf: stretch` מבטל את הרוחב המינימלי */
+  wide: { alignSelf: 'stretch', width: '100%' },
   label: { fontSize: 15, fontWeight: '600' },
   knob: {
     position: 'absolute',

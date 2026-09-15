@@ -11,6 +11,8 @@ import { ChefExtraCard } from '../../components/ChefExtraCard';
 import { ChefTierCard } from '../../components/ChefTierCard';
 import { DateCalendar } from '../../components/DateCalendar';
 import { dayPartOpen } from '../../data/calendar';
+import { AddressField, type AddressValue } from '../../components/AddressField';
+import { formatAddress } from '../../data/israelAddresses';
 
 const ACCENT = hues.chef;
 
@@ -72,6 +74,34 @@ const NARROW = 272;
 
 /** המרווח בין כרטיסי השדרוגים · `--g: 10px` בקנבס */
 const CARD_GAP = 10;
+
+/**
+ * שדה הכתובת בטופס יצירת הקשר · עוטף את `AddressField` ושומר את
+ * התוצאה כמחרוזת אחת, כמו שהשאלון מצפה.
+ *
+ * ⚠ **בלי בדיקת אזור חלוקה** · השף מגיע לכל מקום. ההגבלה
+ * הגיאוגרפית נאמרה על משלוחי מגשי הפירות בלבד.
+ */
+function ChefAddress({ s: sec, api }: { s: ChefSection; api: Api }) {
+  const [place, setPlace] = React.useState<AddressValue>(null);
+  const [house, setHouse] = React.useState('');
+  const setValue = api.setValue;
+  const id = sec.id;
+
+  React.useEffect(() => {
+    setValue(id, place ? formatAddress(place.street, house, place.city) : '');
+  }, [place, house, id, setValue]);
+
+  return (
+    <AddressField
+      value={place}
+      onPick={setPlace}
+      house={house}
+      onHouse={setHouse}
+      placeholder={sec.ph ?? 'התחילו להקליד שם רחוב…'}
+    />
+  );
+}
 
 const nameOf = (o: unknown) => (typeof o === 'string' ? o : (o as { n: string }).n);
 const descOf = (o: unknown) => (typeof o === 'string' ? undefined : (o as { d?: string }).d);
@@ -136,15 +166,11 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       );
 
     case 'addr':
-      return (
-        <TextInput
-          value={api.picks[s.id] ?? ''}
-          onChangeText={(v) => api.setValue(s.id, v)}
-          placeholder={s.ph ?? 'כתובת האירוע'}
-          placeholderTextColor="#B3ABBD"
-          style={[st.field, st.oneLine]}
-        />
-      );
+      /* ⚠ היה שדה טקסט חופשי · שקד ביקשה שהכתובת תושלם מרשימת
+         הכתובות של מדינת ישראל תוך כדי הקלדה.
+         ⚠ **בלי בדיקת אזור חלוקה** · השף מגיע לכל מקום, וההגבלה
+         הגיאוגרפית נאמרה על משלוחי מגשי הפירות בלבד. */
+      return <ChefAddress s={s} api={api} />;
 
     case 'cal':
       /* ⚠ היה שדה טקסט חופשי · הקנבס מגדיר לוח שנה מלא, והוא פשוט

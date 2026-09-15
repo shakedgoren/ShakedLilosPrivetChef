@@ -15,8 +15,9 @@ import { Bag, Close, Truck } from '../../icons';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
 import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
 import { shippingFee } from './whatsappOrder';
-import { hhmm, isAddressValid, toMinutes } from '../../order/types';
-import { CITIES } from '../../data/shared';
+import { hhmm, toMinutes } from '../../order/types';
+import { AddressField, type AddressValue } from '../../components/AddressField';
+import { inDeliveryZone } from '../../data/israelAddresses';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { TILE_SHADOW } from '../../theme/glass';
 
@@ -83,8 +84,9 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState(hhmm(FRUIT_FULFILLMENT.pickupFrom));
   const [ship, setShip] = React.useState<Ship | null>(null);
-  const [city, setCity] = React.useState(CITIES[0]);
-  const [addr, setAddr] = React.useState('');
+  /* הכתובת שנבחרה מרשימת הרחובות של ישראל, ומספר הבית לצידה */
+  const [place, setPlace] = React.useState<AddressValue>(null);
+  const [house, setHouse] = React.useState('');
   /* חלונית הכתובת · נפתחת בבחירת משלוח, ונסגרת עם אישור או ביטול */
   const [addrOpen, setAddrOpen] = React.useState(false);
 
@@ -99,8 +101,11 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
   };
 
   const deliv = ship === 'deliv';
-  const addrOk = isAddressValid(addr);
-  /* ⚠ במשלוח הכתובת חובה · בלי זה אפשר היה לשלוח ״משלוח״ בלי לאן */
+  /**
+   * ⚠ כתובת תקפה = נבחרה מהרשימה, יש מספר בית, **והיישוב באזור
+   * החלוקה**. כתובת מחוץ לאזור נועלת את ההמשך, כבקשת שקד.
+   */
+  const addrOk = !!place && inDeliveryZone(place.city) && house.trim() !== '';
   const ready =
     name.trim() !== '' && date !== '' && toMinutes(time) !== null && ship !== null && (!deliv || addrOk);
 
@@ -111,7 +116,7 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
       date,
       time,
       ship,
-      ...(deliv ? { city, address: addr.trim() } : {}),
+      ...(deliv && place ? { city: place.city, address: `${place.street} ${house.trim()}` } : {}),
     });
   };
 
@@ -193,7 +198,9 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                 <View style={s.optionText}>
                   <Text style={s.optionTitle}>משלוח</Text>
                   <Text style={s.optionSub}>
-                    {deliv && addrOk ? `${addr.trim()}, ${city}` : window_}
+                    {deliv && addrOk && place
+                      ? `${place.street} ${house.trim()}, ${place.city}`
+                      : window_}
                   </Text>
                 </View>
               </Pressable>
@@ -208,12 +215,13 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
               </View>
             </View>
 
+            {/* ⚠ רחב וממורכז · בקשה של שקד, גם באיסוף וגם במשלוח */}
             <ContinueButton
               onPress={send}
               accent={ACCENT}
               disabled={!ready}
               label="שליחה בוואטסאפ"
-              style={s.send}
+              wide
             />
           </ScrollView>
         </View>
@@ -222,14 +230,14 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
       {/* חלונית הכתובת · מעל החלונית הראשית, עם טשטוש מאחור */}
       <AddressPopup
         open={addrOpen}
-        city={city}
-        addr={addr}
-        onCity={setCity}
-        onAddr={setAddr}
+        place={place}
+        house={house}
+        onPlace={setPlace}
+        onHouse={setHouse}
         onCancel={() => {
           setAddrOpen(false);
           /* ביטול בלי כתובת תקינה · המסירה חוזרת לבלתי-נבחרת */
-          if (!isAddressValid(addr)) setShip(null);
+          if (!addrOk) setShip(null);
         }}
         onConfirm={() => {
           setAddrOpen(false);
@@ -249,22 +257,23 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
  */
 function AddressPopup({
   open,
-  city,
-  addr,
-  onCity,
-  onAddr,
+  place,
+  house,
+  onPlace,
+  onHouse,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
-  city: string;
-  addr: string;
-  onCity: (c: string) => void;
-  onAddr: (a: string) => void;
+  place: AddressValue;
+  house: string;
+  onPlace: (v: AddressValue) => void;
+  onHouse: (h: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
-  const ok = isAddressValid(addr);
+  const inZone = !!place && inDeliveryZone(place.city);
+  const ok = inZone && house.trim() !== '';
   if (!open) return null;
 
   return (
@@ -280,50 +289,29 @@ function AddressPopup({
 
           <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
             <View style={s.addrField}>
-              <Text style={s.label}>עיר</Text>
-              <View style={s.cities}>
-                {CITIES.map((c) => (
-                  <Pressable
-                    key={c}
-                    onPress={() => onCity(c)}
-                    style={[s.city, c === city && s.cityOn]}
-                  >
-                    <Text style={[s.cityText, c === city && s.cityTextOn]}>{c}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            <View style={s.addrField}>
-              <Text style={s.label}>רחוב ומספר</Text>
-              <TextInput
-                value={addr}
-                onChangeText={onAddr}
-                placeholder="רחוב ומספר בית"
-                placeholderTextColor="#B3ABBD"
-                style={[s.input, !ok && addr !== '' && s.inputBad]}
+              <Text style={s.label}>כתובת</Text>
+              {/* ⚠ היו כאן גלולות של שש ערים · שקד ביקשה הקלדה
+                  והשלמה מרשימת הכתובות של מדינת ישראל. */}
+              <AddressField
+                value={place}
+                onPick={onPlace}
+                house={house}
+                onHouse={onHouse}
+                zone
+                okNote={place ? `משלוח ל${place.city} · ${shippingFee(place.city)} \u20aa` : undefined}
               />
-              {!ok ? (
-                <Text style={[s.addrHint, addr !== '' && s.addrHintBad]}>
-                  יש להזין רחוב ומספר בית
-                </Text>
-              ) : null}
             </View>
 
-            {/* דמי המשלוח לעיר שנבחרה · הסכומים מהקנבס */}
+            {/* אזור החלוקה · הנוסח והסכומים מהקנבס */}
             <View style={s.fees}>
-              <Fee label={`משלוח ל${city}`} fee={shippingFee(city)} />
+              <Fee label={FRUIT_SHIPPING.near.label} fee={FRUIT_SHIPPING.near.fee} />
+              <View style={s.feeRule} />
+              <Fee label={FRUIT_SHIPPING.far.label} fee={FRUIT_SHIPPING.far.fee} />
               <View style={s.feeRule} />
               <Text style={s.feeArea}>{FRUIT_SHIPPING.area}</Text>
             </View>
 
-            <ContinueButton
-              onPress={onConfirm}
-              accent={ACCENT}
-              disabled={!ok}
-              label="אישור"
-              style={s.send}
-            />
+            <ContinueButton onPress={onConfirm} accent={ACCENT} disabled={!ok} label="אישור" wide />
           </ScrollView>
         </View>
       </View>
@@ -423,20 +411,6 @@ const s = StyleSheet.create({
     gap: 11,
   },
   addrField: { gap: 5 },
-  /* ⚠ בקנבס העיר היא `select` · ל-React Native אין, ולכן גלולות */
-  cities: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  city: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(130,112,162,0.09)',
-  },
-  cityOn: { backgroundColor: a(ACCENT.rgb, 0.22) },
-  cityText: { fontSize: 13, color: surface.inkSoft },
-  cityTextOn: { color: ACCENT.deep, fontWeight: '600' },
-  inputBad: { borderColor: 'rgba(185,83,73,0.5)' },
-  addrHint: { fontSize: 11, fontWeight: '300', color: '#A79FB2', paddingHorizontal: 4 },
-  addrHintBad: { color: '#B95349' },
 
   /* לוח דמי המשלוח · פינה 18, ריפוד 13/15, כמו בקנבס */
   fees: {
@@ -460,5 +434,4 @@ const s = StyleSheet.create({
   feeRule: { height: 1, backgroundColor: a(ACCENT.rgb, 0.16) },
   feeArea: { fontSize: 11.5, fontWeight: '300', color: '#8A8194', lineHeight: 17.25 },
 
-  send: { alignSelf: 'center', marginTop: 4 },
 });
