@@ -20,6 +20,8 @@ export type HeaderAction = {
 
 type Props = {
   title: string;
+  /** גודל הכותרת · 21 ברוב המסכים, 17 בקניות כמו בקנבס */
+  titleSize?: number;
   sub?: string;
   actions?: HeaderAction[];
   children: React.ReactNode;
@@ -34,7 +36,7 @@ type Props = {
  * ⚠ החץ הוא `ChevronRight` ולא תו ‹ · תווי חץ נהפכים ב-RTL,
  * וזה מה שהפך את החצים במפות ההגעה.
  */
-export function AdminShell({ title, sub, actions = [], children }: Props) {
+export function AdminShell({ title, titleSize = 21, sub, actions = [], children }: Props) {
   const { back, canBack, go } = useNav();
   return (
     <View style={s.root}>
@@ -45,7 +47,10 @@ export function AdminShell({ title, sub, actions = [], children }: Props) {
           <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
         </Pressable>
         <View style={s.headText}>
-          <Text style={s.title}>{title}</Text>
+          {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
+          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
+            {title}
+          </Text>
           {sub ? <Text style={s.sub}>{sub}</Text> : null}
         </View>
         {actions.map((act) => (
@@ -56,7 +61,7 @@ export function AdminShell({ title, sub, actions = [], children }: Props) {
             style={[
               s.action,
               act.icon ? s.actionIcon : null,
-              act.primary ? s.actionPrimary : s.actionGhost,
+              act.primary ? s.actionPrimary : act.icon ? s.actionGhostRound : s.actionGhost,
               act.off ? s.actionOff : null,
             ]}
           >
@@ -108,7 +113,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   headText: { flex: 1, gap: 2 },
-  title: { fontSize: 21, fontWeight: '600', color: surface.ink },
+  title: { fontWeight: '600', color: surface.ink },
   sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
   action: {
     height: 38,
@@ -122,8 +127,10 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.22)',
   },
-  /* כפתור אייקון · ריבוע ולא גלולה עם טקסט */
-  actionIcon: { width: 38, paddingHorizontal: 0 },
+  /* הגרסה העגולה של הכפתור הרגיל · אפור רך, בלי מסגרת, כמו בקנבס */
+  actionGhostRound: { backgroundColor: 'rgba(130,112,162,0.09)', borderWidth: 0 },
+  /* ⚠ כפתור אייקון · **עיגול** 38×38, בדיוק כמו בקנבס של הקניות */
+  actionIcon: { width: 38, height: 38, borderRadius: 19, paddingHorizontal: 0 },
   actionPrimary: { backgroundColor: '#C6B3EC' },
   actionOff: { opacity: 0.4 },
   actionText: { fontSize: 13, fontWeight: '600', color: '#43307A' },

@@ -20,6 +20,7 @@ import { ProgressBar } from './ui/ProgressBar';
 import { ShopTable } from './shopping/ShopTable';
 import { AddShopSheet } from './shopping/AddShopSheet';
 import { nf, useAdminShopping } from './shopping/useAdminShopping';
+import { Clock, Plus } from '../icons';
 
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 
@@ -30,10 +31,13 @@ export function AdminShoppingScreen() {
   return (
     <AdminShell
       title={admin.title}
+      /* ⚠ 17 ולא 21 · המידה של הקנבס, וכך הכותרת נכנסת בשורה אחת */
+      titleSize={17}
       sub={`${admin.doneCount} מתוך ${admin.items.length} נרכשו`}
+      /* ⚠ אייקונים ולא מילים · שעון להיסטוריה ו-״+״ להוספה, כמו בקנבס */
       actions={[
-        { label: 'היסטוריה', onPress: () => go('adminHistory') },
-        { label: 'פריט', onPress: admin.openAdd, primary: true },
+        { label: 'היסטוריה', onPress: () => go('adminHistory'), icon: Clock },
+        { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
       ]}
     >
       <ChipRail>
@@ -43,6 +47,10 @@ export function AdminShoppingScreen() {
             label={a.n}
             on={admin.area === a.id}
             tint={PLUM}
+            /* ⚠ 11 ולא 12.5 · שקד ביקשה שכל הקטגוריות ייכנסו בשורה
+               אחת בלי לגלול. נמדד בדפדפן. */
+            fontSize={11}
+            style={s.areaChip}
             onPress={() => admin.setArea(a.id)}
           />
         ))}
@@ -71,8 +79,14 @@ export function AdminShoppingScreen() {
         <ShopTable groups={admin.groups} onToggle={admin.toggle} onDrop={admin.drop} />
       </ScrollView>
 
+      {/* ⚠ **הכפתור היה חסר-מענה** · הוא נראה לחיץ תמיד, והלחיצה
+          נבלעה: בלי פריט מסומן `closeList` יוצא מיד, ותקלת שרת
+          נבלעה ב-catch שקט. עכשיו הוא מושבת כשאי אפשר לסגור,
+          והשגיאה מוצגת. */}
+      {admin.closeErr ? <Text style={s.closeErr}>{admin.closeErr}</Text> : null}
       <Pressable
         onPress={admin.closeList}
+        disabled={!admin.canClose}
         style={[s.close, { backgroundColor: admin.canClose ? '#C6B3EC' : 'rgba(130,112,162,0.11)' }]}
       >
         <Text style={[s.closeLabel, { color: admin.canClose ? '#43307A' : '#A79FB2' }]}>
@@ -117,6 +131,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  areaChip: { paddingHorizontal: 9 },
+  closeErr: { fontSize: 11.5, color: '#B95349', textAlign: 'center', marginBottom: 4 },
   closeLabel: { fontSize: 15, fontWeight: '600' },
   closeSub: { fontSize: 11, fontWeight: '300' },
 });

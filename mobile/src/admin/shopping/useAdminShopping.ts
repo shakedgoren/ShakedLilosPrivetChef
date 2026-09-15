@@ -1,3 +1,4 @@
+import { ApiError } from '../../api/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AREA,
@@ -30,6 +31,19 @@ export const lineSum = (x: { qty: string; price: string }) => num(x.qty) * num(x
 const paid = (x: ShopRow) => (x.done ? (trim(x.actual) !== '' ? num(x.actual) : lineSum(x)) : 0);
 const MAX_HITS = 4;
 
+/**
+ * למה הסגירה נכשלה · בעברית, לפי הקוד שהשרת מחזיר.
+ * ⚠ בלי זה הלחיצה נראתה כאילו לא קרה כלום.
+ */
+function closeFail(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.code === 'need_checked_item') return 'צריך לסמן לפחות פריט אחד שנקנה';
+    if (e.status === 404) return 'אין רשימת קניות פתוחה לסגירה';
+    if (e.status === 401 || e.status === 403) return 'צריך להתחבר כמנהלת כדי לסגור רשימה';
+  }
+  return 'סגירת הרשימה נכשלה · נסי שוב';
+}
+
 export function useAdminShopping() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
@@ -38,6 +52,8 @@ export function useAdminShopping() {
   const [items, setItems] = useState<ShopRow[]>(() => SEED.map((x, i) => ({ ...x, id: i })));
   const [nextId, setNextId] = useState(SEED.length);
   const [addOpen, setAddOpen] = useState(false);
+  /* למה הסגירה לא קרתה · מוצג מתחת לכפתור */
+  const [closeErr, setCloseErr] = useState('');
   const [draft, setDraft] = useState<NewShopItem>(() => emptyItem(DEFAULT_GROUP, DEFAULT_UNIT));
 
   const persist = useCallback(
@@ -134,10 +150,23 @@ export function useAdminShopping() {
     setDraft(emptyItem(draft.g, draft.unit));
   }, [addReady, draft, nextId, live, persist, area]);
 
+  /**
+   * סגירת הרשימה · מעבירה אותה להיסטוריה ופותחת רשימה חדשה.
+   *
+   * ⚠ **קודם הלחיצה נבלעה** · בלי פריט מסומן הפונקציה יצאה מיד
+   * ובלי אומר דבר, ותקלת שרת נבלעה ב-`catch` ריק. עכשיו שתי
+   * הדרכים מחזירות הודעה, ושקד רואה למה כלום לא קרה.
+   */
   const closeList = useCallback(() => {
-    if (items.filter((x) => x.done).length === 0) return;
+    setCloseErr('');
+    if (items.filter((x) => x.done).length === 0) {
+      setCloseErr('צריך לסמן לפחות פריט אחד שנקנה לפני סגירת הרשימה');
+      return;
+    }
     if (live) {
-      void adminCloseShop().then(reload).catch(() => undefined);
+      void adminCloseShop()
+        .then(reload)
+        .catch((e: unknown) => setCloseErr(closeFail(e)));
       return;
     }
     setOpened(new Date());
@@ -162,6 +191,7 @@ export function useAdminShopping() {
     actSum: items.reduce((s, x) => s + paid(x), 0),
     pct: items.length ? Math.round((doneCount / items.length) * 100) : 0,
     canClose: doneCount > 0,
+    closeErr,
     lineTotal: num(draft.qty) * num(draft.price),
     toggle, drop, setField, pickPantry, saveAdd, closeList,
     openAdd: useCallback(() => setAddOpen(true), []),
