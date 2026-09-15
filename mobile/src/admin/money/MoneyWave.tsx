@@ -21,7 +21,12 @@ export type WavePoint = { k: string; rev: number; exp: number };
 /** ⚠ **גובה מינימלי** · בקשה של שקד · מספיק לגל ולא יותר */
 const H = 78;
 const TOP = 7;
-const BASE = H - 3;
+/**
+ * ⚠ **קו האפס גבוה מהתחתית** · עובי הקו 2.6, ואם הוא יושב על
+ * השוליים ממש חציו נחתך. נמדד בדפדפן ב-15 בספטמבר 2026: בתצוגת
+ * ״השנה״ אחד עשר חודשים באפס, והקו נראה גזור לאורך כל הרוחב.
+ */
+const BASE = H - 7;
 /** ⚠ קבוע גדול מכל אורך נתיב אפשרי · אין מדידת אורך נתיב חוצת-פלטפורמות */
 const DASH = 2400;
 
@@ -191,12 +196,16 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
 
 const s = StyleSheet.create({
   /* ⚠ בלי ריפוד · הגל נוגע בכל ארבעת השוליים */
+  /**
+   * ⚠ **בלי `height` על הכרטיס** · המסגרת נספרת בתוך הגובה, ולכן
+   * `height: H` השאיר לתוכן רק H−2 והשורה התחתונה של הגל נחתכה.
+   * גובה ה-SVG הוא שקובע, והמסגרת מתווספת סביבו.
+   */
   card: {
     borderRadius: 22,
     borderWidth: 1,
     borderColor: 'rgba(142,111,208,0.16)',
     overflow: 'hidden',
-    height: H,
     boxShadow: '0 2px 4px -2px rgba(90,80,70,0.1), 0 16px 32px -18px rgba(90,80,70,0.28)',
   } as never,
   waveBox: { height: H },
