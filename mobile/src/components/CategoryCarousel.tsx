@@ -1,40 +1,44 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-import { CategoryCard, CARD, DOT, DOT_OFF, type Dot } from './CategoryCard';
+import React, { useEffect, useRef } from 'react';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { CARD, CategoryDeckCard } from './CategoryDeckCard';
+import { DOT, DOT_OFF } from './CategoryCard';
 import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
 import type { Category } from '../data/categories';
 
 /**
- * קרוסלת הקטגוריות בדף הבית.
+ * קרוסלת הקטגוריות בדף הבית · ״דק״.
  *
- * ⚠ לא גלילה מקורית · בקנבס המסלול זז ב-transform, ולא ב-scroll.
- * הגלילה המקורית נשברה ב-RTL: `contentOffset.x` יוצא שלילי בדפדפן
- * (0 עד ‎-1419), האינדקס שחושב ממנו נחתך ל-0, ושורת הבועות שמתחת
- * לא התעדכנה אף פעם. המסלול המוזז פותר את זה בשתי הפלטפורמות.
+ * ⚠ **אינה מהקנבס** · שם המסלול זז הצידה וכל הכרטיסים באותו גודל.
+ * שקד בחרה (15 בספטמבר 2026), אחרי חמישה סבבי תצוגות מקדימות,
+ * בתנועה של אנימציית `Slideshow` מלוטי: הכרטיס הקדמי במרכז בגודל
+ * מלא, והשכנים מציצים מאחוריו מוקטנים, מטושטשים ונמוגים.
  *
- * ⚠ אין כאן `overflow: hidden` · הכרטיס הפעיל נושא הילה של 40px
- * וצל של 44px, והחלון החתוך גזר אותם מלמעלה ומלמטה. הכרטיסים
- * הרדומים נחתכים ממילא בקצה המסך על ידי גלילת הדף.
+ * המספרים חולצו מקובץ הלוטי עצמו · שכן ב-64%, יציאה הצידה ודעיכה.
+ * הטשטוש על השכנים והבחירה ב-1.8 שניות לכרטיס הן שלה.
  */
 
-/** המרחק בין מרכזי כרטיסים · רוחב הכרטיס ועוד המרווח */
-const PITCH = CARD.width + CARD.gap;
-/** מעבר הכרטיס · 560ms בקנבס */
-const GLIDE_MS = 560;
+/** שלוש המדרגות · מרכז, שכן, רחוק */
+const STEPS = [
+  { x: 0, scale: 1, opacity: 1 },
+  { x: 46, scale: 0.64, opacity: 0.45 },
+  { x: 74, scale: 0.44, opacity: 0.2 },
+] as const;
+
+/** המעבר · אותו עקום של הלוטי */
+const GLIDE_MS = 480;
+/** הזמן על כל כרטיס · ״קצב רגיל״ בבחירתה */
+const AUTOPLAY_MS = 1800;
+
 /**
- * מקום לזוהר · הצל הארוך של הכרטיס הפעיל הוא 0 22px 44px,
- * וההילה 40px. בלי הריפוד הזה הם נחתכים בקצה הרכיב.
+ * הטשטוש על השכנים · מה שמבליט את הקדמי.
+ * ⚠ `filter` נתמך ב-React Native מגרסה 0.76. בדפדפן הוא נוחת
+ * כמו שהוא ב-CSS. אם פלטפורמה כלשהי לא תתמוך — הכרטיס פשוט
+ * יישאר חד, וההקטנה והדעיכה עדיין מבדילות אותו.
  */
-const GLOW_ROOM = 46;
-/**
- * ⚠ לא מהקנבס · שקד ביקשה לצמצם את הרווח מעל הכרטיס (מהכיתוב
- * ״אוכל ביתי · ארוחות שף · עמדת טאבון״) ומתחתיו (לשורת הקטגוריות).
- * הריפוד של GLOW_ROOM נשאר כדי שהצל וההילה לא ייחתכו, והמרווח
- * הנראה מצטמצם במרג׳ין שלילי.
- * נמדד: מעל 58→44→32, מתחת 46→32.
- */
-const TIGHTEN_TOP = 26;
-const TIGHTEN_BOTTOM = 14;
+const NEIGHBOUR_FILTER = { filter: 'blur(2.4px) saturate(0.72)' } as unknown as ViewStyle;
+
+/** מקום לצל · 52px למטה בכרטיס הקדמי */
+const SHADOW_ROOM = 30;
 
 type Props = {
   items: Category[];
@@ -44,65 +48,113 @@ type Props = {
 };
 
 export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Props) {
-  /* מיקום המסלול · ערך אנימציה אחד שגם הגרירה וגם המעבר כותבים אליו */
-  const x = useRef(new Animated.Value(active * PITCH)).current;
+  const n = items.length;
 
-  const glideTo = useCallback(
-    (index: number) => {
-      Animated.timing(x, {
-        toValue: index * PITCH,
-        duration: GLIDE_MS,
-        useNativeDriver: true,
-      }).start();
-    },
-    [x],
-  );
+  /**
+   * ניגון אוטומטי · מתאפס בכל מגע, כדי שהלקוחה לא תילחם בקרוסלה.
+   * `onActiveChange` משתנה בכל רינדור, ולכן הוא נשמר ב-ref.
+   */
+  const changeRef = useRef(onActiveChange);
+  changeRef.current = onActiveChange;
 
-  useEffect(() => glideTo(active), [active, glideTo]);
+  const [paused, setPaused] = React.useState(false);
+  useEffect(() => {
+    if (paused || n < 2) return;
+    const id = setInterval(() => changeRef.current((active + 1) % n), AUTOPLAY_MS);
+    return () => clearInterval(id);
+  }, [active, n, paused]);
+
+  /* מגע עוצר את הניגון · חוזר אחרי שהיא מפסיקה לגעת */
+  const touch = (next: number) => {
+    setPaused(true);
+    onActiveChange(next);
+  };
 
   const pan = useCategorySwipe({
     active,
-    count: items.length,
-    onChange: onActiveChange,
-    onDrag: (dx) => x.setValue(active * PITCH + dx),
-    onSettle: glideTo,
+    count: n,
+    onChange: touch,
+    onDrag: () => {},
+    onSettle: () => {},
   });
 
-  /* הנקודות זהות בכל הכרטיסים · מחושבות פעם אחת, בדיוק כמו בקנבס */
-  const dots: Dot[] = items.map((_, i) => ({
-    w: i === active ? DOT.wide : DOT.size,
-    bg: i === active ? items[active].hue : DOT_OFF,
-  }));
-
   return (
-    /* ⚠ box-none · לחלון יש ריפוד של GLOW_ROOM ומרג׳ין שלילי, ולכן
-       הוא מכסה את שורת המכירה שמעליו. בלי זה הוא בולע את הלחיצות
-       עליה — נמדד: אף נקודה בשורה לא הגיעה אליה. המחוות ממילא
-       יושבות על המסלול הפנימי, אז החלון עצמו לא צריך מגע. */
     <View style={[s.window, SWIPE_SURFACE]} pointerEvents="box-none">
-      <Animated.View {...pan.panHandlers} style={[s.track, { transform: [{ translateX: x }] }]}>
+      <View {...pan.panHandlers} style={s.deck}>
+        {items.map((c, i) => {
+          /* המרחק המחזורי מהמרכז · הדק מקיף */
+          let d = i - active;
+          if (d > n / 2) d -= n;
+          if (d < -n / 2) d += n;
+          const far = Math.min(Math.abs(d), STEPS.length - 1);
+          const step = STEPS[far];
+          const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
+          const on = d === 0;
+
+          return (
+            <View
+              key={c.key}
+              pointerEvents={on ? 'auto' : 'none'}
+              style={[
+                s.slot,
+                !on && NEIGHBOUR_FILTER,
+                {
+                  opacity: Math.abs(d) >= STEPS.length ? 0 : step.opacity,
+                  zIndex: 5 - far,
+                  transform: [
+                    { translateX: (dir * step.x * CARD.width) / 100 },
+                    { scale: step.scale },
+                  ],
+                },
+              ]}
+            >
+              <CategoryDeckCard item={c} active={on} onPress={() => onOpen(c.key)} />
+            </View>
+          );
+        })}
+      </View>
+
+      {/* הנקודות · הפעילה רחבה ובגוון הקטגוריה, כמו בקנבס */}
+      <View style={s.dots}>
         {items.map((c, i) => (
-          <CategoryCard
+          <Pressable
             key={c.key}
-            item={c}
-            active={i === active}
-            dots={dots}
-            onPress={() => onOpen(c.key)}
+            onPress={() => touch(i)}
+            hitSlop={8}
+            style={[
+              s.dot,
+              {
+                width: i === active ? DOT.wide : DOT.size,
+                backgroundColor: i === active ? items[active].hue : DOT_OFF,
+              },
+            ]}
           />
         ))}
-      </Animated.View>
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  /* החלון גולש אל מחוץ לריפוד הדף · כמו margin שלילי בקנבס */
-  window: {
-    marginHorizontal: -18,
-    marginTop: -TIGHTEN_TOP,
-    marginBottom: -TIGHTEN_BOTTOM,
-    paddingHorizontal: 18,
-    paddingVertical: GLOW_ROOM,
+  window: { alignItems: 'center', gap: 10 },
+  deck: {
+    width: '100%',
+    height: CARD.height + SHADOW_ROOM,
+    alignItems: 'center',
   },
-  track: { flexDirection: 'row', gap: CARD.gap },
+  /**
+   * ⚠ כל הכרטיסים באותו מקום · הדק מסודר ב-`transform` ולא בזרימה,
+   * ולכן כל אחד מהם absolute במרכז. המעבר על שלושת המאפיינים יחד.
+   */
+  slot: {
+    position: 'absolute',
+    top: 0,
+    width: CARD.width,
+    transitionProperty: 'transform, opacity',
+    transitionDuration: `${GLIDE_MS}ms`,
+    transitionTimingFunction: 'cubic-bezier(0.22, 0.9, 0.28, 1)',
+  } as unknown as ViewStyle,
+
+  dots: { flexDirection: 'row', gap: DOT.gap },
+  dot: { height: DOT.size, borderRadius: 999 },
 });
