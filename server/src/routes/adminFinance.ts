@@ -12,7 +12,8 @@ import { soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { notFound } from '../errors.ts';
 import { STATE } from '../../../mobile/src/data/adminHome.ts';
-import { MENU, type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
+import { type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
+import { dishPrices } from '../admin/prices.ts';
 
 export const adminFinanceRouter = Router();
 adminFinanceRouter.use(requireAuth, requireAdmin);
@@ -357,8 +358,7 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
      * שהסכום יחושב לפי כמות המנות שנמכרו באותה מכירה, ולא מתוך
      * `total` של ההזמנה — שכולל גם דמי משלוח ופריטים אחרים.
      */
-    const price: Record<string, number> = {};
-    for (const it of MENU[up.cat as AdminCatKey] ?? []) price[it.id] = it.price;
+    const price = dishPrices(up.cat as AdminCatKey);
     const saleDishes = upCat.dishes.map((d) => ({
       id: d.id,
       name: d.n,
