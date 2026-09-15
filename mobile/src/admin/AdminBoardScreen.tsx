@@ -179,7 +179,7 @@ export function AdminBoardScreen() {
    * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
    */
   const w = pad
-    ? { time: 62, who: 150, item: 52, sum: 74, pay: 72, status: 150 }
+    ? { time: 58, who: 116, item: 50, sum: 62, pay: 66, status: 118 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
@@ -205,13 +205,20 @@ export function AdminBoardScreen() {
           })}
         </View>
 
+        {/* ⚠ **בורר מפולח** · שקד שלחה צילום מסך: מיכל אפור אחד
+            שמחזיק את שלושת הטאבים, הנבחר הוא גלולה לבנה עם צל,
+            ולכל אחד תג מספר עגול משלו. קודם היו כאן שלוש גלולות
+            נפרדות עם מסגרת. */}
         <View style={s.modes}>
           {BOARD_MODES.map((m) => {
             const n = liveRows.filter((o) => m.id === 'all' || o.ship === m.id).length;
             const on = mode === m.id;
             return (
               <Pressable key={m.id} onPress={() => setMode(m.id)} style={[s.mode, on && s.modeOn]}>
-                <Text style={[s.modeText, on && s.modeTextOn]}>{`${m.name} ${n}`}</Text>
+                <Text style={[s.modeText, on && s.modeTextOn]}>{m.name}</Text>
+                <View style={[s.modeCount, on && s.modeCountOn]}>
+                  <Text style={[s.modeCountText, on && s.modeCountTextOn]}>{n}</Text>
+                </View>
               </Pressable>
             );
           })}
@@ -325,7 +332,9 @@ export function AdminBoardScreen() {
             <Text style={[s.col, { width: w.time }]}>{HEAD_COLS.time}</Text>
             <Text style={[s.col, { width: w.who }]}>{HEAD_COLS.who}</Text>
             {BOARD_CAT.items.map((it) => (
-              <Text key={it.id} style={[s.col, { width: w.item }]}>{`${it.t}\n${it.sub}`}</Text>
+              <View key={it.id} style={[s.cellBox, { width: w.item }]}>
+                <Text style={s.colIn}>{`${it.t}\n${it.sub}`}</Text>
+              </View>
             ))}
             <Text style={[s.col, { width: w.sum }]}>{TAIL_COLS.sum}</Text>
             <Text style={[s.col, { width: w.pay }]}>{TAIL_COLS.pay}</Text>
@@ -344,14 +353,21 @@ export function AdminBoardScreen() {
                       <Text style={[s.who, { color: band.ink }]} numberOfLines={1}>{x.o.who}</Text>
                       {x.o.note ? <Text style={s.note} numberOfLines={1}>{x.o.note}</Text> : null}
                     </View>
+                    {/* ⚠ **התא ברוחב העמודה, התיבה בתוכו** · קודם
+                        ה-`TextInput` היה הילד הישיר ברוחב
+                        `w.item - 12`, כלומר כל עמודה בגוף הטבלה
+                        הייתה צרה ב-12 מזו שבכותרת ובשורת הסיכום.
+                        ההפרש הצטבר, ולכן ״14 מנות צמחוניות״ לא ישב
+                        מתחת לעמודה שלו. */}
                     {BOARD_CAT.items.map((it) => (
-                      <TextInput
-                        key={it.id}
-                        value={String(x.o.q[it.id] || 0)}
-                        keyboardType="number-pad"
-                        onChangeText={(v) => setQ(x.i, it.id, v)}
-                        style={[s.qty, { width: w.item - 12 }]}
-                      />
+                      <View key={it.id} style={[s.cellBox, { width: w.item }]}>
+                        <TextInput
+                          value={String(x.o.q[it.id] || 0)}
+                          keyboardType="number-pad"
+                          onChangeText={(v) => setQ(x.i, it.id, v)}
+                          style={s.qty}
+                        />
+                      </View>
                     ))}
                     <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
                     <Text style={[s.cell, { width: w.pay }]}>{x.o.pay}</Text>
@@ -397,7 +413,9 @@ export function AdminBoardScreen() {
             <View style={s.foot}>
               <Text style={[s.cell, { width: w.time + w.who }]}>{TOTAL_LABEL}</Text>
               {colSums.map((n, i) => (
-                <Text key={BOARD_CAT.items[i].id} style={[s.cell, { width: w.item }]}>{n}</Text>
+                <View key={BOARD_CAT.items[i].id} style={[s.cellBox, { width: w.item }]}>
+                  <Text style={s.footCell}>{n}</Text>
+                </View>
               ))}
               <Text style={[s.cell, { width: w.sum, fontWeight: '700' }]}>{`${nf(grand)} ₪`}</Text>
             </View>
@@ -440,17 +458,50 @@ const s = StyleSheet.create({
   headText: { flex: 1 },
   title: { fontSize: 20, fontWeight: '600', color: surface.ink },
   sub: { fontSize: 12, color: surface.faint },
-  modes: { flexDirection: 'row', gap: 6 },
-  mode: { height: 32, paddingHorizontal: 10, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.7)', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(130,112,162,0.16)' },
-  modeOn: { backgroundColor: 'rgba(123,92,188,0.1)', borderColor: 'rgba(123,92,188,0.42)' },
-  modeText: { fontSize: 12, color: surface.inkSoft },
-  modeTextOn: { fontWeight: '600', color: '#43307A' },
+  /* המיכל האפור · הגלולה הלבנה מרחפת בתוכו */
+  modes: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    padding: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(130,112,162,0.09)',
+  },
+  mode: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    height: 34,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    justifyContent: 'center',
+  },
+  modeOn: {
+    backgroundColor: '#FFFFFF',
+    boxShadow: '0 2px 6px -2px rgba(96,80,132,0.35)',
+  } as never,
+  modeText: { fontSize: 13, fontWeight: '400', color: surface.muted },
+  modeTextOn: { fontWeight: '700', color: '#43307A' },
+  /* התג העגול · אפור כשכבוי, סגול רך כשדלוק */
+  modeCount: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(130,112,162,0.12)',
+  },
+  modeCountOn: { backgroundColor: 'rgba(123,92,188,0.14)' },
+  modeCountText: { fontSize: 11.5, fontWeight: '600', color: surface.muted },
+  modeCountTextOn: { color: '#43307A' },
   gone: { fontSize: 12.5, fontWeight: '600', color: '#B95349' },
   stock: { flexGrow: 0 },
   stockChip: { marginEnd: 6, height: 28, paddingHorizontal: 10, borderRadius: 10, backgroundColor: 'rgba(123,92,188,0.1)', justifyContent: 'center' },
   stockText: { fontSize: 11, color: '#43307A' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
   col: { fontSize: 10, fontWeight: '600', color: '#8A8194', textAlign: 'center' },
+  colIn: { width: '100%', fontSize: 10, fontWeight: '600', color: '#8A8194', textAlign: 'center' },
   itemCol: { width: 68, textAlign: 'center' },
   list: { maxHeight: 560 },
   empty: { fontSize: 15, color: '#A79FB2', textAlign: 'center', padding: 70 },
@@ -459,7 +510,21 @@ const s = StyleSheet.create({
   cell: { fontSize: 12, textAlign: 'center', color: surface.ink },
   who: { fontSize: 13, fontWeight: '600' },
   note: { fontSize: 10, color: surface.faint },
-  qty: { height: 28, textAlign: 'center', fontSize: 13, color: surface.ink, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 8 },
+  /* ⚠ תיבה לבנה עם מסגרת אפורה דקה · והתא סביבה נותן את הרווח
+     הקטן, כך שהתיבות לא נדבקות זו לזו. בקשה של שקד. */
+  cellBox: { paddingHorizontal: 3 },
+  qty: {
+    width: '100%',
+    height: 30,
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: '600',
+    color: surface.ink,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: 'rgba(130,112,162,0.2)',
+  },
   steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center' },
   /* ⚠ ריבוע אייקון · בקנבס 34×30 עם מסגרת, והפעיל נצבע מלא */
   step: {
@@ -533,4 +598,6 @@ const s = StyleSheet.create({
   viewTextOn: { color: '#43307A' },
   x: { fontSize: 16, color: '#B95349', paddingHorizontal: 4 },
   foot: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(130,112,162,0.16)' },
+  /* שורת הסיכום · אותו רוחב תא בדיוק, כדי שהמספר יישב מתחת לעמודה */
+  footCell: { width: '100%', textAlign: 'center', fontSize: 13, fontWeight: '700', color: surface.ink },
 });
