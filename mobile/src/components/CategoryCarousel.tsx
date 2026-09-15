@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { CARD, CategoryDeckCard } from './CategoryDeckCard';
 import { DOT, DOT_OFF } from './CategoryCard';
 import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
@@ -62,8 +62,76 @@ type Props = {
   onOpen: (key: string) => void;
 };
 
+/** המצב החזותי של כרטיס לפי מרחקו מהמרכז */
+function targetOf(i: number, active: number, n: number) {
+  let d = i - active;
+  if (d > n / 2) d -= n;
+  if (d < -n / 2) d += n;
+  const far = Math.min(Math.abs(d), STEPS.length - 1);
+  const step = STEPS[far];
+  const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
+  return {
+    d,
+    far,
+    on: d === 0,
+    x: (NEXT_SIDE * dir * step.x * CARD.width) / 100,
+    scale: step.scale,
+    opacity: Math.abs(d) >= STEPS.length ? 0 : step.opacity,
+  };
+}
+
 export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Props) {
   const n = items.length;
+
+  /**
+   * ⚠ **`Animated` ולא מעבר CSS** · הגלישה נבנתה עם
+   * `transitionProperty` / `transitionDuration`, וזה קיים **רק
+   * בדפדפן**. באפליקציה הכרטיסים פשוט קפצו בלי תנועה — שקד דיווחה
+   * (16 בספטמבר 2026) ש״אין את האנימציה של העברת קטגוריות״.
+   * `Animated` רץ בשתי הפלטפורמות, ועל `transform` ו-`opacity`
+   * הוא יכול לרוץ על הדרייבר הילידי.
+   */
+  const anims = React.useRef(
+    items.map((_, i) => {
+      const t = targetOf(i, active, items.length);
+      return {
+        x: new Animated.Value(t.x),
+        scale: new Animated.Value(t.scale),
+        opacity: new Animated.Value(t.opacity),
+      };
+    }),
+  ).current;
+
+  const [reduce, setReduce] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((v) => alive && setReduce(v))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const ms = reduce ? 0 : GLIDE_MS;
+    Animated.parallel(
+      anims.flatMap((a, i) => {
+        const t = targetOf(i, active, n);
+        const cfg = {
+          duration: ms,
+          /* אותו עקום של הלוטי · cubic-bezier(0.22, 0.9, 0.28, 1) */
+          easing: Easing.bezier(0.22, 0.9, 0.28, 1),
+          useNativeDriver: true,
+        };
+        return [
+          Animated.timing(a.x, { ...cfg, toValue: t.x }),
+          Animated.timing(a.scale, { ...cfg, toValue: t.scale }),
+          Animated.timing(a.opacity, { ...cfg, toValue: t.opacity }),
+        ];
+      }),
+    ).start();
+  }, [active, anims, n, reduce]);
 
   /**
    * ⚠ **אין ניגון אוטומטי** · הכרטיסים מתחלפים רק בהחלקת אצבע,
@@ -83,33 +151,25 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
       <View {...pan.panHandlers} style={s.deck}>
         {items.map((c, i) => {
           /* המרחק המחזורי מהמרכז · הדק מקיף */
-          let d = i - active;
-          if (d > n / 2) d -= n;
-          if (d < -n / 2) d += n;
-          const far = Math.min(Math.abs(d), STEPS.length - 1);
-          const step = STEPS[far];
-          const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
-          const on = d === 0;
+          const t = targetOf(i, active, n);
+          const a = anims[i];
 
           return (
-            <View
+            <Animated.View
               key={c.key}
-              pointerEvents={on ? 'auto' : 'none'}
+              pointerEvents={t.on ? 'auto' : 'none'}
               style={[
                 s.slot,
-                !on && NEIGHBOUR_FILTER,
+                !t.on && NEIGHBOUR_FILTER,
                 {
-                  opacity: Math.abs(d) >= STEPS.length ? 0 : step.opacity,
-                  zIndex: 5 - far,
-                  transform: [
-                    { translateX: (NEXT_SIDE * dir * step.x * CARD.width) / 100 },
-                    { scale: step.scale },
-                  ],
+                  opacity: a.opacity,
+                  zIndex: 5 - t.far,
+                  transform: [{ translateX: a.x }, { scale: a.scale }],
                 },
               ]}
             >
-              <CategoryDeckCard item={c} active={on} onPress={() => onOpen(c.key)} />
-            </View>
+              <CategoryDeckCard item={c} active={t.on} onPress={() => onOpen(c.key)} />
+            </Animated.View>
           );
         })}
       </View>
@@ -146,14 +206,12 @@ const s = StyleSheet.create({
    * ⚠ כל הכרטיסים באותו מקום · הדק מסודר ב-`transform` ולא בזרימה,
    * ולכן כל אחד מהם absolute במרכז. המעבר על שלושת המאפיינים יחד.
    */
+  /* ⚠ בלי `transitionProperty` · הוא קיים רק בדפדפן · ראו ההערה למעלה */
   slot: {
     position: 'absolute',
     top: 0,
     width: CARD.width,
-    transitionProperty: 'transform, opacity',
-    transitionDuration: `${GLIDE_MS}ms`,
-    transitionTimingFunction: 'cubic-bezier(0.22, 0.9, 0.28, 1)',
-  } as unknown as ViewStyle,
+  },
 
   dots: { flexDirection: 'row', gap: DOT.gap },
   dot: { height: DOT.size, borderRadius: 999 },

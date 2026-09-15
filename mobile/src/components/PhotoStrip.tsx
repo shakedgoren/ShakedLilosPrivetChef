@@ -16,8 +16,15 @@ import { photoTitle } from '../data/photoTitles';
 
 type Props = {
   names: readonly string[];
-  /** גובה האריח */
+  /** גובה האריח · מתעלמים ממנו כשיש `ratio` */
   height: number;
+  /**
+   * יחס רוחב לגובה · כשמוגדר, הגובה נגזר מהרוחב הנמדד במקום
+   * מהמספר הקבוע. שקד ביקשה (16 בספטמבר 2026) שקרוסלת פינת השף
+   * תהיה ביחס 300×200, ויחס נשמר בכל רוחב מסך — גם באייפד —
+   * בעוד שגובה קבוע נשבר.
+   */
+  ratio?: number;
   /** רוחב אריח · בלי זה כל תמונה ממלאת את הרוחב */
   tileWidth?: number;
   rgb?: string;
@@ -54,7 +61,7 @@ const ARROW_STROKE = 2.4;
 const DIR = IS_RTL ? -1 : 1;
 
 /** קרוסלת תמונות אופקית · בית, שף וטאבון */
-export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) {
+export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: Props) {
   const [i, setI] = useState(0);
   /**
    * ⚠ המראה של האינדקס · לחיצות רצופות על החץ קראו את `i` מתוך
@@ -72,6 +79,8 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
   const shotW = tileWidth ?? (pageW || Math.max(0, win.width - inset));
   /* מרווח בין מרכזי אריחים · זהה לחישוב ב-onMomentumScrollEnd */
   const pitch = tileWidth ? tileWidth + TILE_GAP : pageW;
+  /* הגובה · מהיחס כשיש, אחרת המספר הקבוע */
+  const shotH = ratio && shotW > 0 ? Math.round(shotW / ratio) : height;
 
 
   /* לחיצה על נקודה או על חץ מגלגלת לתמונה · בלי זה המחוון זז והתמונה נשארת */
@@ -123,7 +132,7 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
               name={name}
               rgb={rgb}
               zoom={false}
-              style={[s.shot, { height, width: shotW, borderRadius: radius.tile }]}
+              style={[s.shot, { height: shotH, width: shotW, borderRadius: radius.tile }]}
             />
             {/* ⚠ הכיתוב בראש התמונה · בקשה של שקד */}
             <PhotoCaption text={photoTitle(name)} size={CAPTION} align="top" />
@@ -136,14 +145,14 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
         <>
           <Pressable
             onPress={() => jump(iRef.current - 1)}
-            style={[s.arrow, ARROW_BLUR, s.arrowRight, { top: height / 2 - ARROW / 2 }]}
+            style={[s.arrow, ARROW_BLUR, s.arrowRight, { top: shotH / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronRight size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
           </Pressable>
           <Pressable
             onPress={() => jump(iRef.current + 1)}
-            style={[s.arrow, ARROW_BLUR, s.arrowLeft, { top: height / 2 - ARROW / 2 }]}
+            style={[s.arrow, ARROW_BLUR, s.arrowLeft, { top: shotH / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronLeft size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />

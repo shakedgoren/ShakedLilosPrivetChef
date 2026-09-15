@@ -39,6 +39,8 @@ const MENU_TOP = 70;
 
 /** הריפודים עד הקרוסלה · שוליי העמוד ועוד 12 מהכרטיס, משני הצדדים */
 const CARO_INSET = (MENU_SIDE + 12) * 2;
+/** ⚠ לא מהקנבס · היחס שביקשה שקד לקרוסלת פינת השף */
+const CARO_RATIO = 300 / 200;
 
 /** ⚠ אינם מהקנבס · שלושת המרווחים שביקשה שקד בפינת השף */
 /* כותרת↔תיאור · 5 בקנבס, צמוד יותר לבקשתה */
@@ -141,9 +143,13 @@ export function ChefScreen() {
               label={PICK_CTA}
               style={s.pickCta}
             />
+            {/* ⚠ **יחס 300×200** · בקשה של שקד (16 בספטמבר 2026).
+                היחס נשמר בכל רוחב מסך; `CARO.height` נשאר כנפילה
+                לאחור בלבד. */}
             <PhotoStrip
               names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
               height={CARO.height}
+              ratio={CARO_RATIO}
               inset={CARO_INSET}
             />
             <View style={s.pkgLines}>
