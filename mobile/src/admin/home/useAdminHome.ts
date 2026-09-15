@@ -3,7 +3,7 @@ import { QUOTA_STEP, REVENUE } from '../../data/adminHome';
 import { CATS, DAY_NAMES, MONTHS, type DayCatKey } from '../../data/adminDays';
 import { upcomingSale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
-import { adminGetDay, adminPutDay, adminRevenue, adminSummary } from '../../api/admin';
+import { adminGetDay, adminPutDay, adminRevenue, adminSetSold, adminSummary } from '../../api/admin';
 import { useNav } from '../../navigation/store';
 
 /**
@@ -162,6 +162,49 @@ export function useAdminHome() {
     [sale, live, reload],
   );
 
+  /**
+   * הקלדה ידנית של מספר · גם המלאי וגם מה שנמכר.
+   * ⚠ בקשה של שקד (15 בספטמבר 2026): ״בלחיצה על המספרים אוכל
+   * לעדכן את זה ידנית״. המלאי נשמר במכסות היום; מה שנמכר נשמר
+   * כתיקון נפרד שגובר על הספירה מההזמנות.
+   */
+  const setQuota = useCallback(
+    (id: string, value: number) => {
+      const row = sale.dishes.find((d) => d.id === id);
+      if (!row) return;
+      const next = Math.max(row.sold, Math.max(0, value));
+      if (live) {
+        void (async () => {
+          const { rec } = await adminGetDay(sale.date);
+          const cat = CATS[sale.cat as DayCatKey];
+          const current: Record<string, number> = {
+            ...(rec.q ?? Object.fromEntries(cat.dishes.map((d) => [d.id, d.q]))),
+          };
+          current[id] = next;
+          await adminPutDay(sale.date, { open: sale.open, sale: sale.cat, q: current });
+          await reload();
+        })().catch(() => undefined);
+        return;
+      }
+      setSale((v) => ({ ...v, dishes: v.dishes.map((d) => (d.id === id ? { ...d, quota: next } : d)) }));
+    },
+    [sale, live, reload],
+  );
+
+  const setSold = useCallback(
+    (id: string, value: number | null) => {
+      if (live) {
+        void adminSetSold(sale.date, id, value).then(reload).catch(() => undefined);
+        return;
+      }
+      setSale((v) => ({
+        ...v,
+        dishes: v.dishes.map((d) => (d.id === id ? { ...d, sold: Math.max(0, value ?? 0) } : d)),
+      }));
+    },
+    [sale.date, live, reload],
+  );
+
   const sold = sale.dishes.reduce((s, d) => s + d.sold, 0);
   const quota = sale.dishes.reduce((s, d) => s + d.quota, 0);
 
@@ -169,6 +212,8 @@ export function useAdminHome() {
     sale,
     toggleOpen,
     bumpDish,
+    setQuota,
+    setSold,
     step: QUOTA_STEP,
     soldTotal: sold,
     quotaTotal: quota,

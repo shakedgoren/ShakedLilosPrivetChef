@@ -22,7 +22,11 @@ adminStockRouter.get('/sale', async (_req, res, next) => {
       const orders = await prisma.order.findMany({
         where: { saleDate: row.date, category: catKey, status: { not: CANCELLED } },
       });
-      const sold = soldByDish(orders, catKey, row.date);
+      /* ⚠ אותו תיקון ידני שמוצג בדף הניהול · המסכים חייבים להסכים */
+      const sold = {
+        ...soldByDish(orders, catKey, row.date),
+        ...readJson<Record<string, number>>(row.soldJson, {}),
+      };
       const waste = readJson<Record<string, number>>(row.wasteJson, {});
       const quotas = readJson<Record<string, number>>(row.quotasJson, {});
       days.push({

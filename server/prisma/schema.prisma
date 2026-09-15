@@ -103,6 +103,8 @@ model SaleDay {
   open       Boolean @default(false)
   quotasJson String  @default("{}")
   wasteJson  String  @default("{}")
+  /// תיקון ידני למספר שנמכר · שקד מקלידה מספר והוא גובר על הספירה מההזמנות
+  soldJson   String  @default("{}")
   updatedAt  DateTime @updatedAt
 }
 

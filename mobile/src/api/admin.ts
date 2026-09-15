@@ -147,6 +147,16 @@ export const adminSummary = () =>
     donut: { total: number; shares: { name: string; color: string; v: number }[] };
   }>('/admin/summary');
 
+/**
+ * תיקון ידני של כמה נמכר ממנה · `null` מוחק את התיקון ומחזיר
+ * את הספירה מההזמנות.
+ */
+export const adminSetSold = (date: string, dishId: string, sold: number | null) =>
+  api<{ date: string; rec: Record<string, unknown> }>(`/admin/days/${date}/sold`, {
+    method: 'PATCH',
+    body: { dishId, sold },
+  });
+
 /** מחזור לפי טווח · היום, השבוע, החודש או חצי שנה */
 export const adminRevenue = (range: 'day' | 'week' | 'month' | 'half') =>
   api<{ range: string; label: string; total: number; points: { k: string; v: number }[] }>(

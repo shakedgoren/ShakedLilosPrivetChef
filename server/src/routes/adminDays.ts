@@ -12,6 +12,7 @@ import {
 import { hebrewDayLabel, soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CANCELLED } from '../catalog/status.ts';
+import { notFound } from '../errors.ts';
 
 export const adminDaysRouter = Router();
 adminDaysRouter.use(requireAuth, requireAdmin);
@@ -24,8 +25,16 @@ function serialize(row: {
   open: boolean;
   quotasJson: string;
   wasteJson: string;
+  soldJson?: string;
 }, sold: Record<string, number>): DayRecord & { date: string } {
   const q = readJson<Record<string, number>>(row.quotasJson, {});
+  /**
+   * ⚠ **התיקון הידני גובר** · שקד יכולה להקליד כמה נמכר בפועל,
+   * למשל כשהיא מכרה משהו בטלפון בלי להזין הזמנה. הספירה
+   * מההזמנות נשארת מתחת, ומחיקת התיקון מחזירה אותה.
+   */
+  const fix = readJson<Record<string, number>>(row.soldJson ?? '', {});
+  sold = { ...sold, ...fix };
   return {
     date: row.date,
     blocked: row.blocked || undefined,
@@ -104,6 +113,37 @@ const patchBody = z.object({
   open: z.boolean().optional(),
   q: z.record(z.number()).optional(),
   waste: z.record(z.number()).optional(),
+});
+
+/**
+ * תיקון ידני של מספר המנות שנמכרו.
+ *
+ * ⚠ **גובר על הספירה מההזמנות** · שקד ביקשה (15 בספטמבר 2026)
+ * ללחוץ על המספר ולהקליד. הספירה האמיתית נשארת במקומה — התיקון
+ * נשמר בנפרד, וכשהוא קיים הוא מה שמוצג. מחיקת הערך (או אפס
+ * שווה לספירה) מחזירה את הספירה האוטומטית.
+ */
+adminDaysRouter.patch('/:date/sold', async (req, res, next) => {
+  try {
+    const date = String(req.params.date ?? '');
+    const body = z
+      .object({ dishId: z.string().min(1), sold: z.number().int().nonnegative().nullable() })
+      .parse(req.body);
+    const row = await prisma.saleDay.findUnique({ where: { date } });
+    if (!row) throw notFound();
+    const map = readJson<Record<string, number>>(row.soldJson, {});
+    if (body.sold === null) delete map[body.dishId];
+    else map[body.dishId] = body.sold;
+    const next2 = await prisma.saleDay.update({
+      where: { date },
+      data: { soldJson: JSON.stringify(map) },
+    });
+    const cat = next2.blocked ? next2.exceptCat : next2.sale;
+    const sold = await soldForDate(date, cat);
+    res.json({ date, rec: serialize(next2, sold) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 adminDaysRouter.put('/:date', async (req, res, next) => {

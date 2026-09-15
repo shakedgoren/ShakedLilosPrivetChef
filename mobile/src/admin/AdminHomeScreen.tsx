@@ -67,10 +67,10 @@ export function AdminHomeScreen() {
         onToggle={home.toggleOpen}
         dishes={home.sale.dishes}
         onBump={home.bumpDish}
+        onSetQuota={home.setQuota}
+        onSetSold={home.setSold}
         step={home.step}
         pct={home.ringPct}
-        hue={home.sale.hue}
-        rgb={home.sale.rgb}
         sold={home.soldTotal}
         quota={home.quotaTotal}
       />

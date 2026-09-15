@@ -360,6 +360,40 @@ const byDish = sale.dishes.reduce((s2, d) => s2 + d.sold, 0);
 if (sale.meals !== byDish) fail('sale meals != dish sum', sale);
 if (sale.revenue > 0 && byDish === 0) fail('revenue without dishes', sale);
 
+/**
+ * תיקון ידני של ״נמכר״ · שקד מקלידה מספר והוא גובר על הספירה
+ * מההזמנות, ומחיקתו מחזירה את הספירה.
+ */
+const beforeFix = await api('/admin/days/2026-09-15', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+const countedVeg = ((beforeFix.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg ?? 0;
+
+const fixed = await api('/admin/days/2026-09-15/sold', {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ dishId: 'veg', sold: countedVeg + 7 }),
+});
+if (fixed.status !== 200) fail('patch sold', fixed);
+if (((fixed.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg !== countedVeg + 7) {
+  fail('manual sold not applied', fixed.body);
+}
+
+const afterFix = await api('/admin/summary', { headers: { authorization: `Bearer ${adminToken}` } });
+const vegRow = ((afterFix.body as { sale: { dishes: { id: string; sold: number }[] } }).sale.dishes)
+  .find((d) => d.id === 'veg');
+if (!vegRow || vegRow.sold !== countedVeg + 7) fail('summary ignores manual sold', vegRow);
+
+const cleared = await api('/admin/days/2026-09-15/sold', {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ dishId: 'veg', sold: null }),
+});
+if (cleared.status !== 200) fail('clear sold', cleared);
+if (((cleared.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg !== countedVeg) {
+  fail('clearing did not restore the count', cleared.body);
+}
+
 /* ארבעת הטווחים · כל אחד מחזיר תווית, סכום ונקודות */
 for (const r of ['day', 'week', 'month', 'half']) {
   const hit = await api(`/admin/revenue?range=${r}`, {

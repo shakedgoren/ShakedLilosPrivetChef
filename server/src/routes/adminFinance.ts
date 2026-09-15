@@ -344,7 +344,11 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
      * 31,770 ₪ בעוד שנמכרו 32 מנות בלבד.
      */
     const catOrders = upOrders.filter((o) => o.category === up.cat);
-    const upSold = soldByDish(catOrders, up.cat, up.date);
+    /* ⚠ התיקון הידני של שקד גובר על הספירה מההזמנות */
+    const upSold = {
+      ...soldByDish(catOrders, up.cat, up.date),
+      ...readJson<Record<string, number>>(upDay?.soldJson ?? '', {}),
+    };
     const upQuota = readJson<Record<string, number>>(upDay?.quotasJson ?? '', {});
 
     /**
