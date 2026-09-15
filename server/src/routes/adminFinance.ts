@@ -4,7 +4,7 @@ import { prisma } from '../db.ts';
 import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { EXPENSES, MONEY_CATS, PERIODS } from '../../../mobile/src/data/adminMoney.ts';
 import { compareCost, menuRowsOf, unitCost, viewOf, type CostPart } from '../admin/costsMath.ts';
-import { hebrewDayLabel, hebrewMonthYear, isoDate } from '../admin/sold.ts';
+import { hebrewDayLabel, hebrewMonthYear, isoDate, monthKey } from '../admin/sold.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { upcomingSale } from '../../../mobile/src/data/saleWeek.ts';
@@ -14,6 +14,7 @@ import { notFound } from '../errors.ts';
 import { STATE } from '../../../mobile/src/data/adminHome.ts';
 import { type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
 import { dishPrices } from '../admin/prices.ts';
+import { EXPENSE_CATS } from '../admin/expenseCats.ts';
 
 export const adminFinanceRouter = Router();
 adminFinanceRouter.use(requireAuth, requireAdmin);
@@ -83,6 +84,88 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
       cats,
       expenseRows: EXPENSES.map((e) => ({ k: e.k, sub: e.sub, v: grouped[e.k] ?? 0 })),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ────────────────────────────────────────────────────────────
+   הוצאות · הזנה ידנית
+
+   ⚠ **בקשה של שקד (15 בספטמבר 2026)** · עד כה הדבר היחיד שיצר
+   הוצאה היה סגירת רשימת קניות, ולכן ארבע מתוך חמש הקטגוריות
+   במסך הכספים לא יכלו לזוז לעולם.
+
+   ⚠ **התאריך נשמר ב-`createdAt`** · כל שאילתות הכספים מסננות
+   לפיו, ולכן תאריך שנבחר ידנית חייב לשבת שם — אחרת ההוצאה
+   תיפול על החודש שבו הוקלדה ולא על החודש שאליו היא שייכת.
+   ──────────────────────────────────────────────────────────── */
+
+const expenseBody = z.object({
+  category: z.string().min(1).max(60),
+  /** אגורות אינן נשמרות · הסכומים במסך הכספים שלמים */
+  amount: z.number().int().positive().max(1_000_000),
+  /** yyyy-mm-dd · היום שבו ההוצאה נעשתה */
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  note: z.string().max(200).default(''),
+});
+
+function dateOfIso(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0);
+}
+
+adminFinanceRouter.get('/expenses', async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 120, 500);
+    const rows = await prisma.expense.findMany({ orderBy: { createdAt: 'desc' }, take: limit });
+    res.json({
+      cats: EXPENSE_CATS,
+      rows: rows.map((e) => ({
+        id: e.id,
+        category: e.category,
+        amount: e.amount,
+        period: e.period,
+        note: e.note,
+        /** הוצאה שנולדה מסגירת קנייה · לא הוקלדה ידנית */
+        fromShop: e.source !== '',
+        date: isoDate(e.createdAt),
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminFinanceRouter.post('/expenses', async (req, res, next) => {
+  try {
+    const body = expenseBody.parse(req.body);
+    if (!EXPENSE_CATS.includes(body.category)) {
+      res.status(400).json({ error: 'unknown_category', message: 'קטגוריה לא מוכרת' });
+      return;
+    }
+    const when = dateOfIso(body.date);
+    const row = await prisma.expense.create({
+      data: {
+        category: body.category,
+        amount: body.amount,
+        period: monthKey(when),
+        note: body.note,
+        createdAt: when,
+      },
+    });
+    res.status(201).json({ id: row.id });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminFinanceRouter.delete('/expenses/:id', async (req, res, next) => {
+  try {
+    const found = await prisma.expense.findUnique({ where: { id: req.params.id } });
+    if (!found) throw notFound();
+    await prisma.expense.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

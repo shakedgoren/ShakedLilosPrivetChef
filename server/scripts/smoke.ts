@@ -364,33 +364,48 @@ if (sale.revenue > 0 && byDish === 0) fail('revenue without dishes', sale);
  * תיקון ידני של ״נמכר״ · שקד מקלידה מספר והוא גובר על הספירה
  * מההזמנות, ומחיקתו מחזירה את הספירה.
  */
-const beforeFix = await api('/admin/days/2026-09-15', {
+/**
+ * ⚠ **יום המכירה של עכשיו ולא תאריך קבוע** · הבדיקה נעלה פעם על
+ * ‎2026-09-15, ולכן נשברה בשלישי ב-18:00 כשחלון המכירה עבר
+ * לשישי של השניצל. היא לוקחת עכשיו את היום והמנה שהשרת עצמו
+ * מחזיר.
+ */
+const fixDate = sale.date;
+const fixDish = sale.dishes[0].id;
+/* יום המכירה הזה אינו בהכרח הזרוע · נפתח אותו כדי שיהיה מה לתקן */
+const openedFixDay = await api(`/admin/days/${fixDate}`, {
+  method: 'PUT',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ open: true, sale: sale.cat }),
+});
+if (openedFixDay.status !== 200) fail('open sale day for the manual fix', openedFixDay);
+const beforeFix = await api(`/admin/days/${fixDate}`, {
   headers: { authorization: `Bearer ${adminToken}` },
 });
-const countedVeg = ((beforeFix.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg ?? 0;
+const countedDish = ((beforeFix.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {})[fixDish] ?? 0;
 
-const fixed = await api('/admin/days/2026-09-15/sold', {
+const fixed = await api(`/admin/days/${fixDate}/sold`, {
   method: 'PATCH',
   headers: { authorization: `Bearer ${adminToken}` },
-  body: JSON.stringify({ dishId: 'veg', sold: countedVeg + 7 }),
+  body: JSON.stringify({ dishId: fixDish, sold: countedDish + 7 }),
 });
 if (fixed.status !== 200) fail('patch sold', fixed);
-if (((fixed.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg !== countedVeg + 7) {
+if (((fixed.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {})[fixDish] !== countedDish + 7) {
   fail('manual sold not applied', fixed.body);
 }
 
 const afterFix = await api('/admin/summary', { headers: { authorization: `Bearer ${adminToken}` } });
-const vegRow = ((afterFix.body as { sale: { dishes: { id: string; sold: number }[] } }).sale.dishes)
-  .find((d) => d.id === 'veg');
-if (!vegRow || vegRow.sold !== countedVeg + 7) fail('summary ignores manual sold', vegRow);
+const fixedRow = ((afterFix.body as { sale: { dishes: { id: string; sold: number }[] } }).sale.dishes)
+  .find((d) => d.id === fixDish);
+if (!fixedRow || fixedRow.sold !== countedDish + 7) fail('summary ignores manual sold', fixedRow);
 
-const cleared = await api('/admin/days/2026-09-15/sold', {
+const cleared = await api(`/admin/days/${fixDate}/sold`, {
   method: 'PATCH',
   headers: { authorization: `Bearer ${adminToken}` },
-  body: JSON.stringify({ dishId: 'veg', sold: null }),
+  body: JSON.stringify({ dishId: fixDish, sold: null }),
 });
 if (cleared.status !== 200) fail('clear sold', cleared);
-if (((cleared.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}).veg !== countedVeg) {
+if ((((cleared.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {})[fixDish] ?? 0) !== countedDish) {
   fail('clearing did not restore the count', cleared.body);
 }
 
@@ -453,6 +468,64 @@ for (const r of ['day', 'week', 'month', 'half']) {
     if (typeof p.k !== 'string' || typeof p.v !== 'number') fail('revenue point shape', p);
   }
 }
+
+/**
+ * הוצאות · הזנה ידנית, סינון לפי החודש שנבחר, ומחיקה.
+ *
+ * ⚠ **התאריך קובע את החודש** · הוצאה שהוקלדה היום עם תאריך של
+ * חודש שעבר חייבת להיחשב בחודש ההוא, אחרת מסך הכספים משקר.
+ */
+const expBefore = await api('/admin/money?period=month', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+const sumOf = (b: unknown) => (b as { expenses: number }).expenses;
+const baseExp = sumOf(expBefore.body);
+
+const today = new Date();
+const iso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const madeExp = await api('/admin/expenses', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ category: 'שיווק', amount: 250, date: iso(today), note: 'צילומים' }),
+});
+if (madeExp.status !== 201) fail('expense create', madeExp);
+const expId = (madeExp.body as { id: string }).id;
+
+const badCat = await api('/admin/expenses', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ category: 'לא קיימת', amount: 10, date: iso(today) }),
+});
+if (badCat.status !== 400) fail('expense unknown category accepted', badCat);
+
+const expAfter = await api('/admin/money?period=month', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (sumOf(expAfter.body) !== baseExp + 250) fail('expense not counted in month', expAfter.body);
+const rowsOf = (b: unknown) => (b as { expenseRows: { k: string; v: number }[] }).expenseRows;
+const marketing = rowsOf(expAfter.body).find((r) => r.k === 'שיווק');
+if (!marketing || marketing.v < 250) fail('expense missing from its category', marketing);
+
+const expList = await api('/admin/expenses', { headers: { authorization: `Bearer ${adminToken}` } });
+if (expList.status !== 200) fail('expense list', expList);
+const listRow = (expList.body as { rows: { id: string; fromShop: boolean; date: string }[] }).rows.find(
+  (r) => r.id === expId,
+);
+if (!listRow) fail('expense not listed', expList.body);
+if (listRow.fromShop) fail('manual expense marked as coming from a shopping list', listRow);
+if (listRow.date !== iso(today)) fail('expense date echo', listRow);
+
+const gone = await api(`/admin/expenses/${expId}`, {
+  method: 'DELETE',
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (gone.status !== 200) fail('expense delete', gone);
+const expFinal = await api('/admin/money?period=month', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (sumOf(expFinal.body) !== baseExp) fail('expense still counted after delete', expFinal.body);
 
 writeFileSync(
   join(dir, 'ok.txt'),

@@ -31,6 +31,7 @@ import { AdminMenuScreen } from './src/admin/AdminMenuScreen';
 import { AdminCostsScreen } from './src/admin/AdminCostsScreen';
 import { AdminHistoryScreen } from './src/admin/AdminHistoryScreen';
 import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
+import { AdminExpensesScreen } from './src/admin/AdminExpensesScreen';
 import { AdminNav } from './src/admin/AdminNav';
 import { enableRTL } from './src/theme/rtl';
 import { surface } from './src/theme/tokens';
@@ -53,6 +54,7 @@ const ADMIN_SCREENS: Screen[] = [
   'adminCosts',
   'adminHistory',
   'adminBoard',
+  'adminExpenses',
 ];
 
 function Router() {
@@ -82,6 +84,7 @@ function Router() {
   if (view === 'adminCosts') return <AdminCostsScreen />;
   if (view === 'adminHistory') return <AdminHistoryScreen />;
   if (view === 'adminBoard') return <AdminBoardScreen />;
+  if (view === 'adminExpenses') return <AdminExpensesScreen />;
   if (CATEGORY_SCREENS.includes(view as CategoryKey))
     return <CategoryScreen categoryKey={view as CategoryKey} />;
 

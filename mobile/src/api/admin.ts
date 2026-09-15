@@ -198,3 +198,25 @@ export const adminSetBoardStatus = (id: string, status: string, extra?: { reason
     method: 'PATCH',
     body: { status, board: true, ...extra },
   });
+
+/* ── הוצאות · הזנה ידנית (בקשה של שקד, 15 בספטמבר 2026) ── */
+
+export type ExpenseRow = {
+  id: string;
+  category: string;
+  amount: number;
+  period: string;
+  note: string;
+  /** נולדה מסגירת רשימת קניות ולא הוקלדה ידנית */
+  fromShop: boolean;
+  date: string;
+};
+
+export const adminExpenses = () => api<{ cats: string[]; rows: ExpenseRow[] }>('/admin/expenses');
+
+/** ⚠ `method` מפורש · בלי גוף `api()` שולח GET, וזה מה ששבר את סגירת הרשימה */
+export const adminAddExpense = (body: { category: string; amount: number; date: string; note: string }) =>
+  api<{ id: string }>('/admin/expenses', { method: 'POST', body });
+
+export const adminDeleteExpense = (id: string) =>
+  api<{ ok: true }>(`/admin/expenses/${id}`, { method: 'DELETE' });

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { readJson } from '../json.ts';
+import { splitByExpenseCat } from '../admin/expenseCats.ts';
 import { notFound } from '../errors.ts';
 import { monthKey } from '../admin/sold.ts';
 
@@ -129,15 +130,19 @@ adminShopRouter.post('/active/close', async (_req, res, next) => {
       where: { id: row.id },
       data: { closedAt: new Date(), itemsJson: JSON.stringify(done) },
     });
-    await prisma.expense.create({
-      data: {
-        category: 'חומרי גלם',
-        amount,
-        period: monthKey(new Date()),
-        note: `קנייה · ${row.area}`,
-        source: closed.id,
-      },
-    });
+    /**
+     * ⚠ **פיצול לקטגוריות** · שקד ביקשה (15 בספטמבר 2026) שהקנייה
+     * לא תיפול תמיד על ״חומרי גלם״. הפיצול נעשה לפי קבוצת המצרך
+     * (אריזות מול מזון) ולא לפי סוג הרשימה — ראו `expenseCats.ts`.
+     */
+    const period = monthKey(new Date());
+    const split = splitByExpenseCat(done);
+    for (const [category, sum] of Object.entries(split)) {
+      if (sum <= 0) continue;
+      await prisma.expense.create({
+        data: { category, amount: sum, period, note: `קנייה · ${row.area}`, source: closed.id },
+      });
+    }
     const next = await prisma.shoppingList.create({ data: { area: row.area, itemsJson: '[]' } });
     res.json({ closed: serList(closed), list: serList(next), expense: amount });
   } catch (err) {

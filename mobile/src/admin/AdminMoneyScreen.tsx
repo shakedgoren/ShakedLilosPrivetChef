@@ -15,6 +15,7 @@ import {
   type PeriodKey,
 } from '../data/adminMoney';
 import { AdminShell } from './ui/AdminShell';
+import { BarChart, Cart, FileText, PayCash } from '../icons';
 import { Chip } from './ui/Chip';
 import { apiEnabled } from '../api/config';
 import { adminMoney } from '../api/admin';
@@ -22,9 +23,11 @@ import { useNav } from '../navigation/store';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
+/* ⚠ לא מהקנבס · האריח השלישי שביקשה שקד (15 בספטמבר 2026) */
+const TILE_REV = 'הכנסות';
 
 export function AdminMoneyScreen() {
-  const { user } = useNav();
+  const { user, go } = useNav();
   const live = apiEnabled && user?.role === 'admin';
   const [period, setPeriod] = useState<PeriodKey>('month');
   const [data, setData] = useState<{
@@ -73,7 +76,13 @@ export function AdminMoneyScreen() {
   const maxCat = Math.max(...view.cats.map((c) => c.v), 1);
 
   return (
-    <AdminShell title={MONEY_TITLE} sub={view.label}>
+    /* ⚠ **דלת למסך ההוצאות** · בקשה של שקד (15 בספטמבר 2026)
+       שהגישה תהיה דרך הכספים. גם האריח ״הוצאות״ עצמו נלחץ. */
+    <AdminShell
+      title={MONEY_TITLE}
+      sub={view.label}
+      actions={[{ label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: FileText }]}
+    >
       <View style={s.tabs}>
         {(Object.keys(PERIODS) as PeriodKey[]).map((k) => (
           <Chip
@@ -97,13 +106,29 @@ export function AdminMoneyScreen() {
           <Text style={s.heroSub}>{`${REV_SUB_PREFIX}${view.margin}%`}</Text>
         </View>
 
+        {/* ⚠ **שלושה ולא שניים** · שקד ביקשה (15 בספטמבר 2026)
+            שהשורה תתחלק להכנסות, הוצאות ורווח, עם אייקון לצד כל
+            תיאור. ״הוצאות״ נלחץ ופותח את מסך ההוצאות. */}
         <View style={s.row}>
           <View style={s.tile}>
-            <Text style={s.tileK}>{TILE_EXP}</Text>
-            <Text style={[s.tileV, { color: '#A65E2A' }]}>{nf(view.expenses)}</Text>
+            <View style={s.tileHead}>
+              <PayCash size={13} color={PLUM.deep} strokeWidth={1.9} />
+              <Text style={s.tileK}>{TILE_REV}</Text>
+            </View>
+            <Text style={[s.tileV, { color: PLUM.deep }]}>{nf(view.revenue)}</Text>
           </View>
+          <Pressable onPress={() => go('adminExpenses')} style={s.tile}>
+            <View style={s.tileHead}>
+              <Cart size={13} color="#A65E2A" strokeWidth={1.9} />
+              <Text style={s.tileK}>{TILE_EXP}</Text>
+            </View>
+            <Text style={[s.tileV, { color: '#A65E2A' }]}>{nf(view.expenses)}</Text>
+          </Pressable>
           <View style={s.tile}>
-            <Text style={s.tileK}>{TILE_PROFIT}</Text>
+            <View style={s.tileHead}>
+              <BarChart size={13} color="#4E8A64" strokeWidth={1.9} />
+              <Text style={s.tileK}>{TILE_PROFIT}</Text>
+            </View>
             <Text style={[s.tileV, { color: '#4E8A64' }]}>{nf(view.profit)}</Text>
           </View>
         </View>
@@ -164,17 +189,19 @@ const s = StyleSheet.create({
   heroVal: { fontSize: 32, fontWeight: '700', color: surface.ink },
   ils: { fontSize: 14, color: surface.faint },
   heroSub: { fontSize: 12.5, color: '#4E8A64', marginTop: 4, fontWeight: '600' },
-  row: { flexDirection: 'row', gap: 12 },
+  row: { flexDirection: 'row', gap: 8 },
+  /* ⚠ ריפוד 11 ולא 14 · שלושה אריחים בשורה במקום שניים */
+  tileHead: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   tile: {
     flex: 1,
     borderRadius: 18,
-    padding: 14,
+    padding: 11,
     backgroundColor: 'rgba(255,255,255,0.62)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.8)',
   },
-  tileK: { fontSize: 11.5, color: surface.faint },
-  tileV: { fontSize: 22, fontWeight: '700', marginTop: 4 },
+  tileK: { fontSize: 11, color: surface.faint },
+  tileV: { fontSize: 19, fontWeight: '700', marginTop: 4 },
   card: {
     borderRadius: 22,
     padding: 16,
