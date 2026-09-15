@@ -158,24 +158,46 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
   );
 }
 
+/**
+ * הדונאט של הקטגוריות.
+ *
+ * ⚠ **מחושב ולא מהקנבס** · הקשתות בקנבס הן מחרוזות `dash`/`offset`
+ * קבועות שכוללות גם פירות. שקד ביקשה (15 בספטמבר 2026) להוציא
+ * את הפירות — הם אינם ההכנסה שלה — ומחיקת קשת אחת מתוך ארבע
+ * הייתה משאירה חור בטבעת. לכן הן נגזרות מהמקרא, מנורמלות ל-100%.
+ */
+const R = 29;
+const C = 2 * Math.PI * R;
+
 export function CategoryDonut() {
+  const parts = DONUT.legend.filter((l) => l.name !== 'פירות');
+  const sum = parts.reduce((t, l) => t + l.pct, 0) || 1;
+  let at = 0;
+
   return (
     <View style={s.donutBox}>
       <Svg width={74} height={74} viewBox="0 0 74 74">
-        {DONUT.arcs.map((a) => (
-          <Circle
-            key={a.color}
-            cx={37}
-            cy={37}
-            r={29}
-            fill="none"
-            stroke={a.color}
-            strokeWidth={9}
-            strokeDasharray={a.dash}
-            strokeDashoffset={a.offset}
-            transform="rotate(-90 37 37)"
-          />
-        ))}
+        {parts.map((l) => {
+          const seg = (l.pct / sum) * C;
+          const offset = -at;
+          at += seg;
+          /* ⚠ רווח קטן בין הקשתות · כמו בקנבס, כדי שהן לא יידבקו */
+          const gap = 3;
+          return (
+            <Circle
+              key={l.name}
+              cx={37}
+              cy={37}
+              r={R}
+              fill="none"
+              stroke={l.color}
+              strokeWidth={9}
+              strokeDasharray={`${Math.max(0, seg - gap).toFixed(2)} ${(C - seg + gap).toFixed(2)}`}
+              strokeDashoffset={offset.toFixed(2)}
+              transform="rotate(-90 37 37)"
+            />
+          );
+        })}
       </Svg>
       <View style={s.donutCenter}>
         <Text style={s.donutText}>{DONUT.center}</Text>

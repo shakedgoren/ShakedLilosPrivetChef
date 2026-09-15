@@ -223,8 +223,9 @@ adminFinanceRouter.get('/revenue', async (req, res, next) => {
     const from = rangeStart(key, now);
     const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
+    /* ⚠ בלי פירות · אינם הכנסה של שקד, לבקשתה (15 בספטמבר 2026) */
     const orders = await prisma.order.findMany({
-      where: { createdAt: { gte: from, lt: to }, status: { not: CANCELLED } },
+      where: { createdAt: { gte: from, lt: to }, status: { not: CANCELLED }, category: { not: 'fruit' } },
       select: { createdAt: true, total: true },
     });
 
@@ -278,7 +279,7 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
     const end = new Date(start);
     end.setDate(end.getDate() + 1);
     const todayOrders = await prisma.order.findMany({
-      where: { createdAt: { gte: start, lt: end }, status: { not: CANCELLED } },
+      where: { createdAt: { gte: start, lt: end }, status: { not: CANCELLED }, category: { not: 'fruit' } },
     });
     const monthFrom = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthOrders = await prisma.order.findMany({
@@ -387,9 +388,15 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
     const revenue = monthOrders.reduce((s, o) => s + o.total, 0);
     const expenses = monthExp._sum.amount ?? 0;
 
-    const byCat: Record<string, number> = { cous: 0, schn: 0, box: 0, fruit: 0, chef: 0 };
+    /**
+     * ⚠ **פירות אינם הכנסה של שקד** · מגשי הפירות נעשים אצל מיכל
+     * גורן, והכסף אינו עובר דרכה. שקד ביקשה (15 בספטמבר 2026)
+     * להוציא אותם מהלפי-קטגוריה ומההכנסות. הם עדיין נשמרים
+     * כהזמנות — רק לא נספרים בכסף.
+     */
+    const byCat: Record<string, number> = { cous: 0, schn: 0, box: 0, chef: 0 };
     const allMonth = await prisma.order.findMany({
-      where: { createdAt: { gte: monthFrom, lt: end }, status: { not: CANCELLED } },
+      where: { createdAt: { gte: monthFrom, lt: end }, status: { not: CANCELLED }, category: { not: 'fruit' } },
     });
     for (const o of allMonth) {
       if (o.category in byCat) byCat[o.category] += o.total;
@@ -425,7 +432,7 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
           { name: 'קוסקוס', color: '#7B5CBC', v: byCat.cous },
           { name: 'שישניצל', color: '#416D9E', v: byCat.schn },
           { name: 'ספיישל', color: '#437C59', v: byCat.box },
-          { name: 'פירות', color: '#B04A76', v: byCat.fruit },
+          { name: 'שף וטאבון', color: '#A85A28', v: byCat.chef },
         ],
       },
     });

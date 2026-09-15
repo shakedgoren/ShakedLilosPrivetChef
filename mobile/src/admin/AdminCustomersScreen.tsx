@@ -131,12 +131,21 @@ export function AdminCustomersScreen() {
   }, [reload]);
 
   const isReg = (p: Row) => p.orders >= REGULAR_MIN;
-  const shown = rows.filter((p) => {
-    if (filter === 'reg' && !isReg(p)) return false;
-    if (filter === 'new' && isReg(p)) return false;
-    if (!q.trim()) return true;
-    return p.name.includes(q) || norm(p.phone).includes(norm(q));
-  });
+  /**
+   * ⚠ **ממוין א-ב** · בקשה של שקד (15 בספטמבר 2026).
+   * `localeCompare` עם `he` מסדר עברית נכון — השוואת מחרוזות רגילה
+   * מסדרת לפי קוד התו, ושם שמתחיל ב-א נופל אחרי שם שמתחיל ב-ת
+   * רק אם יש בו תו לטיני או ניקוד.
+   */
+  const shown = rows
+    .filter((p) => {
+      if (filter === 'reg' && !isReg(p)) return false;
+      if (filter === 'new' && isReg(p)) return false;
+      if (!q.trim()) return true;
+      return p.name.includes(q) || norm(p.phone).includes(norm(q));
+    })
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
   const count = (f: typeof filter) =>
     rows.filter((p) => (f === 'all' ? true : f === 'reg' ? isReg(p) : !isReg(p))).length;
@@ -238,17 +247,29 @@ export function AdminCustomersScreen() {
                         הלקוחה והטלפון כבר בפנים, במקום לקפוץ למסך
                         ההזמנות ולהשאיר את שקד להקליד הכול מחדש. */}
                     <View style={s.acts}>
-                      <Pressable onPress={() => setHist(p)} style={s.act}>
-                        <Clock size={13} color="#6E6478" strokeWidth={2} />
-                        <Text style={s.actText}>{HIST_LABEL}</Text>
+                      {/* ⚠ **אייקונים בלבד** · שקד ביקשה (15 בספטמבר
+                          2026) להוריד את המילים. השמות נשארים כשם
+                          הנגישות של כל כפתור. */}
+                      <Pressable
+                        onPress={() => setHist(p)}
+                        accessibilityLabel={HIST_LABEL}
+                        style={s.act}
+                      >
+                        <Clock size={17} color="#6E6478" strokeWidth={1.9} />
                       </Pressable>
-                      <Pressable onPress={() => callPhone(p.phone)} style={s.act}>
-                        <PhoneCall size={13} color="#6E6478" strokeWidth={2} />
-                        <Text style={s.actText}>{CALL_LABEL}</Text>
+                      <Pressable
+                        onPress={() => callPhone(p.phone)}
+                        accessibilityLabel={CALL_LABEL}
+                        style={s.act}
+                      >
+                        <PhoneCall size={17} color="#6E6478" strokeWidth={1.9} />
                       </Pressable>
-                      <Pressable onPress={() => startOrder(p)} style={[s.act, s.actGo]}>
-                        <Plus size={13} color="#43307A" strokeWidth={2.4} />
-                        <Text style={s.actGoText}>{ORDER_LABEL}</Text>
+                      <Pressable
+                        onPress={() => startOrder(p)}
+                        accessibilityLabel={ORDER_LABEL}
+                        style={[s.act, s.actGo]}
+                      >
+                        <Plus size={17} color="#43307A" strokeWidth={2.4} />
                       </Pressable>
                     </View>
                   </View>

@@ -46,12 +46,13 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
   const { back, canBack, go } = useNav();
   return (
     <View style={s.root}>
+      {/* ⚠ **מעל הכותרת ולא לצידה** · שקד ביקשה (15 בספטמבר 2026)
+          שהחץ יישב מעט מעל הכותרת הראשית. תמיד מוצג — כשאין
+          מחסנית (כניסה ישירה לכתובת) הוא מחזיר לדף הניהול. */}
+      <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
+        <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
+      </Pressable>
       <View style={s.head}>
-        {/* ⚠ תמיד מוצג · כשאין מחסנית (כניסה ישירה לכתובת) הוא
-            מחזיר לדף הניהול, כדי שלא יהיה מסך פנימי בלי דרך חזרה. */}
-        <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
-          <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
-        </Pressable>
         <View style={s.headText}>
           {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
           <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
@@ -117,9 +118,12 @@ export function KpiRow({
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, paddingTop: 30, paddingHorizontal: 18, gap: 12 },
+  /* ⚠ הריפוד העליון ירד ל-18 · החץ תופס את השורה שמעל הכותרת */
+  root: { flex: 1, paddingTop: 18, paddingHorizontal: 18, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   back: {
+    alignSelf: 'flex-start',
+    marginBottom: -2,
     width: 34,
     height: 34,
     borderRadius: 17,

@@ -127,6 +127,19 @@ export function AdminHistoryScreen() {
             </Pressable>
           ))
         )}
+
+        {/* ⚠ **שורת סה״כ לקטגוריה** · בקשה של שקד (15 בספטמבר 2026).
+            מסכמת את מה שמוצג כרגע — כלומר את הקטגוריה שנבחרה
+            בשורת הצ׳יפים, או את הכול כשנבחר ״הכל״. */}
+        {rows.length > 0 ? (
+          <View style={s.catTotal}>
+            <Text style={s.catTotalK}>
+              {`סה״כ ${filter === 'all' ? 'הכל' : HIST_AREAS.find((a) => a.id === filter)?.n ?? ''}`}
+            </Text>
+            <Text style={s.catTotalCount}>{count(rows.length, 'קנייה אחת', 'קניות')}</Text>
+            <Text style={s.catTotalV}>{`${nf(total)} ₪`}</Text>
+          </View>
+        ) : null}
       </ScrollView>
     </AdminShell>
   );
@@ -159,5 +172,19 @@ const s = StyleSheet.create({
   w40: { width: 40, textAlign: 'center' },
   w52: { width: 52, textAlign: 'center' },
   w48: { width: 48, textAlign: 'left' },
+  /* שורת הסיכום של הקטגוריה · בתחתית הרשימה */
+  catTotal: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginTop: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    backgroundColor: 'rgba(123,92,188,0.07)',
+  },
+  catTotalK: { fontSize: 13, fontWeight: '600', color: '#43307A' },
+  catTotalCount: { flex: 1, fontSize: 11, fontWeight: '300', color: surface.faint },
+  catTotalV: { fontSize: 15, fontWeight: '700', color: '#43307A', fontVariant: ['tabular-nums'] },
   total: { fontSize: 13, fontWeight: '600', color: '#43307A', marginTop: 4 },
 });

@@ -159,7 +159,10 @@ export function AdminHomeScreen() {
           <View style={s.donutBody}>
             <CategoryDonut />
             <View style={s.legend}>
-              {DONUT.legend.map((l) => (
+              {/* ⚠ **בלי פירות** · אינם הכנסה של שקד (מיכל גורן
+                  מכינה אותם), ולכן ירדו מהלפי-קטגוריה לבקשתה.
+                  `DONUT` מגיע מהקובץ המחולץ ואין לערוך אותו ביד. */}
+              {DONUT.legend.filter((l) => l.name !== 'פירות').map((l) => (
                 <View key={l.name} style={s.legendRow}>
                   <View style={[s.legendDot, { backgroundColor: l.color }]} />
                   <Text style={s.legendName}>{l.name}</Text>

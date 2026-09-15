@@ -27,6 +27,15 @@ function dayTitle(key: string) {
 
 type Props = { admin: ReturnType<typeof useAdminDays> };
 
+/**
+ * ⚠ **פירות ירדו מימי המכירה** · שקד ביקשה (15 בספטמבר 2026):
+ * ״להוציא את פירות מהימי מכירה — זה לא קשור לשם״. מגשי הפירות
+ * נעשים אצל מיכל גורן ואינם עוברים במערכת ההזמנות, ולכן אין
+ * להם יום מכירה ואין להם מכסה.
+ * ⚠ `CAT_KEYS` מגיע מהקובץ המחולץ ואין לערוך אותו ביד.
+ */
+const EXCEPT_KEYS = CAT_KEYS.filter((k) => k !== 'fruit');
+
 export function DayPanel({ admin }: Props) {
   const r = admin.current;
   const cat = admin.cat;
@@ -49,7 +58,7 @@ export function DayPanel({ admin }: Props) {
           <Text style={s.blockTitle}>{EXCEPT_TITLE}</Text>
           <Text style={s.blockSub}>{EXCEPT_SUB}</Text>
           <View style={s.chips}>
-            {CAT_KEYS.map((k) => (
+            {EXCEPT_KEYS.map((k) => (
               <Chip
                 key={k}
                 label={CATS[k].short}

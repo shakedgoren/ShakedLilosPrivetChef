@@ -16,7 +16,6 @@ import {
   STEPS as BOARD_STEPS,
   START_MODE,
   TAIL_COLS,
-  tableWidth,
 } from '../data/adminBoard';
 import { CancelSheet } from './CancelSheet';
 import { apiEnabled } from '../api/config';
@@ -172,9 +171,17 @@ export function AdminBoardScreen() {
   const landscape = width >= 700;
   const pad = view === 'pad' || landscape;
   const cards = view === 'phone' && !landscape;
+  /**
+   * ⚠ **רוחבי הקנבס הצטמצמו** · בקנבס העמודות הן 92/220/68/96/104/206
+   * (1126 מתוך ארטבורד 1180), ושקד ביקשה (15 בספטמבר 2026) לצמצם
+   * ״למינימום מרחב שהיא צריכה — יש יותר מדי רווחים מיותרים״.
+   * כל עמודה ירדה לרוחב שהתוכן שלה באמת דורש: שעה 11:40, שם מלא,
+   * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
+   */
   const w = pad
-    ? COL_W
+    ? { time: 62, who: 150, item: 52, sum: 74, pay: 72, status: 150 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
+  const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
   return (
     <View style={s.root}>
@@ -310,7 +317,10 @@ export function AdminBoardScreen() {
         </ScrollView>
       ) : (
       <ScrollView horizontal>
-        <View style={{ minWidth: pad ? tableWidth(BOARD_CAT.items.length) : undefined }}>
+        {/* ⚠ **הרוחב נגזר מהעמודות בפועל** · קודם הוא הוזמן לפי
+            `tableWidth` של הקנבס (1126) בעוד שהעמודות הצטמצמו,
+            ונשאר פס ריק של יותר מ-300 פיקסלים בקצה הטבלה. */}
+        <View style={{ minWidth: pad ? tableW : undefined }}>
           <View style={s.cols}>
             <Text style={[s.col, { width: w.time }]}>{HEAD_COLS.time}</Text>
             <Text style={[s.col, { width: w.who }]}>{HEAD_COLS.who}</Text>
@@ -340,7 +350,7 @@ export function AdminBoardScreen() {
                         value={String(x.o.q[it.id] || 0)}
                         keyboardType="number-pad"
                         onChangeText={(v) => setQ(x.i, it.id, v)}
-                        style={[s.qty, { width: w.item - 16 }]}
+                        style={[s.qty, { width: w.item - 12 }]}
                       />
                     ))}
                     <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
@@ -444,11 +454,12 @@ const s = StyleSheet.create({
   itemCol: { width: 68, textAlign: 'center' },
   list: { maxHeight: 560 },
   empty: { fontSize: 15, color: '#A79FB2', textAlign: 'center', padding: 70 },
-  row: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, paddingVertical: 6, marginBottom: 4 },
+  /* ⚠ ריפוד הדוק יותר · חלק מהצמצום שביקשה שקד */
+  row: { flexDirection: 'row', alignItems: 'center', borderRadius: 11, borderWidth: 1, paddingVertical: 4, marginBottom: 3 },
   cell: { fontSize: 12, textAlign: 'center', color: surface.ink },
   who: { fontSize: 13, fontWeight: '600' },
   note: { fontSize: 10, color: surface.faint },
-  qty: { width: 68, height: 32, textAlign: 'center', fontSize: 13, color: surface.ink, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 8 },
+  qty: { height: 28, textAlign: 'center', fontSize: 13, color: surface.ink, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 8 },
   steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center' },
   /* ⚠ ריבוע אייקון · בקנבס 34×30 עם מסגרת, והפעיל נצבע מלא */
   step: {
