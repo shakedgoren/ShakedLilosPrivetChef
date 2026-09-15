@@ -12,7 +12,13 @@ import {
   type CustomerDetails,
 } from '../catalog/quote.ts';
 import { detailsSchema, parseCustomerDetails } from '../orders/details.ts';
-import { assertCustomerOrderDay } from '../orders/saleDay.ts';
+import {
+  assertCustomerOrderDay,
+  evaluateCustomerSaleDay,
+  loadSaleDayView,
+  resolveCustomerSaleDate,
+} from '../orders/saleDay.ts';
+import { isoDate } from '../admin/sold.ts';
 import { serializeOrder } from '../orders/serialize.ts';
 import { readJson } from '../json.ts';
 
@@ -134,6 +140,58 @@ async function placeCustomerOrder(opts: {
     });
   });
 }
+
+/**
+ * האם יום המכירה של הקטגוריה פתוח להזמנה.
+ *
+ * ⚠ נוסף בשביל ״להזמין שוב״ · שקד ביקשה שהכפתור **יבדוק קודם**
+ * אם היום פתוח, במקום לשלוח הזמנה כפולה מיד.
+ * קטגוריות שאינן קוסקוס/שניצל אינן תלויות ביום מכירה, ולכן הן
+ * תמיד פתוחות — זה בדיוק מה ש-`evaluateCustomerSaleDay` מחזיר.
+ */
+ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
+  try {
+    const category = String(req.query.category ?? '');
+    if (!isCategory(category)) throw badRequest('invalid_order', 'category');
+
+    const date = await resolveCustomerSaleDate(prisma, undefined, category);
+    const rec = await loadSaleDayView(prisma, date, category);
+    const problem = evaluateCustomerSaleDay({
+      rec,
+      category,
+      requested: {},
+      today: isoDate(new Date()),
+    });
+    res.json({
+      category,
+      date,
+      open: problem === null,
+      reason: problem?.code ?? '',
+      message: problem?.message ?? '',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * בקשת תזכורת לפתיחת יום מכירה.
+ * ⚠ **נשמרת בלבד** · איך התזכורת מגיעה ללקוחה עדיין לא הוחלט.
+ */
+ordersRouter.post('/remind', requireAuth, async (req, res, next) => {
+  try {
+    const category = String(req.body?.category ?? '');
+    if (!isCategory(category)) throw badRequest('invalid_order', 'category');
+    await prisma.saleReminder.upsert({
+      where: { userId_category: { userId: req.user!.id, category } },
+      update: {},
+      create: { userId: req.user!.id, category },
+    });
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 ordersRouter.post('/', optionalAuth, async (req, res, next) => {
   try {

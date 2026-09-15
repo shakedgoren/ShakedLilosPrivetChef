@@ -38,6 +38,7 @@ export function publicUser(u: {
   city: string;
   note?: string;
   avatarUrl?: string | null;
+  gender?: string | null;
   createdAt?: Date | string;
 }) {
   return {
@@ -50,6 +51,8 @@ export function publicUser(u: {
     city: u.city,
     note: u.note ?? '',
     avatarUrl: u.avatarUrl ?? '',
+    /** ⚠ ריק כשלא נבחר · קובע אם פונים ללקוח או ללקוחה */
+    gender: u.gender ?? '',
     createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : (u.createdAt ?? ''),
   };
 }

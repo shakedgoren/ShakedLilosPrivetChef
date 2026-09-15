@@ -16,6 +16,7 @@ import {
   PHONE_LABEL,
 } from '../../data/fruit';
 import { TRAY_PHOTOS } from '../../data/photos';
+import { usePrefill, qtyFrom } from '../../navigation/usePrefill';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
@@ -47,6 +48,11 @@ export function FruitScreen() {
   /* אין כאן התחברות · המצב נדרש רק כדי לפנות מקום לנאב-בר */
   const { loggedIn } = useNav();
   const [qty, setQty] = useState<number[]>(() => FRUIT_TRAYS.map(() => 0));
+  /* ⚠ ״להזמין שוב״ · המגשים של ההזמנה הקודמת כבר מסומנים */
+  usePrefill('fruit', (d) => {
+    const q = qtyFrom(d, FRUIT_TRAYS.length);
+    if (q) setQty(q);
+  });
   /* רוחב הכרטיס נמדד · בקנבס הנוסחה היא (100% − רווח) ÷ 2, ול-RN אין calc */
   const [gridW, setGridW] = useState(0);
   const cardW = gridW ? (gridW - CARD.gap) / 2 : undefined;

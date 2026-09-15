@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePrefill, qtyFrom } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COUSCOUS_FULFILLMENT, COUSCOUS_MENU } from '../../data/couscous';
@@ -37,6 +38,11 @@ export function CouscousScreen() {
   const o = useCouscousOrder();
   const f = useFulfillment({ ...COUSCOUS_FULFILLMENT, meals: o.meals });
   const [gate, setGate] = useState(false);
+  /* ⚠ ״להזמין שוב״ · הכמויות של ההזמנה הקודמת כבר מסומנות */
+  usePrefill('cous', (d) => {
+    const q = qtyFrom(d, o.qty.length);
+    if (q) o.setQty(q);
+  });
   const [gridW, setGridW] = useState(0);
 
   const onContinue = () => {

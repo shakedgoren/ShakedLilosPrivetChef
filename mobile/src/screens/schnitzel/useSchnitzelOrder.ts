@@ -122,7 +122,30 @@ export function useSchnitzelOrder() {
     return [...rolls, ...packs, ...coc];
   }, [basket, boxes, cocottes]);
 
+  /**
+   * ⚠ ״להזמין שוב״ · טוען את החלות, המארזים והקוקוטים של ההזמנה
+   * הקודמת. מסונן לערכים חוקיים בלבד — פרטי הזמנה ישנה עלולים
+   * להצביע על סוג שכבר לא קיים בתפריט.
+   */
+  const loadDetails = useCallback((d: Record<string, unknown>) => {
+    const rolls = (Array.isArray(d.rolls) ? d.rolls : []) as Roll[];
+    const packs = (Array.isArray(d.boxes) ? d.boxes : []) as Roll[];
+    const keep = (r: Roll) =>
+      r && typeof r.type === 'number' && !!SCHNITZEL_TYPES[r.type];
+    const clean = (list: Roll[]) =>
+      list.filter(keep).map((r) => ({ type: r.type, tops: Array.isArray(r.tops) ? [...r.tops] : [] }));
+    setBasket(clean(rolls));
+    setBoxes(clean(packs));
+    if (clean(packs).length > 0 && clean(rolls).length === 0) setMode(1);
+    const coc = Array.isArray(d.cocottes) ? d.cocottes : [];
+    setCocottes(COCOTTES.map((_, i) => {
+      const v = Number(coc[i]);
+      return Number.isFinite(v) && v > 0 ? v : 0;
+    }));
+  }, []);
+
   return {
+    loadDetails,
     mode, setMode, isUnit,
     form, setForm,
     basket, boxes, cocottes, pop,

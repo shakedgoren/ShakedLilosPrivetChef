@@ -22,5 +22,5 @@ export function useCouscousOrder() {
     [qty],
   );
 
-  return { qty, bump, meals, total, lines };
+  return { qty, setQty, bump, meals, total, lines };
 }

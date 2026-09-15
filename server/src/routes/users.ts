@@ -49,6 +49,8 @@ usersRouter.patch('/me', requireAuth, maybeMultipart, async (req, res, next) => 
         phone: z.string().max(20).optional(),
         address: z.string().max(160).optional(),
         city: z.string().max(40).optional(),
+        /** ⚠ עמודה חדשה · שקד ביקשה לדעת אם מדובר בלקוח או בלקוחה */
+        gender: z.enum(['female', 'male', 'other', '']).optional(),
         email: z.union([z.string().max(80), z.null()]).optional(),
         image: z.string().optional(),
         imageBase64: z.string().optional(),
@@ -62,8 +64,10 @@ usersRouter.patch('/me', requireAuth, maybeMultipart, async (req, res, next) => 
       city?: string;
       email?: string | null;
       avatarUrl?: string;
+      gender?: string;
     } = {};
     if (body.name !== undefined) data.name = body.name.trim();
+    if (body.gender !== undefined) data.gender = body.gender;
     if (body.address !== undefined) data.address = body.address.trim();
     /* העיר נשמרת כמו שהוקלדה · אזהרת המשלוח היא במסך, לא 400 */
     if (body.city !== undefined) data.city = body.city.trim();

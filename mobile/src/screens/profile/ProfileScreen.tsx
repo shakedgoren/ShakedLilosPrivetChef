@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { apiEnabled, API_URL } from '../../api/config';
-import { changePassword, updateMe } from '../../api/auth';
+import { changePassword, updateMe, uploadAvatar } from '../../api/auth';
+import { pickAvatar } from '../../lib/pickImage';
 import { COPY } from '../../api/copy';
-import { ApiError, type PublicUser } from '../../api/types';
+import { ApiError, GENDERS, type Gender, type PublicUser } from '../../api/types';
 import { CITIES } from '../../data/shared';
 import { PLACES } from '../../data/profile';
 
@@ -59,11 +60,22 @@ function cityOf(addr: string): string {
   return splitAddr(addr).city;
 }
 
-function sinceLabel(iso?: string): string {
+/**
+ * ⚠ היה ״לקוחה מאז״ קבוע · זו בדיוק הסיבה ששקד ביקשה שדה מגדר.
+ * בלי בחירה נשארת לשון נקבה, כפי שהיה.
+ */
+const GENDER_LABEL: Record<Gender, string> = {
+  female: 'לקוחה',
+  male: 'לקוח',
+  other: 'לקוח/ה',
+  '': 'לקוחה',
+};
+
+function sinceLabel(iso: string | undefined, gender: Gender): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  return `לקוחה מאז ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${GENDER_LABEL[gender]} מאז ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function fromUser(user: PublicUser | null) {
@@ -72,6 +84,7 @@ function fromUser(user: PublicUser | null) {
     phone: user?.phone ?? '',
     mail: user?.email ?? '',
     addr: user ? joinAddr(user.address, user.city) : '',
+    gender: (user?.gender ?? '') as Gender,
   };
 }
 
@@ -89,6 +102,44 @@ export function ProfileScreen() {
   const [passOpen, setPassOpen] = useState(false);
   const [pass, setPass] = useState({ cur: '', next: '', again: '' });
   const [passErr, setPassErr] = useState('');
+  /* העלאת תמונת פרופיל · הודעה משלה, כדי לא לדרוס שגיאת שמירה */
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoErr, setPhotoErr] = useState('');
+
+  /**
+   * ⚠ **זה מה שהיה שבור** · אייקון המצלמה היה ציור בלבד. עכשיו הוא
+   * כפתור שפותח בורר קבצים ושולח לשרת, שתמך בזה כל הזמן.
+   */
+  const onPickPhoto = async () => {
+    if (photoBusy) return;
+    setPhotoErr('');
+    const picked = await pickAvatar();
+    if (!picked.ok) {
+      if (picked.reason === 'denied') setPhotoErr('אין הרשאה לגלריה');
+      else if (picked.reason === 'failed') setPhotoErr('לא הצלחנו לקרוא את התמונה');
+      return;
+    }
+    if (!apiEnabled) {
+      setPhotoErr('אין חיבור לשרת · התמונה לא נשמרה');
+      return;
+    }
+    setPhotoBusy(true);
+    try {
+      const { user: next } = await uploadAvatar(picked.dataUrl);
+      setUser(next);
+    } catch (e) {
+      const code = e instanceof ApiError ? e.code : '';
+      setPhotoErr(
+        code === 'image_too_large'
+          ? 'התמונה גדולה מדי · עד 2MB'
+          : code === 'invalid_image'
+            ? 'סוג קובץ לא נתמך'
+            : COPY.saveFail,
+      );
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
 
   useEffect(() => {
     const next = fromUser(user);
@@ -146,6 +197,7 @@ export function ProfileScreen() {
         address,
         city: parsedCity,
         email: trim(form.mail) || null,
+        gender: form.gender,
       });
       setUser(next);
       const synced = fromUser(next);
@@ -199,7 +251,7 @@ export function ProfileScreen() {
     }
   };
 
-  const since = sinceLabel(user?.createdAt);
+  const since = sinceLabel(user?.createdAt, form.gender);
   const displayName = trim(form.name) || 'ללא שם';
   const avatarSrc = user?.avatarUrl
     ? user.avatarUrl.startsWith('http')
@@ -218,7 +270,11 @@ export function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={s.hero}>
-          <View style={s.avatar}>
+          <Pressable
+            onPress={onPickPhoto}
+            disabled={photoBusy}
+            style={[s.avatar, photoBusy && s.avatarBusy]}
+          >
             {avatarSrc ? (
               <Image source={{ uri: avatarSrc }} style={s.avatarImg} />
             ) : (
@@ -227,9 +283,10 @@ export function ProfileScreen() {
             <View style={s.cam}>
               <Text style={s.camGlyph}>📷</Text>
             </View>
-          </View>
+          </Pressable>
           <Text style={s.displayName}>{displayName}</Text>
           {since ? <Text style={s.since}>{since}</Text> : null}
+          {photoErr ? <Text style={s.photoErr}>{photoErr}</Text> : null}
         </View>
 
         <View style={s.card}>
@@ -260,6 +317,25 @@ export function ProfileScreen() {
             hint="כתובת אימייל לא תקינה"
             keyboardType="email-address"
           />
+
+          {/* ⚠ **שדה חדש** · שקד ביקשה מגדר כדי לדעת אם מדובר בלקוח
+              או בלקוחה. הוא מזין את שורת ״לקוחה מאז״. */}
+          <View style={s.genderBlock}>
+            <Text style={s.genderLabel}>מגדר</Text>
+            <View style={s.genders}>
+              {GENDERS.map((g) => (
+                <Pressable
+                  key={g}
+                  onPress={() => set('gender', form.gender === g ? '' : g)}
+                  style={[s.gender, form.gender === g && s.genderOn]}
+                >
+                  <Text style={[s.genderText, form.gender === g && s.genderTextOn]}>
+                    {GENDER_LABEL[g]}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </View>
 
         <View style={s.card}>
@@ -440,7 +516,24 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarBusy: { opacity: 0.6 },
   avatarImg: { position: 'absolute', width: 92, height: 92, borderRadius: 46 },
+  photoErr: { fontSize: 11.5, color: '#B95349', marginTop: 4, textAlign: 'center' },
+  /* בורר המגדר · אותה שפה של גלולות הערים */
+  genderBlock: { gap: 6 },
+  genderLabel: { fontSize: 11.5, fontWeight: '500', color: '#8A8194', paddingHorizontal: 4 },
+  genders: { flexDirection: 'row', gap: 8 },
+  gender: {
+    flex: 1,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(130,112,162,0.09)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  genderOn: { backgroundColor: a('123,92,188', 0.22) },
+  genderText: { fontSize: 13, color: surface.inkSoft },
+  genderTextOn: { color: '#43307A', fontWeight: '600' },
   avatarGlyph: { fontSize: 36, color: '#43307A' },
   cam: {
     position: 'absolute',

@@ -41,12 +41,21 @@ export type Screen = (typeof SCREENS)[number];
 
 type Session = { token: string; user: PublicUser };
 
+/**
+ * ⚠ מטען חד-פעמי לניווט · ״להזמין שוב״ פותח את מסך הקטגוריה
+ * כשהפריטים של ההזמנה הקודמת כבר מסומנים. המסך צורך אותו פעם
+ * אחת עם `takePrefill()` ואז הוא מתאפס.
+ */
+export type Prefill = { category: string; details: Record<string, unknown> };
+
 type Nav = {
   screen: Screen;
   loggedIn: boolean;
   user: PublicUser | null;
   apiEnabled: boolean;
-  go: (to: Screen) => void;
+  go: (to: Screen, prefill?: Prefill) => void;
+  /** המטען שהגיע עם הניווט · נצרך פעם אחת ומתאפס */
+  takePrefill: () => Prefill | null;
   /** פתיחת ההתחברות כשכבה מעל המסך הנוכחי · המסך נשאר חי מאחוריה */
   goLogin: () => void;
   /** סגירת שכבת ההתחברות בלי להתחבר */
@@ -109,14 +118,25 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  /* המטען מגיע עם הניווט ונצרך פעם אחת · ref ולא state, כדי
+     שהצריכה לא תגרור רינדור נוסף */
+  const prefill = React.useRef<Prefill | null>(null);
+
   const go = useCallback(
-    (to: Screen) => {
+    (to: Screen, load?: Prefill) => {
+      prefill.current = load ?? null;
       setLoginOverlay(false);
       setStack((s) => [...s, screen]);
       setScreen(to);
     },
     [screen],
   );
+
+  const takePrefill = useCallback(() => {
+    const p = prefill.current;
+    prefill.current = null;
+    return p;
+  }, []);
 
   const goLogin = useCallback(() => setLoginOverlay(true), []);
   const closeLogin = useCallback(() => setLoginOverlay(false), []);
@@ -174,6 +194,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       user,
       apiEnabled,
       go,
+      takePrefill,
       goLogin,
       closeLogin,
       loginOverlay,
@@ -183,7 +204,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       setUser: applyUser,
       canBack: stack.length > 0,
     }),
-    [screen, loggedIn, user, go, goLogin, closeLogin, loginOverlay, back, signIn, signOut, applyUser, stack.length],
+    [screen, loggedIn, user, go, takePrefill, goLogin, closeLogin, loginOverlay, back, signIn, signOut, applyUser, stack.length],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

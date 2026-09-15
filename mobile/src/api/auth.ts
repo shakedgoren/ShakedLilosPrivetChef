@@ -19,7 +19,7 @@ export const googleStub = () => googleSignIn('');
 export const me = (token?: string) => api<{ user: PublicUser }>('/auth/me', { token });
 
 export const updateMe = (
-  patch: Partial<Pick<PublicUser, 'name' | 'phone' | 'address' | 'city' | 'avatarUrl'>> & {
+  patch: Partial<Pick<PublicUser, 'name' | 'phone' | 'address' | 'city' | 'avatarUrl' | 'gender'>> & {
     email?: string | null;
     image?: string;
     imageBase64?: string;

@@ -1,3 +1,7 @@
+/** ⚠ ״אחר״ נוסף על ידי · שקד ביקשה ״מגדר״ בלי לפרט אילו ערכים */
+export const GENDERS = ['female', 'male', 'other'] as const;
+export type Gender = (typeof GENDERS)[number] | '';
+
 export type PublicUser = {
   id: string;
   role: 'customer' | 'admin' | string;
@@ -8,6 +12,8 @@ export type PublicUser = {
   city: string;
   note?: string;
   avatarUrl?: string;
+  /** ⚠ ריק כשלא נבחר · קובע אם פונים ללקוח או ללקוחה */
+  gender?: Gender;
   createdAt?: string;
 };
 
@@ -29,6 +35,8 @@ export type Order = {
   saleDate: string;
   via: string;
   lines: OrderLine[];
+  /** ⚠ פרטי ההזמנה המקוריים · מזינים את ״להזמין שוב״ */
+  details?: Record<string, unknown> | null;
   itemsTotal: number;
   shippingFee: number;
   total: number;

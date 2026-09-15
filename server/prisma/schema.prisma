@@ -23,11 +23,27 @@ model User {
   note         String   @default("")
   /// נתיב מקומי או URL · POST /users/me/photo
   avatarUrl    String   @default("")
+  /// מגדר · "" כשלא נבחר · קובע אם פונים ללקוח או ללקוחה
+  gender       String   @default("")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orders Order[]
-  resets PasswordReset[]
+  orders    Order[]
+  resets    PasswordReset[]
+  reminders SaleReminder[]
+}
+
+/// ⚠ בקשת תזכורת לפתיחת יום מכירה · נשמרת בלבד.
+/// **שום דבר עדיין לא נשלח** — שקד לא סגרה איך התזכורת מגיעה
+/// ללקוחה (וואטסאפ / SMS / התראה), וזו חסימה פתוחה בפנקס.
+model SaleReminder {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, category])
 }
 
 model PasswordReset {

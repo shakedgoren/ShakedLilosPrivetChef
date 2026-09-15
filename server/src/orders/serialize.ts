@@ -11,9 +11,23 @@ export function parseLines(json: string): OrderLine[] {
   }
 }
 
+/**
+ * ⚠ `details` נוסף בשביל ״להזמין שוב״ · בלעדיו אי אפשר לפתוח את
+ * מסך הקטגוריה כשהפריטים של ההזמנה הקודמת כבר מסומנים.
+ */
+function parseDetails(json: string): Record<string, unknown> | null {
+  try {
+    const v = JSON.parse(json);
+    return v && typeof v === 'object' ? (v as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function serializeOrder(row: Order) {
   const lines = parseLines(row.itemsJson);
   return {
+    details: parseDetails(row.detailsJson),
     id: row.id,
     category: row.category,
     status: row.status,

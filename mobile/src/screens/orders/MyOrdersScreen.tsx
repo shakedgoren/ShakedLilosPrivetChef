@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { listMyOrders, reorderOrder } from '../../api/orders';
+import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
+import { SaleClosedSheet } from './SaleClosedSheet';
 import { apiEnabled } from '../../api/config';
 import { COPY, orderError } from '../../api/copy';
 import { ApiError, type Order } from '../../api/types';
@@ -51,26 +52,66 @@ export function MyOrdersScreen() {
     void load();
   }, [load]);
 
+  /* בדיקת יום המכירה · מזהה ההזמנה שנבדקת כרגע */
+  const [checking, setChecking] = useState<string | null>(null);
+  /* חלונית ״יום המכירה עדיין לא נפתח״ */
+  const [closed, setClosed] = useState<{ order: Order; note: string } | null>(null);
+  const [remindBusy, setRemindBusy] = useState(false);
+  const [remindDone, setRemindDone] = useState(false);
+  const [remindErr, setRemindErr] = useState('');
+
   const live = orders.filter((o) => isLive(o.status));
   const past = orders.filter((o) => !isLive(o.status));
   const empty = live.length + past.length === 0 && !err;
 
+  /**
+   * ״להזמין שוב״.
+   *
+   * ⚠ **שונה לגמרי** · קודם הכפתור שלח מיד הזמנה כפולה לשרת.
+   * שקד ביקשה שהוא **יבדוק קודם אם יום המכירה פתוח**: אם כן —
+   * נפתח מסך הקטגוריה עם הפריטים של ההזמנה הקודמת כבר מסומנים;
+   * ואם לא — נפתחת חלונית הפעמון.
+   */
+  const openAgain = (o: Order) =>
+    go(
+      categoryKey(o.category) as Screen,
+      o.details ? { category: o.category, details: o.details } : undefined,
+    );
+
   const onAgain = async (o: Order) => {
     if (!apiEnabled) {
-      go(categoryKey(o.category) as Screen);
+      openAgain(o);
       return;
     }
     setErr('');
+    setChecking(o.id);
     try {
-      await reorderOrder(o.id);
-      await load();
-    } catch (e) {
-      const code = e instanceof ApiError ? e.code : '';
-      if (code === 'reorder_unavailable') {
-        go(categoryKey(o.category) as Screen);
+      const day = await saleDayStatus(o.category);
+      if (day.open) {
+        openAgain(o);
         return;
       }
-      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.reorderFail);
+      setClosed({ order: o, note: day.message });
+      setRemindDone(false);
+      setRemindErr('');
+    } catch (e) {
+      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.net);
+    } finally {
+      setChecking(null);
+    }
+  };
+
+  const onRemind = async () => {
+    if (!closed) return;
+    setRemindBusy(true);
+    setRemindErr('');
+    try {
+      await requestSaleReminder(closed.order.category);
+      setRemindDone(true);
+    } catch (e) {
+      setRemindErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
+    } finally {
+      setRemindBusy(false);
     }
   };
 
@@ -122,6 +163,18 @@ export function MyOrdersScreen() {
         </ScrollView>
       )}
 
+      {/* ⚠ יום מכירה סגור · חלונית הפעמון שביקשה שקד */}
+      <SaleClosedSheet
+        open={!!closed}
+        categoryName={closed ? categoryName(closed.order.category) : ''}
+        accent={hues[categoryKey(closed?.order.category ?? 'cous')]}
+        note={closed?.note}
+        done={remindDone}
+        busy={remindBusy}
+        err={remindErr}
+        onRemind={() => void onRemind()}
+        onClose={() => setClosed(null)}
+      />
     </View>
   );
 }

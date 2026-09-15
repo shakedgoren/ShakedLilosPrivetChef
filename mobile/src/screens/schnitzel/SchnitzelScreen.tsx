@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
@@ -49,6 +50,8 @@ const MY_ORDER_LABEL = 'ההזמנה שלי';
 export function SchnitzelScreen() {
   const { go, goLogin, loggedIn } = useNav();
   const o = useSchnitzelOrder();
+  /* ⚠ ״להזמין שוב״ · הפריטים של ההזמנה הקודמת כבר מסומנים */
+  usePrefill('schn', o.loadDetails);
   /* רוחב הכרטיס נמדד · הנוסחה בקנבס היא (100% − רווח) ÷ 2 */
   const [gridW, setGridW] = useState(0);
   const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
