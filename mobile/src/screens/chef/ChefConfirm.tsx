@@ -20,7 +20,7 @@ import {
   quoteRecap,
   type ChefPackage,
 } from '../../data/chef';
-import { a, hues, surface } from '../../theme/tokens';
+import { a, hues, stopOf, surface } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
 
 /**
@@ -113,8 +113,8 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
             <Defs>
               {WASH.map((w, i) => (
                 <RadialGradient key={i} id={`cfw${i}`} cx={w.cx} cy={w.cy} rx={w.rx} ry={w.ry}>
-                  <Stop offset="0" stopColor={a(w.rgb, w.alpha)} />
-                  <Stop offset={w.fade} stopColor={a(w.rgb, 0)} />
+                  <Stop offset="0" {...stopOf(a(w.rgb, w.alpha))} />
+                  <Stop offset={w.fade} {...stopOf(a(w.rgb, 0))} />
                 </RadialGradient>
               ))}
             </Defs>

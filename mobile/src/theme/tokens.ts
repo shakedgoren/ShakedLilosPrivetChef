@@ -36,6 +36,26 @@ export type CategoryKey = keyof typeof hues;
 /** rgba מתוך שלישיית ה-rgb של גוון · a('123,92,188', 0.3) */
 export const a = (rgb: string, alpha: number) => `rgba(${rgb},${alpha})`;
 
+/**
+ * פירוק צבע לעצירת גרדיאנט · `stopColor` בנפרד מ-`stopOpacity`.
+ *
+ * ⚠ **קריטי במכשיר** · `react-native-svg` במכשיר **מתעלם מהאלפא
+ * שבתוך `stopColor`**: `rgba(176,216,190,0.05)` נצבע כירוק מלא.
+ * בדפדפן זה עובד, כי שם זה הופך לצבע CSS אמיתי — ולכן כל
+ * הזכוכית והשטיפה נראו נכון בדפדפן ומטורפות בטלפון: רקע ירוק
+ * אטום, כרטיס לבן שבלע את התמונה, ומלבן סגול במקום זוהר.
+ * נמדד מול צילום מסך מהאייפון של שקד, 15 בספטמבר 2026.
+ */
+export const stopOf = (color: string): { stopColor: string; stopOpacity: number } => {
+  const m = color.trim().match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/i);
+  if (!m) return { stopColor: color, stopOpacity: 1 };
+  const alpha = m[4] === undefined ? 1 : Number(m[4]);
+  return {
+    stopColor: `rgb(${m[1]},${m[2]},${m[3]})`,
+    stopOpacity: Number.isFinite(alpha) ? alpha : 1,
+  };
+};
+
 /** שלישיית rgb מתוך hex · '#43307A' → '67,48,122' */
 export const hexRgb = (hex: string): string => {
   const h = hex.replace('#', '');

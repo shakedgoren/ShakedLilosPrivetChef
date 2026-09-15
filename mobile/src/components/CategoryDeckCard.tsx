@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from './Photo';
-import { a, radius, surface } from '../theme/tokens';
+import { a, radius, stopOf, surface } from '../theme/tokens';
 import type { Category } from '../data/categories';
 
 /**
@@ -77,7 +77,7 @@ export function CategoryDeckCard({ item, active, onPress }: Props) {
         <Defs>
           <LinearGradient id={`${id}v`} x1="0" y1="0" x2="0" y2="1">
             {VEIL_STOPS.map((v) => (
-              <Stop key={v.offset} offset={v.offset} stopColor={a(VEIL, v.alpha)} />
+              <Stop key={v.offset} offset={v.offset} {...stopOf(a(VEIL, v.alpha))} />
             ))}
           </LinearGradient>
         </Defs>

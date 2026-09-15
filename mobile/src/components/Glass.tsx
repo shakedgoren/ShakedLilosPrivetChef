@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { stopOf } from '../theme/tokens';
 
 /**
  * מילוי הזכוכית · הגרדיאנט הלבן שמתחת לכל משטח.
@@ -24,7 +25,7 @@ export function GlassFill({ stops, radius }: FillProps) {
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0.5" y2="0.866">
           {stops.map((c, i) => (
-            <Stop key={c + i} offset={i * step} stopColor={c} />
+            <Stop key={c + i} offset={i * step} {...stopOf(c)} />
           ))}
         </LinearGradient>
       </Defs>

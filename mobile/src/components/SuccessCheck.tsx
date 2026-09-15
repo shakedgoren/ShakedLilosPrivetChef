@@ -2,7 +2,7 @@ import React from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { DRAW, EASE_OUT, EASE_POP, POP, RING, useReducedMotion } from '../theme/motion';
-import { a } from '../theme/tokens';
+import { a, stopOf } from '../theme/tokens';
 
 /**
  * וי ההצלחה · במסך הסיום של פינת השף.
@@ -93,8 +93,8 @@ export function SuccessCheck({ accent }: { accent: Accent }) {
         <Svg width="100%" height="100%">
           <Defs>
             <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" stopColor={a(accent.rgb, 0.42)} />
-              <Stop offset="0.78" stopColor={a(accent.rgb, 0)} />
+              <Stop offset="0" {...stopOf(a(accent.rgb, 0.42))} />
+              <Stop offset="0.78" {...stopOf(a(accent.rgb, 0))} />
             </RadialGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}h)`} />
@@ -119,12 +119,12 @@ export function SuccessCheck({ accent }: { accent: Accent }) {
           <Defs>
             <RadialGradient id={`${id}d`} cx="34%" cy="28%" rx="72%" ry="72%">
               {DISC_STOPS.map((v) => (
-                <Stop key={v.offset} offset={v.offset} stopColor={v.color} />
+                <Stop key={v.offset} offset={v.offset} {...stopOf(v.color)} />
               ))}
             </RadialGradient>
             <RadialGradient id={`${id}g`} cx="30%" cy="22%" rx="28%" ry="28%">
-              <Stop offset="0" stopColor="rgba(255,255,255,0.96)" />
-              <Stop offset="1" stopColor="rgba(255,255,255,0)" />
+              <Stop offset="0" {...stopOf('rgba(255,255,255,0.96)')} />
+              <Stop offset="1" {...stopOf('rgba(255,255,255,0)')} />
             </RadialGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" rx={BADGE / 2} fill={`url(#${id}d)`} />

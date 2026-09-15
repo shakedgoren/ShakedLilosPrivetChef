@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { a, hues, surface, type CategoryKey } from '../theme/tokens';
+import { a, hues, stopOf, surface, type CategoryKey } from '../theme/tokens';
 
 /**
  * שטיפת הרקע של המסך · הועתקה אחת לאחת מהקנבס.
@@ -44,14 +44,14 @@ export function PageWash({ categoryKey }: Props) {
         <Defs>
           {blobs.map((b, i) => (
             <RadialGradient key={i} id={`${id}b${i}`} cx={b.cx} cy={b.cy} rx={b.rx} ry={b.ry}>
-              <Stop offset="0" stopColor={a(b.rgb, b.alpha)} />
-              <Stop offset={i === 1 ? 0.66 : 0.62} stopColor={a(b.rgb, 0)} />
+              <Stop offset="0" {...stopOf(a(b.rgb, b.alpha))} />
+              <Stop offset={i === 1 ? 0.66 : 0.62} {...stopOf(a(b.rgb, 0))} />
             </RadialGradient>
           ))}
           {categoryKey && (
             <RadialGradient id={`${id}t`} cx={TINT.cx} cy={TINT.cy} rx={TINT.rx} ry={TINT.ry}>
-              <Stop offset="0" stopColor={a(hues[categoryKey].rgb, TINT.alpha)} />
-              <Stop offset={TINT.fade} stopColor={a(hues[categoryKey].rgb, 0)} />
+              <Stop offset="0" {...stopOf(a(hues[categoryKey].rgb, TINT.alpha))} />
+              <Stop offset={TINT.fade} {...stopOf(a(hues[categoryKey].rgb, 0))} />
             </RadialGradient>
           )}
         </Defs>

@@ -11,7 +11,7 @@ import {
   CTA_SHADOW,
   CTA_STOPS,
 } from '../theme/glass';
-import { a, radius } from '../theme/tokens';
+import { a, radius, stopOf } from '../theme/tokens';
 import { ArrowLeft } from '../icons';
 
 /**
@@ -42,9 +42,9 @@ export function PrimaryButton({ label, onPress }: Props) {
         <Svg width="100%" height="100%">
           <Defs>
             <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" stopColor={a(CTA_GLOW_RGB, CTA_GLOW_CORE_ALPHA)} />
-              <Stop offset="0.55" stopColor={a(CTA_GLOW_RGB, CTA_GLOW_MID_ALPHA)} />
-              <Stop offset="0.88" stopColor={a(CTA_GLOW_RGB, 0)} />
+              <Stop offset="0" {...stopOf(a(CTA_GLOW_RGB, CTA_GLOW_CORE_ALPHA))} />
+              <Stop offset="0.55" {...stopOf(a(CTA_GLOW_RGB, CTA_GLOW_MID_ALPHA))} />
+              <Stop offset="0.88" {...stopOf(a(CTA_GLOW_RGB, 0))} />
             </RadialGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}h)`} />
@@ -57,7 +57,7 @@ export function PrimaryButton({ label, onPress }: Props) {
             {/* 104 מעלות ב-CSS · הווקטור (sin104, ‎-cos104) = (0.97, 0.24) */}
             <LinearGradient id={id} x1="0" y1="0" x2="0.97" y2="0.24">
               {CTA_STOPS.map((c, i) => (
-                <Stop key={c + i} offset={i === 1 ? 0.58 : i * step} stopColor={c} />
+                <Stop key={c + i} offset={i === 1 ? 0.58 : i * step} {...stopOf(c)} />
               ))}
             </LinearGradient>
           </Defs>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { a, radius, space, surface, type } from '../theme/tokens';
+import { a, radius, space, stopOf, surface, type } from '../theme/tokens';
 import { cardEdge, cardOrbShadow, cardShadow } from '../theme/glass';
 import type { Category } from '../data/categories';
 import { Orb } from './Orb';
@@ -70,13 +70,13 @@ export function CategoryCard({ item, active, dots, onPress }: Props) {
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
         <Defs>
           <LinearGradient id={`${id}g`} x1="0" y1="0" x2="0.5" y2="0.866">
-            <Stop offset="0" stopColor="rgba(255,255,255,0.5)" />
-            <Stop offset="0.55" stopColor="rgba(255,255,255,0.2)" />
-            <Stop offset="1" stopColor="rgba(255,255,255,0.34)" />
+            <Stop offset="0" {...stopOf('rgba(255,255,255,0.5)')} />
+            <Stop offset="0.55" {...stopOf('rgba(255,255,255,0.2)')} />
+            <Stop offset="1" {...stopOf('rgba(255,255,255,0.34)')} />
           </LinearGradient>
           <RadialGradient id={`${id}t`} cx="84%" cy="12%" r="110%">
-            <Stop offset="0" stopColor={a(item.rgb, 0.24)} />
-            <Stop offset="0.68" stopColor={a(item.rgb, 0)} />
+            <Stop offset="0" {...stopOf(a(item.rgb, 0.24))} />
+            <Stop offset="0.68" {...stopOf(a(item.rgb, 0))} />
           </RadialGradient>
         </Defs>
         <Rect x="0" y="0" width="100%" height="100%" rx={radius.card} fill={`url(#${id}g)`} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { a } from '../theme/tokens';
+import { a, stopOf } from '../theme/tokens';
 import { HALO_BLUR, HALO_INSET } from '../theme/glass';
 
 /**
@@ -52,9 +52,9 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
           <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
             <Defs>
               <RadialGradient id={`${id}h`} cx="50%" cy="50%" r="50%">
-                <Stop offset="0" stopColor={a(rgb, halo)} />
-                <Stop offset="0.54" stopColor={a(rgb, halo * 0.33)} />
-                <Stop offset="0.8" stopColor={a(rgb, 0)} />
+                <Stop offset="0" {...stopOf(a(rgb, halo))} />
+                <Stop offset="0.54" {...stopOf(a(rgb, halo * 0.33))} />
+                <Stop offset="0.8" {...stopOf(a(rgb, 0))} />
               </RadialGradient>
             </Defs>
             <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}h)`} />
@@ -70,15 +70,15 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
                 זה שנראה על המסך כ״נקודה״ — מדוד בדפדפן ב-14 בספטמבר:
                 נטרול הצל הלבן הפנימי לא הסיר אותה, נטרול העוצר הזה כן. */}
             <RadialGradient id={`${id}b`} cx="34%" cy="28%" r="78%">
-              <Stop offset="0" stopColor={spark ? '#FFFFFF' : 'rgba(255,255,255,0)'} />
-              <Stop offset="0.4" stopColor={a(rgb, tint * 0.27)} />
-              <Stop offset="1" stopColor={a(rgb, tint)} />
+              <Stop offset="0" {...stopOf(spark ? '#FFFFFF' : 'rgba(255,255,255,0)')} />
+              <Stop offset="0.4" {...stopOf(a(rgb, tint * 0.27))} />
+              <Stop offset="1" {...stopOf(a(rgb, tint))} />
             </RadialGradient>
             {/* הברק העליון · דועך במהירות · זו ״הנקודה״ שנראית על הבועה */}
             {spark && (
               <RadialGradient id={`${id}s`} cx="30%" cy="22%" r="30%">
-                <Stop offset="0" stopColor="rgba(255,255,255,0.96)" />
-                <Stop offset="1" stopColor="rgba(255,255,255,0)" />
+                <Stop offset="0" {...stopOf('rgba(255,255,255,0.96)')} />
+                <Stop offset="1" {...stopOf('rgba(255,255,255,0)')} />
               </RadialGradient>
             )}
           </Defs>
