@@ -1,9 +1,18 @@
 import React from 'react';
-import { Animated, Easing, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Confetti } from '../../components/Confetti';
-import { ContinueButton } from '../../components/ContinueButton';
 import { GlassPanel } from '../../components/Glass';
+import { Photo } from '../../components/Photo';
 import { Check } from '../../icons';
 import {
   quoteLines,
@@ -68,6 +77,11 @@ const HEAD_INK = '#A69EAE';
 const RECAP_KEY_W = 92;
 
 const ACCENT = hues.chef;
+
+/* לוגו החזרה לדף הבית · באותו גובה של חץ החזרה בשאר המסכים */
+const LOGO = 46;
+const LOGO_TOP = 30;
+const LOGO_SIDE = 18;
 
 /** ⚠ **טקסט שכתבתי, לא מהקנבס** · שקד ביקשה הערה שניצור קשר לאישור ולמקדמה */
 const DEPOSIT_NOTE = 'ניצור איתך קשר לאישור התאריך ולתיאום המקדמה.';
@@ -236,12 +250,12 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
           </GlassPanel>
         </ScrollView>
 
-        {/* ⚠ בקנבס זו גלולת חול עם גרדיאנט · באפליקציה זה כפתור
-            ״המשך״ המשותף ששקד ביקשה בכל מסכי ההזמנה, כמו במסך
-            האישור של שאר הקטגוריות. */}
-        <View style={s.foot}>
-          <ContinueButton onPress={onHome} accent={ACCENT} label="חזרה לדף הבית" />
-        </View>
+        {/* ⚠ **שונה מהקנבס** · שם יש בתחתית גלולת ״חזרה לדף הבית״.
+            שקד ביקשה להוריד אותה, ושהלוגו יישב בפינה הימנית העליונה
+            ולחיצה עליו תחזיר לדף הבית. */}
+        <Pressable onPress={onHome} style={s.logo} hitSlop={8}>
+          <Photo name="logo" style={s.logoShot} zoom={false} resizeMode="contain" />
+        </Pressable>
       </Animated.View>
     </Modal>
   );
@@ -250,7 +264,7 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground, overflow: 'hidden' },
   /* padding: 44px 20px 0 בקנבס */
-  body: { paddingTop: 44, paddingHorizontal: 20, paddingBottom: 24, alignItems: 'center' },
+  body: { paddingTop: 44, paddingHorizontal: 20, paddingBottom: 30, alignItems: 'center' },
 
   badge: { width: BADGE, height: BADGE, flexShrink: 0 },
   halo: { position: 'absolute', top: -HALO, right: -HALO, bottom: -HALO, left: -HALO },
@@ -305,6 +319,14 @@ const s = StyleSheet.create({
 
   deposit: { fontSize: 12.5, fontWeight: '300', color: surface.muted, lineHeight: 18.75 },
 
-  /* padding: 0 20px 30px בקנבס */
-  foot: { flexShrink: 0, paddingHorizontal: 20, paddingBottom: 30, alignItems: 'center' },
+  /* הלוגו · באותו גובה של חץ החזרה בשאר המסכים */
+  logo: {
+    position: 'absolute',
+    top: LOGO_TOP,
+    right: LOGO_SIDE,
+    width: LOGO,
+    height: LOGO,
+    zIndex: 2,
+  },
+  logoShot: { width: LOGO, height: LOGO, borderRadius: LOGO / 2 },
 });

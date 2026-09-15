@@ -40,11 +40,22 @@ type Api = {
  * `grid` → `cols || (n <= 3 ? n : 2)` · `multi` → `cols || 3`
  * `tiers` → תמיד 3 · `pair` → `cols || 2` · `cards` → `one ? 1 : 2`
  */
+/**
+ * ⚠ **שונה מהקנבס** · שם שדרוגי הטאבון יושבים שניים בשורה. שקד
+ * ביקשה שכל אחד מארבעתם יהיה בשורה משלו, כדי שהתמונה תיכנס בגודל
+ * מתאים. שדרוגי ארוחת השף כבר מסומנים `one` בקנבס עצמו.
+ */
+const ONE_PER_ROW = ['textras'];
+
+/* גובה מזערי לכרטיס רוטב · 9+17+2+16+2+16+9 */
+const SAUCE_MIN_H = 71;
+const isOnePerRow = (s: ChefSection) => !!s.one || ONE_PER_ROW.includes(String(s.id));
+
 const colsFor = (s: ChefSection, n: number): number => {
   if (s.cols) return +s.cols;
   if (s.kind === 'tiers') return 3;
   if (s.kind === 'pair') return 2;
-  if (s.kind === 'cards') return s.one ? 1 : 2;
+  if (s.kind === 'cards') return isOnePerRow(s) ? 1 : 2;
   if (s.kind === 'multi') return 3;
   /* grid · עד שלוש אפשרויות בשורה אחת, מעבר לזה שתי עמודות */
   return n <= 3 ? n : 2;
@@ -273,7 +284,7 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
       const opts = (s.options ?? []) as { n: string; d?: string; p?: string; add?: string }[];
       const multi = !!s.multi;
       const cur: string[] = multi ? api.picks[s.id] || [] : [];
-      const one = !!s.one;
+      const one = isOnePerRow(s);
       return (
         <OptionGrid cols={colsFor(s, opts.length)} gap={CARD_GAP}>
           {opts.map((o) => (
@@ -328,7 +339,16 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
           <Pressable
             key={n}
             onPress={() => (isSauce ? api.pickSauce(s, n) : api.toggle(s.id, n, cap, s.note))}
-            style={[st.grow, asRows ? st.card : st.chip, on && st.on]}
+            style={[
+              st.grow,
+              asRows ? st.card : st.chip,
+              /* ⚠ שורת הצורה/השדרוג מוסיפה שורה שלישית · בלי גובה
+                 מזערי הכרטיס נשאר בגובה של שכניו בעלי שתי השורות
+                 והשורה השלישית נחתכה. נמדד: הטקסט נגמר ב-388
+                 והכרטיס ב-382.8. */
+              isSauce && st.sauceCard,
+              on && st.on,
+            ]}
           >
             <Text style={[asRows ? st.cardName : st.chipText, on && st.onText]}>{n}</Text>
             {d ? <Text style={st.cardDesc}>{d}</Text> : null}
@@ -475,6 +495,12 @@ const st = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
+  /**
+   * גובה מזערי לכרטיס רוטב · ריפוד 9+9, שם 17, תיאור 16, שורת
+   * הצורה 16 ושני מרווחים של 2 — יחד 71. כל כרטיסי הרטבים באותו
+   * גובה, ולכן הבחירה כבר לא מקפיצה את הרשת.
+   */
+  sauceCard: { minHeight: SAUCE_MIN_H },
   cardName: { fontSize: 13, fontWeight: '400', lineHeight: 17, color: surface.ink, textAlign: 'center' },
   cardDesc: { fontSize: 11.5, fontWeight: '300', color: surface.muted, lineHeight: 16, textAlign: 'center' },
   /* הצורה והשדרוג שנבחרו לרוטב · 11.5/600 בגוון השף, כמו בקנבס */

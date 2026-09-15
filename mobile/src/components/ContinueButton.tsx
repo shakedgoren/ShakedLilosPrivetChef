@@ -24,6 +24,12 @@ const KNOB_INSET = 4;
 const ARROW = 13;
 /** הריפוד בקצה הטקסט · מה שקובע את רוחב הכפתור */
 const PAD_END = 36;
+/**
+ * הרווח בין הידית עם החץ לבין הטקסט.
+ * ⚠ 4 → 16 · שקד ראתה את זה ב״בחר מסלול״ וביקשה את אותו רווח
+ * בכל כפתורי ״המשך״ באפליקציה, כדי שהמילים לא יהיו צמודות לחץ.
+ */
+const LABEL_GAP = 16;
 
 /** מילוי הזכוכית · שקוף מספיק כדי שהשטיפה מאחור תעבור */
 const FILL_ALPHA = 0.14;
@@ -84,7 +90,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     /* מקום לידית משמאל, וריפוד מימין · שקד ביקשה ״מעט רוחב״
        פעמיים: 14 → 24, ואז 24 → 36. */
-    paddingLeft: KNOB_INSET + KNOB + 4,
+    paddingLeft: KNOB_INSET + KNOB + LABEL_GAP,
     paddingRight: PAD_END,
   },
   label: { fontSize: 15, fontWeight: '600' },

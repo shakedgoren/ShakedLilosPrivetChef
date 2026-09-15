@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CategoryHeader } from '../../components/CategoryHeader';
@@ -31,8 +31,12 @@ import { PastaPopup } from './PastaPopup';
 
 const ACCENT = hues.chef;
 
-/** הריפודים עד הקרוסלה · 18 מהעמוד ועוד 12 מהכרטיס, משני הצדדים */
-const CARO_INSET = (space.lg + 12) * 2;
+/* הדף הראשי של פינת השף · שוליים צרים ופחות רווח מתחת לכותרת */
+const MENU_SIDE = 12;
+const MENU_TOP = 70;
+
+/** הריפודים עד הקרוסלה · שוליי העמוד ועוד 12 מהכרטיס, משני הצדדים */
+const CARO_INSET = (MENU_SIDE + 12) * 2;
 
 /** ⚠ אינם מהקנבס · שלושת המרווחים שביקשה שקד בפינת השף */
 /* כותרת↔תיאור · 5 בקנבס, צמוד יותר לבקשתה */
@@ -55,6 +59,14 @@ export function ChefScreen() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  /**
+   * ⚠ מעבר שלב מחזיר את הגלילה לראש העמוד · בלי זה, מי שעבר שלב
+   * מתחתית העמוד נחת באמצע העמוד הבא. בקשה של שקד.
+   */
+  const body = useRef<ScrollView>(null);
+  useEffect(() => {
+    body.current?.scrollTo({ y: 0, animated: false });
+  }, [o.page, o.current]);
 
   /**
    * ⚠ **אין כאן זרימת מסירה** · עד עכשיו ״לבקשת הצעה״ פתחה את
@@ -90,7 +102,7 @@ export function ChefScreen() {
   if (!o.pkg) {
     const chosen = o.packages[tab];
     return (
-      <View style={s.page}>
+      <View style={[s.page, s.pageMenu]}>
         <CategoryHeader title={CHEF_MENU_TITLE} />
         <ScrollView
           contentContainerStyle={[s.list, loggedIn && s.scrollPadNav]}
@@ -115,8 +127,16 @@ export function ChefScreen() {
             ))}
           </View>
 
-          {/* כרטיס המסלול · קרוסלה ואחריה שורות הפירוט */}
+          {/* כרטיס המסלול · הכפתור, אחריו הקרוסלה ואז שורות הפירוט */}
           <View style={s.pkgCard}>
+            {/* ⚠ הכפתור עלה מעל הקרוסלה ולבש את עיצוב ׮המשךׯ ·
+                שתי בקשות של שקד. קודם הוא היה גלולה שטוחה בתחתית. */}
+            <ContinueButton
+              onPress={() => o.openPackage(tab)}
+              accent={ACCENT}
+              label={PICK_CTA}
+              style={s.pickCta}
+            />
             <PhotoStrip
               names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
               height={CARO.height}
@@ -138,10 +158,6 @@ export function ChefScreen() {
                 </Text>
               ))}
             </View>
-
-            <Pressable onPress={() => o.openPackage(tab)} style={s.pickCta}>
-              <Text style={s.pickCtaText}>{PICK_CTA}</Text>
-            </Pressable>
           </View>
         </ScrollView>
       </View>
@@ -164,7 +180,7 @@ export function ChefScreen() {
         <View style={[s.fill, { width: `${((o.page + 1) / o.pkg.pages.length) * 100}%` }]} />
       </View>
 
-      <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={body} contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
         {/* ⚠ אין כאן קרוסלה ואין תיאור · בקנבס ענף `isOpts` מתחיל
             ישר בסעיפים, ושקד ביקשה את זה מפורשות. הקרוסלה והתיאור
             חיים רק בעמוד הראשי, לפני בחירת המסלול. */}
@@ -267,18 +283,17 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.8)',
   },
   pkgLines: { gap: 3, paddingHorizontal: 4 },
-  pickCta: {
-    alignSelf: 'center',
-    height: 44,
-    paddingHorizontal: 26,
-    borderRadius: radius.pill,
-    backgroundColor: a(ACCENT.rgb, 0.14),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickCtaText: { fontSize: 14.5, fontWeight: '600', color: ACCENT.deep },
+  /* מיקום בלבד · העיצוב, כולל הרווח מהחץ, מגיע מ-`ContinueButton` */
+  pickCta: { alignSelf: 'center', marginBottom: 2 },
 
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
+  /**
+   * ⚠ שתי בקשות של שקד לדף הראשי של פינת השף:
+   * שוליים צרים יותר (18 ← 12), ופחות רווח מתחת לכותרת —
+   * הכותרת מרחפת ונגמרת ב-56, ו-88 השאירו 32.5 ריקים.
+   * 70 משאיר 14.5, בדיוק הרווח שבשאר המסכים.
+   */
+  pageMenu: { paddingHorizontal: MENU_SIDE, paddingTop: MENU_TOP },
   back: {
     position: 'absolute',
     top: 30,

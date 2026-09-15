@@ -1,5 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { Photo } from './Photo';
 import { ChevronLeft, ChevronRight } from '../icons';
 import { IS_RTL } from '../theme/rtl';
@@ -109,14 +116,17 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
            * ⚠ `zoom={false}` · שקד ביקשה שבקרוסלת פינת השף לא תהיה
            * הגדלה בלחיצה, ושהשם יופיע על התמונה עצמה במקום.
            */
-          <View key={name} style={{ width: shotW }}>
+          /* ⚠ `overflow: hidden` ופינה · בלעדיהם המסגרת עוגלה
+             והתמונה עצמה נשארה מרובעת בפינות */
+          <View key={name} style={[s.tile, { width: shotW }]}>
             <Photo
               name={name}
               rgb={rgb}
               zoom={false}
               style={[s.shot, { height, width: shotW, borderRadius: radius.tile }]}
             />
-            <PhotoCaption text={photoTitle(name)} size={CAPTION} />
+            {/* ⚠ הכיתוב בראש התמונה · בקשה של שקד */}
+            <PhotoCaption text={photoTitle(name)} size={CAPTION} align="top" />
           </View>
         ))}
       </ScrollView>
@@ -126,14 +136,14 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
         <>
           <Pressable
             onPress={() => jump(iRef.current - 1)}
-            style={[s.arrow, s.arrowRight, { top: height / 2 - ARROW / 2 }]}
+            style={[s.arrow, ARROW_BLUR, s.arrowRight, { top: height / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronRight size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
           </Pressable>
           <Pressable
             onPress={() => jump(iRef.current + 1)}
-            style={[s.arrow, s.arrowLeft, { top: height / 2 - ARROW / 2 }]}
+            style={[s.arrow, ARROW_BLUR, s.arrowLeft, { top: height / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
             <ChevronLeft size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
@@ -158,18 +168,33 @@ export function PhotoStrip({ names, height, tileWidth, rgb, inset = 0 }: Props) 
 
 /** גוון החץ · הכתום הכהה של השף, כמו בקנבס */
 const ARROW_INK = '#7A3D18';
-/** ⚠ שקוף למחצה · בקשה של שקד, בקנבס הכפתור אטום (0.92) */
-const ARROW_BG = 'rgba(255,255,255,0.55)';
+/**
+ * ⚠ **ליקוויד גלאס** · בקשה של שקד. בקנבס הכפתור אטום (0.92),
+ * וכאן הוא זכוכית: מילוי לבן דליל, שפה לבנה פנימית, צל רך —
+ * ומעליהם טשטוש של מה שמאחור.
+ * ⚠ ל-React Native אין `backdrop-filter` · ההשמה נוחתת ב-CSS
+ * ב-React Native Web. במכשיר יישארו המילוי, השפה והצל.
+ */
+const ARROW_BG = 'rgba(255,255,255,0.42)';
+const ARROW_GLASS =
+  'inset 0 0 0 1px rgba(255,255,255,0.65)' +
+  ', inset 0 1.5px 0 rgba(255,255,255,0.92)' +
+  ', 0 6px 16px -6px rgba(20,16,12,0.5)';
+const ARROW_BLUR = {
+  backdropFilter: 'blur(12px) saturate(160%)',
+  WebkitBackdropFilter: 'blur(12px) saturate(160%)',
+} as unknown as ViewStyle;
 
 const s = StyleSheet.create({
   gap: { gap: TILE_GAP },
+  tile: { borderRadius: radius.tile, overflow: 'hidden' },
   arrow: {
     position: 'absolute',
     width: ARROW,
     height: ARROW,
     borderRadius: ARROW / 2,
     backgroundColor: ARROW_BG,
-    boxShadow: '0 3px 9px -4px rgba(20,16,12,0.55)',
+    boxShadow: ARROW_GLASS,
     alignItems: 'center',
     justifyContent: 'center',
   },
