@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { QUOTA_STEP, REVENUE } from '../../data/adminHome';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DONUT, QUOTA_STEP, REVENUE } from '../../data/adminHome';
 import { CATS, DAY_NAMES, MONTHS, type DayCatKey } from '../../data/adminDays';
 import { upcomingSale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
@@ -205,6 +205,22 @@ export function useAdminHome() {
     [sale.date, live, reload],
   );
 
+  /**
+   * פילוח הקטגוריות לתצוגה.
+   *
+   * ⚠ **פירות בחוץ, שף בפנים** · מגשי הפירות נעשים אצל מיכל גורן
+   * ואינם ההכנסה של שקד; פינת השף כן (בקשה מפורשת, 15 בספטמבר
+   * 2026). כשאין שרת נופלים למקרא של הקנבס — שגם ממנו מוסרים
+   * הפירות, כי `data/adminHome.ts` נוצר אוטומטית ואין לערוך אותו.
+   */
+  const shares = useMemo(() => {
+    const rows = donut
+      ? donut.shares.filter((x) => x.name !== 'פירות')
+      : DONUT.legend.filter((l) => l.name !== 'פירות').map((l) => ({ name: l.name, color: l.color, v: l.pct }));
+    const sum = rows.reduce((t, r) => t + r.v, 0) || 1;
+    return rows.map((r) => ({ name: r.name, color: r.color, pct: Math.round((r.v / sum) * 100) }));
+  }, [donut]);
+
   const sold = sale.dishes.reduce((s, d) => s + d.sold, 0);
   const quota = sale.dishes.reduce((s, d) => s + d.quota, 0);
 
@@ -226,5 +242,6 @@ export function useAdminHome() {
     badges,
     month,
     donut,
+    shares,
   };
 }

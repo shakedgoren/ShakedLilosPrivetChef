@@ -169,8 +169,9 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
 const R = 29;
 const C = 2 * Math.PI * R;
 
-export function CategoryDonut() {
-  const parts = DONUT.legend.filter((l) => l.name !== 'פירות');
+export type Share = { name: string; color: string; pct: number };
+
+export function CategoryDonut({ parts }: { parts: Share[] }) {
   const sum = parts.reduce((t, l) => t + l.pct, 0) || 1;
   let at = 0;
 

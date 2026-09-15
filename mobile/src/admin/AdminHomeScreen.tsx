@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
 import { NewOrderSheet } from './NewOrderSheet';
+import { LogoutConfirm } from '../components/LogoutConfirm';
 import { SentNotice } from './SentNotice';
 import { useAdminOrders } from './useAdminOrders';
 import { useNav, type Screen } from '../navigation/store';
@@ -13,7 +14,7 @@ import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { NIGHT, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
-import { Plus } from '../icons';
+import { LogOut, Plus } from '../icons';
 
 /** כל אריח מצביע על מסך ניהול · אותה מפה שבקנבס, בשמות של הניווט */
 const TILE_ROUTES: Record<TileKey, Screen> = {
@@ -37,10 +38,11 @@ const shortDate = (iso: string) =>
 const NEW_ORDER_LABEL = 'הזמנה חדשה';
 
 export function AdminHomeScreen() {
-  const { go } = useNav();
+  const { go, signOut } = useNav();
   const home = useAdminHome();
   /* אותה חלונית בדיוק של מסך ההזמנות · ההזמנה הידנית חיה שם */
   const admin = useAdminOrders();
+  const [bye, setBye] = React.useState(false);
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
@@ -59,6 +61,20 @@ export function AdminHomeScreen() {
             <Plus size={13} color="#43307A" strokeWidth={2.8} />
           </View>
           <Text style={s.newText}>{NEW_ORDER_LABEL}</Text>
+        </Pressable>
+
+        {/* ⚠ **התנתקות מהניהול** · בקשה של שקד (15 בספטמבר 2026).
+            כפתור ההתנתקות הכללי מוחרג ממסכי הניהול (הפינה הייתה
+            תפוסה ב״לחנות״ ובלעה אותו), ולכן הוא יושב כאן בתוך
+            הכותרת. העיגול 38×38 הוא בדיוק מידת כפתור המשתמש
+            שבפינה הזו בקנבס. */}
+        <Pressable
+          onPress={() => setBye(true)}
+          accessibilityLabel="התנתקות"
+          style={s.exit}
+          hitSlop={8}
+        >
+          <LogOut size={17} color="#6E6478" strokeWidth={1.9} />
         </Pressable>
       </View>
 
@@ -157,12 +173,11 @@ export function AdminHomeScreen() {
         <GlassCard style={s.donutCard}>
           <Text style={s.cardTitle}>{DONUT.title}</Text>
           <View style={s.donutBody}>
-            <CategoryDonut />
+            <CategoryDonut parts={home.shares} />
             <View style={s.legend}>
-              {/* ⚠ **בלי פירות** · אינם הכנסה של שקד (מיכל גורן
-                  מכינה אותם), ולכן ירדו מהלפי-קטגוריה לבקשתה.
-                  `DONUT` מגיע מהקובץ המחולץ ואין לערוך אותו ביד. */}
-              {DONUT.legend.filter((l) => l.name !== 'פירות').map((l) => (
+              {/* ⚠ **בלי פירות, עם שף** · מגשי הפירות נעשים אצל
+                  מיכל גורן ואינם ההכנסה של שקד; פינת השף כן. */}
+              {home.shares.map((l) => (
                 <View key={l.name} style={s.legendRow}>
                   <View style={[s.legendDot, { backgroundColor: l.color }]} />
                   <Text style={s.legendName}>{l.name}</Text>
@@ -203,6 +218,8 @@ export function AdminHomeScreen() {
 
       {admin.newOpen ? <NewOrderSheet admin={admin} /> : null}
 
+      <LogoutConfirm open={bye} onCancel={() => setBye(false)} onConfirm={() => { setBye(false); signOut(); }} />
+
       {/* ⚠ אישור שהודעת הוואטסאפ יצאה ללקוח · בקשה של שקד */}
       <SentNotice who={admin.notified} onClose={admin.clearNotified} />
     </ScrollView>
@@ -237,6 +254,17 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   newText: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
+  /* כפתור ההתנתקות · אותו עיגול 38 שיושב בפינה הזו בקנבס */
+  exit: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(130,112,162,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   row: { flexDirection: 'row', gap: 12, height: 144 },
   statRow: { flexDirection: 'row', gap: 12, height: 62 },

@@ -430,6 +430,15 @@ if (hist.status !== 200) fail('shop history', hist);
 const lists = (hist.body as { lists: { id: string }[] }).lists;
 if (!lists.some((l) => l.id === cb.closed.id)) fail('closed list missing from history', lists);
 
+/**
+ * ⚠ פילוח הקטגוריות · **בלי פירות ועם שף** · מגשי הפירות נעשים
+ * אצל מיכל גורן ואינם ההכנסה של שקד; פינת השף כן (15 בספטמבר 2026).
+ */
+const donut = (summary.body as { donut: { shares: { name: string }[] } }).donut;
+const names = donut.shares.map((x) => x.name);
+if (names.includes('פירות')) fail('fruit still in the category split', names);
+if (!names.includes('שף וטאבון')) fail('chef missing from the category split', names);
+
 /* ארבעת הטווחים · כל אחד מחזיר תווית, סכום ונקודות */
 for (const r of ['day', 'week', 'month', 'half']) {
   const hit = await api(`/admin/revenue?range=${r}`, {
