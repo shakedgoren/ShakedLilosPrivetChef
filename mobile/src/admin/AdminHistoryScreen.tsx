@@ -133,10 +133,10 @@ export function AdminHistoryScreen() {
             בשורת הצ׳יפים, או את הכול כשנבחר ״הכל״. */}
         {rows.length > 0 ? (
           <View style={s.catTotal}>
-            <Text style={s.catTotalK}>
-              {`סה״כ ${filter === 'all' ? 'הכל' : HIST_AREAS.find((a) => a.id === filter)?.n ?? ''}`}
-            </Text>
-            <Text style={s.catTotalCount}>{count(rows.length, 'קנייה אחת', 'קניות')}</Text>
+            {/* ⚠ **רק ״סה״כ״ והסכום** · שקד ביקשה (15 בספטמבר 2026)
+                למחוק את שם הקטגוריה ואת מניין הקניות מהשורה הזו —
+                שניהם כבר כתובים מעליה. */}
+            <Text style={s.catTotalK}>סה״כ</Text>
             <Text style={s.catTotalV}>{`${nf(total)} ₪`}</Text>
           </View>
         ) : null}
@@ -183,8 +183,7 @@ const s = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(123,92,188,0.07)',
   },
-  catTotalK: { fontSize: 13, fontWeight: '600', color: '#43307A' },
-  catTotalCount: { flex: 1, fontSize: 11, fontWeight: '300', color: surface.faint },
+  catTotalK: { flex: 1, fontSize: 13, fontWeight: '600', color: '#43307A' },
   catTotalV: { fontSize: 15, fontWeight: '700', color: '#43307A', fontVariant: ['tabular-nums'] },
   total: { fontSize: 13, fontWeight: '600', color: '#43307A', marginTop: 4 },
 });
