@@ -10,6 +10,7 @@ import {
   type TileKey,
 } from '../data/adminHome';
 import { NewOrderSheet } from './NewOrderSheet';
+import { SentNotice } from './SentNotice';
 import { useAdminOrders } from './useAdminOrders';
 import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
@@ -166,6 +167,9 @@ export function AdminHomeScreen() {
       <TileRail onOpen={(key) => go(TILE_ROUTES[key])} badges={home.badges} />
 
       {admin.newOpen ? <NewOrderSheet admin={admin} /> : null}
+
+      {/* ⚠ אישור שהודעת הוואטסאפ יצאה ללקוח · בקשה של שקד */}
+      <SentNotice who={admin.notified} onClose={admin.clearNotified} />
     </ScrollView>
   );
 }

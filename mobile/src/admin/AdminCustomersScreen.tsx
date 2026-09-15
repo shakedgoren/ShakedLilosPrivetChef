@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { count as plural } from '../text/counts';
 import {
@@ -22,7 +22,11 @@ import {
 } from '../data/adminCustomers';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
+import { Clock, PhoneCall, Plus } from '../icons';
 import { Sheet } from './ui/Sheet';
+import { NewOrderSheet } from './NewOrderSheet';
+import { SentNotice } from './SentNotice';
+import { useAdminOrders } from './useAdminOrders';
 import { apiEnabled } from '../api/config';
 import { adminListCustomers, adminPatchCustomer } from '../api/admin';
 import type { AdminCustomer } from '../api/types';
@@ -60,8 +64,41 @@ const fromDemo = (p: DemoPerson): Row => ({
   history: [],
 });
 
+/**
+ * ⚠ **לשון זכר** · שקד ביקשה (15 בספטמבר 2026) ״קבועים״ ו״חדשים״
+ * במקום ״קבועות״ ו״חדשות״. המילים בקנבס הן בלשון נקבה, והקובץ
+ * `data/adminCustomers.ts` נוצר אוטומטית ואין לערוך אותו ביד —
+ * ולכן הדריסה יושבת כאן.
+ */
+const FILTER_LABEL: Record<string, string> = {
+  reg: 'קבועים',
+  new: 'חדשים',
+};
+
+/** חיוג אמיתי · פותח את מסך החיוג של המכשיר עם המספר של הלקוח */
+function callPhone(phone: string) {
+  const digits = String(phone ?? '').replace(/[^\d+]/g, '');
+  if (!digits) return;
+  void Linking.openURL(`tel:${digits}`).catch(() => undefined);
+}
+
 export function AdminCustomersScreen() {
-  const { user, go } = useNav();
+  const { user } = useNav();
+  /* אותה חלונית הזמנה ידנית של מסך ההזמנות · נפתחת עם הלקוח בפנים */
+  const orders = useAdminOrders();
+
+  /**
+   * פתיחת הזמנה ידנית ללקוח מסוים.
+   * ⚠ קודם הכפתור רק קפץ למסך ההזמנות · שקד הייתה צריכה להקליד
+   * שוב את השם ואת הטלפון של מי שהיא בדיוק פתחה.
+   */
+  const startOrder = useCallback(
+    (p: { name: string; phone: string; addr: string }) => {
+      orders.pickPerson({ name: p.name, phone: p.phone, addr: p.addr });
+      orders.openNew();
+    },
+    [orders],
+  );
   const live = apiEnabled && user?.role === 'admin';
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<'all' | 'reg' | 'new'>('all');
@@ -130,7 +167,7 @@ export function AdminCustomersScreen() {
         {FILTERS.map((f) => (
           <Chip
             key={f.id}
-            label={f.n}
+            label={FILTER_LABEL[f.id] ?? f.n}
             on={filter === f.id}
             tint={PLUM}
             style={s.tab}
@@ -173,28 +210,19 @@ export function AdminCustomersScreen() {
                 </Pressable>
                 {isOpen ? (
                   <View style={s.more}>
+                    {/* ⚠ **ירדו ״ממוצע להזמנה״ ורצועת הקטגוריות** ·
+                        בקשה של שקד (15 בספטמבר 2026). נשארו טלפון,
+                        כתובת, מתי בוצעה ההזמנה האחרונה, והערות. */}
                     {[
                       { k: 'טלפון', v: p.phone },
                       { k: 'כתובת', v: p.addr },
                       { k: 'הזמנה אחרונה', v: p.last },
-                      { k: 'ממוצע להזמנה', v: p.orders ? `${nf(p.spent / p.orders)} ₪` : '—' },
                     ].map((r) => (
                       <View key={r.k} style={s.row}>
                         <Text style={s.rowK}>{r.k}</Text>
                         <Text style={s.rowV}>{r.v}</Text>
                       </View>
                     ))}
-                    <View style={s.likes}>
-                      {p.likes.map((k) => {
-                        const h = PEOPLE_HUES[k as AdminCatKey];
-                        if (!h) return null;
-                        return (
-                          <View key={k} style={[s.like, { backgroundColor: `rgba(${h.rgb},0.12)` }]}>
-                            <Text style={[s.likeText, { color: h.deep }]}>{h.n}</Text>
-                          </View>
-                        );
-                      })}
-                    </View>
                     <Text style={s.noteLab}>{NOTE_LABEL}</Text>
                     <TextInput
                       value={p.note}
@@ -203,14 +231,23 @@ export function AdminCustomersScreen() {
                       placeholderTextColor="#B3ABBD"
                       style={s.noteInput}
                     />
+                    {/* ⚠ אייקון קטן לצד כל פעולה · כמו בקנבס.
+                        ⚠ ״חיוג״ באמת מחייג עכשיו (`tel:`) — קודם זו
+                        הייתה תיבה סטטית שלא הגיבה ללחיצה.
+                        ⚠ ״הזמנה ידנית״ פותחת את החלונית עם שם
+                        הלקוחה והטלפון כבר בפנים, במקום לקפוץ למסך
+                        ההזמנות ולהשאיר את שקד להקליד הכול מחדש. */}
                     <View style={s.acts}>
                       <Pressable onPress={() => setHist(p)} style={s.act}>
+                        <Clock size={13} color="#6E6478" strokeWidth={2} />
                         <Text style={s.actText}>{HIST_LABEL}</Text>
                       </Pressable>
-                      <View style={s.act}>
+                      <Pressable onPress={() => callPhone(p.phone)} style={s.act}>
+                        <PhoneCall size={13} color="#6E6478" strokeWidth={2} />
                         <Text style={s.actText}>{CALL_LABEL}</Text>
-                      </View>
-                      <Pressable onPress={() => go('adminOrders')} style={[s.act, s.actGo]}>
+                      </Pressable>
+                      <Pressable onPress={() => startOrder(p)} style={[s.act, s.actGo]}>
+                        <Plus size={13} color="#43307A" strokeWidth={2.4} />
                         <Text style={s.actGoText}>{ORDER_LABEL}</Text>
                       </Pressable>
                     </View>
@@ -221,6 +258,11 @@ export function AdminCustomersScreen() {
           })
         )}
       </ScrollView>
+      {orders.newOpen ? <NewOrderSheet admin={orders} /> : null}
+
+      {/* ⚠ אישור שהודעת הוואטסאפ יצאה ללקוח · בקשה של שקד */}
+      <SentNotice who={orders.notified} onClose={orders.clearNotified} />
+
       {hist ? (
         <Sheet title={`ההזמנות של ${hist.name}`} sub={plural(hist.history.length, 'הזמנה אחת', 'הזמנות')} onClose={() => setHist(null)}>
           <ScrollView style={{ maxHeight: 360 }}>

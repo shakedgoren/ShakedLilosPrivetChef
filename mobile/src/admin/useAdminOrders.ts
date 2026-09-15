@@ -1,3 +1,4 @@
+import { Linking } from 'react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BOOK,
@@ -22,6 +23,7 @@ import {
   trim,
   type NewOrderDraft,
 } from './orderMath';
+import { canNotify, manualOrderLink } from './manualOrderWa';
 
 /** חלונית החלה · סוג החלה, התוספות שנבחרו, ואיזו חלה נערכת (-1 = חדשה) */
 export type RollPop = { type: string; tops: string[]; edit: number } | null;
@@ -68,6 +70,8 @@ export function useAdminOrders() {
   const [cancelling, setCancelling] = useState(-1);
   const [cx, setCx] = useState<CancelNote>(EMPTY_CX);
   const [pop, setPop] = useState<RollPop>(null);
+  /* שם הלקוח שההודעה נשלחה אליו · מזין את חלונית האישור */
+  const [notified, setNotified] = useState('');
 
   const reload = useCallback(async () => {
     if (!live) return;
@@ -231,8 +235,22 @@ export function useAdminOrders() {
   );
 
   /* השמירה מוסיפה את ההזמנה לרשימה · לקוחה שאינה בפנקס נפתחת עם ההזמנה */
+  /**
+   * שמירת ההזמנה הידנית.
+   * ⚠ **נוסף אישור בוואטסאפ** · שקד ביקשה (15 בספטמבר 2026) שעם
+   * השמירה תצא ללקוח הודעת אישור עם פרטי ההזמנה, ושיקפוץ לה
+   * אישור שההודעה נשלחה. וואטסאפ נפתח עם ההודעה מוכנה — שליחה
+   * אוטומטית דורשת WhatsApp Business API שאין לנו.
+   */
+  const notifyCustomer = useCallback((d: NewOrderDraft) => {
+    if (!canNotify(d)) return;
+    void Linking.openURL(manualOrderLink(d)).catch(() => undefined);
+    setNotified(trim(d.name) || d.phone);
+  }, []);
+
   const saveNew = useCallback(() => {
     if (!isReady(draft)) return;
+    notifyCustomer(draft);
     if (live) {
       void adminCreateOrder({
         category: draft.cat,
@@ -278,6 +296,8 @@ export function useAdminOrders() {
     askCancel, closeCancel, setCxField, doCancel,
     openNew: useCallback(() => setNewOpen(true), []),
     closeNew: useCallback(() => setNewOpen(false), []),
+    notified,
+    clearNotified: useCallback(() => setNotified(''), []),
     setField, pickPerson, setCat, bumpItem,
     openRoll, editRoll, closeRoll, togglePopTop, saveRoll, dropRoll,
     saveNew,

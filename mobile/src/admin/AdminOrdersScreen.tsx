@@ -9,6 +9,7 @@ import { Chip } from './ui/Chip';
 import { OrderCard } from './OrderCard';
 import { CancelSheet } from './CancelSheet';
 import { NewOrderSheet } from './NewOrderSheet';
+import { SentNotice } from './SentNotice';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
 
@@ -98,6 +99,9 @@ export function AdminOrdersScreen() {
       ) : null}
 
       {admin.newOpen ? <NewOrderSheet admin={admin} /> : null}
+
+      {/* ⚠ אישור שהודעת הוואטסאפ יצאה ללקוח · בקשה של שקד */}
+      <SentNotice who={admin.notified} onClose={admin.clearNotified} />
 
       {admin.pop ? (
         <RollSheet

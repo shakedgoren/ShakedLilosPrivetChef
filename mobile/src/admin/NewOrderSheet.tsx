@@ -16,9 +16,10 @@ const SHIPS = [
 ] as const;
 
 /** הערת ההתאמה מתחת לשדה הטלפון · מספרת אם הלקוחה כבר במערכת */
-function phoneNote(phone: string, known: boolean) {
-  if (trim(phone) === '')
-    return { text: 'אפשר לבחור שם מהרשימה והטלפון יתמלא לבד', fg: '#A79FB2' };
+function phoneNote(phone: string, known: boolean): { text: string; fg: string } | null {
+  /* ⚠ ההערה ״אפשר לבחור שם מהרשימה והטלפון יתמלא לבד״ ירדה
+     לבקשת שקד · שדה ריק פשוט לא אומר כלום */
+  if (trim(phone) === '') return null;
   if (!okPhone(phone)) return { text: 'מספר טלפון לא תקין', fg: '#B95349' };
   if (known) return { text: 'לקוחה קיימת', fg: '#4E8A64' };
   return { text: 'לקוחה חדשה · תיווצר לה כרטיסייה עם שמירת ההזמנה', fg: COUS.hue };
@@ -37,14 +38,15 @@ export function NewOrderSheet({ admin }: Props) {
   const exact = book.some((b) => b.name === q);
   const people = q === '' || exact ? [] : book.filter((b) => b.name.includes(q)).slice(0, 4);
 
+  /* ⚠ **הכותרת באמצע והתיאור ירד** · בקשה של שקד (15 בספטמבר
+     2026). ״מוואטסאפ או בטלפון״ הוסר לגמרי. */
   return (
-    <Sheet title="הזמנה ידנית" sub="מוואטסאפ או בטלפון" onClose={admin.closeNew} style={s.pos}>
+    <Sheet title="הזמנה ידנית" centerTitle onClose={admin.closeNew} style={s.pos}>
       <ScrollView style={s.body} contentContainerStyle={s.bodyPad} keyboardShouldPersistTaps="handled">
         <Field
           label="שם מלא"
           value={d.name}
           onChange={(v) => admin.setField('name', v)}
-          placeholder="התחילי להקליד שם"
         >
           {people.length > 0 ? (
             <View style={s.book}>
@@ -69,8 +71,8 @@ export function NewOrderSheet({ admin }: Props) {
               ? 'rgba(185,83,73,0.5)'
               : 'rgba(130,112,162,0.18)'
           }
-          note={note.text}
-          noteColor={note.fg}
+          note={note?.text}
+          noteColor={note?.fg}
         />
 
         <View style={s.block}>
