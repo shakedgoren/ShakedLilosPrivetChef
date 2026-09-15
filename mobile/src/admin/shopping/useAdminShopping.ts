@@ -183,10 +183,15 @@ export function useAdminShopping() {
     [items],
   );
 
-  const title = `${AREA[area]?.n ?? area} · ${opened.getDate()} ${MONTHS[opened.getMonth()]} · ${pad2(opened.getHours())}:${pad2(opened.getMinutes())}`;
+  /**
+   * ⚠ **שם הקטגוריה לבד** · שקד ביקשה (15 בספטמבר 2026) שהכותרת
+   * תישא רק את שם הקטגוריה, והתאריך והשעה יירדו לשורה שמתחתיה.
+   */
+  const title = AREA[area]?.n ?? area;
+  const when = `${opened.getDate()} ${MONTHS[opened.getMonth()]} · ${pad2(opened.getHours())}:${pad2(opened.getMinutes())}`;
 
   return {
-    area, setArea, items, groups, draft, hits, addOpen, addReady, title, doneCount,
+    area, setArea, items, groups, draft, hits, addOpen, addReady, title, when, doneCount,
     estSum: items.reduce((s, x) => s + lineSum(x), 0),
     actSum: items.reduce((s, x) => s + paid(x), 0),
     pct: items.length ? Math.round((doneCount / items.length) * 100) : 0,

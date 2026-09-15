@@ -46,18 +46,27 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
   const { back, canBack, go } = useNav();
   return (
     <View style={s.root}>
-      {/* ⚠ **שורת הפעולות** · חץ החזרה בפינה הימנית והכפתורים בפינה
-          השמאלית, בשורה שמעל הכותרת. שקד ביקשה (15 בספטמבר 2026)
-          שהכפתורים יחזרו לפינה השמאלית העליונה שממנה זזו כשמירכזנו
-          את הכותרות. נמדד בדפדפן שבמסך ההזמנות הכפתורים תופסים 183
-          פיקסלים והכותרת הממורכזת 166→224 — בשורה אחת הם דורסים את
-          הכותרת, ולכן הם יושבים בשורה נפרדת.
+      {/* ⚠ **שורה אחת** · שקד ביקשה (15 בספטמבר 2026) להסיר את
+          הרווח שהיה מעל הכותרת: הכותרת, הכפתורים וחץ החזרה יושבים
+          כולם בשורה אחת. הכותרת ממורכזת למרכז המסך, הכפתורים
+          מרחפים בפינה השמאלית והחץ בפינה הימנית — ולכן אף אחד מהם
+          אינו דוחף את הכותרת מהמרכז. זה עובד כי כל כפתורי הכותרת
+          הם אייקונים של 38 פיקסלים, ושניים כאלה תופסים 84 בלבד.
           ⚠ החץ הוא `ChevronRight` ולא תו ‹ · תווי חץ נהפכים ב-RTL.
           תמיד מוצג — כשאין מחסנית הוא מחזיר לדף הניהול. */}
-      <View style={s.topRow}>
-        <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
-          <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
-        </Pressable>
+      <View style={s.head}>
+        <View style={s.headText}>
+          {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
+          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
+            {title}
+          </Text>
+          {sub ? <Text style={s.sub}>{sub}</Text> : null}
+        </View>
+        <View style={s.backWrap}>
+          <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
+            <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
+          </Pressable>
+        </View>
         <View style={s.actions}>
         {actions.map((act) => (
           <Pressable
@@ -91,18 +100,6 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
         ))}
         </View>
       </View>
-      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026) לכל
-          הכותרות בצד הניהולי. השורה כולה שלה, ולכן שום כפתור לא
-          יכול לרדת עליה. */}
-      <View style={s.head}>
-        <View style={s.headText}>
-          {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
-          <Text style={[s.title, { fontSize: titleSize }]} numberOfLines={1}>
-            {title}
-          </Text>
-          {sub ? <Text style={s.sub}>{sub}</Text> : null}
-        </View>
-      </View>
       {children}
     </View>
   );
@@ -130,17 +127,24 @@ export function KpiRow({
 }
 
 const s = StyleSheet.create({
-  /* ⚠ הריפוד העליון ירד ל-18 · החץ תופס את השורה שמעל הכותרת */
   root: { flex: 1, paddingTop: 18, paddingHorizontal: 18, gap: 12 },
-  head: { justifyContent: 'center', minHeight: 44 },
+  head: { justifyContent: 'center', minHeight: 46 },
   /**
-   * ⚠ **`space-between` ולא `end: 0`** · בדפדפן `I18nManager.isRTL`
-   * כבוי, ולכן ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה
-   * שהעיף את הכפתורים לצד ימין ועל הכותרת. סידור בזרימה נפתר מול
-   * `direction: rtl` של הדף: החץ בימין, הכפתורים בשמאל.
+   * ⚠ **`left`/`right` ולא `start`/`end`** · בדפדפן
+   * `I18nManager.isRTL` כבוי, ולכן ריאקט-נייטיב-ווב מתרגם `end`
+   * ל-`right` — וזה מה שהעיף פעם את הכפתורים לצד ימין ועל הכותרת.
+   * הצדדים הפיזיים נפתרים אותו דבר בדפדפן ובאפליקציה.
    */
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: -2 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  actions: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backWrap: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
   back: {
     width: 34,
     height: 34,

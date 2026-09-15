@@ -31,9 +31,10 @@ export function AdminShoppingScreen() {
   return (
     <AdminShell
       title={admin.title}
-      /* ⚠ 17 ולא 21 · המידה של הקנבס, וכך הכותרת נכנסת בשורה אחת */
-      titleSize={17}
-      sub={`${admin.doneCount} מתוך ${admin.items.length} נרכשו`}
+      /* ⚠ **התאריך והשעה בשורה מתחת** · בקשה של שקד (15 בספטמבר
+         2026). ״כמה נרכשו״ ירד מכאן — אותו מספר בדיוק כתוב
+         בכרטיס ״התקדמות הקנייה״ שמיד מתחת. */
+      sub={admin.when}
       /* ⚠ אייקונים ולא מילים · שעון להיסטוריה ו-״+״ להוספה, כמו בקנבס */
       actions={[
         { label: 'היסטוריה', onPress: () => go('adminHistory'), icon: Clock },

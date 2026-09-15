@@ -12,19 +12,22 @@ import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
+import { Calendar, Plus } from '../icons';
 
 const ALL = 'הכל';
 const COUS = HUES.cous;
 
 /**
  * לשוניות הסינון · בדיוק חמש, לפי בקשה של שקד (15 בספטמבר 2026):
- * הכל · חדשה · בהכנה · מוכנה · בוטלה.
+ * הכל · חדשה · בהכנה · מוכנה · נמסרה.
  *
+ * ⚠ **״בוטלה״ אינה לשונית** · שקד ביקשה (15 בספטמבר 2026) ״נמסרה״
+ * במקומה. הזמנה מבוטלת עדיין קיימת ונראית תחת ״הכל״.
  * ⚠ **״מאושרת״ אינה לשונית** · היא עדיין מצב חוקי בשרת
  * (`KITCHEN_FLOW`), ולכן הזמנה במצב הזה נראית תחת ״הכל״ בלבד.
  * אם היא לא נחוצה יותר — צריך להוריד אותה גם מהשרת.
  */
-const TABS = [ALL, 'חדשה', 'בהכנה', 'מוכנה', CANCELLED];
+const TABS = [ALL, 'חדשה', 'בהכנה', 'מוכנה', 'נמסרה'];
 
 export function AdminOrdersScreen() {
   const { go } = useNav();
@@ -46,9 +49,13 @@ export function AdminOrdersScreen() {
     <AdminShell
       title="הזמנות"
       sub={ORDERS_SUBTITLE}
+      /* ⚠ **אייקונים ולא מילים** · בקשה של שקד (15 בספטמבר 2026):
+         ״+״ להזמנה ידנית, ואייקון ימי המכירה ללוח. המילים נשארות
+         כשמות הנגישות. שני עיגולים של 38 נכנסים בשורת הכותרת
+         בלי לדרוס אותה, מה שהגלולות הרחבות לא יכלו. */
       actions={[
-        { label: BOARD_LABEL, onPress: () => go('adminBoard') },
-        { label: 'הזמנה ידנית', onPress: admin.openNew, primary: true },
+        { label: BOARD_LABEL, onPress: () => go('adminBoard'), icon: Calendar },
+        { label: 'הזמנה ידנית', onPress: admin.openNew, icon: Plus, primary: true },
       ]}
     >
       <View style={s.tabs}>

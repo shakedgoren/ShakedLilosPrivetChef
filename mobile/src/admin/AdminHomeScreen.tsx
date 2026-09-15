@@ -49,12 +49,11 @@ export function AdminHomeScreen() {
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-      {/* ⚠ **הכותרת ממורכזת והכפתורים בשורה שלה, בשמאל** · שקד
-          ביקשה (15 בספטמבר 2026) שהכפתורים יעלו לשורת הכותרת
-          ושכפתור ההזמנה יישא רק את סימן ה-+. שני עיגולים של 38
-          תופסים 84 פיקסלים (18→102), והכותרת המשנה מתחילה ב-152 —
-          כלומר יש 50 פיקסלים אוויר וההתנגשות שהייתה עם הגלולה
-          הרחבה (158 פיקסלים) נעלמה. */}
+      {/* ⚠ **כותרת ממורכזת, + בשמאל, התנתקות בימין** · שקד ביקשה
+          (15 בספטמבר 2026) שכפתור ההתנתקות יעבור לפינה הימנית —
+          אותה פינה שבשאר מסכי הניהול מחזיקה את חץ החזרה — ושה-+
+          ייקח את מקומו בפינה השמאלית. שני הכפתורים מרחפים מעל
+          השורה ולכן אינם דוחפים את הכותרת מהמרכז. */}
       <View style={s.head}>
         <View style={s.headText}>
           <Text style={s.title}>{HOME_TITLE}</Text>
@@ -65,19 +64,20 @@ export function AdminHomeScreen() {
             שהתקשרה או כתבה בוואטסאפ, בלי שהלקוחה נרשמת לאתר.
             הכרטיס הסגול ״הזמנה ידנית״ שהיה מתחת ללוח המכירה ירד,
             והפעולה שלו עברה לכאן. */}
-        <View style={s.headEnd}>
         {/* ⚠ **רק ה-+** · בקשה מפורשת של שקד (15 בספטמבר 2026)
             במקום הגלולה ״+ הזמנה חדשה״. המילים נשארות כשם
             הנגישות של הכפתור. */}
+        <View style={s.headStart}>
         <Pressable onPress={admin.openNew} accessibilityLabel={NEW_ORDER_LABEL} style={s.newChip} hitSlop={8}>
           <Plus size={18} color={LAV.chipInk} strokeWidth={2.6} />
         </Pressable>
+        </View>
 
-        {/* ⚠ **התנתקות מהניהול** · בקשה של שקד (15 בספטמבר 2026).
-            כפתור ההתנתקות הכללי מוחרג ממסכי הניהול (הפינה הייתה
-            תפוסה ב״לחנות״ ובלעה אותו), ולכן הוא יושב כאן בתוך
-            הכותרת. העיגול 38×38 הוא בדיוק מידת כפתור המשתמש
-            שבפינה הזו בקנבס. */}
+        {/* ⚠ **התנתקות בפינה הימנית** · בקשה של שקד (15 בספטמבר
+            2026). זו הפינה שבשאר מסכי הניהול מחזיקה את חץ החזרה;
+            בדף הבית אין לאן לחזור, ולכן היא פנויה. העיגול 38×38
+            הוא בדיוק מידת כפתור המשתמש שבפינה הזו בקנבס. */}
+        <View style={s.headEnd}>
         <Pressable
           onPress={() => setBye(true)}
           accessibilityLabel="התנתקות"
@@ -246,12 +246,12 @@ const s = StyleSheet.create({
   head: { justifyContent: 'center', minHeight: 46 },
   headText: { alignItems: 'center', gap: 2 },
   /**
-   * ⚠ **`left` ולא `end`** · בדפדפן `I18nManager.isRTL` כבוי, ולכן
-   * ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה שהעיף את
-   * הכפתורים לצד ימין ועל הכותרת. `left` הוא פיזי ונפתר אותו דבר
-   * בדפדפן ובאפליקציה.
+   * ⚠ **`left`/`right` ולא `start`/`end`** · בדפדפן
+   * `I18nManager.isRTL` כבוי, ולכן ריאקט-נייטיב-ווב מתרגם `end`
+   * ל-`right`. הצדדים הפיזיים נפתרים אותו דבר בדפדפן ובאפליקציה.
    */
-  headEnd: { position: 'absolute', left: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headStart: { position: 'absolute', left: 0, top: 0, bottom: 0, justifyContent: 'center' },
+  headEnd: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
   title: { fontSize: 21, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
   sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
   /* עיגול בגוון הצ׳יפ · אותה מידה של כפתור ההתנתקות שלצידו */

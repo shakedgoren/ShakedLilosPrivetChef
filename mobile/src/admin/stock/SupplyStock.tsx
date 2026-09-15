@@ -1,12 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
-import { count } from '../../text/counts';
-import { LOW_CTA, SUPPLY_NOTE } from '../../data/adminStock';
+import { SUPPLY_NOTE } from '../../data/adminStock';
 import type { SupplyRow, useAdminStock } from './useAdminStock';
 
 const AMBER = '#A65E2A';
-const GREEN = '#4E8A64';
 
 /** שורת ההסבר מתחת לשם · מינימום, ואם ארוז גם כמה יחידות באריזה */
 function itemSub(x: SupplyRow, isLow: boolean) {
@@ -18,30 +16,12 @@ type Props = { admin: ReturnType<typeof useAdminStock> };
 
 /** מלאי לוגיסטי · אריזות, יבשים וציוד. ידני בלבד */
 export function SupplyStock({ admin }: Props) {
-  const { lowItems } = admin;
-
   return (
     <View style={s.wrap}>
-      {lowItems.length > 0 ? (
-        <View style={s.lowCard}>
-          <View style={s.lowText}>
-            <Text style={s.lowTitle}>{`${count(lowItems.length, 'פריט אחד', 'פריטים')} מתחת למינימום`}</Text>
-            <Text style={s.lowSub}>{lowItems.map((x) => x.name).join(' · ')}</Text>
-          </View>
-          <Pressable onPress={admin.sendToShopping} style={s.lowCta}>
-            <Text style={s.lowCtaText}>{LOW_CTA}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {admin.sent ? (
-        <View style={s.sent}>
-          <Text style={s.sentText}>{lowItems.length === 1
-              ? 'נוסף פריט אחד לרשימת הקניות'
-              : `נוספו ${lowItems.length} פריטים לרשימת הקניות`}</Text>
-        </View>
-      ) : null}
-
+      {/* ⚠ **כרטיס ״מתחת למינימום״ נמחק** · בקשה מפורשת של שקד
+          (15 בספטמבר 2026). איתו ירד גם הכפתור ״לרשימת הקניות״,
+          שהיה הדרך היחידה לדחוף פריטים חסרים אל רשימת הקניות —
+          הפריטים החסרים עדיין מסומנים בכתום בשורות עצמן. */}
       {admin.groups.map((g) => (
         <View key={g.name} style={s.group}>
           <Text style={s.groupName}>{g.name}</Text>
@@ -100,38 +80,6 @@ export function SupplyStock({ admin }: Props) {
 
 const s = StyleSheet.create({
   wrap: { gap: 12 },
-  lowCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderRadius: 18,
-    padding: 13,
-    backgroundColor: 'rgba(199,125,62,0.09)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(199,125,62,0.26)',
-  },
-  lowText: { flex: 1 },
-  lowTitle: { fontSize: 13, fontWeight: '600', color: AMBER },
-  lowSub: { fontSize: 11, fontWeight: '300', color: surface.muted, marginTop: 1 },
-  lowCta: {
-    height: 34,
-    paddingHorizontal: 13,
-    borderRadius: 999,
-    backgroundColor: 'rgba(199,125,62,0.16)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lowCtaText: { fontSize: 12, fontWeight: '600', color: AMBER },
-
-  sent: {
-    alignSelf: 'center',
-    borderRadius: 999,
-    paddingVertical: 5,
-    paddingHorizontal: 13,
-    backgroundColor: 'rgba(78,138,100,0.12)',
-  },
-  sentText: { fontSize: 12.5, fontWeight: '600', color: GREEN },
-
   group: { gap: 7 },
   groupName: { fontSize: 12, fontWeight: '600', letterSpacing: 0.7, color: '#A79FB2', paddingHorizontal: 4 },
   item: {

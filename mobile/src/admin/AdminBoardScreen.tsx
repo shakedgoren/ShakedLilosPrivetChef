@@ -225,13 +225,24 @@ export function AdminBoardScreen() {
 
   return (
     <View style={s.root}>
-      {/* ⚠ **שורת הפעולות** · חץ החזרה בימין והפקדים בשמאל, מעל
-          הכותרת הממורכזת — כמו בשאר מסכי הניהול. */}
-      <View style={s.topRow}>
-        <Pressable onPress={back} style={s.back}>
-          <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
-        </Pressable>
-        <View style={s.tools}>
+      {/* ⚠ **הכותרת בשורת החץ** · שקד ביקשה (15 בספטמבר 2026) להסיר
+          את הרווח שהיה מעל הכותרת בכל מסכי הניהול. הכותרת ממורכזת
+          וחץ החזרה מרחף בפינה הימנית, והפקדים יורדים לשורה שמתחת —
+          הם רחבים מדי (הלשוניות לבדן כ-270 פיקסלים) מכדי לחלוק את
+          השורה עם כותרת ממורכזת. */}
+      <View style={s.head}>
+        <View style={s.headText}>
+          <Text style={s.title}>{BOARD_CAT.name}</Text>
+          <Text style={s.sub}>{BOARD_LIVE}</Text>
+        </View>
+        <View style={s.backWrap}>
+          <Pressable onPress={back} style={s.back}>
+            <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={s.tools}>
         {/* ⚠ מתג התצוגה · בקשה של שקד, אינו בקנבס */}
         <View style={s.views}>
           {VIEWS.map((v) => {
@@ -263,15 +274,6 @@ export function AdminBoardScreen() {
           })}
         </View>
         {gone > 0 ? <Text style={s.gone}>{`${BOARD_GONE} ${gone}`}</Text> : null}
-        </View>
-      </View>
-
-      {/* ⚠ **ממורכזת** · בקשה של שקד לכל הכותרות בצד הניהולי */}
-      <View style={s.head}>
-        <View style={s.headText}>
-          <Text style={s.title}>{BOARD_CAT.name}</Text>
-          <Text style={s.sub}>{BOARD_LIVE}</Text>
-        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={pad} style={s.stock}>
@@ -507,9 +509,9 @@ export function AdminBoardScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, paddingTop: 18, paddingHorizontal: 14, gap: 8, backgroundColor: surface.ground },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 1 },
-  head: { alignItems: 'center' },
+  tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  head: { justifyContent: 'center', minHeight: 44 },
+  backWrap: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
   back: {
     width: 36,
     height: 36,

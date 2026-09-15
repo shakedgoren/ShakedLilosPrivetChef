@@ -159,7 +159,9 @@ export function AdminCustomersScreen() {
   const spentAll = rows.reduce((s, p) => s + p.spent, 0);
 
   return (
-    <AdminShell title={CUSTOMERS_TITLE} sub={`${rows.length} לקוחות · ${nf(spentAll)} ₪ מצטבר`}>
+    /* ⚠ **בלי הסכום המצטבר** · שקד ביקשה (15 בספטמבר 2026) למחוק
+       אותו מכותרת המשנה. */
+    <AdminShell title={CUSTOMERS_TITLE} sub={`${rows.length} לקוחות`}>
       <View style={s.searchWrap}>
         <TextInput
           value={q}
