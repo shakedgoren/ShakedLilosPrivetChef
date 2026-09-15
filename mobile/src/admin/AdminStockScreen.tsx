@@ -1,37 +1,36 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { STOCK_SUB, STOCK_TABS, STOCK_TITLE } from '../data/adminStock';
+import { STOCK_SUB, STOCK_TITLE } from '../data/adminStock';
 import { AdminShell } from './ui/AdminShell';
-import { Segmented } from './ui/Segmented';
-import { SaleStock } from './stock/SalePanel';
 import { SupplyStock } from './stock/SupplyStock';
 import { AddItemSheet } from './stock/AddItemSheet';
 import { useAdminStock } from './stock/useAdminStock';
 import { Plus, Refresh } from '../icons';
 
+/**
+ * מלאי · **לוגיסטי בלבד**.
+ *
+ * ⚠ **לשונית ״מלאי מכירה״ ירדה** · שקד ביקשה (15 בספטמבר 2026)
+ * להסיר אותה: המכסות מתעדכנות ממילא במסך ימי מכירה, ושתי דרכים
+ * לאותו נתון הן כפילות שמזמינה סתירה. מה שהיה שם עבר לשם —
+ * גם המכסות וגם הורדת מנות שהתקלקלו.
+ */
 export function AdminStockScreen() {
   const admin = useAdminStock();
-  const isSale = admin.tab === 'sale';
 
   return (
     <AdminShell
       title={STOCK_TITLE}
-      sub={isSale ? STOCK_SUB.sale : STOCK_SUB.supply}
+      sub={STOCK_SUB.supply}
       /* ⚠ אייקונים ולא מילים · ״+״ להוספה ואייקון ביטול להחזרת
          פריט שנמחק בטעות. בקשה של שקד (15 בספטמבר 2026). */
-      actions={
-        isSale
-          ? []
-          : [
-              { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: Refresh, off: !admin.canUndo },
-              { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
-            ]
-      }
+      actions={[
+        { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: Refresh, off: !admin.canUndo },
+        { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
+      ]}
     >
-      <Segmented tabs={STOCK_TABS} value={admin.tab} onChange={admin.setTab} />
-
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-        {isSale ? <SaleStock admin={admin} /> : <SupplyStock admin={admin} />}
+        <SupplyStock admin={admin} />
       </ScrollView>
 
       {admin.addOpen ? <AddItemSheet admin={admin} /> : null}

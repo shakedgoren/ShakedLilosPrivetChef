@@ -50,10 +50,17 @@ export function useAdminDays() {
     return mergeWeekdayDays(days, from, to);
   }, [days, year, month]);
 
-  /* היום הנבחר · נוצר בעצלתיים כשנוגעים בו · שלישי/שישי מקבלים ברירת יום מכירה */
+  type DayPatch = DayRecord & { waste?: Record<string, number> };
+
+/* היום הנבחר · נוצר בעצלתיים כשנוגעים בו · שלישי/שישי מקבלים ברירת יום מכירה */
   const rec = useCallback((k: string): DayRecord => visibleDays[k] ?? {}, [visibleDays]);
 
-  const put = useCallback((k: string, patch: DayRecord) => {
+  /**
+   * ⚠ `waste` אינו בטיפוס המחולץ · `data/adminDays.ts` נוצר
+   * אוטומטית מהקנבס, ושדה המנות שהתקלקלו קיים רק בשרת. ההרחבה
+   * יושבת כאן במקום לגעת בקובץ המחולץ.
+   */
+  const put = useCallback((k: string, patch: DayPatch) => {
     setDays((prev) => {
       const base = k in prev ? prev[k] : (impliedWeekdayRecord(k) ?? {});
       const next = { ...base, ...patch };
@@ -64,6 +71,7 @@ export function useAdminDays() {
           except: next.except ?? null,
           open: next.open ?? false,
           q: next.q ?? {},
+          waste: next.waste ?? {},
         }).catch(() => undefined);
       }
       return { ...prev, [k]: next };
@@ -139,21 +147,44 @@ export function useAdminDays() {
     return cat.dishes.map((d) => {
       const n = current.q?.[d.id] ?? d.q;
       const sold = current.sold?.[d.id];
+      /* ⚠ מנות שהתקלקלו · עברו לכאן ממסך המלאי שירד */
+      const waste = (current as DayPatch).waste?.[d.id] ?? 0;
       const isOut = sold !== undefined && sold >= n;
       return {
         id: d.id,
         name: d.n,
         n,
+        waste,
+        /** כמה אפשר עוד להוריד · לא יורדים מתחת למה שנמכר */
+        room: Math.max(0, n - (sold ?? 0)),
         soldLabel:
-          sold === undefined ? 'טרם נמכרו' : isOut ? `אזל · נמכרו ${sold}` : `נמכרו ${sold}`,
+          (sold === undefined ? 'טרם נמכרו' : isOut ? `אזל · נמכרו ${sold}` : `נמכרו ${sold}`) +
+          (waste > 0 ? ` · ירדו ${waste}` : ''),
       };
     });
-  }, [cat, current.q, current.sold]);
+  }, [cat, current.q, current.sold, current]);
+
+  /**
+   * הורדת מנה שהתקלקלה, נפלה או נרשמה בטעות.
+   * ⚠ **עבר ממסך המלאי** · שקד ביקשה (15 בספטמבר 2026) להסיר את
+   * ״מלאי מכירה״ מהמלאי, כי הוא כפילות של ימי המכירה. הפעולה
+   * היחידה שהייתה רק שם — הורדת מנות — חיה עכשיו כאן.
+   */
+  const bumpWaste = useCallback(
+    (id: string, delta: number) => {
+      const row = quotas.find((q) => q.id === id);
+      if (!row) return;
+      const next = Math.min(row.room, Math.max(0, row.waste + delta));
+      const waste = { ...((current as DayPatch).waste ?? {}), [id]: next };
+      void put(selected, { waste });
+    },
+    [quotas, current, put, selected],
+  );
 
   return {
     year, month, selected, days: visibleDays, current, cat, activeKey, quotas,
     totalQuota: quotas.reduce((s, q) => s + q.n, 0),
     select: setSelected,
-    step, rec, toggleAvail, setSale, setExcept, bumpQuota, toggleOpen,
+    step, rec, toggleAvail, setSale, setExcept, bumpQuota, bumpWaste, toggleOpen,
   };
 }

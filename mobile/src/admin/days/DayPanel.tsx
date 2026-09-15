@@ -104,7 +104,8 @@ export function DayPanel({ admin }: Props) {
             <>
               <Text style={s.quotaTitle}>{blocked ? 'מכסות החריגה' : 'מכסות היום'}</Text>
               {admin.quotas.map((q) => (
-                <View key={q.id} style={s.quotaRow}>
+                <View key={q.id} style={s.quotaBlock}>
+                  <View style={s.quotaRow}>
                   <View style={s.quotaText}>
                     <Text style={s.quotaName}>{q.name}</Text>
                     <Text style={s.quotaSold}>{q.soldLabel}</Text>
@@ -123,6 +124,28 @@ export function DayPanel({ admin }: Props) {
                     >
                       <Minus size={13} color="#2A2430" strokeWidth={2.4} />
                     </Pressable>
+                  </View>
+                  </View>
+                  {/* ⚠ **הורדת מנות עברה לכאן** · שקד ביקשה להסיר
+                      את ״מלאי מכירה״ מהמלאי, וזו הייתה הפעולה
+                      היחידה שחיה רק שם. */}
+                  <View style={s.wasteRow}>
+                    <Text style={s.wasteLabel}>ירדו מהמכירה</Text>
+                    <View style={s.stepper}>
+                      <Pressable
+                        onPress={() => admin.bumpWaste(q.id, 1)}
+                        style={[s.roundSm, s.amber, { opacity: q.room > 0 ? 1 : 0.35 }]}
+                      >
+                        <Plus size={11} color="#A65E2A" strokeWidth={2.6} />
+                      </Pressable>
+                      <Text style={[s.wasteNum, q.waste > 0 && s.wasteOn]}>{q.waste}</Text>
+                      <Pressable
+                        onPress={() => admin.bumpWaste(q.id, -1)}
+                        style={[s.roundSm, s.minus, { opacity: q.waste > 0 ? 1 : 0.35 }]}
+                      >
+                        <Minus size={11} color="#2A2430" strokeWidth={2.6} />
+                      </Pressable>
+                    </View>
                   </View>
                 </View>
               ))}
@@ -156,7 +179,15 @@ const s = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
 
   quotaTitle: { fontSize: 13.5, fontWeight: '600', color: surface.ink, marginTop: 4 },
+  quotaBlock: { gap: 4 },
   quotaRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  /* שורת ההורדה · קטנה יותר, מתחת למכסה של אותה מנה */
+  wasteRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingBottom: 4 },
+  wasteLabel: { flex: 1, fontSize: 11, fontWeight: '300', color: '#A79FB2' },
+  roundSm: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  amber: { backgroundColor: 'rgba(199,125,62,0.14)' },
+  wasteNum: { minWidth: 18, textAlign: 'center', fontSize: 13, fontWeight: '400', color: '#C4BDCE' },
+  wasteOn: { fontWeight: '700', color: '#A65E2A' },
   quotaText: { flex: 1 },
   quotaName: { fontSize: 13, fontWeight: '500', color: surface.ink },
   quotaSold: { fontSize: 11, fontWeight: '300', color: '#A79FB2' },
