@@ -62,6 +62,8 @@ export function useAdminStock() {
   const [nextId, setNextId] = useState(SUPPLY.length);
   const [sent, setSent] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  /* הפריט האחרון שנמחק · מחכה לכפתור הביטול */
+  const [undo, setUndo] = useState<{ row: SupplyRow; at: number } | null>(null);
   const [draft, setDraft] = useState<NewItem>(() => emptyItem(SUP_GROUPS[0], 'יחידה'));
 
   const reload = useCallback(async () => {
@@ -107,14 +109,39 @@ export function useAdminStock() {
     [live, supply],
   );
 
+  /**
+   * מחיקת פריט מהמלאי הלוגיסטי · עם אפשרות להחזיר.
+   * ⚠ שקד ביקשה (15 בספטמבר 2026) כפתור ביטול ליד ״+ פריט״,
+   * ״למקרה שמחקתי פריט בטעות״. הפריט האחרון שנמחק נשמר כאן
+   * יחד עם מקומו ברשימה, כדי שהוא יחזור בדיוק לאותו מקום.
+   */
   const dropItem = useCallback(
     (id: number | string) => {
-      setSupply((list) => list.filter((x) => x.id !== id));
+      setSupply((list) => {
+        const at = list.findIndex((x) => x.id === id);
+        if (at < 0) return list;
+        setUndo({ row: list[at], at });
+        return list.filter((x) => x.id !== id);
+      });
       setSent(false);
       if (live && typeof id === 'string') void adminDropSupply(id).catch(() => undefined);
     },
     [live],
   );
+
+  /** החזרת הפריט האחרון שנמחק · בשרת הוא נוצר מחדש */
+  const undoDrop = useCallback(() => {
+    if (!undo) return;
+    const { row, at } = undo;
+    setUndo(null);
+    setSupply((list) => [...list.slice(0, at), row, ...list.slice(at)]);
+    setSent(false);
+    if (live) {
+      void adminAddSupply({ g: row.g, name: row.name, n: row.n, unit: row.unit, min: row.min, per: row.per })
+        .then(reload)
+        .catch(() => undefined);
+    }
+  }, [undo, live, reload]);
 
   const setField = useCallback(
     <K extends keyof NewItem>(k: K, v: NewItem[K]) => setDraft((d) => ({ ...d, [k]: v })),
@@ -190,6 +217,7 @@ export function useAdminStock() {
     tab, setTab, days, groups, lowItems, supply, sent, addOpen, draft, addReady,
     leftAll: days.reduce((s, d) => s + d.left, 0),
     bumpWaste, bumpSupply, dropItem, setField, saveAdd,
+    undoDrop, canUndo: undo !== null,
     openAdd: useCallback(() => setAddOpen(true), []),
     closeAdd: useCallback(() => setAddOpen(false), []),
     sendToShopping: useCallback(() => setSent(true), []),

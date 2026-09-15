@@ -6,8 +6,6 @@ import {
   DAY_TAG_ONE,
   DROP_LABEL,
   NO_DAY_LABEL,
-  NO_DAY_SUB,
-  NO_OPEN_DAY,
   ROW_LEFT_TAG,
   SALE_NOTE,
   TOTAL_LEFT_TAG,
@@ -24,27 +22,31 @@ type Props = { admin: ReturnType<typeof useAdminStock> };
 export function SaleStock({ admin }: Props) {
   const { days } = admin;
 
+  /**
+   * ⚠ **אין יום מכירה פתוח → מסך ריק** · שקד ביקשה (15 בספטמבר
+   * 2026) שכשאין יום פתוח יימחק הכול ויישאר רק הכיתוב באמצע.
+   * קודם נשארו כאן הכותרת, מונה ״נשארו״ באפס והערת השוליים.
+   */
+  if (days.length === 0) {
+    return (
+      <View style={s.blank}>
+        <Text style={s.blankText}>{`${NO_DAY_LABEL}.`}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={s.wrap}>
       <View style={s.head}>
         <View style={s.headText}>
           <Text style={s.tag}>{days.length > 1 ? DAY_TAG_MANY : DAY_TAG_ONE}</Text>
-          <Text style={s.dayName}>
-            {days.length ? days.map((d) => d.day).join(' · ') : NO_OPEN_DAY}
-          </Text>
+          <Text style={s.dayName}>{days.map((d) => d.day).join(' · ')}</Text>
         </View>
         <View style={s.total}>
           <Text style={s.totalValue}>{admin.leftAll}</Text>
           <Text style={s.tag}>{TOTAL_LEFT_TAG}</Text>
         </View>
       </View>
-
-      {days.length === 0 ? (
-        <View style={s.empty}>
-          <Text style={s.emptyTitle}>{NO_DAY_LABEL}</Text>
-          <Text style={s.emptySub}>{NO_DAY_SUB}</Text>
-        </View>
-      ) : null}
 
       {days.map((d) => (
         <View key={d.cat} style={s.dayCard}>
@@ -119,9 +121,9 @@ const s = StyleSheet.create({
   total: { alignItems: 'flex-end' },
   totalValue: { fontSize: 21, fontWeight: '700', color: '#43307A' },
 
-  empty: { alignItems: 'center', gap: 4, paddingVertical: 40 },
-  emptyTitle: { fontSize: 14, fontWeight: '500', color: '#A79FB2' },
-  emptySub: { fontSize: 11.5, color: surface.muted, textAlign: 'center' },
+  /* המסך הריק · טקסט אחד באמצע, בלי שום דבר סביבו */
+  blank: { flex: 1, minHeight: 420, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 },
+  blankText: { fontSize: 14, fontWeight: '500', color: '#A79FB2', textAlign: 'center' },
 
   dayCard: {
     borderRadius: 22,

@@ -1,10 +1,22 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { radius, surface } from '../../theme/tokens';
-import { ChevronRight } from '../../icons';
+import { ChevronRight, type IconProps } from '../../icons';
 import { useNav } from '../../navigation/store';
 
-export type HeaderAction = { label: string; onPress: () => void; primary?: boolean };
+export type HeaderAction = {
+  label: string;
+  onPress: () => void;
+  primary?: boolean;
+  /**
+   * אייקון במקום המילה · בקשה של שקד (15 בספטמבר 2026) בכמה מסכים,
+   * כדי שהכותרת והכפתורים ייכנסו בשורה אחת כמו בקנבס.
+   * ה-`label` נשאר כשם הנגישות של הכפתור.
+   */
+  icon?: (p: IconProps) => React.JSX.Element;
+  /** הכפתור מושבת · אפור ולא מגיב */
+  off?: boolean;
+};
 
 type Props = {
   title: string;
@@ -39,10 +51,20 @@ export function AdminShell({ title, sub, actions = [], children }: Props) {
         {actions.map((act) => (
           <Pressable
             key={act.label}
-            onPress={act.onPress}
-            style={[s.action, act.primary ? s.actionPrimary : s.actionGhost]}
+            onPress={act.off ? undefined : act.onPress}
+            accessibilityLabel={act.label}
+            style={[
+              s.action,
+              act.icon ? s.actionIcon : null,
+              act.primary ? s.actionPrimary : s.actionGhost,
+              act.off ? s.actionOff : null,
+            ]}
           >
-            <Text style={s.actionText}>{act.primary ? `+ ${act.label}` : act.label}</Text>
+            {act.icon ? (
+              <act.icon size={16} color={act.primary ? '#43307A' : '#6E6478'} strokeWidth={2.2} />
+            ) : (
+              <Text style={s.actionText}>{act.primary ? `+ ${act.label}` : act.label}</Text>
+            )}
           </Pressable>
         ))}
       </View>
@@ -100,7 +122,10 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.22)',
   },
+  /* כפתור אייקון · ריבוע ולא גלולה עם טקסט */
+  actionIcon: { width: 38, paddingHorizontal: 0 },
   actionPrimary: { backgroundColor: '#C6B3EC' },
+  actionOff: { opacity: 0.4 },
   actionText: { fontSize: 13, fontWeight: '600', color: '#43307A' },
   kpiBar: {
     flexDirection: 'row',

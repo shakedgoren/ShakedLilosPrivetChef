@@ -7,6 +7,7 @@ import { SaleStock } from './stock/SalePanel';
 import { SupplyStock } from './stock/SupplyStock';
 import { AddItemSheet } from './stock/AddItemSheet';
 import { useAdminStock } from './stock/useAdminStock';
+import { Plus, Refresh } from '../icons';
 
 export function AdminStockScreen() {
   const admin = useAdminStock();
@@ -16,7 +17,16 @@ export function AdminStockScreen() {
     <AdminShell
       title={STOCK_TITLE}
       sub={isSale ? STOCK_SUB.sale : STOCK_SUB.supply}
-      actions={isSale ? [] : [{ label: 'פריט', onPress: admin.openAdd, primary: true }]}
+      /* ⚠ אייקונים ולא מילים · ״+״ להוספה ואייקון ביטול להחזרת
+         פריט שנמחק בטעות. בקשה של שקד (15 בספטמבר 2026). */
+      actions={
+        isSale
+          ? []
+          : [
+              { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: Refresh, off: !admin.canUndo },
+              { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
+            ]
+      }
     >
       <Segmented tabs={STOCK_TABS} value={admin.tab} onChange={admin.setTab} />
 

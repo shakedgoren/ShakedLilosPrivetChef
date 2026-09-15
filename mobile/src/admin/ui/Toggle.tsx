@@ -7,7 +7,8 @@ const ON_TRACK = '#4E8A64';
 
 type Props = {
   title: string;
-  sub: string;
+  /** ⚠ אופציונלי · יש מתגים שהכותרת שלהם אומרת הכול */
+  sub?: string;
   on: boolean;
   onToggle: () => void;
   /** צבע המסלול הדלוק · ברירת המחדל היא ירוק ״פתוח״ */
@@ -20,7 +21,7 @@ export function ToggleRow({ title, sub, on, onToggle, onColor = ON_TRACK }: Prop
     <View style={s.row}>
       <View style={s.text}>
         <Text style={s.title}>{title}</Text>
-        <Text style={s.sub}>{sub}</Text>
+        {sub ? <Text style={s.sub}>{sub}</Text> : null}
       </View>
       <Pressable onPress={onToggle} hitSlop={8}>
         <View style={[s.track, { backgroundColor: on ? onColor : OFF_TRACK }]}>
