@@ -11,6 +11,7 @@ import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
 import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
+import { NIGHT, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
 import { Plus } from '../icons';
 
@@ -101,12 +102,16 @@ export function AdminHomeScreen() {
       {/* ⚠ **בחירת טווח** · שקד ביקשה (15 בספטמבר 2026) לראות את
           המחזור של היום, של השבוע, של החודש ושל חצי השנה האחרונה.
           קודם הגרף היה נתיב קבוע מהקנבס והראה תמיד ששה חודשים. */}
-      <GlassCard style={s.revCard}>
+      {/* ⚠ **כרטיס לילה** · שקד בחרה (15 בספטמבר 2026) בהצעה
+          ״ליל־יום״: המחזור כהה כמו לוח יום המכירה שמעליו, והרווח
+          והקטגוריות נשארים זכוכית בהירה כדי שהכהה לא ישתלט. */}
+      <GlassCard style={[s.revCard, s.nightCard]}>
+        <NightSky />
         <View style={s.cardHead}>
-          <Text style={s.cardTitle}>{home.rev.label}</Text>
+          <Text style={[s.cardTitle, { color: NIGHT.dim }]}>{home.rev.label}</Text>
           <View style={s.statMoney}>
-            <Text style={s.revTotal}>{money(home.rev.total)}</Text>
-            <Text style={s.currency}>₪</Text>
+            <Text style={[s.revTotal, { color: '#FFFFFF' }]}>{money(home.rev.total)}</Text>
+            <Text style={[s.currency, { color: NIGHT.faint }]}>₪</Text>
           </View>
         </View>
 
@@ -117,16 +122,16 @@ export function AdminHomeScreen() {
               <Pressable
                 key={r.id}
                 onPress={() => home.setRange(r.id)}
-                style={[s.range, on && s.rangeOn]}
+                style={[s.range, s.rangeNight, on && s.rangeNightOn]}
               >
-                <Text style={[s.rangeText, on && s.rangeTextOn]}>{r.n}</Text>
+                <Text style={[s.rangeText, s.rangeNightText, on && s.rangeNightTextOn]}>{r.n}</Text>
               </Pressable>
             );
           })}
         </View>
 
         <View style={s.chart}>
-          <RevenueChart points={home.rev.points} />
+          <RevenueChart points={home.rev.points} night />
         </View>
         <View style={s.months}>
           <View style={s.axisPad} />
@@ -134,7 +139,11 @@ export function AdminHomeScreen() {
             {home.rev.points.map((p, i) => (
               <Text
                 key={`${p.k}-${i}`}
-                style={[s.month, i === home.rev.points.length - 1 && s.monthOn]}
+                style={[
+                  s.month,
+                  { color: NIGHT.faint },
+                  i === home.rev.points.length - 1 && { fontWeight: '600', color: NIGHT.line },
+                ]}
                 numberOfLines={1}
               >
                 {p.k}
@@ -239,7 +248,13 @@ const s = StyleSheet.create({
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
   revCard: { height: 192, borderRadius: 22, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 },
+  nightCard: { backgroundColor: NIGHT.bg, borderColor: NIGHT.edge, overflow: 'hidden' },
   ranges: { flexDirection: 'row', gap: 5, marginTop: 8 },
+  /* בורר הטווח על רקע לילה · מסגרת רכה במקום לבן */
+  rangeNight: { backgroundColor: 'rgba(184,166,232,0.08)', borderColor: 'rgba(184,166,232,0.2)' },
+  rangeNightOn: { backgroundColor: 'rgba(184,166,232,0.2)', borderColor: 'rgba(184,166,232,0.5)' },
+  rangeNightText: { color: NIGHT.dim },
+  rangeNightTextOn: { fontWeight: '600', color: '#FFFFFF' },
   range: {
     flex: 1,
     height: 26,

@@ -83,7 +83,15 @@ const axisLabel = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : S
  * שקד ביקשה (15 בספטמבר 2026) לבחור טווח — היום, השבוע, החודש
  * או חצי שנה — ולכן הוא מקבל עכשיו נקודות ומחשב את הסקאלה בעצמו.
  */
-export function RevenueChart({ points }: { points: RevPoint[] }) {
+export function RevenueChart({ points, night = false }: { points: RevPoint[]; night?: boolean }) {
+  /* ⚠ שתי ערכות · הכהה נבחרה על ידי שקד ל״ליל־יום״ */
+  const ink = night ? '#B79CFF' : '#7B5CBC';
+  const rule = night
+    ? ['rgba(184,166,232,0.12)', 'rgba(184,166,232,0.22)']
+    : ['rgba(130,112,162,0.1)', 'rgba(130,112,162,0.18)'];
+  const axisInk = night ? '#8E80B8' : '#9A93A6';
+  /* הנקודה האחרונה · על רקע לילה המילוי שלה הוא הלילה עצמו */
+  const dotFill = night ? '#211741' : '#FFFFFF';
   const n = points.length;
   /* ⚠ סקאלה עגולה כלפי מעלה · אחרת הקו נוגע בתקרה */
   const peak = Math.max(1, ...points.map((p) => p.v));
@@ -104,8 +112,8 @@ export function RevenueChart({ points }: { points: RevPoint[] }) {
     <Svg width="100%" height={102} viewBox={`0 0 ${CHART.w} ${CHART.h}`}>
       <Defs>
         <LinearGradient id="revfill" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0%" stopColor="#7B5CBC" stopOpacity={0.42} />
-          <Stop offset="100%" stopColor="#7B5CBC" stopOpacity={0} />
+          <Stop offset="0%" stopColor={ink} stopOpacity={night ? 0.5 : 0.42} />
+          <Stop offset="100%" stopColor={ink} stopOpacity={0} />
         </LinearGradient>
       </Defs>
       {[CHART.top, 37, 67, CHART.base].map((gy, i) => (
@@ -115,31 +123,35 @@ export function RevenueChart({ points }: { points: RevPoint[] }) {
           y1={gy}
           x2={CHART.right}
           y2={gy}
-          stroke={i === 3 ? 'rgba(130,112,162,0.18)' : 'rgba(130,112,162,0.1)'}
+          stroke={i === 3 ? rule[1] : rule[0]}
           strokeWidth={1}
         />
       ))}
       {[CHART.top, 37, 67, CHART.base].map((gy, i) => (
-        <SvgText key={`ax-${gy}`} x={26} y={gy + 3} textAnchor="end" fontSize={9} fontWeight="300" fill="#9A93A6">
+        <SvgText key={`ax-${gy}`} x={26} y={gy + 3} textAnchor="end" fontSize={9} fontWeight="300" fill={axisInk}>
           {axisLabel(grid[i])}
         </SvgText>
       ))}
       {n > 1 ? <Path d={area} fill="url(#revfill)" /> : null}
       {n > 1 ? (
-        <Path d={line} fill="none" stroke="#7B5CBC" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+        <Path d={line} fill="none" stroke={ink} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
       ) : null}
       {points.map((p, i) => {
         const last = i === n - 1;
+        /* ⚠ הילה סביב האחרונה · ״כוכב שנוחת בקצה הקו״ מהתצוגה
+           המקדימה שאישרה שקד */
         return (
-          <Circle
-            key={`${p.k}-${i}`}
-            cx={x(i)}
-            cy={y(p.v)}
-            r={last ? 4.2 : 2.6}
-            fill={last ? '#7B5CBC' : '#FFFFFF'}
-            stroke={last ? '#FFFFFF' : '#7B5CBC'}
-            strokeWidth={last ? 2.4 : 2}
-          />
+          <React.Fragment key={`${p.k}-${i}`}>
+            {last ? <Circle cx={x(i)} cy={y(p.v)} r={7.5} fill={ink} opacity={0.26} /> : null}
+            <Circle
+              cx={x(i)}
+              cy={y(p.v)}
+              r={last ? 4.2 : 2.6}
+              fill={last ? ink : dotFill}
+              stroke={last ? dotFill : ink}
+              strokeWidth={last ? 2.4 : 2}
+            />
+          </React.Fragment>
         );
       })}
     </Svg>
