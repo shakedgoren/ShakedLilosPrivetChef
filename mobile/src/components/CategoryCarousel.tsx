@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { CARD, CategoryDeckCard } from './CategoryDeckCard';
 import { DOT, DOT_OFF } from './CategoryCard';
@@ -14,20 +14,21 @@ import type { Category } from '../data/categories';
  * מלא, והשכנים מציצים מאחוריו מוקטנים, מטושטשים ונמוגים.
  *
  * המספרים חולצו מקובץ הלוטי עצמו · שכן ב-64%, יציאה הצידה ודעיכה.
- * הטשטוש על השכנים והבחירה ב-1.8 שניות לכרטיס הן שלה.
+ * הטשטוש על השכנים הוא בחירה שלה, וכך גם המעבר הידני בלבד.
  */
 
-/** שלוש המדרגות · מרכז, שכן, רחוק */
+/**
+ * שתי מדרגות בלבד · הקדמי ושכן אחד מכל צד.
+ * ⚠ הייתה כאן מדרגה שלישית (44% ואטימות 0.2), ואז נראו **ארבעה**
+ * כרטיסים מטושטשים בבת אחת. שקד ביקשה אחד ראשי ושניים מאחוריו.
+ */
 const STEPS = [
   { x: 0, scale: 1, opacity: 1 },
   { x: 46, scale: 0.64, opacity: 0.45 },
-  { x: 74, scale: 0.44, opacity: 0.2 },
 ] as const;
 
 /** המעבר · אותו עקום של הלוטי */
 const GLIDE_MS = 480;
-/** הזמן על כל כרטיס · ״קצב רגיל״ בבחירתה */
-const AUTOPLAY_MS = 1800;
 
 /**
  * הטשטוש על השכנים · מה שמבליט את הקדמי.
@@ -39,6 +40,11 @@ const NEIGHBOUR_FILTER = { filter: 'blur(2.4px) saturate(0.72)' } as unknown as 
 
 /** מקום לצל · 52px למטה בכרטיס הקדמי */
 const SHADOW_ROOM = 30;
+/**
+ * ⚠ הרווח מתחת לנקודות · בלעדיו שורת הבועות עלתה על הנקודות.
+ * נמדד בדפדפן: הן חפפו.
+ */
+const RAIL_GAP = 20;
 
 type Props = {
   items: Category[];
@@ -51,29 +57,14 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
   const n = items.length;
 
   /**
-   * ניגון אוטומטי · מתאפס בכל מגע, כדי שהלקוחה לא תילחם בקרוסלה.
-   * `onActiveChange` משתנה בכל רינדור, ולכן הוא נשמר ב-ref.
+   * ⚠ **אין ניגון אוטומטי** · הכרטיסים מתחלפים רק בהחלקת אצבע,
+   * בלחיצה על בועת הקטגוריה או על נקודה. בקשה מפורשת של שקד —
+   * קרוסלה שרצה מעצמה נלחמת במי שמנסה לקרוא.
    */
-  const changeRef = useRef(onActiveChange);
-  changeRef.current = onActiveChange;
-
-  const [paused, setPaused] = React.useState(false);
-  useEffect(() => {
-    if (paused || n < 2) return;
-    const id = setInterval(() => changeRef.current((active + 1) % n), AUTOPLAY_MS);
-    return () => clearInterval(id);
-  }, [active, n, paused]);
-
-  /* מגע עוצר את הניגון · חוזר אחרי שהיא מפסיקה לגעת */
-  const touch = (next: number) => {
-    setPaused(true);
-    onActiveChange(next);
-  };
-
   const pan = useCategorySwipe({
     active,
     count: n,
-    onChange: touch,
+    onChange: onActiveChange,
     onDrag: () => {},
     onSettle: () => {},
   });
@@ -119,7 +110,7 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
         {items.map((c, i) => (
           <Pressable
             key={c.key}
-            onPress={() => touch(i)}
+            onPress={() => onActiveChange(i)}
             hitSlop={8}
             style={[
               s.dot,
@@ -136,7 +127,7 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
 }
 
 const s = StyleSheet.create({
-  window: { alignItems: 'center', gap: 10 },
+  window: { alignItems: 'center', gap: 12, marginBottom: RAIL_GAP },
   deck: {
     width: '100%',
     height: CARD.height + SHADOW_ROOM,
