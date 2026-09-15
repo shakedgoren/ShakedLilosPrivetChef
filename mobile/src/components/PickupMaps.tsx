@@ -3,12 +3,17 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';
+import { ChevronLeft, ChevronRight } from '../icons';
 
 /**
  * מפות ההגעה לחנייה · הכתובת בגדול, הערת הוויז מתחתיה,
  * וארבע המפות עם כותרת הכיוון על התמונה מימין למעלה.
  * ארבע המפות מגיעות מ-design/app/assets · parking-1..4.
  */
+/* החצים · אותן מידות של שאר הקרוסלות · 15 בעובי 2.4 */
+const ARROW_GLYPH = 15;
+const ARROW_STROKE = 2.4;
+
 export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const [i, setI] = useState(0);
   const maps = PICKUP.maps;
@@ -28,11 +33,16 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
           <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
         </View>
 
+        {/* ⚠ היו כאן תווי טקסט ‹ › · הם **מראה דו-כיוונית**, ולכן
+            ב-RTL הדפדפן הפך אותם והחץ הימני הצביע שמאלה. אותם
+            אייקוני SVG של שאר הקרוסלות חסינים לזה.
+            ⚠ הכיוון החוצה · ימינה בימין ושמאלה בשמאל, כפי ששקד
+            ביקשה גם בקרוסלת פינת השף. */}
         <Pressable onPress={() => step(-1)} style={[s.arrow, s.arrowRight]} hitSlop={6}>
-          <Text style={[s.arrowGlyph, { color: ink }]}>›</Text>
+          <ChevronRight size={ARROW_GLYPH} color={ink} strokeWidth={ARROW_STROKE} />
         </Pressable>
         <Pressable onPress={() => step(1)} style={[s.arrow, s.arrowLeft]} hitSlop={6}>
-          <Text style={[s.arrowGlyph, { color: ink }]}>‹</Text>
+          <ChevronLeft size={ARROW_GLYPH} color={ink} strokeWidth={ARROW_STROKE} />
         </Pressable>
       </View>
 
@@ -89,7 +99,6 @@ const s = StyleSheet.create({
   },
   arrowRight: { right: 8 },
   arrowLeft: { left: 8 },
-  arrowGlyph: { fontSize: 20, lineHeight: 22, fontWeight: '700' },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: space.xs },
   dot: { height: 6, borderRadius: 999 },
 });
