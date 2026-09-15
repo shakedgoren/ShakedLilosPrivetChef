@@ -32,10 +32,18 @@ const TIME_LABEL = 'שעה';
 const SHIP_LABEL = 'מסירה';
 const PICKUP_TEXT = 'איסוף עצמי';
 const DELIV_TEXT = 'משלוח';
-/** ⚠ נוסח שכתבתי · דמי המשלוח עצמם מהקנבס */
-const DELIV_FEE_NOTE =
-  `${FRUIT_SHIPPING.near.label} ${FRUIT_SHIPPING.near.fee} ₪ · ` +
-  `${FRUIT_SHIPPING.far.label} ${FRUIT_SHIPPING.far.fee} ₪`;
+const ADDR_LABEL = 'כתובת';
+const FEE_LABEL = 'דמי משלוח';
+
+/**
+ * דמי המשלוח לעיר שנבחרה.
+ * ⚠ **החלוקה לשתי המדרגות היא שלי** · הקנבס כותב ״משלוחים בתוך
+ * יבנה״ מול ״משלוחים באזור השפלה״, ולכן יבנה מקבלת את המדרגה
+ * הקרובה וכל שאר הערים את הרחוקה. הסכומים עצמם מהקנבס.
+ */
+const NEAR_CITY = 'יבנה';
+export const shippingFee = (city: string): number =>
+  city === NEAR_CITY ? FRUIT_SHIPPING.near.fee : FRUIT_SHIPPING.far.fee;
 
 /** תאריך קריא · ״17.09.2026 (יום ה׳)״ במקום מפתח ISO */
 export function humanDate(key: string): string {
@@ -61,9 +69,12 @@ export function whatsappMessage(
     `${TIME_LABEL}: ${details.time}`,
     `${SHIP_LABEL}: ${deliv ? DELIV_TEXT : PICKUP_TEXT}`,
   );
-  /* ⚠ המחיר תלוי בעיר, ולכן הוא נמסר כטווח ולא מחושב · אין בחלונית
-     שדה כתובת, ושקד לא ביקשה אותו. */
-  if (deliv) out.push(`דמי משלוח: ${DELIV_FEE_NOTE}`);
+  if (deliv && details.city) {
+    out.push(
+      `${ADDR_LABEL}: ${details.address}, ${details.city}`,
+      `${FEE_LABEL}: ${shippingFee(details.city)} ₪`,
+    );
+  }
   return out.join('\n');
 }
 

@@ -5,7 +5,8 @@ import { ContinueButton } from '../../components/ContinueButton';
 import { Bag, Close, Truck } from '../../icons';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
 import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
-import { hhmm, toMinutes } from '../../order/types';
+import { hhmm, isAddressValid, toMinutes } from '../../order/types';
+import { CITIES } from '../../data/shared';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { TILE_SHADOW } from '../../theme/glass';
 
@@ -43,6 +44,9 @@ export type FruitDetails = {
   date: string;
   time: string;
   ship: Ship;
+  /** רק במשלוח · עיר ורחוב מהשדות שנפתחים מתחת לבחירה */
+  city?: string;
+  address?: string;
 };
 
 type Props = {
@@ -58,6 +62,8 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
   const [date, setDate] = React.useState('');
   const [time, setTime] = React.useState(hhmm(FRUIT_FULFILLMENT.pickupFrom));
   const [ship, setShip] = React.useState<Ship | null>(null);
+  const [city, setCity] = React.useState(CITIES[0]);
+  const [addr, setAddr] = React.useState('');
 
   /* שעה מחוץ לטווח נתפסת פנימה · ההצמדה ביציאה מהשדה, לא תוך כדי הקלדה */
   const settleTime = () => {
@@ -69,11 +75,21 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
     setTime(hhmm(Math.min(FRUIT_FULFILLMENT.pickupTo, Math.max(FRUIT_FULFILLMENT.pickupFrom, m))));
   };
 
-  const ready = name.trim() !== '' && date !== '' && toMinutes(time) !== null && ship !== null;
+  const deliv = ship === 'deliv';
+  const addrOk = isAddressValid(addr);
+  /* ⚠ במשלוח הכתובת חובה · בלי זה אפשר היה לשלוח ״משלוח״ בלי לאן */
+  const ready =
+    name.trim() !== '' && date !== '' && toMinutes(time) !== null && ship !== null && (!deliv || addrOk);
 
   const send = () => {
     if (!ready || !ship) return;
-    onSend({ name: name.trim(), date, time, ship });
+    onSend({
+      name: name.trim(),
+      date,
+      time,
+      ship,
+      ...(deliv ? { city, address: addr.trim() } : {}),
+    });
   };
 
   if (!open) return null;
@@ -154,6 +170,42 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                   <Text style={s.optionSub}>{window_}</Text>
                 </View>
               </Pressable>
+
+              {/* שדות הכתובת · נפתחים רק במשלוח, כמו `isAddr` בקנבס */}
+              {deliv ? (
+                <View style={s.addrBox}>
+                  <View style={s.addrField}>
+                    <Text style={s.label}>עיר</Text>
+                    <View style={s.cities}>
+                      {CITIES.map((c) => (
+                        <Pressable
+                          key={c}
+                          onPress={() => setCity(c)}
+                          style={[s.city, c === city && s.cityOn]}
+                        >
+                          <Text style={[s.cityText, c === city && s.cityTextOn]}>{c}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={s.addrField}>
+                    <Text style={s.label}>רחוב ומספר</Text>
+                    <TextInput
+                      value={addr}
+                      onChangeText={setAddr}
+                      placeholder="רחוב ומספר בית"
+                      placeholderTextColor="#B3ABBD"
+                      style={[s.input, !addrOk && addr !== '' && s.inputBad]}
+                    />
+                    {!addrOk ? (
+                      <Text style={[s.addrHint, addr !== '' && s.addrHintBad]}>
+                        יש להזין רחוב ומספר בית
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              ) : null}
 
               {/* דמי המשלוח · הועתקו אחד לאחד משלב הכתובת בקנבס */}
               <View style={s.fees}>
@@ -252,6 +304,32 @@ const s = StyleSheet.create({
   optionText: { flexGrow: 1, flexShrink: 1, gap: 2 },
   optionTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   optionSub: { fontSize: 12, fontWeight: '300', color: surface.muted },
+
+  /* קופסת הכתובת · פינה 20 וריפוד 14, כמו `isAddr` בקנבס */
+  addrBox: {
+    marginTop: 2,
+    borderRadius: 20,
+    padding: 14,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(130,112,162,0.16)',
+    gap: 11,
+  },
+  addrField: { gap: 5 },
+  /* ⚠ בקנבס העיר היא `select` · ל-React Native אין, ולכן גלולות */
+  cities: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  city: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(130,112,162,0.09)',
+  },
+  cityOn: { backgroundColor: a(ACCENT.rgb, 0.22) },
+  cityText: { fontSize: 13, color: surface.inkSoft },
+  cityTextOn: { color: ACCENT.deep, fontWeight: '600' },
+  inputBad: { borderColor: 'rgba(185,83,73,0.5)' },
+  addrHint: { fontSize: 11, fontWeight: '300', color: '#A79FB2', paddingHorizontal: 4 },
+  addrHintBad: { color: '#B95349' },
 
   /* לוח דמי המשלוח · פינה 18, ריפוד 13/15, כמו בקנבס */
   fees: {
