@@ -71,6 +71,51 @@ function unitCost(d: Dish, all: Dish[], depth = 0): number {
   return base;
 }
 
+type SumRow = { k: string; v: string; w: '400' | '600' | '700'; fg: string; size: number };
+
+/**
+ * שורות לוח הסיכום · הכללים מועתקים מהקנבס מילה במילה.
+ *
+ * ⚠ **המשקל, הגודל והגוון משתנים משורה לשורה** · סה״כ מצרכים רגיל
+ * ואפור, עלות ורווח בולטים וגדולים, והרווחיות ביניהם. ״רזה״ (מתחת
+ * ל-40 אחוז) צובע את הרווח בכתום במקום בירוק.
+ */
+function summaryRows(
+  d: Dish,
+  unit: number,
+  costCmp: number,
+  profit: number,
+  pct: number,
+  thin: boolean,
+): SumRow[] {
+  const isWeight = d.mode === 'weight';
+  const warm = '#A65E2A';
+  const good = thin ? warm : '#4E8A64';
+  const rows: SumRow[] = [];
+  if (d.parts.length) {
+    rows.push({ k: 'סה״כ מצרכים', v: `${nf(partsSum(d))} ₪`, w: '400', fg: '#4A4254', size: 12.5 });
+  }
+  rows.push({
+    k: isWeight ? 'עלות ל-100 גרם' : 'עלות ליחידה',
+    v: `${money(unit)} ₪`,
+    w: '700',
+    fg: warm,
+    size: 15,
+  });
+  if (isWeight) {
+    rows.push({ k: 'עלות לק״ג', v: `${money(costCmp)} ₪`, w: '600', fg: warm, size: 13 });
+  }
+  rows.push({
+    k: isWeight ? 'רווח לק״ג' : 'רווח ליחידה',
+    v: `${money(profit)} ₪`,
+    w: '700',
+    fg: good,
+    size: 15,
+  });
+  rows.push({ k: 'רווחיות', v: `${pct}%`, w: '600', fg: good, size: 13 });
+  return rows;
+}
+
 export function AdminCostsScreen() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
@@ -258,28 +303,45 @@ export function AdminCostsScreen() {
                       <Text style={[s.partSum, s.w48]}>{nf(num(p.price) * num(p.qty))}</Text>
                     </View>
                   ))}
-                  {!isAuto ? (
+                  {/* ⚠ **שני השדות זה לצד זה** · כך זה בקנבס, ושקד
+                      שלחה בדיוק את הצילום הזה (15 בספטמבר 2026).
+                      קודם הם ישבו אחד מתחת לשני ברוחב מלא. */}
+                  <View style={s.fields}>
+                    {!isAuto ? (
+                      <View style={s.field}>
+                        <Text style={s.lab}>{isWeight ? COSTS_YIELD_WEIGHT : COSTS_YIELD_UNIT}</Text>
+                        <TextInput
+                          value={String(d.yld)}
+                          keyboardType="numeric"
+                          onChangeText={(v) => patch(d.id, { yld: num(v) })}
+                          style={[s.bigInp, s.yieldInp]}
+                        />
+                      </View>
+                    ) : null}
                     <View style={s.field}>
-                      <Text style={s.lab}>{isWeight ? COSTS_YIELD_WEIGHT : COSTS_YIELD_UNIT}</Text>
+                      <Text style={s.lab}>{isWeight ? COSTS_PRICE_KG : COSTS_PRICE_UNIT}</Text>
                       <TextInput
-                        value={String(d.yld)}
+                        value={String(d.price)}
                         keyboardType="numeric"
-                        onChangeText={(v) => patch(d.id, { yld: num(v) })}
-                        style={s.inp}
+                        onChangeText={(v) => patch(d.id, { price: num(v) })}
+                        style={[s.bigInp, s.priceInp]}
                       />
                     </View>
-                  ) : null}
-                  <View style={s.field}>
-                    <Text style={s.lab}>{isWeight ? COSTS_PRICE_KG : COSTS_PRICE_UNIT}</Text>
-                    <TextInput
-                      value={String(d.price)}
-                      keyboardType="numeric"
-                      onChangeText={(v) => patch(d.id, { price: num(v) })}
-                      style={s.inp}
-                    />
                   </View>
-                  <Text style={s.kpi}>{`עלות ליחידה ${money(unit)} ₪`}</Text>
-                  <Text style={[s.kpi, { color: thin ? '#A65E2A' : '#4E8A64' }]}>{`רווח ${money(profit)} ₪ · ${pct}%`}</Text>
+
+                  {/* ⚠ **לוח הסיכום של הקנבס** · רדיוס 15, רקע סגול
+                      ב-7%, וארבע שורות שכל אחת נושאת את המשקל,
+                      הגודל והגוון שלה. קודם היו כאן שתי שורות טקסט. */}
+                  <View style={s.sum}>
+                    {summaryRows(d, unit, costCmp, profit, pct, thin).map((r) => (
+                      <View key={r.k} style={s.sumRow}>
+                        <Text style={[s.sumK, { fontWeight: r.w, color: r.fg }]}>{r.k}</Text>
+                        <Text style={[s.sumV, { fontSize: r.size, fontWeight: r.w, color: r.fg }]}>
+                          {r.v}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               ) : null}
             </View>
@@ -348,9 +410,28 @@ const s = StyleSheet.create({
   w52: { width: 52, textAlign: 'center' },
   w48: { width: 48, textAlign: 'left' },
   partSum: { fontSize: 12, color: surface.ink },
-  field: { gap: 4 },
-  lab: { fontSize: 11, color: surface.faint },
-  kpi: { fontSize: 13, fontWeight: '600', color: '#A65E2A' },
+  /* שני השדות · flex-end כדי שהשדה הבודד יישר לתחתית */
+  fields: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  field: { flex: 1, minWidth: 0 },
+  lab: { fontSize: 10.5, fontWeight: '500', color: '#8A8194', marginBottom: 3, textAlign: 'center' },
+  bigInp: {
+    width: '100%',
+    height: 40,
+    borderRadius: 13,
+    paddingHorizontal: 11,
+    textAlign: 'center',
+    fontSize: 14.5,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+  },
+  yieldInp: { fontWeight: '600', color: surface.ink, borderColor: 'rgba(130,112,162,0.18)' },
+  priceInp: { fontWeight: '700', color: '#43307A', borderColor: 'rgba(123,92,188,0.3)' },
+
+  /* לוח הסיכום · המידות של הקנבס */
+  sum: { borderRadius: 15, paddingVertical: 12, paddingHorizontal: 14, gap: 6, backgroundColor: 'rgba(123,92,188,0.07)' },
+  sumRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
+  sumK: { fontSize: 12.5 },
+  sumV: { fontVariant: ['tabular-nums'] },
   foot: { fontSize: 11.5, color: surface.faint, paddingVertical: 8 },
   empty: { fontSize: 13, color: '#A79FB2', textAlign: 'center', padding: 20 },
   buy: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(130,112,162,0.12)' },
