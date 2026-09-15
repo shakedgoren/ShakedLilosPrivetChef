@@ -22,6 +22,8 @@ const H = 38;
 const KNOB = 30;
 const KNOB_INSET = 4;
 const ARROW = 13;
+/** הריפוד בקצה הטקסט · מה שקובע את רוחב הכפתור */
+const PAD_END = 36;
 
 /** מילוי הזכוכית · שקוף מספיק כדי שהשטיפה מאחור תעבור */
 const FILL_ALPHA = 0.14;
@@ -81,9 +83,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     /* מקום לידית משמאל, וריפוד מימין · שקד ביקשה ״מעט רוחב״
-       אחרי שראתה את הגרסה הצרה, ולכן 14 → 24 */
+       פעמיים: 14 → 24, ואז 24 → 36. */
     paddingLeft: KNOB_INSET + KNOB + 4,
-    paddingRight: 24,
+    paddingRight: PAD_END,
   },
   label: { fontSize: 15, fontWeight: '600' },
   knob: {
