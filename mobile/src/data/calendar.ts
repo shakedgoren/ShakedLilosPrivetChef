@@ -65,3 +65,12 @@ export const dayPartOpen = (dateKey: string | undefined, part: string): boolean 
 
 /** ההסבר מתחת ללוח · ⚠ הנוסח בקנבס הוא ״שבתות וחגים סגורים״ */
 export const CAL_HINT = 'שישי ערב, שבת בוקר וצהריים, וחגים — סגורים';
+
+/**
+ * מגשי פירות · הכלל פשוט יותר מזה של השף — **שבת סגורה להזמנות**,
+ * וזהו. אין כאן טווחי חג מקודדים, כי הם לא אושרו ולא נמסרו.
+ */
+export const fruitDateOpen = (k: string) => dowOf(k) !== SATURDAY && k >= todayKey();
+
+/** ⚠ נוסח שכתבתי · אין לו מקבילה בקנבס של מגשי הפירות */
+export const FRUIT_CAL_HINT = 'שבת סגורה להזמנות';

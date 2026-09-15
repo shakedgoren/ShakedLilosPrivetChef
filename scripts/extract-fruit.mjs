@@ -29,6 +29,15 @@ out.disclaimer = one('>(העיצוב בתמונה להמחשה[^<]*)</div>', 'ה
 out.phoneLabel = one('>(לפרטים נוספים: [\\d-]+)</div>', 'טלפון');
 out.phoneHref = one('href="tel:(\\d+)"', 'קישור הטלפון');
 
+/* דמי המשלוח · יושבים במרקאפ של שלב הכתובת, לא בקבועי הסקריפט */
+out.shipNearLabel = one('>(משלוחים בתוך [^<]+)</div>', 'משלוח קרוב');
+out.shipFarLabel = one('>(משלוחים באזור [^<]+)</div>', 'משלוח רחוק');
+out.shipArea = one('>(אזור החלוקה: [^<]+)</div>', 'אזור החלוקה');
+const fees = [...markup.matchAll(/color: #B04A76; font-variant-numeric: tabular-nums;">(\d+) ₪</g)];
+if (fees.length !== 2) throw new Error('דמי משלוח: ' + fees.length + ' סכומים במקום שניים');
+out.shipNearFee = Number(fees[0][1]);
+out.shipFarFee = Number(fees[1][1]);
+
 /* המידות של כרטיס המגש · מהמרקאפ ולא מהעין */
 const card = /border-radius: (\d+)px; padding: (\d+)px; display: flex; flex-direction: column; gap: (\d+)px/.exec(markup);
 out.cardRadius = Number(card[1]);
@@ -48,3 +57,4 @@ for (const it of out.ITEMS) {
 }
 console.log('כרטיס: פינה', out.cardRadius, 'ריפוד', out.cardPad, 'רווח פנימי', out.cardGap, '· תמונה גובה', out.shotHeight, 'פינה', out.shotRadius, '· רווח רשת', out.gridGap);
 console.log('טלפון:', out.phoneLabel, '→ tel:' + out.phoneHref);
+console.log('משלוח:', out.shipNearLabel, out.shipNearFee, '₪ ·', out.shipFarLabel, out.shipFarFee, '₪ ·', out.shipArea);

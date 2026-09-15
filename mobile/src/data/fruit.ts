@@ -66,6 +66,13 @@ export const CARD = {
   gap: 10,
 } as const;
 
+/* ── מסירה · דמי המשלוח מהקנבס, לא מומצאים ── */
+export const FRUIT_SHIPPING = {
+  near: { label: "משלוחים בתוך יבנה", fee: 20 },
+  far: { label: "משלוחים באזור השפלה", fee: 60 },
+  area: "אזור החלוקה: מאשדוד ועד ראשון לציון",
+} as const;
+
 const PICKUP_FROM = 420;
 const PICKUP_TO = 1200;
 const DELIVERY_STEP_MINUTES = 30;

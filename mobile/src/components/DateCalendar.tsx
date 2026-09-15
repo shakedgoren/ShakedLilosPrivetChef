@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronLeft, ChevronRight } from '../icons';
 import { CAL_HINT, DOWS, MONTHS, dateOpen, dayKey } from '../data/calendar';
 import { IS_RTL } from '../theme/rtl';
+import { a, hues } from '../theme/tokens';
 
 /**
  * לוח שנה לבחירת תאריך · `isCal` בקנבס (`Chef.dc.html`).
@@ -21,10 +22,8 @@ const NAV = 28;
 const NAV_GLYPH = 12;
 const NAV_STROKE = 2.6;
 
-const MARK = '#A85A28';
-const MARK_INK = '#7A3D18';
-const MARK_SOFT = 'rgba(168,90,40,0.09)';
-const NAV_BG = 'rgba(168,90,40,0.1)';
+/** ברירת המחדל · גוון השף, כמו ב-`Chef.dc.html` */
+const DEFAULT_ACCENT = hues.chef;
 const MUTE = '#A79FB2';
 const OFF_INK = '#C9C3D1';
 
@@ -35,9 +34,25 @@ type Props = {
   /** התאריך שנבחר · מפתח `YYYY-MM-DD` */
   value?: string;
   onPick: (key: string) => void;
+  /** אילו ימים פתוחים · ברירת המחדל היא הכלל של פינת השף */
+  isOpen?: (key: string) => boolean;
+  /** ההסבר מתחת ללוח */
+  hint?: string;
+  /** גוון הקטגוריה · מגשי הפירות מציגים את אותו לוח בוורוד */
+  accent?: { hue: string; deep: string; rgb: string };
 };
 
-export function DateCalendar({ value, onPick }: Props) {
+export function DateCalendar({
+  value,
+  onPick,
+  isOpen = dateOpen,
+  hint = CAL_HINT,
+  accent = DEFAULT_ACCENT,
+}: Props) {
+  const MARK = accent.hue;
+  const MARK_INK = accent.deep;
+  const MARK_SOFT = a(accent.rgb, 0.09);
+  const NAV_BG = a(accent.rgb, 0.1);
   const now = new Date();
   const [y, setY] = useState(now.getFullYear());
   const [m, setM] = useState(now.getMonth());
@@ -59,7 +74,7 @@ export function DateCalendar({ value, onPick }: Props) {
   for (let i = 0; i < lead; i++) cells.push(<View key={`pad-${i}`} style={st.cell} />);
   for (let d = 1; d <= total; d++) {
     const k = dayKey(y, m, d);
-    const open = dateOpen(k);
+    const open = isOpen(k);
     const sel = value === k;
     cells.push(
       <Pressable
@@ -87,7 +102,7 @@ export function DateCalendar({ value, onPick }: Props) {
     <View style={st.board}>
       {/* ⚠ `direction: ltr` בקנבס · החץ קדימה בשמאל והחץ אחורה בימין */}
       <View style={st.head}>
-        <Pressable onPress={() => stepMonth(1)} style={st.nav} hitSlop={6}>
+        <Pressable onPress={() => stepMonth(1)} style={[st.nav, { backgroundColor: NAV_BG }]} hitSlop={6}>
           <ChevronLeft size={NAV_GLYPH} color={MARK_INK} strokeWidth={NAV_STROKE} />
         </Pressable>
         <Text style={st.month}>
@@ -96,7 +111,7 @@ export function DateCalendar({ value, onPick }: Props) {
         <Pressable
           onPress={atNow ? undefined : () => stepMonth(-1)}
           disabled={atNow}
-          style={[st.nav, atNow && { opacity: PAST_OPACITY }]}
+          style={[st.nav, { backgroundColor: NAV_BG }, atNow && { opacity: PAST_OPACITY }]}
           hitSlop={6}
         >
           <ChevronRight size={NAV_GLYPH} color={MARK_INK} strokeWidth={NAV_STROKE} />
@@ -112,7 +127,7 @@ export function DateCalendar({ value, onPick }: Props) {
         {cells}
       </View>
 
-      <Text style={st.hint}>{CAL_HINT}</Text>
+      <Text style={st.hint}>{hint}</Text>
     </View>
   );
 }
@@ -142,7 +157,6 @@ const st = StyleSheet.create({
     width: NAV,
     height: NAV,
     borderRadius: NAV / 2,
-    backgroundColor: NAV_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },

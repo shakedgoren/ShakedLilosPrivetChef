@@ -49,6 +49,13 @@ export const CARD = {
   gap: ${d.gridGap},
 } as const;
 
+/* ── מסירה · דמי המשלוח מהקנבס, לא מומצאים ── */
+export const FRUIT_SHIPPING = {
+  near: { label: ${j(d.shipNearLabel)}, fee: ${d.shipNearFee} },
+  far: { label: ${j(d.shipFarLabel)}, fee: ${d.shipFarFee} },
+  area: ${j(d.shipArea)},
+} as const;
+
 const PICKUP_FROM = ${d.PICK_FROM};
 const PICKUP_TO = ${d.PICK_TO};
 const DELIVERY_STEP_MINUTES = ${d.DELIV_STEP};

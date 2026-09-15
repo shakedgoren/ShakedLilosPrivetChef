@@ -23,6 +23,7 @@ import { Phone } from '../../icons';
 import { a, hues, radius, space, surface } from '../../theme/tokens';
 import type { OrderLine } from '../../order/types';
 import { whatsappLink } from './whatsappOrder';
+import { FruitOrderSheet, type FruitDetails } from './FruitOrderSheet';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 const ACCENT = hues.fruit;
@@ -63,12 +64,24 @@ export function FruitScreen() {
     [qty],
   );
 
+  /* חלונית הפרטים · נפתחת לפני השליחה */
+  const [sheet, setSheet] = useState(false);
+
   /**
    * ⚠ אין התחברות ואין שרת · המגשים נעשים אצל מיכל ולא עוברים
-   * במערכת ההזמנות. הכפתור פותח וואטסאפ עם ההזמנה כתובה בפנים.
+   * במערכת ההזמנות.
+   *
+   * ⚠ **הכפתור כבר לא פותח וואטסאפ ישירות** · שקד ביקשה שקודם
+   * תיפתח חלונית שאוספת שם, תאריך, שעה ואופן מסירה, ורק אחריה
+   * תישלח ההודעה עם הפרטים המלאים.
    */
   const onContinue = () => {
-    if (total > 0) void Linking.openURL(whatsappLink(lines, total));
+    if (total > 0) setSheet(true);
+  };
+
+  const onSend = (d: FruitDetails) => {
+    setSheet(false);
+    void Linking.openURL(whatsappLink(lines, total, d));
   };
 
   return (
@@ -129,6 +142,9 @@ export function FruitScreen() {
           <Text style={[s.ctaText, { color: ACCENT.deep }]}>{ORDER_LABEL}</Text>
         </Pressable>
       </View>
+
+      {/* חלונית הפרטים · נפתחת לפני שההודעה נשלחת */}
+      <FruitOrderSheet open={sheet} onClose={() => setSheet(false)} onSend={onSend} />
     </View>
   );
 }
