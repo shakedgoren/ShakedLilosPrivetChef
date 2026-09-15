@@ -394,6 +394,42 @@ if (((cleared.body as { rec: { sold?: Record<string, number> } }).rec.sold ?? {}
   fail('clearing did not restore the count', cleared.body);
 }
 
+/**
+ * סגירת רשימת קניות · הרשימה עוברת להיסטוריה, נוצרת הוצאה,
+ * ונפתחת רשימה ריקה חדשה באותו אזור.
+ */
+const active = await api('/admin/shop/active', { headers: { authorization: `Bearer ${adminToken}` } });
+if (active.status !== 200) fail('shop active', active);
+const list0 = (active.body as { list: { id: string; area: string; items: { name: string; price: string; qty: string; done?: boolean }[] } }).list;
+
+/* ⚠ במסד של בדיקת העשן הרשימה ריקה · מוסיפים פריט ואז מסמנים
+   אותו כנקנה. בלי פריט מסומן הסגירה נדחית בכוונה. */
+const marked = [
+  { id: 'smoke1', g: 'ירקות ופירות', name: 'עגבניות', unit: 'ק״ג', qty: '8', price: '9', done: true, actual: '9' },
+  ...list0.items,
+];
+const saved = await api('/admin/shop/active', {
+  method: 'PUT',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ items: marked }),
+});
+if (saved.status !== 200) fail('shop save', saved);
+
+const closed = await api('/admin/shop/active/close', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+if (closed.status !== 200) fail('shop close', closed);
+const cb = closed.body as { closed: { id: string; area: string }; list: { id: string; items: unknown[] }; expense: number };
+if (cb.closed.id === cb.list.id) fail('close did not open a fresh list', cb);
+if (cb.list.items.length !== 0) fail('fresh list is not empty', cb.list);
+if (cb.closed.area !== cb.list.area) fail('fresh list changed area', cb);
+
+const hist = await api('/admin/shop/history', { headers: { authorization: `Bearer ${adminToken}` } });
+if (hist.status !== 200) fail('shop history', hist);
+const lists = (hist.body as { lists: { id: string }[] }).lists;
+if (!lists.some((l) => l.id === cb.closed.id)) fail('closed list missing from history', lists);
+
 /* ארבעת הטווחים · כל אחד מחזיר תווית, סכום ונקודות */
 for (const r of ['day', 'week', 'month', 'half']) {
   const hit = await api(`/admin/revenue?range=${r}`, {
