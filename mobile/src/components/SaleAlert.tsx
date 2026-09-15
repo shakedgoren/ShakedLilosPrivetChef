@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Bell, Close } from '../icons';
+import { BellSwing } from './BellSwing';
 import { a, hues, radius, space, surface, type CategoryKey } from '../theme/tokens';
 import { categoryName, categoryKey } from '../screens/orders/format';
 
@@ -35,8 +36,12 @@ export function SaleAlert({ category, onOpen, onDismiss }: Props) {
         { backgroundColor: a(accent.rgb, 0.1), borderColor: a(accent.rgb, 0.28) },
       ]}
     >
+      {/* ⚠ הפעמון מתנדנד · בחירה של שקד (15 בספטמבר 2026).
+          פעמיים כשההתראה מופיעה, ואז נח. */}
       <View style={[s.ring, { backgroundColor: a(accent.rgb, 0.16) }]}>
-        <Bell size={BELL} color={accent.deep} strokeWidth={1.9} />
+        <BellSwing size={BELL}>
+          <Bell size={BELL} color={accent.deep} strokeWidth={1.9} />
+        </BellSwing>
       </View>
 
       <View style={s.text}>

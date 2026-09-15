@@ -3,6 +3,8 @@ import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { OrderTracker } from '../../components/OrderTracker';
+import { StepIn } from '../../components/StepIn';
 import { apiEnabled } from '../../api/config';
 import { COPY, orderError } from '../../api/copy';
 import { ApiError, type Order } from '../../api/types';
@@ -140,25 +142,27 @@ export function MyOrdersScreen() {
           showsVerticalScrollIndicator={false}
         >
           {err ? <Text style={s.err}>{err}</Text> : null}
-          {live.map((o) => (
-            <OrderCard
-              key={o.id}
-              order={o}
-              variant="live"
-              open={open === o.id}
-              onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
-            />
+          {live.map((o, i) => (
+            <StepIn key={o.id} index={i}>
+              <OrderCard
+                order={o}
+                variant="live"
+                open={open === o.id}
+                onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
+              />
+            </StepIn>
           ))}
           {past.length > 0 ? <Text style={s.pastLabel}>{PAST_LABEL}</Text> : null}
-          {past.map((o) => (
-            <OrderCard
-              key={o.id}
-              order={o}
-              variant="past"
-              open={open === o.id}
-              onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
-              onAgain={isCancelled(o.status) ? undefined : () => void onAgain(o)}
-            />
+          {past.map((o, i) => (
+            <StepIn key={o.id} index={live.length + i}>
+              <OrderCard
+                order={o}
+                variant="past"
+                open={open === o.id}
+                onToggle={() => setOpen((cur) => (cur === o.id ? null : o.id))}
+                onAgain={isCancelled(o.status) ? undefined : () => void onAgain(o)}
+              />
+            </StepIn>
           ))}
         </ScrollView>
       )}
@@ -236,6 +240,17 @@ function OrderCard({
           ) : null}
         </View>
       </View>
+
+      {/* ⚠ מעקב ההזמנה · בחירה של שקד (15 בספטמבר 2026), 480ms לשלב.
+          רק בהזמנה חיה — בהזמנה שנמסרה או בוטלה אין אחרי מה לעקוב.
+          בפינת השף המד הוא המנה המכוסה שביקשה. */}
+      {variant === 'live' ? (
+        <OrderTracker
+          status={order.status}
+          accent={hue}
+          chef={categoryKey(order.category) === 'chef'}
+        />
+      ) : null}
 
       {open ? (
         <View style={s.detail}>

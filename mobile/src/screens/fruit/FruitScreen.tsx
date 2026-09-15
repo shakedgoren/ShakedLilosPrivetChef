@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { RollingTotal } from '../../components/RollingTotal';
+import { StepIn } from '../../components/StepIn';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { useNav } from '../../navigation/store';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -111,7 +113,7 @@ export function FruitScreen() {
         {/* שתי עמודות · בדיוק כמו רשת הכרטיסים בקנבס */}
         <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
           {FRUIT_TRAYS.map((t, i) => (
-            <View key={t.name} style={[s.card, { width: cardW }, qty[i] > 0 && s.cardOn]}>
+            <StepIn key={t.name} index={i} style={[s.card, { width: cardW }, qty[i] > 0 && s.cardOn]}>
               <Photo name={TRAY_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
               <Text style={[s.name, qty[i] > 0 && s.nameOn]}>{t.name}</Text>
               <Text style={s.desc}>{t.desc}</Text>
@@ -129,7 +131,7 @@ export function FruitScreen() {
                   minusInk: ACCENT.deep,
                 }}
               />
-            </View>
+            </StepIn>
           ))}
         </View>
       </ScrollView>
@@ -137,7 +139,7 @@ export function FruitScreen() {
       <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
-          <Text style={s.total}>{total}</Text>
+          <RollingTotal value={total} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
         <Pressable

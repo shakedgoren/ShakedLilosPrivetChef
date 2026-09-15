@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { RollingTotal } from '../../components/RollingTotal';
+import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { useSaleGate } from '../../order/useSaleGate';
@@ -148,15 +150,13 @@ export function SchnitzelScreen() {
             {/* שתי עמודות · תמונה מלמעלה, בדיוק כמו בקנבס */}
             <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
               {SCHNITZEL_TYPES.map((t, k) => (
-                <Pressable
-                  key={t.name}
-                  onPress={() => o.openAdd(k)}
-                  style={[s.typeCard, { width: typeCardW }]}
-                >
-                  <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
-                  <Text style={s.typeName}>{t.name}</Text>
-                  <Text style={s.typePrice}>{t.unit} ₪</Text>
-                </Pressable>
+                <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
+                  <Pressable onPress={() => o.openAdd(k)} style={[s.typeCard, { width: typeCardW }]}>
+                    <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
+                    <Text style={s.typeName}>{t.name}</Text>
+                    <Text style={s.typePrice}>{t.unit} ₪</Text>
+                  </Pressable>
+                </StepIn>
               ))}
             </View>
           </>
@@ -187,15 +187,13 @@ export function SchnitzelScreen() {
             <Text style={s.sectionTitle}>{PICK_BOX_LABEL}</Text>
             <View style={s.grid}>
               {SCHNITZEL_TYPES.map((t, k) => (
-                <Pressable
-                  key={t.name}
-                  onPress={() => o.openBox(k)}
-                  style={[s.typeCard, { width: typeCardW }]}
-                >
-                  <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
-                  <Text style={s.typeName}>{t.name}</Text>
-                  <Text style={s.typePrice}>{t.box} ₪</Text>
-                </Pressable>
+                <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
+                  <Pressable onPress={() => o.openBox(k)} style={[s.typeCard, { width: typeCardW }]}>
+                    <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
+                    <Text style={s.typeName}>{t.name}</Text>
+                    <Text style={s.typePrice}>{t.box} ₪</Text>
+                  </Pressable>
+                </StepIn>
               ))}
             </View>
           </>
@@ -203,17 +201,17 @@ export function SchnitzelScreen() {
 
         <Text style={s.sectionTitle}>רטבים בקוקוט · {COCOTTE_PRICE} ₪ ליחידה</Text>
         {COCOTTES.map((name, i) => (
-          <View key={name} style={[s.row, s.cocotteRow]}>
+          <StepIn key={name} index={i} style={[s.row, s.cocotteRow]}>
             <Text style={[s.name, s.rowText]}>{name}</Text>
             <Stepper value={o.cocottes[i]} onChange={(n) => o.bumpCocotte(i, n - o.cocottes[i])} />
-          </View>
+          </StepIn>
         ))}
       </ScrollView>
 
       <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
-          <Text style={s.total}>{o.total}</Text>
+          <RollingTotal value={o.total} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
         <ContinueButton onPress={onContinue} accent={ACCENT} disabled={o.total === 0} />

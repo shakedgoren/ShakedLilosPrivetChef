@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { RollingTotal } from '../../components/RollingTotal';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CategoryHeader } from '../../components/CategoryHeader';
@@ -195,7 +196,7 @@ export function ChefScreen() {
       <View style={[s.bar, loggedIn && s.barWithNav]}>
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>סה״כ :</Text>
-          <Text style={s.total}>{o.total}</Text>
+          <RollingTotal value={o.total} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
         <ContinueButton

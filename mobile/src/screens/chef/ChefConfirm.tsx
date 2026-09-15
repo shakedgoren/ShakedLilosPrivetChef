@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Confetti } from '../../components/Confetti';
+import { SuccessCheck } from '../../components/SuccessCheck';
 import { GlassPanel } from '../../components/Glass';
 import { Photo } from '../../components/Photo';
-import { Check } from '../../icons';
 import {
   quoteLines,
   quotePerHead,
@@ -44,24 +44,8 @@ const WASH = [
 ] as const;
 
 /* עיגול הווי · 82 בקנבס, ההילה ב-inset ‎-12, והווי 34 בעובי 2.8 */
-const BADGE = 82;
-const HALO = 12;
-const TICK = 34;
-const TICK_STROKE = 2.8;
-const RING_BD = 'rgba(168,90,40,0.55)';
-const RING_W = 2.5;
 
 /* הנפשות הקנבס · popin, ringout ו-pagein */
-const POP_MS = 620;
-const POP_DELAY = 120;
-const POP_EASE = Easing.bezier(0.34, 1.4, 0.5, 1);
-const POP_FROM = 0.4;
-const RING_MS = 1000;
-const RING_DELAY = 260;
-const RING_EASE = Easing.bezier(0.2, 0.7, 0.3, 1);
-const RING_FROM = 0.6;
-const RING_TO = 2.1;
-const RING_ALPHA = 0.75;
 const PAGE_MS = 420;
 const PAGE_EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
 const PAGE_FROM_SCALE = 0.985;
@@ -98,19 +82,17 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
   const recap = React.useMemo(() => quoteRecap(pkg, picks), [pkg, picks]);
   const perHead = quotePerHead(pkg, picks);
 
-  const pop = React.useRef(new Animated.Value(0)).current;
-  const ring = React.useRef(new Animated.Value(0)).current;
+  /* כניסת העמוד · הנפשת הווי עצמה עברה ל-`SuccessCheck` */
   const page = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
-    const run = (v: Animated.Value, duration: number, delay: number, easing: (t: number) => number) =>
-      Animated.timing(v, { toValue: 1, duration, delay, easing, useNativeDriver: false });
-    Animated.parallel([
-      run(page, PAGE_MS, 0, PAGE_EASE),
-      run(pop, POP_MS, POP_DELAY, POP_EASE),
-      run(ring, RING_MS, RING_DELAY, RING_EASE),
-    ]).start();
-  }, [page, pop, ring]);
+    Animated.timing(page, {
+      toValue: 1,
+      duration: PAGE_MS,
+      easing: PAGE_EASE,
+      useNativeDriver: false,
+    }).start();
+  }, [page]);
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={onHome}>
@@ -146,66 +128,11 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
         <Confetti />
 
         <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
-          {/* עיגול הווי · הילה, טבעה מתפשטת, ועיגול שקופץ */}
-          <View style={s.badge}>
-            <View style={s.halo} pointerEvents="none">
-              <Svg width="100%" height="100%">
-                <Defs>
-                  <RadialGradient id="cfhalo" cx="50%" cy="50%" rx="50%" ry="50%">
-                    <Stop offset="0" stopColor={a(ACCENT.rgb, 0.42)} />
-                    <Stop offset="0.78" stopColor={a(ACCENT.rgb, 0)} />
-                  </RadialGradient>
-                </Defs>
-                <Rect x="0" y="0" width="100%" height="100%" fill="url(#cfhalo)" />
-              </Svg>
-            </View>
-
-            <Animated.View
-              style={[
-                s.ring,
-                {
-                  opacity: ring.interpolate({ inputRange: [0, 1], outputRange: [RING_ALPHA, 0] }),
-                  transform: [
-                    { scale: ring.interpolate({ inputRange: [0, 1], outputRange: [RING_FROM, RING_TO] }) },
-                  ],
-                },
-              ]}
-            />
-
-            <Animated.View
-              style={[
-                s.disc,
-                {
-                  opacity: pop.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 1, 1] }),
-                  transform: [
-                    { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [POP_FROM, 1] }) },
-                  ],
-                },
-              ]}
-            >
-              <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <RadialGradient id="cfdisc" cx="34%" cy="28%" rx="72%" ry="72%">
-                    <Stop offset="0" stopColor="#FAF1E8" />
-                    <Stop offset="0.34" stopColor="#EBCFAF" />
-                    <Stop offset="1" stopColor="#C08A52" />
-                  </RadialGradient>
-                  <RadialGradient id="cfgloss" cx="30%" cy="22%" rx="28%" ry="28%">
-                    <Stop offset="0" stopColor="rgba(255,255,255,0.96)" />
-                    <Stop offset="1" stopColor="rgba(255,255,255,0)" />
-                  </RadialGradient>
-                </Defs>
-                <Rect x="0" y="0" width="100%" height="100%" rx={BADGE / 2} fill="url(#cfdisc)" />
-                <Rect x="0" y="0" width="100%" height="100%" rx={BADGE / 2} fill="url(#cfgloss)" />
-              </Svg>
-              {/* ⚠ `zIndex` הכרחי · ה-SVG של הגרדיאנט ממוקם absolute,
-                  ולכן בדפדפן הוא נצבע **מעל** אח סטטי. בלי זה הווי
-                  נמצא ב-DOM בגודל הנכון אבל אינו נראה. */}
-              <View style={s.tick}>
-                <Check size={TICK} color={ACCENT.deep} strokeWidth={TICK_STROKE} />
-              </View>
-            </Animated.View>
-          </View>
+          {/* ⚠ **וי ההצלחה בעיצוב תנועה חדש** · שקד ביקשה ב-15 בספטמבר
+              2026 ״יותר מונפש״. הצבעים והמידות של הקנבס נשמרו; מה
+              שהשתנה עבר ל-`SuccessCheck` — שתי טבעות במקום אחת,
+              והווי מצייר את עצמו במקום להופיע שלם. */}
+          <SuccessCheck accent={ACCENT} />
 
           <Text style={s.title}>ההזמנה נשלחה</Text>
           <Text style={s.sub}>אישור סופי יישלח בהמשך</Text>
@@ -265,35 +192,6 @@ const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground, overflow: 'hidden' },
   /* padding: 44px 20px 0 בקנבס */
   body: { paddingTop: 44, paddingHorizontal: 20, paddingBottom: 30, alignItems: 'center' },
-
-  badge: { width: BADGE, height: BADGE, flexShrink: 0 },
-  halo: { position: 'absolute', top: -HALO, right: -HALO, bottom: -HALO, left: -HALO },
-  ring: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    borderRadius: BADGE / 2,
-    borderWidth: RING_W,
-    borderColor: RING_BD,
-  },
-  disc: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    borderRadius: BADGE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow:
-      'inset -6px -8px 16px rgba(122,61,24,0.28)' +
-      ', inset 5px 6px 12px rgba(255,255,255,0.95)' +
-      ', 0 14px 28px -14px rgba(168,90,40,0.65)',
-  },
-
-  tick: { zIndex: 1 },
 
   title: { fontSize: 22, fontWeight: '600', marginTop: 18, textAlign: 'center', color: surface.ink },
   sub: { fontSize: 13.5, fontWeight: '300', color: surface.muted, marginTop: 5, textAlign: 'center' },

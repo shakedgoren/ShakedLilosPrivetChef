@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { RollingTotal } from '../../components/RollingTotal';
+import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { useSaleGate } from '../../order/useSaleGate';
@@ -110,7 +112,7 @@ export function BoxesScreen() {
           <View style={[s.bar, loggedIn && s.barWithNav]}>
             <View style={s.totalBox}>
               <Text style={s.totalLabel}>סה״כ :</Text>
-              <Text style={s.total}>{o.total}</Text>
+              <RollingTotal value={o.total} style={s.total} />
               <Text style={s.currency}>₪</Text>
             </View>
             <ContinueButton onPress={onContinue} accent={ACCENT} disabled={!o.ready} />
@@ -130,7 +132,8 @@ export function BoxesScreen() {
             </View>
 
             {o.boxes.map((b, i) => (
-              <Pressable key={b.key} onPress={() => o.openBox(i)} style={s.card}>
+              <StepIn key={b.key} index={i}>
+                <Pressable onPress={() => o.openBox(i)} style={s.card}>
                 <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} zoom={false} />
                 <View style={s.cardText}>
                   <Text style={s.name}>{b.name}</Text>
@@ -139,8 +142,9 @@ export function BoxesScreen() {
                   <Text style={s.price}>{b.price}</Text>
                 </View>
                 {/* החץ הקטן בקצה השורה · 15 פיקסלים, בדיוק כמו בקנבס */}
-                <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
-              </Pressable>
+                  <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
+                </Pressable>
+              </StepIn>
             ))}
           </ScrollView>
         </>

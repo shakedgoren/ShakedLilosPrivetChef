@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { RollingTotal } from '../../components/RollingTotal';
+import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { useSaleGate } from '../../order/useSaleGate';
@@ -73,15 +75,15 @@ export function CouscousScreen() {
         <Text style={s.intro}>{COUSCOUS_INTRO}</Text>
 
         {/* המנות · שורה עם תמונה 58×58 */}
-        {meals.map(({ it, i }) => (
-          <View key={it.name} style={s.row}>
+        {meals.map(({ it, i }, k) => (
+          <StepIn key={it.name} index={k} style={s.row}>
             <Photo name={COUSCOUS_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
             <View style={s.rowText}>
               <Text style={s.name}>{it.name}</Text>
               <Text style={s.price}>{it.price} ₪</Text>
             </View>
             <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
-          </View>
+          </StepIn>
         ))}
 
         <Text style={s.pickle}>{PICKLE_NOTE}</Text>
@@ -89,8 +91,8 @@ export function CouscousScreen() {
 
         {/* התוספות · שלוש עמודות בלי תמונה, כמו בקנבס */}
         <View style={s.addonGrid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
-          {addons.map(({ it, i }) => (
-            <View key={it.name} style={[s.addon, { width: addonW }]}>
+          {addons.map(({ it, i }, k) => (
+            <StepIn key={it.name} index={meals.length + k} style={[s.addon, { width: addonW }]}>
               {/* התמונה יושבת בתוך הכרטיס מעל השם · שקד ביקשה, אין כזו בקנבס */}
               <Photo
                 name={COUSCOUS_PHOTOS[i]}
@@ -100,7 +102,7 @@ export function CouscousScreen() {
               <Text style={s.addonName}>{it.name}</Text>
               <Text style={s.addonPrice}>{it.price} ₪</Text>
               <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
-            </View>
+            </StepIn>
           ))}
         </View>
       </ScrollView>
@@ -110,7 +112,7 @@ export function CouscousScreen() {
           <Text style={s.mealsCount}>{mealsLabel(o.meals)}</Text>
           <Text style={s.totalLabel}>·</Text>
           <Text style={s.totalLabel}>{TOTAL_LABEL}</Text>
-          <Text style={s.total}>{o.total}</Text>
+          <RollingTotal value={o.total} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
         <ContinueButton onPress={onContinue} accent={ACCENT} disabled={o.total === 0} />

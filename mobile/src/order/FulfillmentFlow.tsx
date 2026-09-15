@@ -1,4 +1,5 @@
 import React from 'react';
+import { RollingTotal } from '../components/RollingTotal';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { CITIES, PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
@@ -327,7 +328,7 @@ function ConfirmStep({
         <View style={s.rule} />
         <View style={s.line}>
           <Text style={s.totalLabel}>סה״כ</Text>
-          <Text style={s.total}>{total + fee}</Text>
+          <RollingTotal value={total + fee} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
 
