@@ -14,7 +14,7 @@
     "db:postgres:push": "node scripts/db-mode.mjs push",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
-    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/manualOrderWa.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts"
+    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

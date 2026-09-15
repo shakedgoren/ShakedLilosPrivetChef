@@ -73,8 +73,19 @@ export type ShopListDto = { id: string; area: string; openedAt: string; closedAt
 export const adminActiveShop = () => api<{ list: ShopListDto }>('/admin/shop/active');
 export const adminPutShop = (body: { area?: string; items?: ShopItemDto[] }) =>
   api<{ list: ShopListDto }>('/admin/shop/active', { method: 'PUT', body });
+/**
+ * סגירת רשימת הקניות.
+ *
+ * ⚠ **`method` חובה כאן** · `api()` שולח GET כשאין גוף לבקשה,
+ * והנתיב הזה רשום בשרת כ-POST בלבד. בלי השורה הזו הבקשה יצאה
+ * כ-GET, לא התאימה לאף נתיב, ואקספרס החזיר 404 — ושקד קיבלה
+ * ״אין רשימת קניות פתוחה לסגירה״ בזמן שהרשימה פתוחה מולה.
+ * הסגירה עצמה לא נוגעת בגוף הבקשה, ולכן אין כאן `body`.
+ */
 export const adminCloseShop = () =>
-  api<{ closed: ShopListDto; list: ShopListDto; expense: number }>('/admin/shop/active/close');
+  api<{ closed: ShopListDto; list: ShopListDto; expense: number }>('/admin/shop/active/close', {
+    method: 'POST',
+  });
 export const adminShopHistory = (area?: string) =>
   api<{ lists: ShopListDto[] }>(`/admin/shop/history${area && area !== 'all' ? `?area=${area}` : ''}`);
 
