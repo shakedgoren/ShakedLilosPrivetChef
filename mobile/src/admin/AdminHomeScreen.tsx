@@ -107,7 +107,8 @@ export function AdminHomeScreen() {
           </View>
         </GlassCard>
         <GlassCard style={s.stat}>
-          <Text style={s.statLabel}>{`מחזור עבור ${shortDate(home.sale.date)}`}</Text>
+          {/* ⚠ ״הכנסות״ ולא ״מחזור״ · בקשה של שקד (15 בספטמבר 2026) */}
+          <Text style={s.statLabel}>{`הכנסות עבור ${shortDate(home.sale.date)}`}</Text>
           <View style={s.statMoney}>
             <Text style={s.statValue}>{money(home.sale.revenue)}</Text>
             <Text style={s.currency}>₪</Text>
