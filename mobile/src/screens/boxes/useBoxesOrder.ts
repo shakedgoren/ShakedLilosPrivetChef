@@ -46,6 +46,18 @@ export function useBoxesOrder() {
     setPicks({});
   }, []);
 
+  /**
+   * ⚠ ״להזמין שוב״ · פותח את אותו מארז עם אותן בחירות.
+   * מארז שכבר לא קיים (או שהוסתר) פשוט לא נפתח, ואז המסך נשאר
+   * ברשימה — עדיף מלפתוח מארז שגוי.
+   */
+  const loadDetails = useCallback((d: Record<string, unknown>) => {
+    const i = VISIBLE_BOXES.findIndex((b) => b.key === d.key);
+    if (i < 0) return;
+    setCurrent(i);
+    setPicks(d.picks && typeof d.picks === 'object' ? { ...(d.picks as Picks) } : {});
+  }, []);
+
   /** בחירה יחידה · גריד, קלפים, זוג, מוסתר */
   const select = useCallback((id: string, value: string) => {
     setPicks((p) => ({ ...p, [id]: value }));
@@ -98,7 +110,7 @@ export function useBoxesOrder() {
 
   return {
     boxes: VISIBLE_BOXES,
-    current, box, openBox, backToList,
+    current, box, openBox, backToList, loadDetails,
     picks, select, setText, setNumber, setQty,
     total, ready, lines,
   };

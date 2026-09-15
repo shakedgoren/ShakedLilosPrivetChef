@@ -85,6 +85,25 @@ export function useChefOrder() {
     setPasta(null);
   }, []);
 
+  /**
+   * ⚠ ״להזמין שוב״ · פותח את אותה חבילה עם אותן תשובות.
+   * ⚠ התאריך **אינו** נטען · אירוע קודם כבר עבר, והלקוחה חייבת
+   * לבחור מועד חדש. אותו דבר לגבי חלק היום שתלוי בו.
+   */
+  const loadDetails = useCallback((d: Record<string, unknown>) => {
+    const i = CHEF_PACKAGES.findIndex((p) => p.key === d.key);
+    if (i < 0) return;
+    const picks = d.picks && typeof d.picks === 'object' ? { ...(d.picks as Picks) } : {};
+    delete picks.date;
+    delete picks.daypart;
+    setCurrent(i);
+    setPage(0);
+    setPicks(picks);
+    setSeen({});
+    setNotice(null);
+    setPasta(null);
+  }, []);
+
   const backToList = useCallback(() => {
     setCurrent(null);
     setPage(0);
@@ -237,7 +256,7 @@ export function useChefOrder() {
 
   return {
     packages: CHEF_PACKAGES,
-    current, pkg, page, sections, openPackage, backToList,
+    current, pkg, page, sections, openPackage, backToList, loadDetails,
     picks, select, toggle, setValue, stylesFor,
     pageReady, lastPage, next, prev,
     total, lines, perHead,

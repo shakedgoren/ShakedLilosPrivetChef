@@ -16,9 +16,18 @@ export const saleDayStatus = (category: string) =>
     { method: 'GET' },
   );
 
-/** ⚠ נשמרת בלבד · טרם הוחלט איך התזכורת מגיעה ללקוחה */
+/** התזכורת מגיעה כהתראה בתוך האפליקציה · החלטה של שקד */
 export const requestSaleReminder = (category: string) =>
   api<{ ok: true }>('/orders/remind', { body: { category } });
+
+export type SaleNotification = { category: string; date: string };
+
+/** ההתראות הפתוחות · ימי מכירה שנפתחו ושביקשו עליהם תזכורת */
+export const listNotifications = () =>
+  api<{ notifications: SaleNotification[] }>('/orders/notifications', { method: 'GET' });
+
+export const markNotificationSeen = (category: string, date: string) =>
+  api<{ ok: true }>('/orders/notifications/seen', { body: { category, date } });
 
 export const getOrder = (id: string) => api<{ order: Order }>(`/orders/${id}`);
 

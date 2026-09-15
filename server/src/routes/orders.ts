@@ -175,6 +175,50 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
 });
 
 /**
+ * ההתראות הפתוחות של הלקוחה.
+ *
+ * לכל תזכורת שביקשה — אם יום המכירה של אותה קטגוריה **נפתח**
+ * ועדיין לא הוצגה עליו התראה, היא חוזרת כאן. שקד החלטה
+ * ב-15 בספטמבר 2026: התזכורת מגיעה כהתראה **בתוך האפליקציה**.
+ */
+ordersRouter.get('/notifications', requireAuth, async (req, res, next) => {
+  try {
+    const mine = await prisma.saleReminder.findMany({ where: { userId: req.user!.id } });
+    const today = isoDate(new Date());
+    const out: { category: string; date: string }[] = [];
+
+    for (const rem of mine) {
+      if (!isCategory(rem.category)) continue;
+      const date = await resolveCustomerSaleDate(prisma, undefined, rem.category);
+      /* כבר הוצגה התראה על היום הזה · לא חוזרים עליה */
+      if (rem.seenDate === date) continue;
+      const rec = await loadSaleDayView(prisma, date, rem.category);
+      const problem = evaluateCustomerSaleDay({ rec, category: rem.category, requested: {}, today });
+      if (problem === null) out.push({ category: rem.category, date });
+    }
+    res.json({ notifications: out });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** סימון התראה כנקראה · לא מוחקים את התזכורת, כדי שתעבוד גם בשבוע הבא */
+ordersRouter.post('/notifications/seen', requireAuth, async (req, res, next) => {
+  try {
+    const category = String(req.body?.category ?? '');
+    const date = String(req.body?.date ?? '');
+    if (!isCategory(category)) throw badRequest('invalid_order', 'category');
+    await prisma.saleReminder.updateMany({
+      where: { userId: req.user!.id, category },
+      data: { seenDate: date },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * בקשת תזכורת לפתיחת יום מכירה.
  * ⚠ **נשמרת בלבד** · איך התזכורת מגיעה ללקוחה עדיין לא הוחלט.
  */

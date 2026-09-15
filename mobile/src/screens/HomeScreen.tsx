@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Masthead } from '../components/Masthead';
 import { CategoryCarousel } from '../components/CategoryCarousel';
@@ -11,6 +11,9 @@ import { CATEGORIES } from '../data/categories';
 import { radius, space, surface, type } from '../theme/tokens';
 import { GLASS_SHADOW, GLASS_STOPS } from '../theme/glass';
 import { useNav, type Screen } from '../navigation/store';
+import { SaleAlert } from '../components/SaleAlert';
+import { apiEnabled } from '../api/config';
+import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
 
 /** הכיתוב על כפתור הכניסה · שקד ביקשה את הנוסח הזה */
 const CTA_LABEL = 'להתחברות והזמנה';
@@ -52,6 +55,34 @@ export function HomeScreen() {
   const { loggedIn, go } = useNav();
   const [active, setActive] = useState(0);
 
+  /**
+   * ⚠ ההתראות של ״תזכירו לי״ · שקד החליטה שהתזכורת מגיעה כהתראה
+   * בתוך האפליקציה, ולכן היא נבדקת בכל כניסה לדף הבית.
+   */
+  const [alerts, setAlerts] = useState<SaleNotification[]>([]);
+
+  useEffect(() => {
+    if (!loggedIn || !apiEnabled) {
+      setAlerts([]);
+      return;
+    }
+    let live = true;
+    listNotifications()
+      .then(({ notifications }) => {
+        if (live) setAlerts(notifications);
+      })
+      /* התראה היא בונוס · כישלון שלה לא אמור לשבור את דף הבית */
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [loggedIn]);
+
+  const dismiss = useCallback((n: SaleNotification) => {
+    setAlerts((list) => list.filter((x) => x.category !== n.category));
+    void markNotificationSeen(n.category, n.date).catch(() => {});
+  }, []);
+
   return (
     <ScrollView
       style={s.page}
@@ -59,6 +90,19 @@ export function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Masthead />
+
+      {/* ההתראות · ״המכירה נפתחה״ למי שביקשה שנזכיר */}
+      {alerts.map((n) => (
+        <SaleAlert
+          key={n.category}
+          category={n.category}
+          onOpen={() => {
+            dismiss(n);
+            go(n.category as Screen);
+          }}
+          onDismiss={() => dismiss(n)}
+        />
+      ))}
 
       {loggedIn && (
         <Pressable

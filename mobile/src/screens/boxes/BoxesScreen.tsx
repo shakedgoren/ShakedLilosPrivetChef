@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BOXES_FULFILLMENT } from '../../data/boxes';
@@ -49,6 +50,8 @@ export function BoxesScreen() {
   const o = useBoxesOrder();
   const f = useFulfillment(BOXES_FULFILLMENT);
   const [gate, setGate] = useState(false);
+  /* ⚠ ״להזמין שוב״ · אותו מארז עם אותן בחירות */
+  usePrefill('box', o.loadDetails);
 
   const onContinue = () => {
     if (!o.ready) return;

@@ -33,15 +33,18 @@ model User {
   reminders SaleReminder[]
 }
 
-/// ⚠ בקשת תזכורת לפתיחת יום מכירה · נשמרת בלבד.
-/// **שום דבר עדיין לא נשלח** — שקד לא סגרה איך התזכורת מגיעה
-/// ללקוחה (וואטסאפ / SMS / התראה), וזו חסימה פתוחה בפנקס.
+/// בקשת תזכורת לפתיחת יום מכירה.
+/// ההתראה מגיעה **בתוך האפליקציה** (החלטת שקד, 15 בספטמבר 2026):
+/// כשיום המכירה של הקטגוריה נפתח, הלקוחה רואה שורת התראה בדף
+/// הבית. `seenAt` מסמן שהיא כבר ראתה אותה, כדי שלא תחזור.
 model SaleReminder {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category  String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  /// התאריך שעליו כבר הוצגה התראה · ריק כל עוד לא הוצגה
+  seenDate  String    @default("")
 
   @@unique([userId, category])
 }

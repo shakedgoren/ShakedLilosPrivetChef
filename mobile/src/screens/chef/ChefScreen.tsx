@@ -18,6 +18,7 @@ import { COPY, orderError } from '../../api/copy';
 import { createOrder } from '../../api/orders';
 import { ApiError } from '../../api/types';
 import { ChefConfirm } from './ChefConfirm';
+import { usePrefill } from '../../navigation/usePrefill';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
@@ -59,6 +60,8 @@ export function ChefScreen() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  /* ⚠ ״להזמין שוב״ · אותה חבילה עם אותן תשובות, בלי התאריך */
+  usePrefill('chef', o.loadDetails);
   /**
    * ⚠ מעבר שלב מחזיר את הגלילה לראש העמוד · בלי זה, מי שעבר שלב
    * מתחתית העמוד נחת באמצע העמוד הבא. בקשה של שקד.
