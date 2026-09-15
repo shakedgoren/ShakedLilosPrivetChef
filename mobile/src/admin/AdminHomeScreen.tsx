@@ -49,24 +49,28 @@ export function AdminHomeScreen() {
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-      {/* ⚠ **הכותרת ממורכזת והכפתורים בשורה שמעליה** · שקד ביקשה
-          (15 בספטמבר 2026) כותרת ממורכזת, ואז שהכפתורים יחזרו
-          לפינה השמאלית העליונה שממנה זזו. נמדד בדפדפן שהכפתורים
-          תופסים 158 פיקסלים והכותרת הממורכזת 175→215 — כלומר
-          בשורה אחת של 354 הם דורסים זה את זה. לכן הם נפרדו
-          לשתי שורות: כפתורים למעלה משמאל, כותרת ממורכזת מתחת. */}
+      {/* ⚠ **הכותרת ממורכזת והכפתורים בשורה שלה, בשמאל** · שקד
+          ביקשה (15 בספטמבר 2026) שהכפתורים יעלו לשורת הכותרת
+          ושכפתור ההזמנה יישא רק את סימן ה-+. שני עיגולים של 38
+          תופסים 84 פיקסלים (18→102), והכותרת המשנה מתחילה ב-152 —
+          כלומר יש 50 פיקסלים אוויר וההתנגשות שהייתה עם הגלולה
+          הרחבה (158 פיקסלים) נעלמה. */}
       <View style={s.head}>
+        <View style={s.headText}>
+          <Text style={s.title}>{HOME_TITLE}</Text>
+          <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
+        </View>
         {/* ⚠ **״לחנות״ ירד וכאן יושבת הזמנה חדשה** · שקד ביקשה
             (15 בספטמבר 2026) כפתור שממנו היא מכניסה הזמנה של לקוחה
             שהתקשרה או כתבה בוואטסאפ, בלי שהלקוחה נרשמת לאתר.
             הכרטיס הסגול ״הזמנה ידנית״ שהיה מתחת ללוח המכירה ירד,
             והפעולה שלו עברה לכאן. */}
         <View style={s.headEnd}>
-        <Pressable onPress={admin.openNew} style={s.newChip}>
-          <View style={s.newPlus}>
-            <Plus size={13} color={LAV.chipInk} strokeWidth={2.8} />
-          </View>
-          <Text style={s.newText}>{NEW_ORDER_LABEL}</Text>
+        {/* ⚠ **רק ה-+** · בקשה מפורשת של שקד (15 בספטמבר 2026)
+            במקום הגלולה ״+ הזמנה חדשה״. המילים נשארות כשם
+            הנגישות של הכפתור. */}
+        <Pressable onPress={admin.openNew} accessibilityLabel={NEW_ORDER_LABEL} style={s.newChip} hitSlop={8}>
+          <Plus size={18} color={LAV.chipInk} strokeWidth={2.6} />
         </Pressable>
 
         {/* ⚠ **התנתקות מהניהול** · בקשה של שקד (15 בספטמבר 2026).
@@ -82,11 +86,6 @@ export function AdminHomeScreen() {
         >
           <LogOut size={17} color={LAV.dim} strokeWidth={1.9} />
         </Pressable>
-        </View>
-
-        <View style={s.headText}>
-          <Text style={s.title}>{HOME_TITLE}</Text>
-          <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
         </View>
       </View>
 
@@ -244,37 +243,26 @@ const s = StyleSheet.create({
   /* ⚠ רקע הדף · מתחת לכל הכרטיסים, בגוון של ערכת לבנדר */
   root: { flex: 1, backgroundColor: LAV.page },
   pad: { paddingTop: 30, paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
-  head: { gap: 8 },
+  head: { justifyContent: 'center', minHeight: 46 },
   headText: { alignItems: 'center', gap: 2 },
   /**
-   * ⚠ **`flex-end` ולא `end: 0`** · בדפדפן `I18nManager.isRTL` כבוי,
-   * ולכן ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה שהעיף את
-   * הכפתורים לצד ימין ועל הכותרת. `justifyContent` עובר כמו שהוא
-   * ל-CSS, ושם הוא נפתר מול `direction: rtl` של הדף — כלומר צד
-   * שמאל הפיזי, גם בדפדפן וגם באפליקציה.
+   * ⚠ **`left` ולא `end`** · בדפדפן `I18nManager.isRTL` כבוי, ולכן
+   * ריאקט-נייטיב-ווב מתרגם `end` ל-`right` — וזה מה שהעיף את
+   * הכפתורים לצד ימין ועל הכותרת. `left` הוא פיזי ונפתר אותו דבר
+   * בדפדפן ובאפליקציה.
    */
-  headEnd: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'flex-end' },
+  headEnd: { position: 'absolute', left: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { fontSize: 21, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
   sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
+  /* עיגול בגוון הצ׳יפ · אותה מידה של כפתור ההתנתקות שלצידו */
   newChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    height: 34,
-    paddingHorizontal: 5,
-    paddingLeft: 13,
-    borderRadius: 999,
-    backgroundColor: LAV.chip,
-  },
-  newPlus: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.62)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: LAV.chip,
   },
-  newText: { fontSize: 12.5, fontWeight: '600', color: LAV.chipInk },
   /* כפתור ההתנתקות · אותו עיגול 38 שיושב בפינה הזו בקנבס */
   exit: {
     width: 38,
