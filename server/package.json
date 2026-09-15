@@ -14,13 +14,14 @@
     "db:postgres:push": "node scripts/db-mode.mjs push",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
-    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts"
+    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
+    "@types/nodemailer": "^8.0.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -28,6 +29,7 @@
     "google-auth-library": "^11.0.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.3.0",
+    "nodemailer": "^10.0.10",
     "zod": "^3.25.76"
   },
   "devDependencies": {

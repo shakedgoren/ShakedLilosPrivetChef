@@ -37,6 +37,15 @@ export const env = {
     return (process.env.GOOGLE_CLIENT_ID ?? '').split(',')[0]?.trim() ?? '';
   },
   resetDebug: process.env.RESET_DEBUG === '1',
+
+  /* שליחת מייל · איפוס סיסמה. בלי אלה לא נשלח כלום (ראו mail/mailer.ts) */
+  smtpHost: process.env.SMTP_HOST ?? '',
+  smtpPort: Number(process.env.SMTP_PORT ?? 587),
+  smtpUser: process.env.SMTP_USER ?? '',
+  smtpPass: process.env.SMTP_PASS ?? '',
+  mailFrom: process.env.MAIL_FROM ?? '',
+  /** הכתובת שאליה מפנה הקישור במייל · בפיתוח זה שרת ה-Expo בדפדפן */
+  appUrl: process.env.APP_URL ?? 'http://localhost:8081',
   uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
 };
 
