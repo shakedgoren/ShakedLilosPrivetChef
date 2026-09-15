@@ -1,10 +1,20 @@
 import React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { DateCalendar } from '../../components/DateCalendar';
 import { ContinueButton } from '../../components/ContinueButton';
 import { Bag, Close, Truck } from '../../icons';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
 import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
+import { shippingFee } from './whatsappOrder';
 import { hhmm, isAddressValid, toMinutes } from '../../order/types';
 import { CITIES } from '../../data/shared';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -37,6 +47,17 @@ const TRUCK_INK = '#8A8194';
 
 const FIELD_H = 48;
 
+/**
+ * טשטוש הרקע מאחורי חלונית הכתובת.
+ * ⚠ `backdrop-filter` אינו קיים ב-React Native · ההשמה עוברת דרך
+ * `ViewStyle` בכוח, וב-React Native Web היא נוחתת ב-CSS כמו שהיא.
+ * הכהוי שמתחתיה עובד בכל מקרה, גם היכן שהטשטוש לא נתמך.
+ */
+const BLUR = {
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+} as unknown as ViewStyle;
+
 type Ship = 'self' | 'deliv';
 
 export type FruitDetails = {
@@ -64,6 +85,8 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
   const [ship, setShip] = React.useState<Ship | null>(null);
   const [city, setCity] = React.useState(CITIES[0]);
   const [addr, setAddr] = React.useState('');
+  /* חלונית הכתובת · נפתחת בבחירת משלוח, ונסגרת עם אישור או ביטול */
+  const [addrOpen, setAddrOpen] = React.useState(false);
 
   /* שעה מחוץ לטווח נתפסת פנימה · ההצמדה ביציאה מהשדה, לא תוך כדי הקלדה */
   const settleTime = () => {
@@ -156,56 +179,24 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                 </View>
               </Pressable>
 
+              {/* ⚠ בחירת משלוח פותחת חלונית · שקד ביקשה שהכתובת לא
+                  תיפתח מתחת לבחירה אלא בפופאפ מעל, עם רקע מטושטש. */}
               <Pressable
-                onPress={() => setShip('deliv')}
-                style={[s.option, ship === 'deliv' ? s.optionOn : s.optionOff]}
+                onPress={() => setAddrOpen(true)}
+                style={[s.option, deliv ? s.optionOn : s.optionOff]}
               >
                 <Truck
                   size={OPTION_ICON}
-                  color={ship === 'deliv' ? ACCENT.hue : TRUCK_INK}
+                  color={deliv ? ACCENT.hue : TRUCK_INK}
                   strokeWidth={OPTION_STROKE}
                 />
                 <View style={s.optionText}>
                   <Text style={s.optionTitle}>משלוח</Text>
-                  <Text style={s.optionSub}>{window_}</Text>
+                  <Text style={s.optionSub}>
+                    {deliv && addrOk ? `${addr.trim()}, ${city}` : window_}
+                  </Text>
                 </View>
               </Pressable>
-
-              {/* שדות הכתובת · נפתחים רק במשלוח, כמו `isAddr` בקנבס */}
-              {deliv ? (
-                <View style={s.addrBox}>
-                  <View style={s.addrField}>
-                    <Text style={s.label}>עיר</Text>
-                    <View style={s.cities}>
-                      {CITIES.map((c) => (
-                        <Pressable
-                          key={c}
-                          onPress={() => setCity(c)}
-                          style={[s.city, c === city && s.cityOn]}
-                        >
-                          <Text style={[s.cityText, c === city && s.cityTextOn]}>{c}</Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-
-                  <View style={s.addrField}>
-                    <Text style={s.label}>רחוב ומספר</Text>
-                    <TextInput
-                      value={addr}
-                      onChangeText={setAddr}
-                      placeholder="רחוב ומספר בית"
-                      placeholderTextColor="#B3ABBD"
-                      style={[s.input, !addrOk && addr !== '' && s.inputBad]}
-                    />
-                    {!addrOk ? (
-                      <Text style={[s.addrHint, addr !== '' && s.addrHintBad]}>
-                        יש להזין רחוב ומספר בית
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-              ) : null}
 
               {/* דמי המשלוח · הועתקו אחד לאחד משלב הכתובת בקנבס */}
               <View style={s.fees}>
@@ -227,6 +218,115 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
           </ScrollView>
         </View>
       </View>
+
+      {/* חלונית הכתובת · מעל החלונית הראשית, עם טשטוש מאחור */}
+      <AddressPopup
+        open={addrOpen}
+        city={city}
+        addr={addr}
+        onCity={setCity}
+        onAddr={setAddr}
+        onCancel={() => {
+          setAddrOpen(false);
+          /* ביטול בלי כתובת תקינה · המסירה חוזרת לבלתי-נבחרת */
+          if (!isAddressValid(addr)) setShip(null);
+        }}
+        onConfirm={() => {
+          setAddrOpen(false);
+          setShip('deliv');
+        }}
+      />
+    </Modal>
+  );
+}
+
+/**
+ * חלונית הכתובת למשלוח.
+ * ⚠ **אינה מהקנבס** · שם הכתובת היא שלב בזרימה ולא פופאפ.
+ * ⚠ הטשטוש עובר דרך `backdrop-filter` · ל-React Native אין מקבילה,
+ * וב-React Native Web הוא נמסר כמו שהוא ל-CSS. במכשיר יישאר רק
+ * הכהוי של הרקע, שהוא לבדו קריא.
+ */
+function AddressPopup({
+  open,
+  city,
+  addr,
+  onCity,
+  onAddr,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  city: string;
+  addr: string;
+  onCity: (c: string) => void;
+  onAddr: (a: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const ok = isAddressValid(addr);
+  if (!open) return null;
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
+      <View style={[s.blurScrim, BLUR]}>
+        <View style={s.sheet}>
+          <View style={s.head}>
+            <Text style={s.title}>כתובת למשלוח</Text>
+            <Pressable onPress={onCancel} style={s.close} hitSlop={8}>
+              <Close size={CLOSE_GLYPH} color="#6E6478" strokeWidth={2.6} />
+            </Pressable>
+          </View>
+
+          <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+            <View style={s.addrField}>
+              <Text style={s.label}>עיר</Text>
+              <View style={s.cities}>
+                {CITIES.map((c) => (
+                  <Pressable
+                    key={c}
+                    onPress={() => onCity(c)}
+                    style={[s.city, c === city && s.cityOn]}
+                  >
+                    <Text style={[s.cityText, c === city && s.cityTextOn]}>{c}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <View style={s.addrField}>
+              <Text style={s.label}>רחוב ומספר</Text>
+              <TextInput
+                value={addr}
+                onChangeText={onAddr}
+                placeholder="רחוב ומספר בית"
+                placeholderTextColor="#B3ABBD"
+                style={[s.input, !ok && addr !== '' && s.inputBad]}
+              />
+              {!ok ? (
+                <Text style={[s.addrHint, addr !== '' && s.addrHintBad]}>
+                  יש להזין רחוב ומספר בית
+                </Text>
+              ) : null}
+            </View>
+
+            {/* דמי המשלוח לעיר שנבחרה · הסכומים מהקנבס */}
+            <View style={s.fees}>
+              <Fee label={`משלוח ל${city}`} fee={shippingFee(city)} />
+              <View style={s.feeRule} />
+              <Text style={s.feeArea}>{FRUIT_SHIPPING.area}</Text>
+            </View>
+
+            <ContinueButton
+              onPress={onConfirm}
+              accent={ACCENT}
+              disabled={!ok}
+              label="אישור"
+              style={s.send}
+            />
+          </ScrollView>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -240,6 +340,13 @@ const Fee = ({ label, fee }: { label: string; fee: number }) => (
 
 const s = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(42,36,48,0.34)', justifyContent: 'center', padding: space.lg },
+  /* הרקע מאחורי חלונית הכתובת · כהה יותר, ומטושטש היכן שנתמך */
+  blurScrim: {
+    flex: 1,
+    backgroundColor: 'rgba(42,36,48,0.42)',
+    justifyContent: 'center',
+    padding: space.lg,
+  },
   sheet: {
     maxHeight: '88%',
     borderRadius: SHEET_RADIUS,
