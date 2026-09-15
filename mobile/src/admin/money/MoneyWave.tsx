@@ -1,31 +1,32 @@
 import React from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 /**
- * כרטיס ״הגלים״ · הבחירה של שקד (15 בספטמבר 2026) מתוך חמש הצעות.
+ * רצועת ״הגלים״ · הבחירה של שקד (15 בספטמבר 2026) מתוך חמש הצעות.
  *
- * ⚠ **הגרף הוא הרקע** · לא כרטיס נפרד מתחת למספרים. שני גלים:
- * הסגול הוא המחזור והחום הוא ההוצאות, שניהם על אותה סקאלה כדי
- * שהמרחק ביניהם יהיה הרווח שהעין רואה.
+ * ⚠ **ציור בלבד** · שקד ביקשה (15 בספטמבר 2026) להוריד את המילה
+ * ״מחזור״ ואת הסכום מהכרטיס ולהשאיר רק את הדיאגרמה, בגובה
+ * מינימלי, עם שלוש הכרטיסיות **מתחתיה**.
  *
- * ⚠ **הגלים נוגעים בשוליים** · ה-SVG רחב מהריפוד של הכרטיס
- * ומוסט אחורה, אחרת נשאר פס ריק משני הצדדים והגל נראה תלוש.
+ * ⚠ **שני גלים על אותה סקאלה** · הסגול הוא המחזור והחום הוא
+ * ההוצאות, כדי שהמרחק ביניהם יהיה הרווח שהעין רואה.
+ *
+ * ⚠ **הגלים נוגעים בשוליים** · ה-SVG ברוחב מלא של הכרטיס ובלי
+ * ריפוד, אחרת נשאר פס ריק משני הצדדים והגל נראה תלוש.
  */
 
 export type WavePoint = { k: string; rev: number; exp: number };
 
-const H = 104;
-const TOP = 8;
-const BASE = H - 4;
+/** ⚠ **גובה מינימלי** · בקשה של שקד · מספיק לגל ולא יותר */
+const H = 78;
+const TOP = 7;
+const BASE = H - 3;
 /** ⚠ קבוע גדול מכל אורך נתיב אפשרי · אין מדידת אורך נתיב חוצת-פלטפורמות */
 const DASH = 2400;
-const PAD = 15;
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 /**
  * עקומה רכה דרך הנקודות · קטמול-רום שמתורגם לבזייה מעוקבת.
@@ -49,25 +50,13 @@ function smooth(pts: { x: number; y: number }[]): string {
   return d;
 }
 
-export function MoneyWave({
-  label,
-  total,
-  margin,
-  marginLabel,
-  points,
-}: {
-  label: string;
-  total: number;
-  margin: number;
-  marginLabel: string;
-  points: WavePoint[];
-}) {
+export function MoneyWave({ points }: { points: WavePoint[] }) {
   const [w, setW] = React.useState(0);
   const draw = React.useRef(new Animated.Value(1)).current;
   const dot = React.useRef(new Animated.Value(0)).current;
 
   /* מפתח הטווח · החלפת טווח מציירת מחדש */
-  const key = `${points.length}:${points[0]?.k ?? ''}:${total}`;
+  const key = `${points.length}:${points[0]?.k ?? ''}:${points.reduce((t, p) => t + p.rev, 0)}`;
 
   React.useEffect(() => {
     let alive = true;
@@ -107,8 +96,7 @@ export function MoneyWave({
 
   const chart = React.useMemo(() => {
     if (w <= 0 || points.length === 0) return null;
-    /* ⚠ שולי הכרטיס · הגל חוצה אותם לשני הצדדים */
-    const width = w + PAD * 2;
+    const width = w;
     const top = Math.max(...points.map((p) => Math.max(p.rev, p.exp)), 1);
     const at = (v: number, i: number) => ({
       x: points.length === 1 ? width / 2 : (i / (points.length - 1)) * width,
@@ -133,7 +121,7 @@ export function MoneyWave({
   }, [w, points]);
 
   return (
-    <View style={s.card} onLayout={(e) => setW(Math.round(e.nativeEvent.layout.width - PAD * 2))}>
+    <View style={s.card} onLayout={(e) => setW(Math.round(e.nativeEvent.layout.width))}>
       {/* המדרגה של הרקע · ל-React Native אין גרדיאנט ב-CSS */}
       <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
@@ -146,22 +134,9 @@ export function MoneyWave({
         <Path d="M0 0 H10000 V10000 H0 Z" fill="url(#bg)" />
       </Svg>
 
-      <View style={s.top}>
-        <View style={s.headText}>
-          <Text style={s.cap}>{label}</Text>
-          <View style={s.money}>
-            <Text style={s.big}>{nf(total)}</Text>
-            <Text style={s.ils}>₪</Text>
-          </View>
-        </View>
-        <View style={s.badge}>
-          <Text style={s.badgeText}>{`${marginLabel}${margin}%`}</Text>
-        </View>
-      </View>
-
       <View style={s.waveBox}>
         {chart ? (
-          <Svg width={chart.width} height={H} style={{ marginHorizontal: -PAD }}>
+          <Svg width={chart.width} height={H}>
             <Defs>
               <LinearGradient id="wRev" x1="0" y1="0" x2="0" y2="1">
                 <Stop offset="0" stopColor="#8E6FD0" stopOpacity="0.42" />
@@ -215,28 +190,14 @@ export function MoneyWave({
 }
 
 const s = StyleSheet.create({
+  /* ⚠ בלי ריפוד · הגל נוגע בכל ארבעת השוליים */
   card: {
-    borderRadius: 26,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: 'rgba(142,111,208,0.16)',
     overflow: 'hidden',
-    paddingHorizontal: PAD,
-    paddingTop: PAD,
+    height: H,
     boxShadow: '0 2px 4px -2px rgba(90,80,70,0.1), 0 16px 32px -18px rgba(90,80,70,0.28)',
   } as never,
-  top: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  headText: { gap: 1 },
-  cap: { fontSize: 11, fontWeight: '600', color: '#6E5E95' },
-  money: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
-  big: { fontSize: 29, fontWeight: '800', letterSpacing: -0.6, color: '#3B2F58' },
-  ils: { fontSize: 14, color: '#9488B5' },
-  badge: {
-    borderRadius: 999,
-    paddingVertical: 3,
-    paddingHorizontal: 9,
-    backgroundColor: 'rgba(127,196,155,0.22)',
-    marginBottom: 3,
-  },
-  badgeText: { fontSize: 10.5, fontWeight: '700', color: '#3E7A57' },
-  waveBox: { marginTop: 10 },
+  waveBox: { height: H },
 });

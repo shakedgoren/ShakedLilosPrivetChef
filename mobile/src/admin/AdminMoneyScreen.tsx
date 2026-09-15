@@ -8,7 +8,6 @@ import {
   MONEY_CATS,
   MONEY_TITLE,
   PERIODS,
-  REV_LABEL,
   REV_SUB_PREFIX,
   TILE_EXP,
   TILE_PROFIT,
@@ -16,7 +15,7 @@ import {
 } from '../data/adminMoney';
 import { AdminShell } from './ui/AdminShell';
 import { MoneyWave, type WavePoint } from './money/MoneyWave';
-import { BarChart, Bowl, BoxMeal, Cart, ChefHat, FileText, PayCash, SchnitzelDish } from '../icons';
+import { Bag, BarChart, Board, Bowl, BoxMeal, Camera, Cart, ChefHat, FileText, Package, PayCash, SchnitzelDish, Truck } from '../icons';
 import { Chip } from './ui/Chip';
 import { apiEnabled } from '../api/config';
 import { adminMoney } from '../api/admin';
@@ -26,6 +25,8 @@ const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 /* ⚠ לא מהקנבס · האריח השלישי שביקשה שקד (15 בספטמבר 2026) */
 const TILE_REV = 'הכנסות';
+/* ⚠ ״הכנסות״ ולא ״לפי קטגוריה״ · בקשה של שקד (15 בספטמבר 2026) */
+const INCOME_TITLE = 'הכנסות';
 
 /** אייקון לכל יום מכירה · חלק מעיצוב ״הגלים״ שנבחר */
 const CAT_ICON: Record<string, typeof Bowl> = {
@@ -33,6 +34,19 @@ const CAT_ICON: Record<string, typeof Bowl> = {
   schn: SchnitzelDish,
   box: BoxMeal,
   chef: ChefHat,
+};
+
+/**
+ * אייקון וגוון לכל קטגוריית הוצאה · אותה שורה נקייה של ״הגלים״.
+ * ⚠ לא מהקנבס · הבחירה נגזרת ממה שהקטגוריה באמת אומרת: סל לשוק,
+ * חבילה לאריזות, משאית למשלוחים, קרש למטבח ומצלמה לאינסטגרם.
+ */
+const EXP_LOOK: Record<string, { Icon: typeof Bowl; hue: string; deep: string }> = {
+  'חומרי גלם': { Icon: Bag, hue: '#C98A5B', deep: '#A65E2A' },
+  'אריזות וכלים': { Icon: Package, hue: '#8E6FD0', deep: '#43307A' },
+  'דלק ומשלוחים': { Icon: Truck, hue: '#8FBFD8', deep: '#2B4A6E' },
+  'ציוד ותחזוקה': { Icon: Board, hue: '#9FC9AE', deep: '#2C5A3E' },
+  'שיווק': { Icon: Camera, hue: '#E8B48F', deep: '#7A3D18' },
 };
 
 /** ‎#7B5CBC → ‎123,92,188 · לשקיפויות, כי אין rgba על hex ב-RN */
@@ -133,16 +147,11 @@ export function AdminMoneyScreen() {
       </View>
 
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
-        {/* ⚠ **עיצוב ״הגלים״** · הבחירה של שקד (15 בספטמבר 2026)
-            מתוך חמש הצעות. הגרף הוא הרקע של הכרטיס, והמספרים
-            מרחפים מעליו בזכוכית. */}
-        <MoneyWave
-          label={REV_LABEL}
-          total={view.revenue}
-          margin={view.margin}
-          marginLabel={REV_SUB_PREFIX}
-          points={view.points}
-        />
+        {/* ⚠ **רצועת ״הגלים״** · הבחירה של שקד (15 בספטמבר 2026)
+            מתוך חמש הצעות, ובבקשה שלה גם בלי המילה ״מחזור״ ובלי
+            הסכום — ציור בלבד, בגובה מינימלי, ושלוש הכרטיסיות
+            מתחתיו. */}
+        <MoneyWave points={view.points} />
 
         {/* ⚠ **שלושה אריחי זכוכית** · שקד ביקשה (15 בספטמבר 2026)
             שהשורה תתחלק להכנסות, הוצאות ורווח, עם אייקון לצד כל
@@ -168,52 +177,58 @@ export function AdminMoneyScreen() {
               <Text style={s.tileK}>{TILE_PROFIT}</Text>
             </View>
             <Text style={[s.tileV, { color: '#4E8A64' }]}>{nf(view.profit)}</Text>
+            {/* ⚠ **הרווחיות ירדה לכאן** · היא ישבה על כרטיס הגלים,
+                ושקד ביקשה להשאיר שם ציור בלבד. בלי המעבר הזה
+                המספר נעלם מהמסך לגמרי. */}
+            <Text style={s.tileNote}>{`${REV_SUB_PREFIX}${view.margin}%`}</Text>
           </View>
         </View>
 
-        {/* ⚠ **אייקון לכל קטגוריה** · קערה לקוסקוס, שניצל למטעמים,
-            מארז לספיישל וכובע שף לשף וטאבון — במקום שם בלבד. */}
+        {/* ⚠ **רשימה נקייה, בלי פסים ואחוזים** · כך הכרטיס בהצעה
+            שנבחרה: אייקון בגוון הקטגוריה, שם, סכום, וקו שיער בין
+            השורות. הפסים והאחוזים ירדו איתה.
+            ⚠ הכותרת ״הכנסות״ ולא ״לפי קטגוריה״ · בקשה של שקד. */}
         <View style={s.card}>
-          <View style={s.cardHead}>
-            <Text style={s.cardTitle}>{CAT_TITLE}</Text>
-            <Text style={s.tag}>{view.periodName}</Text>
-          </View>
-          {view.cats.map((c) => {
+          {/* ⚠ **בלי תג התקופה** · שקד ביקשה למחוק אותו (15 בספטמבר
+              2026) — הלשוניות שמעל כבר אומרות איזו תקופה מוצגת. */}
+          <Text style={s.cardTitle}>{INCOME_TITLE}</Text>
+          {view.cats.map((c, i) => {
             const Icon = CAT_ICON[c.id] ?? Bowl;
             return (
-              <View key={c.n} style={s.catRow}>
-                <View style={s.catTop}>
-                  <View style={[s.catIcon, { backgroundColor: `rgba(${hexRgb(c.hue)},0.16)` }]}>
-                    <Icon size={13} color={c.deep} strokeWidth={1.9} />
-                  </View>
-                  <Text style={[s.catName, { color: c.deep }]} numberOfLines={1}>
-                    {c.n}
-                  </Text>
-                  <Text style={s.catVal}>{`${nf(c.v)} ₪`}</Text>
+              <View key={c.n} style={[s.line, i > 0 && s.lineTop]}>
+                <View style={[s.lineIcon, { backgroundColor: `rgba(${hexRgb(c.hue)},0.16)` }]}>
+                  <Icon size={13} color={c.deep} strokeWidth={1.9} />
                 </View>
-                <View style={s.barTrack}>
-                  <View style={[s.barFill, { width: `${Math.round((c.v / maxCat) * 100)}%`, backgroundColor: c.hue }]} />
-                </View>
-                <Text style={s.catPct}>{`${c.pct}%`}</Text>
+                <Text style={s.lineName} numberOfLines={1}>
+                  {c.n}
+                </Text>
+                <Text style={[s.lineVal, { color: c.v > 0 ? c.deep : surface.faint }]}>{`${nf(c.v)} ₪`}</Text>
               </View>
             );
           })}
         </View>
 
         <View style={s.card}>
-          <View style={s.cardHead}>
-            <Text style={s.cardTitle}>{EXP_TITLE}</Text>
-            <Text style={s.tag}>{view.periodName}</Text>
-          </View>
-          {view.expenseRows.map((e) => (
-            <View key={e.k} style={s.expRow}>
-              <View style={s.expText}>
-                <Text style={s.expK}>{e.k}</Text>
-                <Text style={s.expSub}>{e.sub}</Text>
+          <Text style={s.cardTitle}>{EXP_TITLE}</Text>
+          {view.expenseRows.map((e, i) => {
+            const look = EXP_LOOK[e.k] ?? { Icon: Bag, hue: '#8A8194', deep: '#4A4254' };
+            return (
+              <View key={e.k} style={[s.line, i > 0 && s.lineTop]}>
+                <View style={[s.lineIcon, { backgroundColor: `rgba(${hexRgb(look.hue)},0.16)` }]}>
+                  <look.Icon size={13} color={look.deep} strokeWidth={1.9} />
+                </View>
+                <View style={s.lineText}>
+                  <Text style={s.lineName} numberOfLines={1}>
+                    {e.k}
+                  </Text>
+                  <Text style={s.lineSub} numberOfLines={1}>
+                    {e.sub}
+                  </Text>
+                </View>
+                <Text style={[s.lineVal, { color: e.v > 0 ? look.deep : surface.faint }]}>{`${nf(e.v)} ₪`}</Text>
               </View>
-              <Text style={s.expV}>{`${nf(e.v)} ₪`}</Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
     </AdminShell>
@@ -226,11 +241,10 @@ const s = StyleSheet.create({
   body: { flex: 1 },
   pad: { gap: 12, paddingBottom: 120 },
   /**
-   * ⚠ **האריחים מרחפים מעל הגל** · שוליים שליליים מרימים אותם על
-   * שולי כרטיס הגלים, ולכן הם זכוכית בהירה עם צל רך משלהם —
-   * זה מה שמייחד את עיצוב ״הגלים״ שנבחר.
+   * ⚠ **מתחת לרצועה ולא מעליה** · שקד ביקשה (15 בספטמבר 2026)
+   * שהכרטיסיות יישבו מתחת לדיאגרמה. קודם הן ריחפו על שוליה.
    */
-  row: { flexDirection: 'row', gap: 8, marginTop: -22, marginHorizontal: 6, zIndex: 2 },
+  row: { flexDirection: 'row', gap: 8 },
   tileHead: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   tile: {
     flex: 1,
@@ -244,28 +258,23 @@ const s = StyleSheet.create({
   } as never,
   tileK: { fontSize: 10, color: surface.faint, fontWeight: '500' },
   tileV: { fontSize: 17, fontWeight: '700', marginTop: 2 },
+  tileNote: { fontSize: 9.5, fontWeight: '600', color: '#4E8A64', opacity: 0.75, marginTop: 1 },
+  /* ⚠ לבן מלא ולא זכוכית · כך הכרטיס בהצעה שנבחרה */
   card: {
-    borderRadius: 22,
-    padding: 16,
-    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderRadius: 20,
+    padding: 13,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
-    gap: 12,
-  },
-  cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 13, fontWeight: '600', color: '#6E6478' },
-  tag: { fontSize: 11, color: surface.faint },
-  catRow: { gap: 4 },
-  catTop: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  catIcon: { width: 24, height: 24, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  catName: { flex: 1, fontSize: 13, fontWeight: '600' },
-  catVal: { fontSize: 13, fontWeight: '600', color: surface.ink },
-  barTrack: { height: 7, borderRadius: 4, backgroundColor: 'rgba(130,112,162,0.1)', overflow: 'hidden' },
-  barFill: { height: 7, borderRadius: 4 },
-  catPct: { fontSize: 11, color: surface.faint },
-  expRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  expText: { flex: 1 },
-  expK: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
-  expSub: { fontSize: 11, color: surface.faint, marginTop: 1 },
-  expV: { fontSize: 14, fontWeight: '600', color: '#A65E2A' },
+    borderColor: 'rgba(142,111,208,0.16)',
+    boxShadow: '0 2px 4px -2px rgba(90,80,70,0.1), 0 16px 32px -18px rgba(90,80,70,0.28)',
+  } as never,
+  cardTitle: { fontSize: 11.5, fontWeight: '600', letterSpacing: 0.7, color: '#9488B5', marginBottom: 4 },
+  /* שורת הרשימה · אייקון, שם, סכום — וקו שיער בין השורות */
+  line: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 7 },
+  lineTop: { borderTopWidth: 1, borderTopColor: 'rgba(142,111,208,0.09)' },
+  lineIcon: { width: 24, height: 24, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  lineText: { flex: 1 },
+  lineName: { flex: 1, fontSize: 12, fontWeight: '500', color: '#54467A' },
+  lineSub: { fontSize: 10.5, fontWeight: '300', color: surface.faint, marginTop: 1 },
+  lineVal: { fontSize: 12.5, fontWeight: '700' },
 });
