@@ -16,16 +16,26 @@ type Props = {
   count?: number;
   style?: ViewStyle;
   fontSize?: number;
+  /**
+   * גובה הצ׳יפ ורדיוס הפינה.
+   * ⚠ **שונים בכל מסך בקנבס** · 32 בהיסטוריה ובאזורי הקניות,
+   * 34 בעלויות ייצור, 36 בתפריט ו-38 בשאר. קודם כולם היו 38,
+   * ולכן הצ׳יפים נראו גבוהים מדי ברוב המסכים.
+   */
+  height?: number;
+  radius?: number;
 };
 
 /** צ׳יפ בחירה · אבן הבניין החוזרת בכל מסכי הניהול */
-export function Chip({ label, on, onPress, tint, count, style, fontSize = 12.5 }: Props) {
+export function Chip({ label, on, onPress, tint, count, style, fontSize = 12.5, height = 38, radius = 13 }: Props) {
   return (
     <Pressable
       onPress={onPress}
       style={[
         s.chip,
         {
+          minHeight: height,
+          borderRadius: radius,
           backgroundColor: on ? `rgba(${tint.rgb},0.1)` : OFF_BG,
           borderColor: on ? `rgba(${tint.rgb},0.42)` : OFF_BD,
         },
@@ -55,9 +65,7 @@ export function ChipRow({ children }: { children: React.ReactNode }) {
 
 const s = StyleSheet.create({
   chip: {
-    borderRadius: 13,
     borderWidth: 1.5,
-    minHeight: 38,
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',

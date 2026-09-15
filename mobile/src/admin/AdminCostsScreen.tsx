@@ -29,7 +29,9 @@ import {
   type CostPart,
 } from '../data/adminCosts';
 import { AdminShell } from './ui/AdminShell';
+import { ChevronDown, Download } from '../icons';
 import { Chip } from './ui/Chip';
+import { ChipRail } from './ui/ChipRail';
 import { Sheet } from './ui/Sheet';
 import { apiEnabled } from '../api/config';
 import { adminCosts, adminImportCosts, adminPutCost, adminShopHistory } from '../api/admin';
@@ -142,7 +144,9 @@ export function AdminCostsScreen() {
     <AdminShell
       title={COSTS_TITLE}
       sub={`עדכון חודשי · ${COST_MONTHS[today.getMonth()]} ${today.getFullYear()}`}
-      actions={[{ label: COSTS_IMPORT, onPress: () => setImpOpen(true) }]}
+      /* ⚠ **האייקון שהיה חסר** · בקנבס ״ייבוא״ הוא גלולה סגולה
+         רכה עם חץ הורדה, ולא כפתור לבן עם מסגרת. */
+      actions={[{ label: COSTS_IMPORT, onPress: () => setImpOpen(true), icon: Download, tint: true }]}
     >
       {due ? (
         <Pressable onPress={() => setSeen(true)} style={s.due}>
@@ -152,11 +156,15 @@ export function AdminCostsScreen() {
       ) : null}
       {impDone ? <Text style={s.impDone}>{impDone}</Text> : null}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cats}>
+      {/* ⚠ **הבאג בנראות הקטגוריות** · זה היה `ScrollView horizontal`
+          בלי גובה ובלי `alignItems`, ולכן כל צ׳יפ נמתח לגובה כל
+          המסך. נמדד בדפדפן: 390 פיקסלים במקום 32. `ChipRail` נכתב
+          בדיוק בשביל זה. */}
+      <ChipRail>
         {COST_CATS.map((c) => (
-          <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} onPress={() => { setCat(c.id); setOpen(-1); }} />
+          <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} height={34} radius={12} onPress={() => { setCat(c.id); setOpen(-1); }} />
         ))}
-      </ScrollView>
+      </ChipRail>
       {spec.subs ? (
         <View style={s.subs}>
           {spec.subs.map((b) => (
@@ -178,14 +186,22 @@ export function AdminCostsScreen() {
           const isOpen = open === i;
           return (
             <View key={d.id} style={[s.card, { borderRightColor: spec.hue }]}>
-              <Pressable onPress={() => setOpen(isOpen ? -1 : i)}>
-                <View style={s.cardHead}>
-                  <Text style={s.name}>{d.name}</Text>
-                  {isAuto ? <Text style={s.auto}>{COSTS_AUTO_TAG}</Text> : null}
+              {/* ⚠ **החץ שהיה חסר** · בקנבס יש צ׳יבון 14 בצד השורה
+                  שמסתובב כשהכרטיס נפתח. בלי זה לא היה שום סימן
+                  שאפשר ללחוץ על הכרטיס בכלל. */}
+              <Pressable onPress={() => setOpen(isOpen ? -1 : i)} style={s.cardRow}>
+                <View style={s.cardText}>
+                  <View style={s.cardHead}>
+                    <Text style={s.name} numberOfLines={1}>{d.name}</Text>
+                    {isAuto ? <Text style={s.auto}>{COSTS_AUTO_TAG}</Text> : null}
+                  </View>
+                  <Text style={s.sumLine}>
+                    {(isWeight ? 'עלות לק״ג ' : 'עלות ליחידה ') + money(costCmp) + ' ₪ · רווחיות ' + pct + '%'}
+                  </Text>
                 </View>
-                <Text style={s.sumLine}>
-                  {(isWeight ? 'עלות לק״ג ' : 'עלות ליחידה ') + money(costCmp) + ' ₪ · רווחיות ' + pct + '%'}
-                </Text>
+                <View style={isOpen ? s.chevOpen : undefined}>
+                  <ChevronDown size={14} color="#A79FB2" strokeWidth={2.2} />
+                </View>
               </Pressable>
               {isOpen ? (
                 <View style={s.bodyCard}>
@@ -302,6 +318,10 @@ const s = StyleSheet.create({
   body: { flex: 1 },
   pad: { gap: 9, paddingBottom: 120 },
   card: { borderRadius: 18, padding: 13, backgroundColor: 'rgba(255,255,255,0.7)', borderRightWidth: 3, gap: 8 },
+  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  cardText: { flex: 1, minWidth: 0 },
+  /* ⚠ אין `transformOrigin` · הסיבוב סביב המרכז נכון לחץ סימטרי */
+  chevOpen: { transform: [{ rotate: '180deg' }] },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { flex: 1, fontSize: 14.5, fontWeight: '600', color: surface.ink },
   auto: { fontSize: 10, fontWeight: '700', color: '#7B5CBC' },

@@ -13,6 +13,7 @@ import {
 import { AREA } from '../data/adminShopping';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
+import { ChipRail } from './ui/ChipRail';
 import { apiEnabled } from '../api/config';
 import { adminShopHistory, type ShopListDto } from '../api/admin';
 import { useNav } from '../navigation/store';
@@ -82,11 +83,15 @@ export function AdminHistoryScreen() {
 
   return (
     <AdminShell title={HIST_TITLE} sub={`${count(rows.length, 'קנייה אחת', 'קניות')} · ${nf(total)} ₪ מצטבר`}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filters}>
+      {/* ⚠ **הבאג בנראות הקטגוריות** · זה היה `ScrollView horizontal`
+          בלי גובה ובלי `alignItems`, ולכן כל צ׳יפ נמתח לגובה כל
+          המסך. נמדד בדפדפן: 390 פיקסלים במקום 32. `ChipRail` נכתב
+          בדיוק בשביל זה. */}
+      <ChipRail>
         {HIST_AREAS.map((a) => (
-          <Chip key={a.id} label={a.n} on={filter === a.id} tint={PLUM} onPress={() => { setFilter(a.id); setOpen(-1); }} />
+          <Chip key={a.id} label={a.n} on={filter === a.id} tint={PLUM} height={32} radius={11} onPress={() => { setFilter(a.id); setOpen(-1); }} />
         ))}
-      </ScrollView>
+      </ChipRail>
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
         {rows.length === 0 ? (
           <Text style={s.empty}>{HIST_EMPTY}</Text>

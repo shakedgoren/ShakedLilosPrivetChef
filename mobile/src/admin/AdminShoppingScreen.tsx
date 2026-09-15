@@ -50,6 +50,8 @@ export function AdminShoppingScreen() {
             /* ⚠ 11 ולא 12.5 · שקד ביקשה שכל הקטגוריות ייכנסו בשורה
                אחת בלי לגלול. נמדד בדפדפן. */
             fontSize={11}
+            height={32}
+            radius={11}
             style={s.areaChip}
             onPress={() => admin.setArea(a.id)}
           />

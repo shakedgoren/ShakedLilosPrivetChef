@@ -18,6 +18,7 @@ import {
 } from '../data/adminMenu';
 import { AdminShell, KpiRow } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
+import { ChipRail } from './ui/ChipRail';
 import { apiEnabled } from '../api/config';
 import { adminMenu } from '../api/admin';
 import { useNav } from '../navigation/store';
@@ -30,7 +31,7 @@ const toMenuRows = (rows: readonly { c: string; name: string; price: number; cos
   rows.flatMap((x) => (isMenuCat(x.c) ? [{ c: x.c, name: x.name, price: x.price, cost: x.cost }] : []));
 
 export function AdminMenuScreen() {
-  const { user } = useNav();
+  const { user, go } = useNav();
   const live = apiEnabled && user?.role === 'admin';
   const [cat, setCat] = useState<MenuCatKey>(START_CAT);
   const [items, setItems] = useState<MenuRow[]>(MENU);
@@ -58,12 +59,22 @@ export function AdminMenuScreen() {
   );
 
   return (
-    <AdminShell title={MENU_TITLE} sub={MENU_SUB}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.cats}>
+    <AdminShell
+      title={MENU_TITLE}
+      sub={MENU_SUB}
+      /* ⚠ **אינו בקנבס** · שקד ביקשה (15 בספטמבר 2026) כפתור
+         שמעביר מהתפריט ישר לעמוד עלויות הייצור. */
+      actions={[{ label: 'עדכון', onPress: () => go('adminCosts') }]}
+    >
+      {/* ⚠ **הבאג בנראות הקטגוריות** · זה היה `ScrollView horizontal`
+          בלי גובה ובלי `alignItems`, ולכן כל צ׳יפ נמתח לגובה כל
+          המסך. נמדד בדפדפן: 390 פיקסלים במקום 32. `ChipRail` נכתב
+          בדיוק בשביל זה. */}
+      <ChipRail>
         {CATS.map((c) => (
-          <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} onPress={() => setCat(c.id)} />
+          <Chip key={c.id} label={c.n} on={cat === c.id} tint={c} height={36} radius={12} onPress={() => setCat(c.id)} />
         ))}
-      </ScrollView>
+      </ChipRail>
       <View style={[s.sum, { backgroundColor: `rgba(${tint.rgb},0.1)` }]}>
         <KpiRow kpis={kpis} />
       </View>

@@ -16,6 +16,12 @@ export type HeaderAction = {
   icon?: (p: IconProps) => React.JSX.Element;
   /** הכפתור מושבת · אפור ולא מגיב */
   off?: boolean;
+  /**
+   * גלולה בגוון סגול עם אייקון **וגם** מילה · כך נראה כפתור
+   * ״ייבוא״ בקנבס של עלויות הייצור: גובה 36, ריפוד 14,
+   * רקע rgba(123,92,188,0.13) וכיתוב 12.5 במשקל 600.
+   */
+  tint?: boolean;
 };
 
 type Props = {
@@ -60,12 +66,23 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
             accessibilityLabel={act.label}
             style={[
               s.action,
-              act.icon ? s.actionIcon : null,
-              act.primary ? s.actionPrimary : act.icon ? s.actionGhostRound : s.actionGhost,
+              act.tint ? s.actionTintBox : act.icon ? s.actionIcon : null,
+              act.tint
+                ? null
+                : act.primary
+                  ? s.actionPrimary
+                  : act.icon
+                    ? s.actionGhostRound
+                    : s.actionGhost,
               act.off ? s.actionOff : null,
             ]}
           >
-            {act.icon ? (
+            {act.icon && act.tint ? (
+              <>
+                <act.icon size={14} color="#43307A" strokeWidth={2.2} />
+                <Text style={s.actionTint}>{act.label}</Text>
+              </>
+            ) : act.icon ? (
               <act.icon size={16} color={act.primary ? '#43307A' : '#6E6478'} strokeWidth={2.2} />
             ) : (
               <Text style={s.actionText}>{act.primary ? `+ ${act.label}` : act.label}</Text>
@@ -133,6 +150,16 @@ const s = StyleSheet.create({
   actionIcon: { width: 38, height: 38, borderRadius: 19, paddingHorizontal: 0 },
   actionPrimary: { backgroundColor: '#C6B3EC' },
   actionOff: { opacity: 0.4 },
+  /* גלולת האייקון-והמילה של הקנבס · עלויות ייצור */
+  actionTintBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 36,
+    paddingHorizontal: 14,
+    backgroundColor: 'rgba(123,92,188,0.13)',
+  },
+  actionTint: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
   actionText: { fontSize: 13, fontWeight: '600', color: '#43307A' },
   kpiBar: {
     flexDirection: 'row',
