@@ -1,5 +1,12 @@
 import React from 'react';
-import { Modal, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
+/**
+ * ⚠ **לא ה-`SafeAreaView` של react-native** · לזה שלו אין `edges`,
+ * והוא מרפד תמיד את כל ארבעת הצדדים. שקד ביקשה
+ * `ignoresSafeArea(_:edges:)` — כלומר להתעלם מצד אחד ולא מכולם —
+ * ולכן צריך את הגרסה עם `edges`. החבילה כלולה ב-Expo Go.
+ */
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { FONTS } from './src/theme/fonts';
@@ -139,20 +146,23 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
-    <NavProvider>
+    <SafeAreaProvider>
+      <NavProvider>
       <LightboxProvider>
-        {/* ⚠ **השטיפה מתעלמת מה-SafeArea** · בקשה של שקד (15 בספטמבר
-            2026). `SafeAreaView` מרפד במכשיר את המגרעת ואת פס הבית,
-            וכשהוא היה השורש גם הרקע נעצר שם — נשארו פסים בצבע
-            `surface.ground` השטוח למעלה ולמטה. עכשיו השורש הוא
-            `View` שממלא את כל המסך, השטיפה נצבעת מקצה לקצה,
-            וה-`SafeAreaView` עטוף רק סביב התוכן כך שהוא עדיין לא
-            נכנס מתחת למגרעת.
+        {/* ⚠ **מתעלמים מהשוליים הבטוחים — חוץ מלמעלה** · בקשה של
+            שקד (15 בספטמבר 2026), `ignoresSafeArea(_:edges:)`.
+            השורש הוא `View` שממלא את כל המסך ומחזיק את השטיפה,
+            כך שהרקע נצבע מקצה לקצה. התוכן עטוף ב-`SafeAreaView`
+            עם `edges={['top']}` בלבד — הוא נשמר מתחת למגרעת
+            ולמעלה, אבל **נמשך עד תחתית המסך**.
+            ⚠ נמדד בסימולטור לפני התיקון · נשאר פס אחיד של 102
+            פיקסלים בתחתית (‎34 נקודות ב-@3x) — בדיוק מידת פס
+            הבית — שבו התוכן פשוט לא הגיע.
             ⚠ ה-`SafeAreaView` שקוף · אחרת הוא היה מכסה את השטיפה. */}
         <View style={s.root}>
           <StatusBar style="dark" />
           <Wash />
-          <SafeAreaView style={s.safe}>
+          <SafeAreaView style={s.safe} edges={['top']}>
             <Router />
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו
@@ -172,7 +182,8 @@ export default function App() {
           <Chrome />
         </View>
       </LightboxProvider>
-    </NavProvider>
+      </NavProvider>
+    </SafeAreaProvider>
   );
 }
 
