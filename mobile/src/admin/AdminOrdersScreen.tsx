@@ -14,12 +14,20 @@ import { useAdminOrders } from './useAdminOrders';
 
 const ALL = 'הכל';
 const COUS = HUES.cous;
-/* לשוניות הסינון · המסלול בלי המצב האחרון, ואחריו ״בוטלה״ */
+
+/**
+ * לשוניות הסינון · בדיוק חמש, לפי בקשה של שקד (15 בספטמבר 2026):
+ * הכל · חדשה · בהכנה · מוכנה · בוטלה.
+ *
+ * ⚠ **״מאושרת״ אינה לשונית** · היא עדיין מצב חוקי בשרת
+ * (`KITCHEN_FLOW`), ולכן הזמנה במצב הזה נראית תחת ״הכל״ בלבד.
+ * אם היא לא נחוצה יותר — צריך להוריד אותה גם מהשרת.
+ */
+const TABS = [ALL, 'חדשה', 'בהכנה', 'מוכנה', CANCELLED];
 
 export function AdminOrdersScreen() {
   const { go } = useNav();
   const admin = useAdminOrders();
-  const TABS = [ALL, ...admin.flow.slice(0, -1), CANCELLED];
 
   const all = admin.allOrders.map((o, i) => ({ o, i, status: admin.statusOf(i) }));
   const shown = admin.tab === ALL ? all : all.filter((x) => x.status === admin.tab);

@@ -2,21 +2,21 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import {
-  BOARD_BAND,
-  BOARD_CAT,
-  BOARD_COL_PAY,
-  BOARD_COL_STATUS,
-  BOARD_COL_SUM,
-  BOARD_COL_TIME,
-  BOARD_COL_WHO,
-  BOARD_EMPTY,
-  BOARD_FLOW,
-  BOARD_GONE,
-  BOARD_LIVE,
-  BOARD_MODES,
-  BOARD_SEED,
-  BOARD_STEPS,
-  BOARD_TOTAL,
+  BAND as BOARD_BAND,
+  BOARD_SUB as BOARD_LIVE,
+  CATS as BOARD_CATS,
+  COL_W,
+  EMPTY_LABEL as BOARD_EMPTY,
+  FLOW as BOARD_FLOW,
+  GONE_PREFIX as BOARD_GONE,
+  HEAD_COLS,
+  LOW_STOCK,
+  MODES as BOARD_MODES,
+  SEED as BOARD_SEED,
+  STEPS as BOARD_STEPS,
+  START_MODE,
+  TAIL_COLS,
+  tableWidth,
 } from '../data/adminBoard';
 import { CancelSheet } from './CancelSheet';
 import { apiEnabled } from '../api/config';
@@ -25,8 +25,30 @@ import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import type { CancelNote } from './useAdminOrders';
 import { ChevronRight, Close } from '../icons';
+import Svg, { Path } from 'react-native-svg';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+/** הקטגוריה היחידה בלוח כרגע · הקוסקוס, כמו בקנבס */
+const BOARD_CAT = BOARD_CATS.cous;
+
+/**
+ * ⚠ **״סה״כ״ ולא ״סה״כ בטאב״** · בקנבס השורה נקראת `TOTAL_LABEL`
+ * ובה כתוב ״סה״כ בטאב״. שקד ביקשה (15 בספטמבר 2026) שיהיה כתוב
+ * ״סה״כ״ בלבד, ולכן הערך נדרס כאן ולא בקובץ המחולץ.
+ */
+const TOTAL_LABEL = 'סה״כ';
+
+/**
+ * ⚠ **מתג התצוגה** · בקשה של שקד — הלוח תוכנן לאייפד (1180×820),
+ * והיא רוצה לעבור בין תצוגת אייפד לתצוגת טלפון בלחיצה.
+ * בתצוגת טלפון הטבלה מצטמצמת לעמודות שנכנסות למסך צר.
+ */
+const VIEWS = [
+  { id: 'pad', label: 'תצוגת אייפד' },
+  { id: 'phone', label: 'תצוגת טלפון' },
+] as const;
+type ViewId = (typeof VIEWS)[number]['id'];
 
 type Row = {
   id?: string;
@@ -48,7 +70,11 @@ export function AdminBoardScreen() {
   const { back, user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
   const { width } = useWindowDimensions();
-  const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>('pickup');
+  const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
+    START_MODE as 'all' | 'pickup' | 'deliv',
+  );
+  /* ברירת המחדל נגזרת מרוחב החלון · באייפד פותחים בתצוגת אייפד */
+  const [view, setView] = useState<ViewId>('pad');
   const [orders, setOrders] = useState<Row[]>(() =>
     BOARD_SEED.map((o) => ({ ...o, q: { ...o.q }, hrs: o.hrs })),
   );
@@ -127,7 +153,14 @@ export function AdminBoardScreen() {
     return { ...it, used, left: (it.quota ?? 0) - used };
   });
 
-  const compact = width < 900;
+  /**
+   * ⚠ הרוחבים · בתצוגת אייפד בדיוק אלה של הקנבס, ובתצוגת טלפון
+   * מצטמצמים כדי שהשורה תיכנס במסך צר בלי גלילה אינסופית.
+   */
+  const pad = view === 'pad';
+  const w = pad
+    ? COL_W
+    : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
 
   return (
     <View style={s.root}>
@@ -139,13 +172,25 @@ export function AdminBoardScreen() {
           <Text style={s.title}>{BOARD_CAT.name}</Text>
           <Text style={s.sub}>{BOARD_LIVE}</Text>
         </View>
+        {/* ⚠ מתג התצוגה · בקשה של שקד, אינו בקנבס */}
+        <View style={s.views}>
+          {VIEWS.map((v) => {
+            const on = view === v.id;
+            return (
+              <Pressable key={v.id} onPress={() => setView(v.id)} style={[s.viewBtn, on && s.viewOn]}>
+                <Text style={[s.viewText, on && s.viewTextOn]}>{v.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <View style={s.modes}>
           {BOARD_MODES.map((m) => {
             const n = liveRows.filter((o) => m.id === 'all' || o.ship === m.id).length;
             const on = mode === m.id;
             return (
               <Pressable key={m.id} onPress={() => setMode(m.id)} style={[s.mode, on && s.modeOn]}>
-                <Text style={[s.modeText, on && s.modeTextOn]}>{`${m.n} ${n}`}</Text>
+                <Text style={[s.modeText, on && s.modeTextOn]}>{`${m.name} ${n}`}</Text>
               </Pressable>
             );
           })}
@@ -153,25 +198,43 @@ export function AdminBoardScreen() {
         {gone > 0 ? <Text style={s.gone}>{`${BOARD_GONE} ${gone}`}</Text> : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={!compact} style={s.stock}>
-        {stock.map((it) => (
-          <View key={it.id} style={s.stockChip}>
-            <Text style={s.stockText}>{`${it.sub} ${it.left} מתוך ${it.quota}`}</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={pad} style={s.stock}>
+        {stock.map((it) => {
+          /* ⚠ שלושת המצבים של הקנבס · אזל, מתחת לסף, ורגיל */
+          const outOf = it.left <= 0;
+          const low = it.left <= LOW_STOCK;
+          const fg = outOf ? '#B95349' : low ? '#A65E2A' : '#43307A';
+          const bg = outOf
+            ? 'rgba(185,83,73,0.09)'
+            : low
+              ? 'rgba(199,125,62,0.1)'
+              : 'rgba(255,255,255,0.72)';
+          const bd = outOf
+            ? 'rgba(185,83,73,0.3)'
+            : low
+              ? 'rgba(199,125,62,0.32)'
+              : 'rgba(255,255,255,0.9)';
+          return (
+          <View key={it.id} style={[s.stockChip, { backgroundColor: bg, borderColor: bd }]}>
+            <Text style={[s.stockText, { color: fg }]}>{`${it.sub} ${it.left} מתוך ${it.quota}`}</Text>
           </View>
-        ))}
+          );
+        })}
       </ScrollView>
 
+      {/* ⚠ **רוחבי העמודות מהקנבס** · COL_W חולץ מהקוד של הארטבורד
+          ולא נמדד בעין. בתצוגת טלפון העמודות מצטמצמות כדי להיכנס. */}
       <ScrollView horizontal>
-        <View style={{ minWidth: compact ? 980 : 1100 }}>
+        <View style={{ minWidth: pad ? tableWidth(BOARD_CAT.items.length) : undefined }}>
           <View style={s.cols}>
-            <Text style={[s.col, { width: 80 }]}>{BOARD_COL_TIME}</Text>
-            <Text style={[s.col, { width: 140 }]}>{BOARD_COL_WHO}</Text>
+            <Text style={[s.col, { width: w.time }]}>{HEAD_COLS.time}</Text>
+            <Text style={[s.col, { width: w.who }]}>{HEAD_COLS.who}</Text>
             {BOARD_CAT.items.map((it) => (
-              <Text key={it.id} style={[s.col, s.itemCol]}>{`${it.t}\n${it.sub}`}</Text>
+              <Text key={it.id} style={[s.col, { width: w.item }]}>{`${it.t}\n${it.sub}`}</Text>
             ))}
-            <Text style={[s.col, { width: 72 }]}>{BOARD_COL_SUM}</Text>
-            <Text style={[s.col, { width: 80 }]}>{BOARD_COL_PAY}</Text>
-            <Text style={[s.col, { width: 160 }]}>{BOARD_COL_STATUS}</Text>
+            <Text style={[s.col, { width: w.sum }]}>{TAIL_COLS.sum}</Text>
+            <Text style={[s.col, { width: w.pay }]}>{TAIL_COLS.pay}</Text>
+            <Text style={[s.col, { width: w.status }]}>{TAIL_COLS.status}</Text>
           </View>
           <ScrollView style={s.list}>
             {shown.length === 0 ? (
@@ -181,8 +244,8 @@ export function AdminBoardScreen() {
                 const band = BOARD_BAND[x.o.status] ?? BOARD_BAND['חדשה'];
                 return (
                   <View key={x.o.id ?? x.i} style={[s.row, { backgroundColor: band.row, borderColor: band.edge }]}>
-                    <Text style={[s.cell, { width: 80, color: band.ink }]}>{x.o.time}</Text>
-                    <View style={{ width: 140 }}>
+                    <Text style={[s.cell, { width: w.time, color: band.ink }]}>{x.o.time}</Text>
+                    <View style={{ width: w.who }}>
                       <Text style={[s.who, { color: band.ink }]} numberOfLines={1}>{x.o.who}</Text>
                       {x.o.note ? <Text style={s.note} numberOfLines={1}>{x.o.note}</Text> : null}
                     </View>
@@ -192,22 +255,44 @@ export function AdminBoardScreen() {
                         value={String(x.o.q[it.id] || 0)}
                         keyboardType="number-pad"
                         onChangeText={(v) => setQ(x.i, it.id, v)}
-                        style={s.qty}
+                        style={[s.qty, { width: w.item - 16 }]}
                       />
                     ))}
-                    <Text style={[s.cell, { width: 72 }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
-                    <Text style={[s.cell, { width: 80 }]}>{x.o.pay}</Text>
-                    <View style={s.steps}>
+                    <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
+                    <Text style={[s.cell, { width: w.pay }]}>{x.o.pay}</Text>
+                    {/* ⚠ **שלושה אייקונים ולא כפתורי טקסט** · כך זה בקנבס:
+                        `STEPS` נושא את הנתיבים, והפעיל נצבע בגוון השורה. */}
+                    <View style={[s.steps, { width: w.status }]}>
                       {BOARD_STEPS.map((st) => {
                         const on = x.o.status === st.id;
                         return (
-                          <Pressable key={st.id} onPress={() => setStatus(x.i, st.id)} style={[s.step, on && { backgroundColor: band.edge }]}>
-                            <Text style={[s.stepText, on && { color: '#FFFFFF' }]}>{st.label}</Text>
+                          <Pressable
+                            key={st.id}
+                            onPress={() => setStatus(x.i, st.id)}
+                            style={[
+                              s.step,
+                              { borderColor: on ? band.edge : 'rgba(130,112,162,0.22)' },
+                              on ? { backgroundColor: band.edge } : s.stepOff,
+                            ]}
+                          >
+                            <Svg width={17} height={17} viewBox="0 0 24 24">
+                              {st.paths.map((d) => (
+                                <Path
+                                  key={d}
+                                  d={d}
+                                  fill="none"
+                                  stroke={on ? '#FFFFFF' : '#A79FB2'}
+                                  strokeWidth={2}
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              ))}
+                            </Svg>
                           </Pressable>
                         );
                       })}
                       <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
-                        <Close size={12} color="#B95349" strokeWidth={2.4} />
+                        <Close size={13} color="#B95349" strokeWidth={2.4} />
                       </Pressable>
                     </View>
                   </View>
@@ -215,11 +300,11 @@ export function AdminBoardScreen() {
               })
             )}
             <View style={s.foot}>
-              <Text style={[s.cell, { width: 220 }]}>{BOARD_TOTAL}</Text>
+              <Text style={[s.cell, { width: w.time + w.who }]}>{TOTAL_LABEL}</Text>
               {colSums.map((n, i) => (
-                <Text key={BOARD_CAT.items[i].id} style={[s.cell, s.itemCol]}>{n}</Text>
+                <Text key={BOARD_CAT.items[i].id} style={[s.cell, { width: w.item }]}>{n}</Text>
               ))}
-              <Text style={[s.cell, { width: 72, fontWeight: '700' }]}>{`${nf(grand)} ₪`}</Text>
+              <Text style={[s.cell, { width: w.sum, fontWeight: '700' }]}>{`${nf(grand)} ₪`}</Text>
             </View>
           </ScrollView>
         </View>
@@ -278,9 +363,33 @@ const s = StyleSheet.create({
   who: { fontSize: 13, fontWeight: '600' },
   note: { fontSize: 10, color: surface.faint },
   qty: { width: 68, height: 32, textAlign: 'center', fontSize: 13, color: surface.ink, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 8 },
-  steps: { width: 160, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4 },
-  step: { flex: 1, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.55)' },
-  stepText: { fontSize: 9, fontWeight: '600', color: '#6E6478' },
+  steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center' },
+  /* ⚠ ריבוע אייקון · בקנבס 34×30 עם מסגרת, והפעיל נצבע מלא */
+  step: {
+    width: 34,
+    height: 30,
+    borderRadius: 9,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepOff: { backgroundColor: 'rgba(255,255,255,0.72)' },
+
+  /* מתג התצוגה · אינו בקנבס, בקשה של שקד */
+  views: { flexDirection: 'row', gap: 4 },
+  viewBtn: {
+    height: 28,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(130,112,162,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewOn: { backgroundColor: '#C6B3EC', borderColor: '#C6B3EC' },
+  viewText: { fontSize: 11, fontWeight: '600', color: '#6E6478' },
+  viewTextOn: { color: '#43307A' },
   x: { fontSize: 16, color: '#B95349', paddingHorizontal: 4 },
   foot: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(130,112,162,0.16)' },
 });

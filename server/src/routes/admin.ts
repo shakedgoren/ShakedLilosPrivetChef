@@ -7,7 +7,7 @@ import { isPhone, normalizePhone, publicUser } from '../auth/identity.ts';
 import { CANCELLED, DELIVERED, FLOW, canAdvance, parseStatus } from '../catalog/status.ts';
 import { defaultSaleDate, isCategory, quoteAdminDraft } from '../catalog/quote.ts';
 import { serializeAdminCard, serializeOrder } from '../orders/serialize.ts';
-import { BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
+import { FLOW as BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 import { MONTHS } from '../../../mobile/src/data/adminDays.ts';
 

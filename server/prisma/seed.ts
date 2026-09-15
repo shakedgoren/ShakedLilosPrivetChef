@@ -9,7 +9,7 @@ import { SEED as SHOP_SEED } from '../../mobile/src/data/adminShopping.ts';
 import { HIST_BUYS } from '../../mobile/src/data/adminHistory.ts';
 import { COST_DISHES } from '../../mobile/src/data/adminCosts.ts';
 import { EXPENSES } from '../../mobile/src/data/adminMoney.ts';
-import { BOARD_SEED } from '../../mobile/src/data/adminBoard.ts';
+import { SEED as BOARD_SEED } from '../../mobile/src/data/adminBoard.ts';
 import { BOOK } from '../../mobile/src/data/adminOrders.ts';
 import { quoteAdminDraft } from '../src/catalog/quote.ts';
 
