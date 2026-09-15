@@ -38,6 +38,26 @@ export const env = {
   },
   resetDebug: process.env.RESET_DEBUG === '1',
   uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
+  /** WhatsApp Cloud API · נקרא בזמן אמת כדי שבדיקות יוכלו לשנות env */
+  get whatsapp() {
+    const token = (process.env.WHATSAPP_TOKEN ?? '').trim();
+    const phoneNumberId = (process.env.WHATSAPP_PHONE_NUMBER_ID ?? '').trim();
+    const graphVersion = (process.env.WHATSAPP_GRAPH_VERSION ?? 'v21.0').trim() || 'v21.0';
+    return {
+      token,
+      phoneNumberId,
+      wabaId: (process.env.WHATSAPP_WABA_ID ?? '').trim(),
+      graphVersion,
+      templateOtp: (process.env.WHATSAPP_TEMPLATE_OTP ?? 'bite_otp').trim() || 'bite_otp',
+      templateOrderConfirmed:
+        (process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED ?? 'bite_order_confirmed').trim() ||
+        'bite_order_confirmed',
+      templateOrderStatus: (process.env.WHATSAPP_TEMPLATE_ORDER_STATUS ?? '').trim(),
+      templateLang: (process.env.WHATSAPP_TEMPLATE_LANG ?? 'he').trim() || 'he',
+      webhookVerifyToken: (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '').trim(),
+      enabled: Boolean(token && phoneNumberId),
+    };
+  },
 };
 
 export { isProd };

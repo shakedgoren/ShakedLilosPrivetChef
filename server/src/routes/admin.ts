@@ -11,6 +11,7 @@ import { FLOW as BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CATS, MONTHS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
+import { notifyLater, notifyOrderConfirmed, notifyOrderStatus } from '../whatsapp/notify.ts';
 
 export const adminRouter = Router();
 
@@ -94,6 +95,7 @@ adminRouter.patch('/orders/:id/status', async (req, res, next) => {
       },
     });
 
+    notifyLater(notifyOrderStatus(updated));
     res.json({ order: serializeOrder(updated), card: serializeAdminCard(updated) });
   } catch (err) {
     next(err);
@@ -156,6 +158,7 @@ adminRouter.post('/orders', async (req, res, next) => {
       },
     });
 
+    notifyLater(notifyOrderConfirmed(row));
     res.status(201).json({ order: serializeOrder(row), card: serializeAdminCard(row) });
   } catch (err) {
     next(err);

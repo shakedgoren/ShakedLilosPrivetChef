@@ -10,7 +10,7 @@
 
 ## שרת מקומי
 
-ההוראות המלאות ב-[server/README.md](server/README.md) — כולל **SQLite מול Postgres מקומי** (Docker Compose, בלי ענן).
+ההוראות המלאות ב-[server/README.md](server/README.md) — כולל **SQLite מול Postgres מקומי** (Docker Compose, בלי ענן) וחיבור **WhatsApp Cloud API** (אופציונלי).
 
 ```bash
 cd server

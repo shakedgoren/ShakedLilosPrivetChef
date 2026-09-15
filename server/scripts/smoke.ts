@@ -22,6 +22,9 @@ process.env.ADMIN_PASSWORD = 'changeme';
 process.env.ADMIN_NAME = 'שקד לילוז';
 process.env.NODE_ENV = 'test';
 process.env.UPLOAD_DIR = join(dir, 'uploads');
+delete process.env.WHATSAPP_TOKEN;
+delete process.env.WHATSAPP_PHONE_NUMBER_ID;
+delete process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
 
 execSync('npx prisma db push --skip-generate', {
   cwd: root,
@@ -89,6 +92,41 @@ const fail = (msg: string, extra?: unknown): never => {
 
 const health = await api('/health');
 if (health.status !== 200) fail('health', health);
+if ((health.body as { whatsapp?: boolean }).whatsapp !== false) fail('whatsapp should be off without env', health);
+
+const waHookOff = await api('/webhooks/whatsapp');
+if (waHookOff.status !== 404) fail('whatsapp webhook without verify token', waHookOff);
+
+const waHookPost = await api('/webhooks/whatsapp', { method: 'POST', body: JSON.stringify({ entry: [] }) });
+if (waHookPost.status !== 200) fail('whatsapp webhook POST should accept', waHookPost);
+
+const otpNoUser = await api('/auth/otp/request', {
+  method: 'POST',
+  body: JSON.stringify({ who: '0599999999' }),
+});
+if (otpNoUser.status !== 200) fail('otp request always 200', otpNoUser);
+if ((otpNoUser.body as { ok?: boolean }).ok !== true) fail('otp request ok', otpNoUser);
+
+const otpBad = await api('/auth/otp/verify', {
+  method: 'POST',
+  body: JSON.stringify({ who: '0599999999', code: '000000' }),
+});
+if (otpBad.status !== 400) fail('otp verify bad code', otpBad);
+if ((otpBad.body as { error?: string }).error !== 'otp_invalid') fail('otp verify error code', otpBad);
+
+const otpReq = await api('/auth/otp/request', {
+  method: 'POST',
+  body: JSON.stringify({ who: '0500000000' }),
+});
+if (otpReq.status !== 200) fail('otp request admin', otpReq);
+const otpCode = (otpReq.body as { code?: string }).code;
+if (!otpCode || otpCode.length !== 6) fail('otp code missing in RESET_DEBUG', otpReq);
+const otpSession = await api('/auth/otp/verify', {
+  method: 'POST',
+  body: JSON.stringify({ who: '0500000000', code: otpCode }),
+});
+if (otpSession.status !== 200) fail('otp verify admin', otpSession);
+if (!(otpSession.body as { token?: string }).token) fail('otp session token', otpSession);
 
 const googleUnset = await api('/auth/google', {
   method: 'POST',

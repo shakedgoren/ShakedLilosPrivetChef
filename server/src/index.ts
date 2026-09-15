@@ -5,7 +5,8 @@ import { prisma } from './db.ts';
 const app = createApp();
 
 const server = app.listen(env.port, env.host, () => {
-  console.log(`BITE & TELL · http://${env.host}:${env.port}`);
+  const wa = env.whatsapp.enabled ? 'WhatsApp Cloud API פועל' : 'WhatsApp כבוי (חסר TOKEN או PHONE_NUMBER_ID)';
+  console.log(`BITE & TELL · http://${env.host}:${env.port} · ${wa}`);
 });
 
 const shutdown = async () => {

@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
@@ -9,6 +8,7 @@ import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
 import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
+import { consumeOtp, issuePasswordReset } from '../whatsapp/otp.ts';
 
 export const authRouter = Router();
 
@@ -74,7 +74,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
   try {
     const body = z.object({ who: z.string().min(3) }).parse(req.body);
     const who = parseWho(body.who);
-    const payload: { ok: true; resetToken?: string; expiresAt?: string } = { ok: true };
+    const payload: { ok: true; resetToken?: string; expiresAt?: string; via?: 'otp' | 'token' } = { ok: true };
 
     if (who) {
       const user =
@@ -82,14 +82,11 @@ authRouter.post('/forgot-password', async (req, res, next) => {
           ? await prisma.user.findUnique({ where: { email: who.email } })
           : await prisma.user.findUnique({ where: { phone: who.phone } });
       if (user) {
-        const token = randomBytes(24).toString('hex');
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-        await prisma.passwordReset.create({
-          data: { userId: user.id, token, expiresAt },
-        });
+        const issued = await issuePasswordReset({ userId: user.id, phone: user.phone });
         if (env.resetDebug) {
-          payload.resetToken = token;
-          payload.expiresAt = expiresAt.toISOString();
+          payload.resetToken = issued.token;
+          payload.expiresAt = issued.expiresAt.toISOString();
+          payload.via = issued.via;
         }
       }
     }
@@ -102,7 +99,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
 
 authRouter.post('/reset-password', async (req, res, next) => {
   try {
-    const body = z.object({ token: z.string().min(8), password: z.string().min(6) }).parse(req.body);
+    const body = z.object({ token: z.string().min(4), password: z.string().min(6) }).parse(req.body);
     const row = await prisma.passwordReset.findUnique({ where: { token: body.token } });
     if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
       throw badRequest('reset_invalid');
@@ -118,6 +115,58 @@ authRouter.post('/reset-password', async (req, res, next) => {
       }),
     ]);
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * קוד חד-פעמי בוואטסאפ (תבנית Authentication).
+ * תמיד `{ ok: true }` כדי לא לחשוף אם יש חשבון.
+ * עם `RESET_DEBUG=1` מוחזר גם `code` כשיש טלפון בחשבון.
+ */
+authRouter.post('/otp/request', async (req, res, next) => {
+  try {
+    const body = z.object({ who: z.string().min(3) }).parse(req.body);
+    const who = parseWho(body.who);
+    const payload: { ok: true; code?: string; expiresAt?: string } = { ok: true };
+
+    if (who) {
+      const user =
+        who.kind === 'email'
+          ? await prisma.user.findUnique({ where: { email: who.email } })
+          : await prisma.user.findUnique({ where: { phone: who.phone } });
+      if (user?.phone) {
+        const issued = await issuePasswordReset({ userId: user.id, phone: user.phone });
+        if (env.resetDebug) {
+          payload.code = issued.token;
+          payload.expiresAt = issued.expiresAt.toISOString();
+        }
+      }
+    }
+
+    res.json(payload);
+  } catch (err) {
+    next(err);
+  }
+});
+
+authRouter.post('/otp/verify', async (req, res, next) => {
+  try {
+    const body = z.object({ who: z.string().min(3), code: z.string().min(4).max(16) }).parse(req.body);
+    const who = parseWho(body.who);
+    if (!who) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    const user =
+      who.kind === 'email'
+        ? await prisma.user.findUnique({ where: { email: who.email } })
+        : await prisma.user.findUnique({ where: { phone: who.phone } });
+    if (!user) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    const row = await consumeOtp(user.id, body.code);
+    if (!row) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    res.json(sessionOf(user));
   } catch (err) {
     next(err);
   }

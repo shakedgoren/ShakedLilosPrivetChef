@@ -18,6 +18,8 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 בלי המשתנה האפליקציה נשארת על נתוני הדמה.
 **במכשיר אמיתי** צריך את כתובת הרשת של המחשב, לא `localhost`.
 
+וואטסאפ Cloud API אופציונלי · ראו [README.md](README.md#whatsapp-cloud-api-ישירות-מול-meta). בלי `WHATSAPP_TOKEN` השרת רץ והשליחות מדולגות.
+
 ## ההתחברות
 
 השדה בבקשה נקרא `who` — טלפון או אימייל, לא `email`.
@@ -26,7 +28,7 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 ## בדיקות
 
 ```bash
-npm test      # 7 בדיקות · תמחור ושבוע מכירה
+npm test      # תמחור, ימי מכירה, גוגל, WhatsApp (Meta ממודל)
 npm run smoke
 ```
 
