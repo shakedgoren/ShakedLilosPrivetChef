@@ -9,7 +9,8 @@ import { defaultSaleDate, isCategory, quoteAdminDraft } from '../catalog/quote.t
 import { serializeAdminCard, serializeOrder } from '../orders/serialize.ts';
 import { FLOW as BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
-import { MONTHS } from '../../../mobile/src/data/adminDays.ts';
+import { readJson } from '../json.ts';
+import { CATS, MONTHS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 
 export const adminRouter = Router();
 
@@ -212,10 +213,24 @@ adminRouter.get('/board', async (req, res, next) => {
     const cancelled = await prisma.order.count({
       where: { category, ...(date ? { saleDate: date } : {}), status: CANCELLED },
     });
+
+    /**
+     * המכסות של היום · שקד ביקשה (15 בספטמבר 2026) שמוני המלאי
+     * בראש הלוח יתעדכנו **מדף יום המכירה** ולא ממספרים קבועים.
+     * אם אין רשומה ליום — נופלים למכסת ברירת המחדל של המנה.
+     */
+    const cat = CATS[category as DayCatKey];
+    const day = date ? await prisma.saleDay.findUnique({ where: { date } }) : null;
+    const saved = readJson<Record<string, number>>(day?.quotasJson ?? '', {});
+    const quotas = Object.fromEntries(
+      (cat?.dishes ?? []).map((d) => [d.id, saved[d.id] ?? d.q]),
+    );
+
     res.json({
       orders: rows.map(serializeOrder),
       cards: rows.map(serializeAdminCard),
       qty: Object.fromEntries(rows.map((r) => [r.id, qtyOfOrder(r)])),
+      quotas,
       cancelled,
     });
   } catch (err) {

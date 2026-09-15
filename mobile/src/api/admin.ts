@@ -170,6 +170,8 @@ export const adminBoard = (date?: string) => {
     orders: Order[];
     cards: AdminCard[];
     qty: Record<string, Record<string, number>>;
+    /** המכסות של יום המכירה · מזינות את מוני ההכנה בראש הלוח */
+    quotas: Record<string, number>;
     cancelled: number;
   }>(`/admin/board${q}`);
 };

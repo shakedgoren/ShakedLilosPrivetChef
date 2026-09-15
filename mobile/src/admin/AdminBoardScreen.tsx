@@ -18,6 +18,7 @@ import {
   TAIL_COLS,
 } from '../data/adminBoard';
 import { CancelSheet } from './CancelSheet';
+import { CATS } from '../data/adminDays';
 import { apiEnabled } from '../api/config';
 import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
 import { adminSetStatus } from '../api/orders';
@@ -37,6 +38,14 @@ const BOARD_CAT = BOARD_CATS.cous;
  * ״סה״כ״ בלבד, ולכן הערך נדרס כאן ולא בקובץ המחולץ.
  */
 const TOTAL_LABEL = 'סה״כ';
+
+/**
+ * מכסת ברירת המחדל של פריט · נפילה לאחור כשאין יום מכירה בשרת.
+ * ⚠ המכסה האמיתית מגיעה מדף יום המכירה, ולא מכאן.
+ */
+const dishQuota = (id: string) =>
+  CATS.cous.dishes.find((d) => d.id === id)?.q ?? 0;
+
 
 /**
  * ⚠ **מתג התצוגה** · בקשה של שקד — הלוח תוכנן לאייפד (1180×820),
@@ -77,6 +86,8 @@ export function AdminBoardScreen() {
   const [orders, setOrders] = useState<Row[]>(() =>
     BOARD_SEED.map((o) => ({ ...o, q: { ...o.q }, hrs: o.hrs })),
   );
+  /* המכסות של היום · מגיעות מהשרת, ובלעדיו ממכסת ברירת המחדל */
+  const [quotas, setQuotas] = useState<Record<string, number>>({});
   const [cancelling, setCancelling] = useState(-1);
   const [cx, setCx] = useState<CancelNote>({ reason: '', note: '' });
 
@@ -102,6 +113,8 @@ export function AdminBoardScreen() {
         hrs: c.hrs,
       })),
     );
+    /* המכסות של היום · מזינות את מוני ההכנה בראש הלוח */
+    setQuotas(res.quotas ?? {});
   }, [live]);
 
   useEffect(() => {
@@ -147,9 +160,36 @@ export function AdminBoardScreen() {
 
   const colSums = BOARD_CAT.items.map((it) => shown.reduce((s, x) => s + (x.o.q[it.id] || 0), 0));
   const grand = shown.reduce((s, x) => s + sumOf(x.o.q), 0);
-  const stock = BOARD_CAT.items.filter((it) => it.quota).map((it) => {
-    const used = liveRows.reduce((s, o) => s + (o.q[it.id] || 0), 0);
-    return { ...it, used, left: (it.quota ?? 0) - used };
+  /**
+   * מוני ההכנה · **לפי מצרך, לא לפי מנה**.
+   *
+   * ⚠ שקד הסבירה (15 בספטמבר 2026) שהמונים אמורים לומר לה **כמה
+   * להכין מכל סוג**, ולא כמה נמכר מכל שורה בתפריט:
+   *
+   * · **קוסקוס** · כל מנה צריכה קוסקוס → שלוש המנות יחד.
+   * · **ירקות** · כל מנה מקבלת מנת ירקות → שלוש המנות יחד,
+   *   ועוד תוספות הירקות שהוזמנו בנפרד.
+   * · **עוף** · מנות העוף ועוד תוספות העוף.
+   * · **מפרום** · מנות המפרום ועוד תוספות המפרום.
+   *
+   * המלאי של כל מונה הוא סכום המכסות של אותם פריטים, והמכסות
+   * מגיעות מדף יום המכירה — לא ממספרים קבועים בקוד.
+   */
+  const MEALS = ['veg', 'chick', 'mafr'] as const;
+  const PREP: { id: string; name: string; of: readonly string[] }[] = [
+    { id: 'cous', name: 'קוסקוס', of: MEALS },
+    { id: 'veg', name: 'ירקות', of: [...MEALS, 'aVeg'] },
+    { id: 'chick', name: 'עוף', of: ['chick', 'aChick'] },
+    { id: 'mafr', name: 'מפרום', of: ['mafr', 'aMafr'] },
+  ];
+
+  const stock = PREP.map((p) => {
+    const used = p.of.reduce(
+      (t, id) => t + liveRows.reduce((s2, o) => s2 + (o.q[id] || 0), 0),
+      0,
+    );
+    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(id)), 0);
+    return { id: p.id, sub: p.name, used, quota, left: quota - used };
   });
 
   /**
@@ -179,7 +219,7 @@ export function AdminBoardScreen() {
    * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
    */
   const w = pad
-    ? { time: 58, who: 116, item: 50, sum: 62, pay: 66, status: 134 }
+    ? { time: 54, who: 92, item: 50, sum: 62, pay: 62, status: 146 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
@@ -349,9 +389,10 @@ export function AdminBoardScreen() {
                 return (
                   <View key={x.o.id ?? x.i} style={[s.row, { backgroundColor: band.row, borderColor: band.edge }]}>
                     <Text style={[s.cell, { width: w.time, color: band.ink }]}>{x.o.time}</Text>
+                    {/* ⚠ **בלי שורת המקור** · שקד ביקשה (15 בספטמבר
+                        2026) להוריד את ״וואטסאפ״ מתחת לשם. */}
                     <View style={{ width: w.who }}>
                       <Text style={[s.who, { color: band.ink }]} numberOfLines={1}>{x.o.who}</Text>
-                      {x.o.note ? <Text style={s.note} numberOfLines={1}>{x.o.note}</Text> : null}
                     </View>
                     {/* ⚠ **התא ברוחב העמודה, התיבה בתוכו** · קודם
                         ה-`TextInput` היה הילד הישיר ברוחב
@@ -402,8 +443,14 @@ export function AdminBoardScreen() {
                           </Pressable>
                         );
                       })}
-                      <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
-                        <Close size={13} color="#B95349" strokeWidth={2.4} />
+                      {/* ⚠ **בתוך קופסה כמו השאר** · בקשה של שקד —
+                          קודם הוא היה אייקון חשוף בקצה השורה. */}
+                      <Pressable
+                        onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }}
+                        style={[s.step, s.stepOff, s.cancelBox]}
+                        hitSlop={6}
+                      >
+                        <Close size={13} color="#B95349" strokeWidth={2.6} />
                       </Pressable>
                     </View>
                   </View>
@@ -528,10 +575,9 @@ const s = StyleSheet.create({
   steps: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 5, justifyContent: 'center', flexShrink: 0 },
   /* ⚠ ריבוע אייקון · בקנבס 34×30 עם מסגרת, והפעיל נצבע מלא */
   /**
-   * ⚠ **ה-X נחתך** · שלושת האייקונים (34 כל אחד), שלושת הרווחים
-   * וכפתור הביטול דרשו 143 פיקסלים בעוד שעמודת הסטטוס הייתה 118,
-   * והעודף נחתך בקצה. האייקון ירד ל-30 והעמודה עלתה ל-134:
-   * 3×30 + 3×5 + 18 + 10 = 133.
+   * ⚠ **ארבע קופסאות זהות** · שלושת הסטטוסים וכפתור הביטול, כולם
+   * 30×30. קודם ה-X היה אייקון חשוף והשורה נחתכה בקצה.
+   * הרוחב הדרוש: 4×30 + 3×5 + 10 = 145, והעמודה 146.
    */
   step: {
     width: 30,
@@ -542,6 +588,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   stepOff: { backgroundColor: 'rgba(255,255,255,0.72)' },
+  cancelBox: { borderColor: 'rgba(185,83,73,0.32)' },
 
   /* מתג התצוגה · אינו בקנבס, בקשה של שקד */
   views: { flexDirection: 'row', gap: 4 },
