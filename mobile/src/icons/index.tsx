@@ -431,6 +431,63 @@ export function PhoneCall({ size = 15, color = '#7A2E4E', strokeWidth = 1.9 }: I
 }
 
 /** מופע אחד בקנבס · Schnitzel */
+/**
+ * ארבעת אמצעי התשלום.
+ *
+ * ⚠ **אינם מהקנבס** · שם שורת התשלום היא נקודה, שם וחץ בלבד.
+ * שקד ביקשה אייקון לכל אמצעי תשלום.
+ * ⚠ **אינם לוגואים** · ביט, פייבוקס ואפל פיי הם סימנים מסחריים,
+ * ואסור לשכפל אותם. אלה אייקוני קו ניטרליים שמייצגים את **סוג**
+ * התשלום: העברה מהטלפון, ארנק, תשלום ללא מגע, ושטר.
+ */
+
+/** ביט · העברה מהטלפון */
+export function PayPhone({ size = 22, color = '#43307A', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M7 2.5h10a1.5 1.5 0 0 1 1.5 1.5v16a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 20V4A1.5 1.5 0 0 1 7 2.5z" />
+      <Path d="M10.5 18.5h3" />
+      <Path d="M10 7.5h3.2a2 2 0 0 1 0 4H10" />
+      <Path d="M10 11.5h3.6a2 2 0 0 1 0 4H10" />
+      <Path d="M10 6v11" />
+    </Base>
+  );
+}
+
+/** פייבוקס · ארנק */
+export function PayWallet({ size = 22, color = '#43307A', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M3.5 7.5A2 2 0 0 1 5.5 5.5h11a2 2 0 0 1 2 2" />
+      <Path d="M3.5 7.5v10a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-13" />
+      <Path d="M17 12.5h.01" />
+    </Base>
+  );
+}
+
+/** אפל פיי · תשלום ללא מגע */
+export function PayContactless({ size = 22, color = '#43307A', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M2.5 6.5h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2z" />
+      <Path d="M2.5 10.5h15" />
+      <Path d="M19 8.5a5 5 0 0 1 0 7" />
+      <Path d="M21.5 6a8.5 8.5 0 0 1 0 12" />
+    </Base>
+  );
+}
+
+/** מזומן · שטר */
+export function PayCash({ size = 22, color = '#43307A', strokeWidth = 1.7 }: IconProps) {
+  return (
+    <Base size={size} color={color} strokeWidth={strokeWidth}>
+      <Path d="M2.5 6.5h19a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-19a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z" />
+      <Circle cx="12" cy="12" r="2.6" />
+      <Path d="M5.5 12h.01M18.5 12h.01" />
+    </Base>
+  );
+}
+
 export function PlatterFamily({ size = 22, color = '#2A2430', strokeWidth = 1.6 }: IconProps) {
   return (
     <Base size={size} color={color} strokeWidth={strokeWidth}>

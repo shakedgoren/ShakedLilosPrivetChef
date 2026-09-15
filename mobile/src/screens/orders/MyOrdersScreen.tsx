@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
-import { SaleClosedSheet } from './SaleClosedSheet';
+import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { apiEnabled } from '../../api/config';
 import { COPY, orderError } from '../../api/copy';
 import { ApiError, type Order } from '../../api/types';

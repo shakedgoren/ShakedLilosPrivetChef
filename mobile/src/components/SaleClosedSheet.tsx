@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Bell, Close } from '../../icons';
-import { ContinueButton } from '../../components/ContinueButton';
-import { a, hues, radius, space, surface } from '../../theme/tokens';
+import { Bell, Close } from '../icons';
+import { ContinueButton } from './ContinueButton';
+import { a, radius, space, surface } from '../theme/tokens';
 
 /**
  * ״יום המכירה עדיין לא נפתח״.

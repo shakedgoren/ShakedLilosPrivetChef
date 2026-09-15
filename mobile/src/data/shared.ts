@@ -26,3 +26,13 @@ export const shippingFeeFor = (city: string): number =>
 /** דמי המשלוח של הזמנה · 0 באיסוף עצמי */
 export const deliveryFee = (ship: string, city: string): number =>
   ship === 'deliv' ? shippingFeeFor(city) : 0;
+
+/**
+ * הקטגוריות שתלויות ביום מכירה.
+ * ⚠ **רק קוסקוס ושניצל** · שקד: ״ההערה של סגור להזמנות נכונה אך
+ * ורק לימי מכירה של קוסקוס ושל שניצל, כל שאר ההזמנות יכולות
+ * להיכנס תמיד.״ זהה ל-`SALE_CATS` בשרת.
+ */
+export const SALE_DAY_CATEGORIES: readonly string[] = ['cous', 'schn'];
+
+export const hasSaleDay = (category: string) => SALE_DAY_CATEGORIES.includes(category);

@@ -9,7 +9,17 @@ import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
-import { Bag, ChevronLeft, Close, Truck } from '../icons';
+import {
+  Bag,
+  ChevronLeft,
+  Close,
+  PayCash,
+  PayContactless,
+  PayPhone,
+  PayWallet,
+  Truck,
+} from '../icons';
+import { OptionGrid } from '../components/OptionGrid';
 import { TILE_SHADOW } from '../theme/glass';
 import { ContinueButton } from '../components/ContinueButton';
 
@@ -87,7 +97,9 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
             {f.step === STEP.time &&
               (f.isDelivery ? <SlotsStep f={f} accent={accent} /> : <ClockStep f={f} accent={accent} />)}
             {f.step === STEP.address && <AddressStep f={f} accent={accent} />}
-            {f.step === STEP.pay && <PayStep busy={busy} err={err} onPay={onPay} />}
+            {f.step === STEP.pay && (
+              <PayStep busy={busy} err={err} onPay={onPay} accent={accent} />
+            )}
             {(f.step === STEP.done || f.step === STEP.confirm) && (
               <ConfirmStep f={f} lines={lines} total={total} accent={accent} onHome={onHome} />
             )}
@@ -216,27 +228,57 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   );
 }
 
+/**
+ * אמצעי תשלום.
+ *
+ * ⚠ **אינו מהקנבס** · שם כל אמצעי תשלום הוא שורה ברוחב מלא עם
+ * נקודה, שם וחץ. שקד ביקשה אייקון מעל השם, שניים בשורה, ומסגרת
+ * בהירה יותר.
+ * ⚠ האייקונים **אינם לוגואים** של ביט, פייבוקס או אפל פיי —
+ * אלה סימנים מסחריים. הם אייקוני קו ניטרליים לסוג התשלום.
+ */
+const PAY_ICON: Record<string, React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>> = {
+  'ביט': PayPhone,
+  'פייבוקס': PayWallet,
+  'אפל פיי': PayContactless,
+  'מזומן': PayCash,
+};
+
+const PAY_GLYPH = 24;
+const PAY_COLS = 2;
+/** ⚠ בהיר יותר · המסגרת הרגילה היא 0.16, ושקד ביקשה שתהיה עדינה */
+const PAY_EDGE = 'rgba(130,112,162,0.1)';
+const PAY_EDGE_ON = 0.3;
+
 function PayStep({
   busy,
   err,
   onPay,
+  accent,
 }: {
   busy: boolean;
   err: string;
   onPay: (p: string) => void;
+  accent: Accent;
 }) {
   return (
     <View style={s.stack}>
-      {PAYMENTS.map((p) => (
-        <Pressable
-          key={p}
-          disabled={busy}
-          onPress={() => onPay(p)}
-          style={[s.option, { opacity: busy ? 0.45 : 1 }]}
-        >
-          <Text style={s.optionTitle}>{p}</Text>
-        </Pressable>
-      ))}
+      <OptionGrid cols={PAY_COLS} gap={9}>
+        {PAYMENTS.map((p) => {
+          const Icon = PAY_ICON[p];
+          return (
+            <Pressable
+              key={p}
+              disabled={busy}
+              onPress={() => onPay(p)}
+              style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
+            >
+              {Icon ? <Icon size={PAY_GLYPH} color={accent.deep} strokeWidth={1.7} /> : null}
+              <Text style={s.payLabel}>{p}</Text>
+            </Pressable>
+          );
+        })}
+      </OptionGrid>
       {err ? <Text style={s.toast}>{err}</Text> : null}
     </View>
   );
@@ -371,6 +413,22 @@ const s = StyleSheet.create({
     textAlign: 'right',
     color: surface.ink,
   },
+
+  /* כרטיס אמצעי תשלום · אייקון מעל השם, מסגרת בהירה */
+  pay: {
+    flex: 1,
+    minHeight: 84,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: PAY_EDGE,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  payLabel: { fontSize: 14, fontWeight: '500', color: surface.ink, textAlign: 'center' },
 
   cta: { height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
 

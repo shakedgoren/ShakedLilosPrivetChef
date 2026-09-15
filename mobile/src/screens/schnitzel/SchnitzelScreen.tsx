@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { categoryName } from '../orders/format';
+import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -57,11 +60,13 @@ export function SchnitzelScreen() {
   const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
   /* `meals` נדרש למינימום המשלוח · מארז נחשב חמש מנות */
   const f = useFulfillment({ ...SCHNITZEL_FULFILLMENT, meals: o.meals });
+  /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
+  const saleGate = useSaleGate('schn');
   const [gate, setGate] = useState(false);
 
   const onContinue = () => {
     if (!loggedIn) setGate(true);
-    else if (o.total > 0) f.open();
+    else if (o.total > 0) void saleGate.guard(f.open);
   };
 
   return (
@@ -215,6 +220,31 @@ export function SchnitzelScreen() {
       </View>
 
       <ToppingsSheet pop={o.pop} onToggle={o.toggleTop} onCancel={o.closePop} onSave={o.commitPop} />
+
+      {/* ⚠ יום המכירה עדיין לא נפתח · חלונית הפעמון */}
+
+      <SaleClosedSheet
+
+        open={!!saleGate.closed}
+
+        categoryName={categoryName('schn')}
+
+        accent={ACCENT}
+
+        note={saleGate.note}
+
+        done={saleGate.done}
+
+        busy={saleGate.busy}
+
+        err={saleGate.err}
+
+        onRemind={() => void saleGate.remind()}
+
+        onClose={saleGate.close}
+
+      />
+
 
       <FulfillmentFlow
         f={f}

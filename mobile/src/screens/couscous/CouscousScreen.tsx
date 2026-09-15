@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { categoryName } from '../orders/format';
+import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill, qtyFrom } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -37,6 +40,8 @@ export function CouscousScreen() {
   const { go, goLogin, loggedIn } = useNav();
   const o = useCouscousOrder();
   const f = useFulfillment({ ...COUSCOUS_FULFILLMENT, meals: o.meals });
+  /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
+  const saleGate = useSaleGate('cous');
   const [gate, setGate] = useState(false);
   /* ⚠ ״להזמין שוב״ · הכמויות של ההזמנה הקודמת כבר מסומנות */
   usePrefill('cous', (d) => {
@@ -47,7 +52,7 @@ export function CouscousScreen() {
 
   const onContinue = () => {
     if (!loggedIn) setGate(true);
-    else if (o.total > 0) f.open();
+    else if (o.total > 0) void saleGate.guard(f.open);
   };
 
   /* המנות והתוספות מוצגות בנפרד · בקנבס אלה שני בלוקים שונים */
@@ -110,6 +115,31 @@ export function CouscousScreen() {
         </View>
         <ContinueButton onPress={onContinue} accent={ACCENT} disabled={o.total === 0} />
       </View>
+
+      {/* ⚠ יום המכירה עדיין לא נפתח · חלונית הפעמון */}
+
+      <SaleClosedSheet
+
+        open={!!saleGate.closed}
+
+        categoryName={categoryName('cous')}
+
+        accent={ACCENT}
+
+        note={saleGate.note}
+
+        done={saleGate.done}
+
+        busy={saleGate.busy}
+
+        err={saleGate.err}
+
+        onRemind={() => void saleGate.remind()}
+
+        onClose={saleGate.close}
+
+      />
+
 
       <FulfillmentFlow
         f={f}

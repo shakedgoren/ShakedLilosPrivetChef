@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { categoryName } from '../orders/format';
+import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -49,6 +52,8 @@ export function BoxesScreen() {
   const { go, goLogin, loggedIn } = useNav();
   const o = useBoxesOrder();
   const f = useFulfillment(BOXES_FULFILLMENT);
+  /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
+  const saleGate = useSaleGate('box');
   const [gate, setGate] = useState(false);
   /* ⚠ ״להזמין שוב״ · אותו מארז עם אותן בחירות */
   usePrefill('box', o.loadDetails);
@@ -56,7 +61,7 @@ export function BoxesScreen() {
   const onContinue = () => {
     if (!o.ready) return;
     if (!loggedIn) setGate(true);
-    else f.open();
+    else void saleGate.guard(f.open);
   };
 
   return (
@@ -140,6 +145,31 @@ export function BoxesScreen() {
           </ScrollView>
         </>
       )}
+
+      {/* ⚠ יום המכירה עדיין לא נפתח · חלונית הפעמון */}
+
+      <SaleClosedSheet
+
+        open={!!saleGate.closed}
+
+        categoryName={categoryName('box')}
+
+        accent={ACCENT}
+
+        note={saleGate.note}
+
+        done={saleGate.done}
+
+        busy={saleGate.busy}
+
+        err={saleGate.err}
+
+        onRemind={() => void saleGate.remind()}
+
+        onClose={saleGate.close}
+
+      />
+
 
       <FulfillmentFlow
         f={f}
