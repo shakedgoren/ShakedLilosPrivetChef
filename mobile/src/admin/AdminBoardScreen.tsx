@@ -229,6 +229,7 @@ export function AdminBoardScreen() {
         <Pressable onPress={back} style={s.back}>
           <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
         </Pressable>
+        {/* ⚠ **ממורכזת** · בקשה של שקד לכל הכותרות בצד הניהולי */}
         <View style={s.headText}>
           <Text style={s.title}>{BOARD_CAT.name}</Text>
           <Text style={s.sub}>{BOARD_LIVE}</Text>

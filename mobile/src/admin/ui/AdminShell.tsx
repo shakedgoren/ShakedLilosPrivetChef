@@ -52,6 +52,9 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
       <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
         <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
       </Pressable>
+      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026) לכל
+          הכותרות בצד הניהולי. כפתורי הפעולה יצאו מזרימת השורה
+          ויושבים עליה — אחרת הם היו דוחפים את הכותרת מהמרכז. */}
       <View style={s.head}>
         <View style={s.headText}>
           {/* ⚠ שורה אחת · הכותרת של הקניות ארוכה והיא נשברה לשתיים */}
@@ -60,6 +63,7 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
           </Text>
           {sub ? <Text style={s.sub}>{sub}</Text> : null}
         </View>
+        <View style={s.actions}>
         {actions.map((act) => (
           <Pressable
             key={act.label}
@@ -90,6 +94,7 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
             )}
           </Pressable>
         ))}
+        </View>
       </View>
       {children}
     </View>
@@ -120,7 +125,17 @@ export function KpiRow({
 const s = StyleSheet.create({
   /* ⚠ הריפוד העליון ירד ל-18 · החץ תופס את השורה שמעל הכותרת */
   root: { flex: 1, paddingTop: 18, paddingHorizontal: 18, gap: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  head: { justifyContent: 'center', minHeight: 44 },
+  /* הפעולות מרחפות בקצה · לא משתתפות במרכוז */
+  actions: {
+    position: 'absolute',
+    end: 0,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   back: {
     alignSelf: 'flex-start',
     marginBottom: -2,
@@ -133,9 +148,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headText: { flex: 1, gap: 2 },
-  title: { fontWeight: '600', color: surface.ink },
-  sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
+  headText: { alignItems: 'center', gap: 2 },
+  title: { fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint, textAlign: 'center' },
   action: {
     height: 38,
     paddingHorizontal: 13,

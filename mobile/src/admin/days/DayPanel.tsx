@@ -111,13 +111,17 @@ export function DayPanel({ admin }: Props) {
 
           {admin.quotas.length > 0 ? (
             <>
-              <Text style={s.quotaTitle}>{blocked ? 'מכסות החריגה' : 'מכסות היום'}</Text>
+              {/* ⚠ ״מלאי יומי״ · בקשה של שקד (15 בספטמבר 2026) */}
+              <Text style={s.quotaTitle}>{blocked ? 'מלאי החריגה' : 'מלאי יומי'}</Text>
               {admin.quotas.map((q) => (
                 <View key={q.id} style={s.quotaBlock}>
                   <View style={s.quotaRow}>
                   <View style={s.quotaText}>
                     <Text style={s.quotaName}>{q.name}</Text>
-                    <Text style={s.quotaSold}>{q.soldLabel}</Text>
+                    {/* ⚠ **בלי ״טרם נמכרו״** · שקד ביקשה (15 בספטמבר
+                        2026) למחוק אותו. השורה מופיעה רק כשבאמת
+                        נמכר משהו. */}
+                    {q.sold > 0 ? <Text style={s.quotaSold}>{q.soldLabel}</Text> : null}
                   </View>
                   <View style={s.stepper}>
                     <Pressable
@@ -134,27 +138,6 @@ export function DayPanel({ admin }: Props) {
                       <Minus size={13} color="#2A2430" strokeWidth={2.4} />
                     </Pressable>
                   </View>
-                  </View>
-                  {/* ⚠ **הורדת מנות עברה לכאן** · שקד ביקשה להסיר
-                      את ״מלאי מכירה״ מהמלאי, וזו הייתה הפעולה
-                      היחידה שחיה רק שם. */}
-                  <View style={s.wasteRow}>
-                    <Text style={s.wasteLabel}>ירדו מהמכירה</Text>
-                    <View style={s.stepper}>
-                      <Pressable
-                        onPress={() => admin.bumpWaste(q.id, 1)}
-                        style={[s.roundSm, s.amber, { opacity: q.room > 0 ? 1 : 0.35 }]}
-                      >
-                        <Plus size={11} color="#A65E2A" strokeWidth={2.6} />
-                      </Pressable>
-                      <Text style={[s.wasteNum, q.waste > 0 && s.wasteOn]}>{q.waste}</Text>
-                      <Pressable
-                        onPress={() => admin.bumpWaste(q.id, -1)}
-                        style={[s.roundSm, s.minus, { opacity: q.waste > 0 ? 1 : 0.35 }]}
-                      >
-                        <Minus size={11} color="#2A2430" strokeWidth={2.6} />
-                      </Pressable>
-                    </View>
                   </View>
                 </View>
               ))}

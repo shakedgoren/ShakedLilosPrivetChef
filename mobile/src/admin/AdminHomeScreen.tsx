@@ -49,6 +49,8 @@ export function AdminHomeScreen() {
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
+      {/* ⚠ **הכותרת ממורכזת** · בקשה של שקד (15 בספטמבר 2026).
+          הכפתורים יצאו מזרימת השורה ויושבים בקצותיה. */}
       <View style={s.head}>
         <View style={s.headText}>
           <Text style={s.title}>{HOME_TITLE}</Text>
@@ -59,6 +61,7 @@ export function AdminHomeScreen() {
             שהתקשרה או כתבה בוואטסאפ, בלי שהלקוחה נרשמת לאתר.
             הכרטיס הסגול ״הזמנה ידנית״ שהיה מתחת ללוח המכירה ירד,
             והפעולה שלו עברה לכאן. */}
+        <View style={s.headEnd}>
         <Pressable onPress={admin.openNew} style={s.newChip}>
           <View style={s.newPlus}>
             <Plus size={13} color={LAV.chipInk} strokeWidth={2.8} />
@@ -79,6 +82,7 @@ export function AdminHomeScreen() {
         >
           <LogOut size={17} color={LAV.dim} strokeWidth={1.9} />
         </Pressable>
+        </View>
       </View>
 
       <SalePanel
@@ -86,10 +90,8 @@ export function AdminHomeScreen() {
         isOpen={home.sale.open}
         onToggle={home.toggleOpen}
         dishes={home.sale.dishes}
-        onBump={home.bumpDish}
         onSetQuota={home.setQuota}
         onSetSold={home.setSold}
-        step={home.step}
         pct={home.ringPct}
         sold={home.soldTotal}
         quota={home.quotaTotal}
@@ -237,10 +239,13 @@ const s = StyleSheet.create({
   /* ⚠ רקע הדף · מתחת לכל הכרטיסים, בגוון של ערכת לבנדר */
   root: { flex: 1, backgroundColor: LAV.page },
   pad: { paddingTop: 30, paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headText: { flex: 1, gap: 2 },
-  title: { fontSize: 21, fontWeight: '600', color: LAV.ink },
-  sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint },
+  head: { justifyContent: 'center', minHeight: 46 },
+  headText: { alignItems: 'center', gap: 2 },
+  /* הכפתורים מרחפים · לא דוחפים את הכותרת מהמרכז */
+  headStart: { position: 'absolute', start: 0, top: 0, bottom: 0, justifyContent: 'center' },
+  headEnd: { position: 'absolute', end: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 21, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
+  sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
   newChip: {
     flexDirection: 'row',
     alignItems: 'center',

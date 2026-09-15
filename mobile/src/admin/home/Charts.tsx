@@ -172,14 +172,28 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
  */
 export type Share = { name: string; color: string; pct: number };
 
-/** גוון בהיר וכהה לכל פרוסה · מה שהופך שטח שטוח לגוף */
-const FACE: Record<string, [string, string]> = {
-  '#8E6FD0': ['#B49FE5', '#6F4FB8'],
-  '#8FBFD8': ['#B5D8EA', '#6A9EBC'],
-  '#9FC9AE': ['#C2DFCB', '#7BAB8C'],
-  '#E8B48F': ['#F2D0B6', '#CE9169'],
+/**
+ * גוון בהיר וכהה לכל פרוסה · מה שהופך שטח שטוח לגוף.
+ *
+ * ⚠ **היה כאן טבלת גוונים קבועה והיא נכשלה** · היא הוקשה לפי
+ * ה-hex המדויק של ערכת לבנדר, בעוד שהשרת שולח את הגוונים של
+ * מסכי הניהול (`#7B5CBC` וכו׳). אף מפתח לא התאים, הכול נפל
+ * לברירת המחדל הסגולה, והעוגה יצאה חד־גונית. עכשיו הגוונים
+ * נגזרים מהצבע עצמו — כל צבע שיגיע יעבוד, והמקרא תואם לפרוסה.
+ */
+const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
+const shade = (hex: string, by: number): string => {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const mix = (c: number) => clamp(by > 0 ? c + (255 - c) * by : c * (1 + by));
+  return `#${[mix(r), mix(g), mix(b)].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
 };
-const DEFAULT_FACE: [string, string] = ['#C3B2EC', '#6F4FB8'];
+/** בהיר ל-45% כלפי לבן, כהה ל-22% כלפי שחור */
+const faceOf = (hex: string): [string, string] => [shade(hex, 0.45), shade(hex, -0.22)];
 
 /** פרוסה צרה · הכתב קטן יותר ויוצא אל החלק הרחב שלה */
 const NARROW = 14;
@@ -204,7 +218,7 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
     return w;
   });
 
-  const face = (hex: string) => FACE[hex] ?? DEFAULT_FACE;
+  const face = faceOf;
   const top = (a0: number, a1: number) => {
     const x0 = cx + rx * Math.cos(a0);
     const y0 = cy + ry * Math.sin(a0);
@@ -261,17 +275,13 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
         />
       ))}
 
-      {/* הברק */}
-      <Ellipse
-        cx={cx - rx * 0.26}
-        cy={cy - ry * 0.4}
-        rx={rx * 0.32}
-        ry={ry * 0.3}
-        fill="rgba(255,255,255,0.32)"
-      />
+      {/* ⚠ **הברק ירד** · אליפסה לבנה רכה על פני העוגה נראתה כמו
+          חור מוזר באמצע ולא כמו אור. בקשה של שקד. */}
 
       {/* האחוזים · על מרכז המסה, ולכן תמיד בתוך הפרוסה */}
       {wedges.map((w) => {
+        /* ⚠ קטגוריה באפס · אין מה לכתוב עליה */
+        if (w.p.pct <= 0) return null;
         const small = w.p.pct < NARROW;
         const mid = (w.a0 + w.a1) / 2;
         const k = small ? 0.74 : 0.6;

@@ -157,9 +157,9 @@ export function useAdminDays() {
         waste,
         /** כמה אפשר עוד להוריד · לא יורדים מתחת למה שנמכר */
         room: Math.max(0, n - (sold ?? 0)),
-        soldLabel:
-          (sold === undefined ? 'טרם נמכרו' : isOut ? `אזל · נמכרו ${sold}` : `נמכרו ${sold}`) +
-          (waste > 0 ? ` · ירדו ${waste}` : ''),
+        /** ⚠ בלי ״טרם נמכרו״ · מוצג רק כשבאמת נמכר משהו */
+        sold: sold ?? 0,
+        soldLabel: isOut ? `אזל · נמכרו ${sold}` : `נמכרו ${sold}`,
       };
     });
   }, [cat, current.q, current.sold, current]);

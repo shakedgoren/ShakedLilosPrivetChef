@@ -37,10 +37,8 @@ type Props = {
   isOpen: boolean;
   onToggle: () => void;
   dishes: DishRow[];
-  onBump: (id: string, delta: number) => void;
   onSetQuota: (id: string, value: number) => void;
   onSetSold: (id: string, value: number | null) => void;
-  step: number;
   pct: number;
   sold: number;
   quota: number;
@@ -81,6 +79,7 @@ function Editable({
     if (Number.isFinite(n) && n !== value) onSave(n);
   };
 
+  /* ⚠ תיבת ההקלדה ברוחב מינימלי · בקשה של שקד */
   return (
     <TextInput
       value={draft}
@@ -100,10 +99,8 @@ export function SalePanel({
   isOpen,
   onToggle,
   dishes,
-  onBump,
   onSetQuota,
   onSetSold,
-  step,
   pct,
   sold,
   quota,
@@ -189,23 +186,16 @@ export function SalePanel({
                   tone={d.sold > 0 ? LAV.ink : LAV.faint}
                 />
                 <Text style={s.slash}>/</Text>
-                {/* המלאי · נלחץ להקלדה, ולצידו המדרגות */}
-                <View style={s.pill}>
-                  <Pressable onPress={() => onBump(d.id, -step)} style={s.step} hitSlop={6}>
-                    <Text style={[s.stepGlyph, { color: hue }]}>−</Text>
-                  </Pressable>
-                  <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone={LAV.ink} />
-                  <Pressable onPress={() => onBump(d.id, step)} style={s.step} hitSlop={6}>
-                    <Text style={[s.stepGlyph, { color: hue }]}>+</Text>
-                  </Pressable>
-                </View>
+                {/* ⚠ **בלי מדרגות** · שקד ביקשה (15 בספטמבר 2026)
+                    ששני המספרים יתנהגו אותו דבר — לחיצה והקלדה,
+                    בלי כפתורי + ו-−. */}
+                <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone={LAV.ink} />
               </View>
             );
           })}
         </View>
       </View>
 
-      <Text style={s.foot}>{`נמכר מתוך המלאי · ${sold} מתוך ${quota} · אפשר ללחוץ על כל מספר ולהקליד`}</Text>
     </GlassCard>
   );
 }
@@ -249,29 +239,9 @@ const s = StyleSheet.create({
   name: { flex: 1, fontSize: 11, fontWeight: '400', color: LAV.soft },
   sold: { fontSize: 11.5, fontWeight: '700', minWidth: 16, textAlign: 'center' },
   slash: { fontSize: 11, fontWeight: '300', color: LAV.faint },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    height: 24,
-    paddingHorizontal: 3,
-    borderRadius: 999,
-    backgroundColor: LAV.pill,
-    flexShrink: 0,
-  },
-  step: {
-    width: 17,
-    height: 17,
-    borderRadius: 9,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 1px 3px -1px rgba(90,80,70,0.3)',
-  } as never,
-  stepGlyph: { fontSize: 11, fontWeight: '700', lineHeight: 13 },
-  quota: { minWidth: 20, textAlign: 'center', fontSize: 12, fontWeight: '700' },
+  /* ⚠ רוחב מינימלי · המספר תופס בדיוק את מה שהוא צריך */
+  quota: { minWidth: 22, textAlign: 'center', fontSize: 11.5, fontWeight: '700' },
   /* שדה ההקלדה · אותן מידות של המספר, כדי שהשורה לא תקפוץ */
-  input: { padding: 0, borderBottomWidth: 1, borderBottomColor: LAV.accent },
+  input: { width: 26, padding: 0, borderBottomWidth: 1.5, borderBottomColor: LAV.accent },
 
-  foot: { fontSize: 10, fontWeight: '300', color: LAV.faint, marginTop: 10 },
 });
