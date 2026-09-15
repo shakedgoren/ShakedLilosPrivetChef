@@ -1,7 +1,15 @@
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { LAV, SOFT_SHADOW } from './NightSky';
 
-/** הכרטיס הזכוכיתי · הרקע החוזר של כל לוח בדשבורד */
+/**
+ * הכרטיס · הרקע החוזר של כל לוח בדשבורד.
+ *
+ * ⚠ **עבר מזכוכית ל-Soft 3D** · שקד בחרה (15 בספטמבר 2026) את
+ * ערכת ״לבנדר״ בהשראת ה-Soft 3D ששלחה. פינות שמנות יותר (26),
+ * וצל רך בשתי שכבות במקום צל אחד — שכבה אחת נראית שטוחה.
+ * הגוון עצמו מגיע מהמשתמש בכרטיס, לפי מקומו בגרדיאנט של הדף.
+ */
 export function GlassCard({
   children,
   style,
@@ -14,13 +22,10 @@ export function GlassCard({
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.74)',
+    borderRadius: 26,
+    backgroundColor: LAV.tints[1],
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
-    shadowColor: '#605084',
-    shadowOpacity: 0.14,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-  },
+    borderColor: LAV.edge,
+    boxShadow: SOFT_SHADOW,
+  } as never,
 });

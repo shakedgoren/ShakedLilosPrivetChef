@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { GlassCard } from './GlassCard';
+import { LAV, NightSky, SOFT_SHADOW } from './NightSky';
 import type { DishRow } from './useAdminHome';
 
 /**
@@ -27,16 +28,9 @@ const CX = RING / 2;
 /** רדיוס חיצוני ומרחק בין מסלולים · שש מנות נכנסות בדיוק */
 const R_OUT = 52;
 const R_GAP = 7.5;
-const TRACK = 'rgba(184,166,232,0.16)';
 
-/* גווני המסלולים · מהעז לרך, כמו שכבות של גלקסיה */
-const ORBIT = ['#B79CFF', '#A78BF5', '#9679E8', '#8869DB', '#7A5ACE', '#6D4EC0'];
-
-/* שמי הלילה · הכוכבים מפוזרים פעם אחת ולא בכל ציור */
-const STARS = [
-  [8, 14], [22, 61], [37, 9], [52, 78], [63, 27], [74, 54],
-  [86, 17], [93, 69], [15, 88], [45, 41], [68, 92], [29, 33],
-] as const;
+/* גווני המסלולים · מהעז לרך, מתוך ערכת לבנדר */
+const ORBIT = LAV.hues;
 
 type Props = {
   label: string;
@@ -116,23 +110,15 @@ export function SalePanel({
 }: Props) {
   return (
     <GlassCard style={s.card}>
-      {/* שמי הלילה · הכוכבים מתחת לכל השאר */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {STARS.map(([x, y], i) => (
-          <View
-            key={i}
-            style={[s.star, { left: `${x}%`, top: `${y}%`, opacity: 0.22 + (i % 4) * 0.13 }]}
-          />
-        ))}
-      </View>
+      <NightSky />
 
       <View style={s.head}>
         <Text style={s.day}>{`יום מכירה · ${label}`}</Text>
         <Pressable onPress={onToggle} style={s.toggle} hitSlop={8}>
-          <Text style={[s.state, { color: isOpen ? '#7BD6A0' : '#9C8DC4' }]}>
+          <Text style={[s.state, { color: isOpen ? LAV.good : LAV.faint }]}>
             {isOpen ? 'פתוח' : 'סגור'}
           </Text>
-          <View style={[s.track, { backgroundColor: isOpen ? '#4E8A64' : 'rgba(184,166,232,0.26)' }]}>
+          <View style={[s.track, { backgroundColor: isOpen ? LAV.good : 'rgba(142,111,208,0.24)' }]}>
             <View style={[s.knob, isOpen ? s.knobOn : s.knobOff]} />
           </View>
         </Pressable>
@@ -150,7 +136,7 @@ export function SalePanel({
               const angle = frac * 2 * Math.PI - Math.PI / 2;
               return (
                 <React.Fragment key={d.id}>
-                  <Circle cx={CX} cy={CX} r={r} fill="none" stroke={TRACK} strokeWidth={5} />
+                  <Circle cx={CX} cy={CX} r={r} fill="none" stroke={LAV.edge} strokeWidth={5} />
                   {frac > 0 ? (
                     <Circle
                       cx={CX}
@@ -200,7 +186,7 @@ export function SalePanel({
                   value={d.sold}
                   onSave={(n) => onSetSold(d.id, n)}
                   style={s.sold}
-                  tone={d.sold > 0 ? '#FFFFFF' : '#8073AA'}
+                  tone={d.sold > 0 ? LAV.ink : LAV.faint}
                 />
                 <Text style={s.slash}>/</Text>
                 {/* המלאי · נלחץ להקלדה, ולצידו המדרגות */}
@@ -208,7 +194,7 @@ export function SalePanel({
                   <Pressable onPress={() => onBump(d.id, -step)} style={s.step} hitSlop={6}>
                     <Text style={[s.stepGlyph, { color: hue }]}>−</Text>
                   </Pressable>
-                  <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone="#FFFFFF" />
+                  <Editable value={d.quota} onSave={(n) => onSetQuota(d.id, n)} style={s.quota} tone={LAV.ink} />
                   <Pressable onPress={() => onBump(d.id, step)} style={s.step} hitSlop={6}>
                     <Text style={[s.stepGlyph, { color: hue }]}>+</Text>
                   </Pressable>
@@ -230,20 +216,20 @@ const s = StyleSheet.create({
    * ל-React Native אין גרדיאנט רדיאלי ב-CSS, ולכן הגוון מושג
    * בצבע אחד עם מסגרת בהירה — נמדד בדפדפן שזה קרוב מספיק.
    */
+  /* ⚠ המדרגה הראשונה של הגרדיאנט · הכרטיס העליון בדף */
   card: {
-    borderRadius: 22,
-    paddingVertical: 13,
-    paddingHorizontal: 14,
+    borderRadius: 26,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     overflow: 'hidden',
-    backgroundColor: '#211741',
+    backgroundColor: LAV.tints[0],
     borderWidth: 1,
-    borderColor: 'rgba(184,166,232,0.22)',
-    boxShadow: '0 20px 44px -26px rgba(23,17,40,0.9)',
+    borderColor: LAV.edge,
+    boxShadow: SOFT_SHADOW,
   } as never,
-  star: { position: 'absolute', width: 2, height: 2, borderRadius: 1, backgroundColor: '#D7CBFF' },
 
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  day: { flex: 1, fontSize: 13, fontWeight: '600', color: '#EDE6FF' },
+  day: { flex: 1, fontSize: 13, fontWeight: '600', color: LAV.dim },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   state: { fontSize: 11.5, fontWeight: '600' },
   track: { width: 40, height: 23, borderRadius: 999, justifyContent: 'center' },
@@ -254,15 +240,15 @@ const s = StyleSheet.create({
   body: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 },
   ringBox: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   ringText: { position: 'absolute', alignItems: 'center' },
-  ringPct: { fontSize: 21, fontWeight: '200', color: '#FFFFFF' },
-  ringNote: { fontSize: 9, fontWeight: '500', letterSpacing: 1.1, color: '#A294D0' },
+  ringPct: { fontSize: 21, fontWeight: '300', color: LAV.ink },
+  ringNote: { fontSize: 9, fontWeight: '600', letterSpacing: 1.1, color: LAV.faint },
 
   rows: { flex: 1, gap: 9 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
-  name: { flex: 1, fontSize: 11, fontWeight: '300', color: '#D9CFF4' },
-  sold: { fontSize: 11.5, fontWeight: '600', minWidth: 16, textAlign: 'center' },
-  slash: { fontSize: 11, fontWeight: '300', color: '#6F62A0' },
+  name: { flex: 1, fontSize: 11, fontWeight: '400', color: LAV.soft },
+  sold: { fontSize: 11.5, fontWeight: '700', minWidth: 16, textAlign: 'center' },
+  slash: { fontSize: 11, fontWeight: '300', color: LAV.faint },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -270,21 +256,22 @@ const s = StyleSheet.create({
     height: 24,
     paddingHorizontal: 3,
     borderRadius: 999,
-    backgroundColor: 'rgba(184,166,232,0.13)',
+    backgroundColor: LAV.pill,
     flexShrink: 0,
   },
   step: {
     width: 17,
     height: 17,
     borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  },
+    boxShadow: '0 1px 3px -1px rgba(90,80,70,0.3)',
+  } as never,
   stepGlyph: { fontSize: 11, fontWeight: '700', lineHeight: 13 },
-  quota: { minWidth: 20, textAlign: 'center', fontSize: 12, fontWeight: '600' },
+  quota: { minWidth: 20, textAlign: 'center', fontSize: 12, fontWeight: '700' },
   /* שדה ההקלדה · אותן מידות של המספר, כדי שהשורה לא תקפוץ */
-  input: { padding: 0, borderBottomWidth: 1, borderBottomColor: 'rgba(184,166,232,0.5)' },
+  input: { padding: 0, borderBottomWidth: 1, borderBottomColor: LAV.accent },
 
-  foot: { fontSize: 10, fontWeight: '300', color: '#8E80B8', marginTop: 10 },
+  foot: { fontSize: 10, fontWeight: '300', color: LAV.faint, marginTop: 10 },
 });

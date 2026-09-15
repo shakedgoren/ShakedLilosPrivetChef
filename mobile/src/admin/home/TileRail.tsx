@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { surface } from '../../theme/tokens';
+import { LAV, SOFT_SHADOW } from './NightSky';
 import { AMBER, PLUM, STATE, TILES, type TileKey } from '../../data/adminHome';
 
 /** ארבעה אריחים בשורה · שלושה רווחים של 10 ביניהם */
@@ -57,7 +57,7 @@ export function TileRail({
                   key={d}
                   d={d}
                   fill="none"
-                  stroke="#6E6478"
+                  stroke={LAV.accent}
                   strokeWidth={1.7}
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -82,16 +82,15 @@ const s = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingBottom: 2 },
   tile: {
     width: TILE_W,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.78)',
+    height: 62,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    boxShadow: SOFT_SHADOW,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
-  name: { fontSize: 10.5, fontWeight: '500', color: surface.inkSoft },
+  name: { fontSize: 10.5, fontWeight: '600', color: LAV.soft },
   badge: {
     position: 'absolute',
     top: -5,
@@ -102,7 +101,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 5,
     borderWidth: 1.5,
-    borderColor: '#FCFBFB',
+    borderColor: LAV.page,
     alignItems: 'center',
     justifyContent: 'center',
   },

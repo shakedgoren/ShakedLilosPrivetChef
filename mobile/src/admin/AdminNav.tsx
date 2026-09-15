@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius } from '../theme/tokens';
+import { LAV, SOFT_SHADOW } from './home/NightSky';
 import { Bars, Box3D, Home, Receipt, type IconProps } from '../icons';
 import { useNav, type Screen } from '../navigation/store';
 
@@ -14,8 +15,8 @@ import { useNav, type Screen } from '../navigation/store';
  * הם אלה של הקנבס: 22 פיקסלים, רווח 4 מהכיתוב, ולשונית בגובה 56.
  */
 
-const ON = '#7B5CBC';
-const OFF = '#918A9E';
+const ON = LAV.accent;
+const OFF = LAV.faint;
 const ICON = 22;
 
 const TABS: { key: Screen; label: string; Icon: (p: IconProps) => React.JSX.Element }[] = [
@@ -53,20 +54,15 @@ const s = StyleSheet.create({
     left: 18,
     height: 68,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.75)',
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 10,
-    shadowColor: '#605084',
-    shadowOpacity: 0.24,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
+    boxShadow: SOFT_SHADOW,
     elevation: 8,
     zIndex: 20,
-  },
+  } as never,
   tab: {
     minWidth: 52,
     height: 56,
@@ -76,6 +72,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
   },
-  tabOn: { backgroundColor: 'rgba(155,127,212,0.13)' },
+  tabOn: { backgroundColor: LAV.pill },
   label: { fontSize: 11 },
 });

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
+  Ellipse,
   Line,
   LinearGradient,
   Path,
@@ -159,46 +160,149 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
 }
 
 /**
- * הדונאט של הקטגוריות.
+ * לפי קטגוריה · **עוגה מוטה**.
  *
- * ⚠ **מחושב ולא מהקנבס** · הקשתות בקנבס הן מחרוזות `dash`/`offset`
- * קבועות שכוללות גם פירות. שקד ביקשה (15 בספטמבר 2026) להוציא
- * את הפירות — הם אינם ההכנסה שלה — ומחיקת קשת אחת מתוך ארבע
- * הייתה משאירה חור בטבעת. לכן הן נגזרות מהמקרא, מנורמלות ל-100%.
+ * ⚠ **אינה מהקנבס** · שקד בחרה (15 בספטמבר 2026) מתוך חמש הצעות
+ * עומק, וביקשה במפורש: בלי הכותרת ״לפי קטגוריה״, האחוזים **בתוך
+ * הפרוסות** כדי שלא יברחו מהכרטיסייה, ומקרא בשתי שורות ממורכזות.
+ *
+ * ⚠ **העומק בנוי משכבות ולא מפילטר** · דופן (אליפסה תחתונה ומלבן
+ * מחבר), גרדיאנט על כל פרוסה, וברק לבן רך. `feDropShadow` נוסה
+ * וירד — הוא צייר כתם צל עגול על הפרוסות הבהירות.
  */
-const R = 29;
-const C = 2 * Math.PI * R;
-
 export type Share = { name: string; color: string; pct: number };
 
-export function CategoryDonut({ parts }: { parts: Share[] }) {
-  const sum = parts.reduce((t, l) => t + l.pct, 0) || 1;
-  let at = 0;
+/** גוון בהיר וכהה לכל פרוסה · מה שהופך שטח שטוח לגוף */
+const FACE: Record<string, [string, string]> = {
+  '#8E6FD0': ['#B49FE5', '#6F4FB8'],
+  '#8FBFD8': ['#B5D8EA', '#6A9EBC'],
+  '#9FC9AE': ['#C2DFCB', '#7BAB8C'],
+  '#E8B48F': ['#F2D0B6', '#CE9169'],
+};
+const DEFAULT_FACE: [string, string] = ['#C3B2EC', '#6F4FB8'];
 
+/** פרוסה צרה · הכתב קטן יותר ויוצא אל החלק הרחב שלה */
+const NARROW = 14;
+
+let pieSeq = 0;
+const nextPieId = () => `pie${(pieSeq += 1)}`;
+
+export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]; width?: number; depth?: number }) {
+  const id = React.useMemo(nextPieId, []);
+  const cx = width / 2;
+  const rx = width / 2 - 6;
+  const ry = rx * 0.58;
+  const cy = ry + 5;
+  const height = cy + ry + depth + 4;
+
+  const sum = parts.reduce((t, p) => t + p.pct, 0) || 1;
+  let at = -Math.PI / 2;
+  const wedges = parts.map((p) => {
+    const span = (p.pct / sum) * 2 * Math.PI;
+    const w = { p, a0: at, a1: at + span };
+    at += span;
+    return w;
+  });
+
+  const face = (hex: string) => FACE[hex] ?? DEFAULT_FACE;
+  const top = (a0: number, a1: number) => {
+    const x0 = cx + rx * Math.cos(a0);
+    const y0 = cy + ry * Math.sin(a0);
+    const x1 = cx + rx * Math.cos(a1);
+    const y1 = cy + ry * Math.sin(a1);
+    const big = a1 - a0 > Math.PI ? 1 : 0;
+    return `M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${rx.toFixed(2)},${ry.toFixed(2)} 0 ${big} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`;
+  };
+
+  return (
+    <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <Defs>
+        {parts.map((p, i) => {
+          const [lo, hi] = face(p.color);
+          return (
+            <LinearGradient key={p.name} id={`${id}g${i}`} x1="0" y1="0" x2="0.3" y2="1">
+              <Stop offset="0" stopColor={lo} />
+              <Stop offset="1" stopColor={hi} />
+            </LinearGradient>
+          );
+        })}
+      </Defs>
+
+      {/* הצל · אליפסה רכה **מתחת** לעוגה בלבד, לא עליה */}
+      <Ellipse cx={cx} cy={cy + ry + depth - 2} rx={rx * 0.92} ry={ry * 0.26} fill="#5A4A70" opacity={0.14} />
+
+      {/* הדופן · רק החלק שנראה מלפנים */}
+      {wedges.map((w, i) => {
+        const s0 = Math.max(w.a0, 0);
+        const s1 = Math.min(w.a1, Math.PI);
+        if (s1 <= s0) return null;
+        const x0 = cx + rx * Math.cos(s0);
+        const y0 = cy + ry * Math.sin(s0);
+        const x1 = cx + rx * Math.cos(s1);
+        const y1 = cy + ry * Math.sin(s1);
+        const big = s1 - s0 > Math.PI ? 1 : 0;
+        return (
+          <Path
+            key={`w-${w.p.name}`}
+            d={`M${x0.toFixed(2)},${y0.toFixed(2)} A${rx.toFixed(2)},${ry.toFixed(2)} 0 ${big} 1 ${x1.toFixed(2)},${y1.toFixed(2)} L${x1.toFixed(2)},${(y1 + depth).toFixed(2)} A${rx.toFixed(2)},${ry.toFixed(2)} 0 ${big} 0 ${x0.toFixed(2)},${(y0 + depth).toFixed(2)} Z`}
+            fill={face(w.p.color)[1]}
+          />
+        );
+      })}
+
+      {/* פני העוגה */}
+      {wedges.map((w, i) => (
+        <Path
+          key={`f-${w.p.name}`}
+          d={top(w.a0, w.a1)}
+          fill={`url(#${id}g${i})`}
+          stroke="rgba(255,255,255,0.55)"
+          strokeWidth={0.9}
+        />
+      ))}
+
+      {/* הברק */}
+      <Ellipse
+        cx={cx - rx * 0.26}
+        cy={cy - ry * 0.4}
+        rx={rx * 0.32}
+        ry={ry * 0.3}
+        fill="rgba(255,255,255,0.32)"
+      />
+
+      {/* האחוזים · על מרכז המסה, ולכן תמיד בתוך הפרוסה */}
+      {wedges.map((w) => {
+        const small = w.p.pct < NARROW;
+        const mid = (w.a0 + w.a1) / 2;
+        const k = small ? 0.74 : 0.6;
+        return (
+          <SvgText
+            key={`t-${w.p.name}`}
+            x={cx + rx * k * Math.cos(mid)}
+            y={cy + ry * k * Math.sin(mid) + 3.4}
+            textAnchor="middle"
+            fontSize={small ? 9 : 11}
+            fontWeight="700"
+            fill="#FFFFFF"
+            stroke="rgba(80,64,110,0.3)"
+            strokeWidth={small ? 1.6 : 2}
+            strokeLinejoin="round"
+          >
+            {`${w.p.pct}%`}
+          </SvgText>
+        );
+      })}
+    </Svg>
+  );
+}
+
+export function CategoryDonut({ parts }: { parts: Share[] }) {
   return (
     <View style={s.donutBox}>
       <Svg width={74} height={74} viewBox="0 0 74 74">
-        {parts.map((l) => {
-          const seg = (l.pct / sum) * C;
-          const offset = -at;
-          at += seg;
-          /* ⚠ רווח קטן בין הקשתות · כמו בקנבס, כדי שהן לא יידבקו */
-          const gap = 3;
-          return (
-            <Circle
-              key={l.name}
-              cx={37}
-              cy={37}
-              r={R}
-              fill="none"
-              stroke={l.color}
-              strokeWidth={9}
-              strokeDasharray={`${Math.max(0, seg - gap).toFixed(2)} ${(C - seg + gap).toFixed(2)}`}
-              strokeDashoffset={offset.toFixed(2)}
-              transform="rotate(-90 37 37)"
-            />
-          );
-        })}
+        {parts.map((l) => (
+          <Circle key={l.name} cx={37} cy={37} r={29} fill="none" stroke={l.color} strokeWidth={9} />
+        ))}
       </Svg>
       <View style={s.donutCenter}>
         <Text style={s.donutText}>{DONUT.center}</Text>

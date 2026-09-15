@@ -10,9 +10,9 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { CategoryDonut, ProfitBars, RevenueChart } from './home/Charts';
+import { CategoryPie, ProfitBars, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
-import { NIGHT, NightSky } from './home/NightSky';
+import { LAV, NightSky, SOFT_SHADOW } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
 import { LogOut, Plus } from '../icons';
 
@@ -58,7 +58,7 @@ export function AdminHomeScreen() {
             והפעולה שלו עברה לכאן. */}
         <Pressable onPress={admin.openNew} style={s.newChip}>
           <View style={s.newPlus}>
-            <Plus size={13} color="#43307A" strokeWidth={2.8} />
+            <Plus size={13} color={LAV.chipInk} strokeWidth={2.8} />
           </View>
           <Text style={s.newText}>{NEW_ORDER_LABEL}</Text>
         </Pressable>
@@ -74,7 +74,7 @@ export function AdminHomeScreen() {
           style={s.exit}
           hitSlop={8}
         >
-          <LogOut size={17} color="#6E6478" strokeWidth={1.9} />
+          <LogOut size={17} color={LAV.dim} strokeWidth={1.9} />
         </Pressable>
       </View>
 
@@ -98,7 +98,7 @@ export function AdminHomeScreen() {
         {/* ⚠ **הזמנות ומנות יחד** · שקד ביקשה (15 בספטמבר 2026)
             לראות גם כמה הזמנות התקבלו וגם כמה מנות נמכרו בהן —
             עשר הזמנות של עשר מנות יופיעו ״10 | 100״. */}
-        <GlassCard style={s.stat}>
+        <GlassCard style={[s.stat, s.tint1]}>
           <Text style={s.statLabel}>{`הזמנות ומנות עבור ${shortDate(home.sale.date)}`}</Text>
           <View style={s.pair}>
             <Text style={s.statValue}>{home.sale.orders}</Text>
@@ -106,7 +106,7 @@ export function AdminHomeScreen() {
             <Text style={s.statValue}>{home.sale.meals}</Text>
           </View>
         </GlassCard>
-        <GlassCard style={s.stat}>
+        <GlassCard style={[s.stat, s.tint1]}>
           {/* ⚠ ״הכנסות״ ולא ״מחזור״ · בקשה של שקד (15 בספטמבר 2026) */}
           <Text style={s.statLabel}>{`הכנסות עבור ${shortDate(home.sale.date)}`}</Text>
           <View style={s.statMoney}>
@@ -119,16 +119,16 @@ export function AdminHomeScreen() {
       {/* ⚠ **בחירת טווח** · שקד ביקשה (15 בספטמבר 2026) לראות את
           המחזור של היום, של השבוע, של החודש ושל חצי השנה האחרונה.
           קודם הגרף היה נתיב קבוע מהקנבס והראה תמיד ששה חודשים. */}
-      {/* ⚠ **כרטיס לילה** · שקד בחרה (15 בספטמבר 2026) בהצעה
-          ״ליל־יום״: המחזור כהה כמו לוח יום המכירה שמעליו, והרווח
-          והקטגוריות נשארים זכוכית בהירה כדי שהכהה לא ישתלט. */}
-      <GlassCard style={[s.revCard, s.nightCard]}>
+      {/* ⚠ **המדרגה השלישית של הגרדיאנט** · שקד בחרה (15 בספטמבר
+          2026) את מבנה ״רצף״ בערכת ״לבנדר״: כל הכרטיסים חולקים
+          גרדיאנט אחד שיורד לאורך הדף, והמחזור הוא השלישי בו. */}
+      <GlassCard style={[s.revCard, s.tint3]}>
         <NightSky />
         <View style={s.cardHead}>
-          <Text style={[s.cardTitle, { color: NIGHT.dim }]}>{home.rev.label}</Text>
+          <Text style={[s.cardTitle, { color: LAV.dim }]}>{home.rev.label}</Text>
           <View style={s.statMoney}>
-            <Text style={[s.revTotal, { color: '#FFFFFF' }]}>{money(home.rev.total)}</Text>
-            <Text style={[s.currency, { color: NIGHT.faint }]}>₪</Text>
+            <Text style={[s.revTotal, { color: LAV.ink }]}>{money(home.rev.total)}</Text>
+            <Text style={[s.currency, { color: LAV.faint }]}>₪</Text>
           </View>
         </View>
 
@@ -139,16 +139,16 @@ export function AdminHomeScreen() {
               <Pressable
                 key={r.id}
                 onPress={() => home.setRange(r.id)}
-                style={[s.range, s.rangeNight, on && s.rangeNightOn]}
+                style={[s.range, on && s.rangeOn]}
               >
-                <Text style={[s.rangeText, s.rangeNightText, on && s.rangeNightTextOn]}>{r.n}</Text>
+                <Text style={[s.rangeText, on && s.rangeTextOn]}>{r.n}</Text>
               </Pressable>
             );
           })}
         </View>
 
         <View style={s.chart}>
-          <RevenueChart points={home.rev.points} night />
+          <RevenueChart points={home.rev.points} />
         </View>
         <View style={s.months}>
           <View style={s.axisPad} />
@@ -158,8 +158,8 @@ export function AdminHomeScreen() {
                 key={`${p.k}-${i}`}
                 style={[
                   s.month,
-                  { color: NIGHT.faint },
-                  i === home.rev.points.length - 1 && { fontWeight: '600', color: NIGHT.line },
+                  { color: LAV.faint },
+                  i === home.rev.points.length - 1 && { fontWeight: '700', color: LAV.accent },
                 ]}
                 numberOfLines={1}
               >
@@ -171,25 +171,26 @@ export function AdminHomeScreen() {
       </GlassCard>
 
       <View style={s.row}>
-        <GlassCard style={s.donutCard}>
-          <Text style={s.cardTitle}>{DONUT.title}</Text>
-          <View style={s.donutBody}>
-            <CategoryDonut parts={home.shares} />
-            <View style={s.legend}>
-              {/* ⚠ **בלי פירות, עם שף** · מגשי הפירות נעשים אצל
-                  מיכל גורן ואינם ההכנסה של שקד; פינת השף כן. */}
-              {home.shares.map((l) => (
-                <View key={l.name} style={s.legendRow}>
-                  <View style={[s.legendDot, { backgroundColor: l.color }]} />
-                  <Text style={s.legendName}>{l.name}</Text>
-                  <Text style={s.legendPct}>{`${l.pct}%`}</Text>
-                </View>
-              ))}
-            </View>
+        {/* ⚠ **עוגה מוטה בלי כותרת** · בחירה של שקד (15 בספטמבר
+            2026). האחוזים יושבים בתוך הפרוסות, ומתחת מקרא בשתי
+            שורות ממורכזות — קוסקוס מעל ספיישל, שניצל מעל שף. */}
+        <GlassCard style={[s.donutCard, s.tint4]}>
+          <View style={s.pieWrap}>
+            <CategoryPie parts={home.shares} />
+          </View>
+          <View style={s.legend}>
+            {home.shares.map((l) => (
+              <View key={l.name} style={s.legendCell}>
+                <View style={[s.legendDot, { backgroundColor: l.color }]} />
+                <Text style={s.legendName} numberOfLines={1}>
+                  {l.name}
+                </Text>
+              </View>
+            ))}
           </View>
         </GlassCard>
 
-        <GlassCard style={s.profitCard}>
+        <GlassCard style={[s.profitCard, s.tint4]}>
           <Text style={s.cardTitle}>{PROFIT.title}</Text>
           <View style={s.statMoney}>
             <Text style={s.profitNet}>{money(home.live ? home.month.profit : PROFIT.net)}</Text>
@@ -228,12 +229,13 @@ export function AdminHomeScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1 },
+  /* ⚠ רקע הדף · מתחת לכל הכרטיסים, בגוון של ערכת לבנדר */
+  root: { flex: 1, backgroundColor: LAV.page },
   pad: { paddingTop: 30, paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headText: { flex: 1, gap: 2 },
-  title: { fontSize: 21, fontWeight: '600', color: surface.ink },
-  sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
+  title: { fontSize: 21, fontWeight: '600', color: LAV.ink },
+  sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint },
   newChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,9 +244,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 5,
     paddingLeft: 13,
     borderRadius: 999,
-    backgroundColor: '#C6B3EC',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: LAV.chip,
   },
   newPlus: {
     width: 24,
@@ -254,58 +254,67 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  newText: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
+  newText: { fontSize: 12.5, fontWeight: '600', color: LAV.chipInk },
   /* כפתור ההתנתקות · אותו עיגול 38 שיושב בפינה הזו בקנבס */
   exit: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.18)',
+    backgroundColor: '#FFFFFF',
+    boxShadow: SOFT_SHADOW,
     alignItems: 'center',
     justifyContent: 'center',
-  },
+  } as never,
 
-  row: { flexDirection: 'row', gap: 12, height: 144 },
-  statRow: { flexDirection: 'row', gap: 12, height: 62 },
+  /**
+   * ⚠ **בלי גובה קבוע** · השורה הייתה נעולה על 144 מהעיצוב הישן,
+   * והכרטיסים בתוכה גדלו ל-176 — כך שאריחי הניווט טיפסו 20
+   * פיקסלים על תחתית כרטיס העוגה. נמדד בדפדפן.
+   */
+  row: { flexDirection: 'row', gap: 12, alignItems: 'stretch' },
+  statRow: { flexDirection: 'row', gap: 12, height: 66 },
   /* ⚠ ממורכז · בקשה של שקד (15 בספטמבר 2026) */
-  stat: { flex: 1, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 3 },
-  statLabel: { fontSize: 11, color: '#6E6478', textAlign: 'center' },
-  statValue: { fontSize: 21, fontWeight: '600', color: surface.ink },
+  stat: { flex: 1, borderRadius: 26, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  statLabel: { fontSize: 11, color: LAV.faint, textAlign: 'center' },
+  statValue: { fontSize: 21, fontWeight: '700', color: LAV.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   currency: { fontSize: 11, color: surface.faint },
   currencySm: { fontSize: 10, color: surface.faint },
   currencyBig: { fontSize: 12, color: surface.faint },
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
-  revCard: { height: 192, borderRadius: 22, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 },
-  nightCard: { backgroundColor: NIGHT.bg, borderColor: NIGHT.edge, overflow: 'hidden' },
-  ranges: { flexDirection: 'row', gap: 5, marginTop: 8 },
-  /* בורר הטווח על רקע לילה · מסגרת רכה במקום לבן */
-  rangeNight: { backgroundColor: 'rgba(184,166,232,0.08)', borderColor: 'rgba(184,166,232,0.2)' },
-  rangeNightOn: { backgroundColor: 'rgba(184,166,232,0.2)', borderColor: 'rgba(184,166,232,0.5)' },
-  rangeNightText: { color: NIGHT.dim },
-  rangeNightTextOn: { fontWeight: '600', color: '#FFFFFF' },
+  revCard: { height: 196, borderRadius: 26, paddingTop: 14, paddingHorizontal: 16, paddingBottom: 8 },
+  /* חמש מדרגות הגרדיאנט · אותו כרטיס, גוון אחר לפי מקומו בדף */
+  tint1: { backgroundColor: LAV.tints[1], borderColor: LAV.edge },
+  tint3: { backgroundColor: LAV.tints[2], borderColor: LAV.edge, overflow: 'hidden' },
+  tint4: { backgroundColor: LAV.tints[3], borderColor: LAV.edge },
+  ranges: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 9,
+    padding: 3,
+    borderRadius: 999,
+    backgroundColor: LAV.pill,
+  },
+
+  /* ⚠ בורר מפולח · גלולה לבנה עם צל לנבחר, כמו בשאר המסכים */
+  ranges2: {},
   range: {
     flex: 1,
     height: 26,
-    borderRadius: 9,
+    borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(130,112,162,0.16)',
   },
-  rangeOn: { backgroundColor: 'rgba(123,92,188,0.12)', borderColor: 'rgba(123,92,188,0.42)' },
-  rangeText: { fontSize: 11, fontWeight: '400', color: '#6E6478' },
-  rangeTextOn: { fontWeight: '600', color: '#43307A' },
+  rangeOn: { backgroundColor: '#FFFFFF', boxShadow: '0 2px 6px -2px rgba(90,80,70,0.3)' } as never,
+  rangeText: { fontSize: 11, fontWeight: '400', color: LAV.dim },
+  rangeTextOn: { fontWeight: '700', color: LAV.ink },
 
   pair: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   pipe: { fontSize: 15, fontWeight: '300', color: 'rgba(130,112,162,0.5)' },
   cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  cardTitle: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
-  revTotal: { fontSize: 15, fontWeight: '600', color: surface.ink },
+  cardTitle: { fontSize: 12.5, fontWeight: '600', color: LAV.dim },
+  revTotal: { fontSize: 15, fontWeight: '700', color: LAV.ink },
   chart: { flex: 1, marginTop: 4 },
   months: { flexDirection: LTR_ROW, alignItems: 'center' },
   axisPad: { width: 30 },
@@ -315,26 +324,36 @@ const s = StyleSheet.create({
   expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
-  donutCard: { width: 168, height: 144, borderRadius: 22, paddingVertical: 12, paddingHorizontal: 14 },
-  donutBody: { flexDirection: 'row', alignItems: 'center', gap: 9, marginTop: 6, flex: 1 },
-  legend: { flex: 1, gap: 6 },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendName: { flex: 1, fontSize: 10, fontWeight: '300', color: '#6E6478' },
-  legendPct: { fontSize: 10.5, fontWeight: '600', color: surface.ink },
+  donutCard: { flex: 1, height: 176, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
+  pieWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  /**
+   * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״
+   * הארוך הזיז את הנקודה שלו ביחס ל״קוסקוס״. שתי עמודות ברוחב
+   * שווה מיישרות את הנקודות אחת מתחת לשנייה בדיוק.
+   */
+  legend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignSelf: 'center',
+    marginTop: 9,
+    rowGap: 5,
+  },
+  legendCell: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingEnd: 5 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendName: { fontSize: 10.5, fontWeight: '500', color: LAV.soft },
 
   profitCard: {
     flex: 1,
-    height: 144,
-    borderRadius: 22,
-    paddingTop: 12,
-    paddingHorizontal: 14,
-    paddingBottom: 10,
+    height: 176,
+    borderRadius: 26,
+    paddingTop: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
-  profitNet: { fontSize: 23, fontWeight: '600', color: surface.ink },
-  profitNote: { fontSize: 10.5, fontWeight: '300', color: surface.faint },
-  rule: { height: 1, backgroundColor: 'rgba(130,112,162,0.16)', marginVertical: 7 },
+  profitNet: { fontSize: 26, fontWeight: '300', color: LAV.ink },
+  profitNote: { fontSize: 10.5, fontWeight: '300', color: LAV.faint },
+  rule: { height: 1, backgroundColor: LAV.edge, marginVertical: 7 },
   grossRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 },
-  gross: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
+  gross: { fontSize: 12.5, fontWeight: '600', color: LAV.soft },
   spacer: { flex: 1 },
 });
