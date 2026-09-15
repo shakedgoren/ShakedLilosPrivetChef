@@ -7,6 +7,7 @@ import { compareCost, menuRowsOf, unitCost, viewOf, type CostPart } from '../adm
 import { hebrewDayLabel, hebrewMonthYear, isoDate } from '../admin/sold.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
+import { upcomingSale } from '../../../mobile/src/data/saleWeek.ts';
 import { soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { notFound } from '../errors.ts';
@@ -231,6 +232,39 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       });
     }
 
+    /**
+     * יום המכירה הקרוב · שקד ביקשה (15 בספטמבר 2026) שדף הניהול
+     * יצביע תמיד על יום המכירה של החלון הנוכחי: משישי ב-18:00 ועד
+     * שלישי ב-18:00 הקוסקוס, ומשלישי ב-18:00 ועד שישי ב-18:00
+     * השניצל. אם היום הזה כבר נפתח — מוצג הרשומה שלו; ואם לא —
+     * מוצגות המנות עם המכסות שלהן מהתפריט, והמתג עדיין סגור.
+     */
+    const up = upcomingSale(now);
+    const upCat = CATS[up.cat];
+    const upDay = await prisma.saleDay.findUnique({ where: { date: up.date } });
+    const upOrders = await prisma.order.findMany({
+      where: { saleDate: up.date, status: { not: CANCELLED } },
+    });
+    const upSold = soldByDish(upOrders.filter((o) => o.category === up.cat), up.cat, up.date);
+    const upQuota = readJson<Record<string, number>>(upDay?.quotasJson ?? '', {});
+    const sale = {
+      date: up.date,
+      label: hebrewDayLabel(up.date),
+      cat: up.cat,
+      name: upCat.short,
+      hue: upCat.hue,
+      rgb: upCat.rgb,
+      open: upDay?.open ?? false,
+      dishes: upCat.dishes.map((d) => ({
+        id: d.id,
+        name: d.n,
+        sold: upSold[d.id] ?? 0,
+        quota: upQuota[d.id] ?? d.q,
+      })),
+      orders: upOrders.length,
+      revenue: upOrders.reduce((s2, o) => s2 + o.total, 0),
+    };
+
     const newOrders = await prisma.order.count({ where: { status: 'חדשה' } });
     const revenue = monthOrders.reduce((s, o) => s + o.total, 0);
     const expenses = monthExp._sum.amount ?? 0;
@@ -249,6 +283,7 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       isOpen: openDays.some((d) => d.open),
       openDate: openDays[0]?.date ?? '',
       quotas,
+      sale,
       today: {
         orders: todayOrders.length,
         revenue: todayOrders.reduce((s, o) => s + o.total, 0),

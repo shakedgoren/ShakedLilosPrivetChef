@@ -127,6 +127,19 @@ export const adminSummary = () =>
     openDate: string;
     quotas: { key: string; date: string; name: string; hue: string; rgb: string; sold: number; quota: number; open: boolean }[];
     today: { orders: number; revenue: number };
+    /** יום המכירה של החלון הנוכחי · כל המנות שלו עם מכסה ומכירות */
+    sale: {
+      date: string;
+      label: string;
+      cat: string;
+      name: string;
+      hue: string;
+      rgb: string;
+      open: boolean;
+      dishes: { id: string; name: string; sold: number; quota: number }[];
+      orders: number;
+      revenue: number;
+    };
     month: { revenue: number; expenses: number; profit: number };
     badges: Record<string, number | string | boolean>;
     donut: { total: number; shares: { name: string; color: string; v: number }[] };

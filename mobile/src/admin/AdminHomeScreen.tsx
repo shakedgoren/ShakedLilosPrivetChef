@@ -5,14 +5,12 @@ import {
   DONUT,
   HOME_SUBTITLE,
   HOME_TITLE,
-  MANUAL_SUB,
-  MANUAL_TITLE,
   PROFIT,
   REVENUE,
-  TODAY,
   type TileKey,
 } from '../data/adminHome';
-import { COPY } from '../api/copy';
+import { NewOrderSheet } from './NewOrderSheet';
+import { useAdminOrders } from './useAdminOrders';
 import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
@@ -36,9 +34,18 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
 
 const money = (n: number) => n.toLocaleString('en-US');
 
+/** ‎2026-09-15 → ‎15.9 · כמו התג של ״ימי מכירה״ בקנבס */
+const shortDate = (iso: string) =>
+  iso.length === 10 ? `${+iso.slice(8)}.${+iso.slice(5, 7)}` : iso;
+
+/** ⚠ טקסט שכתבתי · שקד ביקשה את המילים האלה על הכפתור */
+const NEW_ORDER_LABEL = 'הזמנה חדשה';
+
 export function AdminHomeScreen() {
   const { go } = useNav();
   const home = useAdminHome();
+  /* אותה חלונית בדיוק של מסך ההזמנות · ההזמנה הידנית חיה שם */
+  const admin = useAdminOrders();
 
   return (
     <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
@@ -47,46 +54,47 @@ export function AdminHomeScreen() {
           <Text style={s.title}>{HOME_TITLE}</Text>
           <Text style={s.sub}>{home.subtitle || HOME_SUBTITLE}</Text>
         </View>
-        <Pressable onPress={() => go('main')} style={s.monthChip}>
-          <Text style={s.monthText}>{COPY.shopHome}</Text>
+        {/* ⚠ **״לחנות״ ירד וכאן יושבת הזמנה חדשה** · שקד ביקשה
+            (15 בספטמבר 2026) כפתור שממנו היא מכניסה הזמנה של לקוחה
+            שהתקשרה או כתבה בוואטסאפ, בלי שהלקוחה נרשמת לאתר.
+            הכרטיס הסגול ״הזמנה ידנית״ שהיה מתחת ללוח המכירה ירד,
+            והפעולה שלו עברה לכאן. */}
+        <Pressable onPress={admin.openNew} style={s.newChip}>
+          <View style={s.newPlus}>
+            <Plus size={13} color="#43307A" strokeWidth={2.8} />
+          </View>
+          <Text style={s.newText}>{NEW_ORDER_LABEL}</Text>
         </Pressable>
       </View>
 
       <SalePanel
-        isOpen={home.isOpen}
+        label={home.sale.label}
+        isOpen={home.sale.open}
         onToggle={home.toggleOpen}
-        quotas={home.quotas}
-        onBump={home.bump}
+        dishes={home.sale.dishes}
+        onBump={home.bumpDish}
         step={home.step}
-        ringPct={home.ringPct}
-        note={home.note}
-        dayLabel={home.subtitle}
+        pct={home.ringPct}
+        hue={home.sale.hue}
+        rgb={home.sale.rgb}
+        sold={home.soldTotal}
+        quota={home.quotaTotal}
       />
 
-      <View style={s.row}>
-        <Pressable onPress={() => go('adminOrders')} style={s.manual}>
-          <View style={s.manualIcon}>
-            <Plus size={15} color="#43307A" strokeWidth={2.8} />
+      {/* ⚠ **שני הכרטיסים של יום המכירה** · שקד ביקשה שיופיעו זה
+          לצד זה, ושכל אחד ינקוב בתאריך המכירה עצמו ולא ב״היום״. */}
+      <View style={s.statRow}>
+        <GlassCard style={s.stat}>
+          <Text style={s.statLabel}>{`מספר הזמנות עבור ${shortDate(home.sale.date)}`}</Text>
+          <Text style={s.statValue}>{home.sale.orders}</Text>
+        </GlassCard>
+        <GlassCard style={s.stat}>
+          <Text style={s.statLabel}>{`מחזור עבור ${shortDate(home.sale.date)}`}</Text>
+          <View style={s.statMoney}>
+            <Text style={s.statValue}>{money(home.sale.revenue)}</Text>
+            <Text style={s.currency}>₪</Text>
           </View>
-          <View>
-            <Text style={s.manualTitle}>{MANUAL_TITLE}</Text>
-            <Text style={s.manualSub}>{MANUAL_SUB}</Text>
-          </View>
-        </Pressable>
-
-        <View style={s.stats}>
-          <GlassCard style={s.stat}>
-            <Text style={s.statLabel}>{TODAY.ordersLabel}</Text>
-            <Text style={s.statValue}>{home.today.orders}</Text>
-          </GlassCard>
-          <GlassCard style={s.stat}>
-            <Text style={s.statLabel}>{TODAY.revenueLabel}</Text>
-            <View style={s.statMoney}>
-              <Text style={s.statValue}>{money(home.today.revenue)}</Text>
-              <Text style={s.currency}>₪</Text>
-            </View>
-          </GlassCard>
-        </View>
+        </GlassCard>
       </View>
 
       <GlassCard style={s.revCard}>
@@ -156,6 +164,8 @@ export function AdminHomeScreen() {
       </View>
 
       <TileRail onOpen={(key) => go(TILE_ROUTES[key])} badges={home.badges} />
+
+      {admin.newOpen ? <NewOrderSheet admin={admin} /> : null}
     </ScrollView>
   );
 }
@@ -167,41 +177,32 @@ const s = StyleSheet.create({
   headText: { flex: 1, gap: 2 },
   title: { fontSize: 21, fontWeight: '600', color: surface.ink },
   sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
-  monthChip: {
-    height: 32,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+  newChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  monthText: { fontSize: 12.5, fontWeight: '500', color: '#6E6478' },
-
-  row: { flexDirection: 'row', gap: 12, height: 100 },
-  manual: {
-    width: 168,
-    borderRadius: 22,
-    padding: 14,
-    backgroundColor: '#C6B3EC',
-    justifyContent: 'space-between',
-  },
-  manualIcon: {
-    width: 34,
+    gap: 7,
     height: 34,
-    borderRadius: 17,
+    paddingHorizontal: 5,
+    paddingLeft: 13,
+    borderRadius: 999,
+    backgroundColor: '#C6B3EC',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  newPlus: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.62)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  manualPlus: { fontSize: 20, fontWeight: '700', color: '#43307A', lineHeight: 24 },
-  manualTitle: { fontSize: 14.5, fontWeight: '600', color: '#43307A' },
-  manualSub: { fontSize: 10.5, color: '#5B4494', marginTop: 1 },
+  newText: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
 
-  stats: { flex: 1, gap: 12 },
-  stat: { flex: 1, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 9 },
-  statLabel: { flex: 1, fontSize: 11.5, color: '#6E6478' },
+  row: { flexDirection: 'row', gap: 12, height: 144 },
+  statRow: { flexDirection: 'row', gap: 12, height: 62 },
+  stat: { flex: 1, paddingHorizontal: 14, justifyContent: 'center', gap: 3 },
+  statLabel: { fontSize: 11, color: '#6E6478' },
   statValue: { fontSize: 21, fontWeight: '600', color: surface.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   currency: { fontSize: 11, color: surface.faint },

@@ -1,8 +1,13 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { surface } from '../../theme/tokens';
 import { AMBER, PLUM, STATE, TILES, type TileKey } from '../../data/adminHome';
+
+/** ארבעה אריחים בשורה · שלושה רווחים של 10 ביניהם */
+const PER_ROW = 4;
+const GAP = 10;
+const TILE_W = `calc((100% - ${(PER_ROW - 1) * GAP}px) / ${PER_ROW})` as unknown as number;
 
 /** התג שעל האריח · ענבר לדבר שדורש טיפול, שזיף למספר שגרתי */
 const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = {
@@ -16,7 +21,14 @@ const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = 
   hist: { value: STATE.buys, tone: PLUM },
 };
 
-/** רצועת האריחים · שער לשמונת מסכי הניהול */
+/**
+ * אריחי הניווט · שער לשמונת מסכי הניהול.
+ *
+ * ⚠ **שתי שורות ולא רצועה** · שקד ביקשה (15 בספטמבר 2026) לראות
+ * את כל השמונה בבת אחת: הזמנות · ימי מכירה · מלאי · קניות בשורה
+ * הראשונה, ולקוחות · תפריט · עלויות · היסטוריה מתחתיה. בקנבס זו
+ * רצועה אופקית נגללת, ובה ארבעת האחרונים היו מחוץ למסך.
+ */
 export function TileRail({
   onOpen,
   badges,
@@ -25,7 +37,7 @@ export function TileRail({
   badges?: Record<string, number | string | boolean>;
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.rail}>
+    <View style={s.grid}>
       {TILES.map((t) => {
         const fallback = BADGES[t.key];
         const raw = badges
@@ -61,14 +73,15 @@ export function TileRail({
           </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
-  rail: { gap: 10, paddingBottom: 2 },
+  /* ⚠ ארבעה בשורה · הרוחב אחוזי כדי שהשורה תתמלא בכל מסך */
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingBottom: 2 },
   tile: {
-    width: 74,
+    width: TILE_W,
     height: 60,
     borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.7)',

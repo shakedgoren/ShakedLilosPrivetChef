@@ -323,6 +323,34 @@ for (const path of [
   if (hit.status !== 200) fail(`admin ${path}`, hit);
 }
 
+/**
+ * גוש יום המכירה בדף הניהול · שקד ביקשה (15 בספטמבר 2026) שכל
+ * המנות של יום המכירה הקרוב יופיעו עם המלאי והמכירות שלהן, ושמספר
+ * ההזמנות והמחזור יהיו **של תאריך המכירה** ולא של היום.
+ */
+const summary = await api('/admin/summary', {
+  headers: { authorization: `Bearer ${adminToken}` },
+});
+const sale = (summary.body as {
+  sale?: {
+    date: string;
+    cat: string;
+    open: boolean;
+    dishes: { id: string; name: string; sold: number; quota: number }[];
+    orders: number;
+    revenue: number;
+  };
+}).sale;
+if (!sale) fail('summary sale block missing', summary.body);
+if (!/^\d{4}-\d{2}-\d{2}$/.test(sale.date)) fail('sale date', sale);
+if (sale.cat !== 'cous' && sale.cat !== 'schn') fail('sale category', sale);
+if (!Array.isArray(sale.dishes) || sale.dishes.length === 0) fail('sale dishes', sale);
+for (const d of sale.dishes) {
+  if (!d.id || !d.name) fail('dish row missing name', d);
+  if (typeof d.sold !== 'number' || typeof d.quota !== 'number') fail('dish row numbers', d);
+}
+if (typeof sale.orders !== 'number' || typeof sale.revenue !== 'number') fail('sale totals', sale);
+
 writeFileSync(
   join(dir, 'ok.txt'),
   `ok ${order.id} ${pathToFileURL(db).href}\n`,
@@ -332,6 +360,7 @@ writeFileSync(
 console.log('SMOKE OK');
 console.log(`  user order ${order.id} total=${order.total}`);
 console.log(`  admin saw it and set status=מאושרת`);
+console.log(`  sale ${sale.date} ${sale.cat} · ${sale.dishes.length} dishes · ${sale.orders} orders`);
 
 server.close();
 await prisma.$disconnect();

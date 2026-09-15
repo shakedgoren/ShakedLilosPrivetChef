@@ -28,7 +28,7 @@ export function AdminOrdersScreen() {
   const kpis = [
     { k: 'הזמנות היום', v: all.length, fg: surface.ink },
     { k: 'עוד לא נמסרו', v: live.filter((x) => x.status !== 'נמסרה').length, fg: '#A65E2A' },
-    { k: 'מחזור היום', v: live.reduce((s, x) => s + x.o.sum, 0), fg: COUS.deep },
+    { k: 'מחזור נוכחי', v: live.reduce((s, x) => s + x.o.sum, 0), fg: COUS.deep },
   ];
 
   const cancelTarget = admin.cancelling >= 0 ? admin.allOrders[admin.cancelling] : null;

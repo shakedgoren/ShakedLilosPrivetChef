@@ -1,23 +1,67 @@
 import { useCallback, useEffect, useState } from 'react';
-import { QUOTAS, QUOTA_STEP, TODAY, type Quota } from '../../data/adminHome';
-import { CATS, type DayCatKey } from '../../data/adminDays';
+import { QUOTA_STEP, TODAY } from '../../data/adminHome';
+import { CATS, DAY_NAMES, MONTHS, type DayCatKey } from '../../data/adminDays';
+import { upcomingSale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
 import { adminGetDay, adminPutDay, adminSummary } from '../../api/admin';
 import { useNav } from '../../navigation/store';
 
-const openQuotas = (): Quota[] => QUOTAS.filter((q) => q.open).map((q) => ({ ...q }));
+/**
+ * ⚠ **המכסות עברו למנה ולא לקטגוריה** · שקד ביקשה (15 בספטמבר 2026)
+ * ש**כל המנות** של יום המכירה יופיעו בדף הבית, עם המלאי והמכירות
+ * של כל אחת. קודם הייתה כאן שורה אחת לכל קטגוריה, והמכסה של כולן
+ * נדחפה למנה הראשונה — כלומר אי אפשר היה לעדכן מנה מסוימת.
+ */
+export type DishRow = { id: string; name: string; sold: number; quota: number };
+
+/** יום מכירה לתצוגה · מגיע מהשרת, ובלעדיו נגזר מהחלון של שקד */
+export type SaleView = {
+  date: string;
+  label: string;
+  cat: string;
+  name: string;
+  hue: string;
+  rgb: string;
+  open: boolean;
+  dishes: DishRow[];
+  orders: number;
+  revenue: number;
+};
+
+/**
+ * ״שלישי · 15 בספטמבר״ · אותה נוסחה של `hebrewDayLabel` בשרת.
+ * ⚠ נחוץ גם בצד הלקוח · בלי שרת הכותרת הראתה ‎2026-09-15 גולמי.
+ */
+function hebrewDay(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  const dow = DAY_NAMES[new Date(y, m - 1, d).getDay()];
+  return `${dow} · ${d} ב${MONTHS[m - 1]}`;
+}
+
+/** נפילה לאחור בלי שרת · יום המכירה של החלון והמכסות מהתפריט */
+function offlineSale(): SaleView {
+  const up = upcomingSale(new Date());
+  const cat = CATS[up.cat as DayCatKey];
+  return {
+    date: up.date,
+    label: hebrewDay(up.date),
+    cat: up.cat,
+    name: cat.short,
+    hue: cat.hue,
+    rgb: cat.rgb,
+    open: false,
+    dishes: cat.dishes.map((d) => ({ id: d.id, name: d.n, sold: 0, quota: d.q })),
+    orders: TODAY.orders,
+    revenue: TODAY.revenue,
+  };
+}
 
 export function useAdminHome() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
-  const [isOpen, setIsOpen] = useState(true);
-  const [quotas, setQuotas] = useState<Quota[]>(openQuotas);
-  const [openDate, setOpenDate] = useState('');
+  const [sale, setSale] = useState<SaleView>(offlineSale);
   const [subtitle, setSubtitle] = useState('');
-  const [today, setToday] = useState<{ orders: number; revenue: number }>({
-    orders: TODAY.orders,
-    revenue: TODAY.revenue,
-  });
   const [badges, setBadges] = useState<Record<string, number | string | boolean>>({});
   const [month, setMonth] = useState({ revenue: 0, expenses: 0, profit: 0 });
   const [donut, setDonut] = useState<{ total: number; shares: { name: string; color: string; v: number }[] } | null>(
@@ -27,11 +71,8 @@ export function useAdminHome() {
   const reload = useCallback(async () => {
     if (!live) return;
     const s = await adminSummary();
-    setIsOpen(s.isOpen);
-    setOpenDate(s.openDate);
     setSubtitle(s.subtitle);
-    setQuotas(s.quotas);
-    setToday(s.today);
+    setSale(s.sale);
     setBadges(s.badges);
     setMonth(s.month);
     setDonut(s.donut);
@@ -42,56 +83,59 @@ export function useAdminHome() {
   }, [reload]);
 
   const toggleOpen = useCallback(() => {
-    if (live && openDate) {
-      void adminPutDay(openDate, { open: !isOpen }).then(reload).catch(() => undefined);
+    if (live) {
+      void adminPutDay(sale.date, { open: !sale.open, sale: sale.cat })
+        .then(reload)
+        .catch(() => undefined);
       return;
     }
-    setIsOpen((v) => !v);
-  }, [live, openDate, isOpen, reload]);
+    setSale((v) => ({ ...v, open: !v.open }));
+  }, [live, sale.date, sale.open, sale.cat, reload]);
 
-  const bump = useCallback(
-    (key: string, delta: number) => {
-      const q = quotas.find((x) => x.key === key);
-      if (!q) return;
-      const nextQuota = Math.max(q.sold, q.quota + delta);
-      const date = (q as Quota & { date?: string }).date;
-      if (live && date) {
+  /**
+   * עדכון המכסה של מנה אחת.
+   * ⚠ המכסה לא יורדת מתחת למה שכבר נמכר · אחרת האחוזים עוברים 100
+   * והלקוחה רואה מלאי שלילי.
+   */
+  const bumpDish = useCallback(
+    (id: string, delta: number) => {
+      const row = sale.dishes.find((d) => d.id === id);
+      if (!row) return;
+      const next = Math.max(row.sold, row.quota + delta);
+      if (live) {
         void (async () => {
-          const { rec } = await adminGetDay(date);
-          const cat = CATS[key as DayCatKey];
-          const current = {
-            ...(rec.q ??
-              (cat ? Object.fromEntries(cat.dishes.map((d) => [d.id, d.q])) : {})),
+          const { rec } = await adminGetDay(sale.date);
+          const cat = CATS[sale.cat as DayCatKey];
+          const current: Record<string, number> = {
+            ...(rec.q ?? Object.fromEntries(cat.dishes.map((d) => [d.id, d.q]))),
           };
-          const first = Object.keys(current)[0];
-          if (first) current[first] = Math.max(0, (current[first] ?? 0) + delta);
-          await adminPutDay(date, { open: true, sale: key, q: current });
+          current[id] = next;
+          await adminPutDay(sale.date, { open: sale.open, sale: sale.cat, q: current });
           await reload();
         })().catch(() => undefined);
         return;
       }
-      setQuotas((list) => list.map((row) => (row.key === key ? { ...row, quota: nextQuota } : row)));
+      setSale((v) => ({
+        ...v,
+        dishes: v.dishes.map((d) => (d.id === id ? { ...d, quota: next } : d)),
+      }));
     },
-    [quotas, live, reload],
+    [sale, live, reload],
   );
 
-  const sold = quotas.reduce((s, q) => s + q.sold, 0);
-  const quota = quotas.reduce((s, q) => s + q.quota, 0);
+  const sold = sale.dishes.reduce((s, d) => s + d.sold, 0);
+  const quota = sale.dishes.reduce((s, d) => s + d.quota, 0);
 
   return {
-    isOpen,
+    sale,
     toggleOpen,
-    quotas,
-    bump,
+    bumpDish,
     step: QUOTA_STEP,
-    ringPct: quota ? `${Math.round((sold / quota) * 100)}%` : '—',
-    note:
-      quotas.length > 1
-        ? 'נמכר מתוך המכסה · שני ימי מכירה פתוחים'
-        : `נמכר מתוך המכסה של ${quotas[0] ? quotas[0].name : '—'}`,
+    soldTotal: sold,
+    quotaTotal: quota,
+    ringPct: quota ? Math.round((sold / quota) * 100) : 0,
     live,
     subtitle,
-    today,
     badges,
     month,
     donut,
