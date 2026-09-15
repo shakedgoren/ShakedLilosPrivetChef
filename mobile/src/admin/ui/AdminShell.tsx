@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { radius, surface } from '../../theme/tokens';
+import { ChevronRight } from '../../icons';
+import { useNav } from '../../navigation/store';
 
 export type HeaderAction = { label: string; onPress: () => void; primary?: boolean };
 
@@ -14,11 +16,22 @@ type Props = {
 /**
  * המעטפת של כל מסך ניהול · כותרת, כפתורי פעולה, ואזור התוכן.
  * כל 11 מסכי הניהול בקנבס בנויים על אותו שלד.
+ *
+ * ⚠ **חץ החזרה** · שקד ביקשה (15 בספטמבר 2026) כפתור ״>״ בכל דף
+ * פנימי. הוא יושב כאן ולא בכל מסך בנפרד, כדי שלא יישכח באחד מהם.
+ * ⚠ החץ הוא `ChevronRight` ולא תו ‹ · תווי חץ נהפכים ב-RTL,
+ * וזה מה שהפך את החצים במפות ההגעה.
  */
 export function AdminShell({ title, sub, actions = [], children }: Props) {
+  const { back, canBack, go } = useNav();
   return (
     <View style={s.root}>
       <View style={s.head}>
+        {/* ⚠ תמיד מוצג · כשאין מחסנית (כניסה ישירה לכתובת) הוא
+            מחזיר לדף הניהול, כדי שלא יהיה מסך פנימי בלי דרך חזרה. */}
+        <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
+          <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
+        </Pressable>
         <View style={s.headText}>
           <Text style={s.title}>{title}</Text>
           {sub ? <Text style={s.sub}>{sub}</Text> : null}
@@ -62,6 +75,16 @@ export function KpiRow({
 const s = StyleSheet.create({
   root: { flex: 1, paddingTop: 30, paddingHorizontal: 18, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  back: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(130,112,162,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headText: { flex: 1, gap: 2 },
   title: { fontSize: 21, fontWeight: '600', color: surface.ink },
   sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },

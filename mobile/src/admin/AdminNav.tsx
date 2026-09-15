@@ -1,29 +1,42 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius } from '../theme/tokens';
+import { Bars, Box3D, Home, Receipt, type IconProps } from '../icons';
 import { useNav, type Screen } from '../navigation/store';
 
 /**
- * הנאב-בר של צד הניהול · ארבע לשוניות, בדיוק כמו בתחתית AdminOrders.dc.html.
+ * הנאב-בר של צד הניהול · ארבע לשוניות, בדיוק כמו בתחתית Admin.dc.html.
  * נפרד מהנאב-בר של הלקוחה — לשקד יש מסכים אחרים.
+ *
+ * ⚠ **נוספו האייקונים** · שקד ביקשה (15 בספטמבר 2026) נאב-בר עם
+ * אייקונים ״בדיוק כמו בקנבס״. קודם היו כאן ארבע מילים בלבד בתוך
+ * פס בגובה 68, ולכן הוא נראה ריק וגבוה. האייקונים והמידות כאן
+ * הם אלה של הקנבס: 22 פיקסלים, רווח 4 מהכיתוב, ולשונית בגובה 56.
  */
-const TABS: { key: Screen; label: string }[] = [
-  { key: 'admin', label: 'בית' },
-  { key: 'adminOrders', label: 'הזמנות' },
-  { key: 'adminStock', label: 'מלאי' },
-  { key: 'adminMoney', label: 'כספים' },
+
+const ON = '#7B5CBC';
+const OFF = '#918A9E';
+const ICON = 22;
+
+const TABS: { key: Screen; label: string; Icon: (p: IconProps) => React.JSX.Element }[] = [
+  { key: 'admin', label: 'בית', Icon: Home },
+  { key: 'adminOrders', label: 'הזמנות', Icon: Receipt },
+  { key: 'adminStock', label: 'מלאי', Icon: Box3D },
+  { key: 'adminMoney', label: 'כספים', Icon: Bars },
 ];
 
 export function AdminNav() {
   const { screen, go } = useNav();
   return (
     <View style={s.bar}>
-      {TABS.map((t) => {
-        const on = screen === t.key;
+      {TABS.map(({ key, label, Icon }) => {
+        const on = screen === key;
         return (
-          <Pressable key={t.key} onPress={() => go(t.key)} style={[s.tab, on && s.tabOn]}>
-            <Text style={[s.label, { color: on ? '#7B5CBC' : '#918A9E', fontWeight: on ? '700' : '400' }]}>
-              {t.label}
+          <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
+            {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
+            <Icon size={ICON} color={on ? ON : OFF} strokeWidth={on ? 2 : 1.7} />
+            <Text style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}>
+              {label}
             </Text>
           </Pressable>
         );
@@ -61,6 +74,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
   },
   tabOn: { backgroundColor: 'rgba(155,127,212,0.13)' },
   label: { fontSize: 11 },
