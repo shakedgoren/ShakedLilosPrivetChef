@@ -242,15 +242,8 @@ function OrderCard({
       </View>
 
       {/* ⚠ מעקב ההזמנה · בחירה של שקד (15 בספטמבר 2026), 480ms לשלב.
-          רק בהזמנה חיה — בהזמנה שנמסרה או בוטלה אין אחרי מה לעקוב.
-          בפינת השף המד הוא המנה המכוסה שביקשה. */}
-      {variant === 'live' ? (
-        <OrderTracker
-          status={order.status}
-          accent={hue}
-          chef={categoryKey(order.category) === 'chef'}
-        />
-      ) : null}
+          רק בהזמנה חיה — בהזמנה שנמסרה או בוטלה אין אחרי מה לעקוב. */}
+      {variant === 'live' ? <OrderTracker status={order.status} accent={hue} /> : null}
 
       {open ? (
         <View style={s.detail}>
