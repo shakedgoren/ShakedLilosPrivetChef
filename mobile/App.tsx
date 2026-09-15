@@ -141,17 +141,28 @@ export default function App() {
   return (
     <NavProvider>
       <LightboxProvider>
-        <SafeAreaView style={s.root}>
+        {/* ⚠ **השטיפה מתעלמת מה-SafeArea** · בקשה של שקד (15 בספטמבר
+            2026). `SafeAreaView` מרפד במכשיר את המגרעת ואת פס הבית,
+            וכשהוא היה השורש גם הרקע נעצר שם — נשארו פסים בצבע
+            `surface.ground` השטוח למעלה ולמטה. עכשיו השורש הוא
+            `View` שממלא את כל המסך, השטיפה נצבעת מקצה לקצה,
+            וה-`SafeAreaView` עטוף רק סביב התוכן כך שהוא עדיין לא
+            נכנס מתחת למגרעת.
+            ⚠ ה-`SafeAreaView` שקוף · אחרת הוא היה מכסה את השטיפה. */}
+        <View style={s.root}>
           <StatusBar style="dark" />
           <Wash />
-          <Router />
-          <Chrome />
-          {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
-              האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו בקנבס.
-              חייב להיות **לפני** שכבת ההתחברות, שאחרת הוא מרחף מעליה. */}
-          <LogoutButton />
-          <LoginOverlay />
-        </SafeAreaView>
+          <SafeAreaView style={s.safe}>
+            <Router />
+            <Chrome />
+            {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
+                האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו
+                בקנבס. חייב להיות **לפני** שכבת ההתחברות, שאחרת הוא
+                מרחף מעליה. */}
+            <LogoutButton />
+            <LoginOverlay />
+          </SafeAreaView>
+        </View>
       </LightboxProvider>
     </NavProvider>
   );
@@ -159,6 +170,8 @@ export default function App() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: surface.ground },
+  /* ⚠ שקוף · השטיפה שמתחתיו היא שנראית */
+  safe: { flex: 1 },
   todo: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
   todoText: { fontSize: 20, fontWeight: '600', color: surface.ink },
   todoSub: { fontSize: 13, color: surface.muted },
