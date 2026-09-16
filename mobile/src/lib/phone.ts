@@ -55,3 +55,13 @@ export function normalizePhone(raw: string): string {
   if (!d.startsWith('0') && d.length >= 9) d = `0${d}`;
   return dash(d, true);
 }
+
+/**
+ * האם זה מספר טלפון ישראלי תקין.
+ *
+ * ⚠ אותו כלל בדיוק של `okPhone` במסך ההתחברות · נייד `05X` או
+ * קידומת בת שתיים, ואחריהן שבע ספרות. מוגדר כאן כדי שיהיה מקור
+ * אחד לכל המקומות שבודקים טלפון.
+ */
+export const isPhone = (raw: string): boolean =>
+  /^0(5\d|[2-489])-?\d{7}$/.test(raw.trim().replace(/\s/g, ''));

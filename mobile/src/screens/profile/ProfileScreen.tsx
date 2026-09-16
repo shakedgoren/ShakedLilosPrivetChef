@@ -67,6 +67,17 @@ function cityOf(addr: string): string {
  * ⚠ היה ״לקוחה מאז״ קבוע · זו בדיוק הסיבה ששקד ביקשה שדה מגדר.
  * בלי בחירה נשארת לשון נקבה, כפי שהיה.
  */
+/** ⚠ הסמלים ששקד בחרה · שפם, פה ומוח · זהים למסך ההרשמה */
+const GENDER_SYM = {
+  female: 'female',
+  male: 'male',
+  other: 'other',
+  '': 'other',
+} as const satisfies Record<Gender, 'male' | 'female' | 'other'>;
+
+/** הסגול של הבחירה · כמו בשאר המסך */
+const PLUM = '#7B5CBC';
+
 const GENDER_LABEL: Record<Gender, string> = {
   female: 'לקוחה',
   male: 'לקוח',
@@ -326,6 +337,9 @@ export function ProfileScreen() {
               או בלקוחה. הוא מזין את שורת ״לקוחה מאז״. */}
           <View style={s.genderBlock}>
             <Text style={s.genderLabel}>מגדר</Text>
+            {/* ⚠ **עם האייקונים ששקד בחרה** · שפם, פה ומוח — אותם
+                סמלים בדיוק שכבר במסך ההרשמה. כאן היה כיתוב בלבד,
+                והיא דיווחה על זה ב-16 בספטמבר 2026. */}
             <View style={s.genders}>
               {GENDERS.map((g) => (
                 <Pressable
@@ -333,6 +347,7 @@ export function ProfileScreen() {
                   onPress={() => set('gender', form.gender === g ? '' : g)}
                   style={[s.gender, form.gender === g && s.genderOn]}
                 >
+                  <S k={GENDER_SYM[g]} size={20} color={form.gender === g ? PLUM : undefined} />
                   <Text style={[s.genderText, form.gender === g && s.genderTextOn]}>
                     {GENDER_LABEL[g]}
                   </Text>
@@ -529,13 +544,17 @@ const s = StyleSheet.create({
   genderBlock: { gap: 6 },
   genderLabel: { fontSize: 11.5, fontWeight: '500', color: '#8A8194', paddingHorizontal: 4 },
   genders: { flexDirection: 'row', gap: 8 },
+  /* ⚠ שורה · האייקון לצד הכיתוב. הגובה עלה מ-40 ל-44 כדי שהסמל
+     לא ייגע בשפה. */
   gender: {
     flex: 1,
-    height: 40,
+    height: 44,
     borderRadius: radius.pill,
     backgroundColor: 'rgba(130,112,162,0.09)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
   },
   genderOn: { backgroundColor: a('123,92,188', 0.22) },
   genderText: { fontSize: 13, color: surface.inkSoft },

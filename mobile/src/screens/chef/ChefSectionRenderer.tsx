@@ -16,6 +16,7 @@ import { dayPartOpen } from '../../data/calendar';
 import { AddressField, type AddressValue } from '../../components/AddressField';
 import { formatAddress } from '../../data/israelAddresses';
 import { detailFilled, detailRequired } from './useChefOrder';
+import { isPhone, maskPhone, normalizePhone } from '../../lib/phone';
 
 const ACCENT = hues.chef;
 /** האדום של השגיאות באפליקציה · אותו גוון של `err` במסכי ההתחברות */
@@ -237,18 +238,28 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
     case 'pairtext':
       return (
         <View style={st.pairText}>
-          {(s.ids as string[]).map((id, i) => (
-            <View key={id} style={st.grow}>
-              <Text style={st.smallLabel}>{s.labels?.[i]}</Text>
-              <TextInput
-                value={api.picks[id] ?? ''}
-                onChangeText={(v) => api.setValue(id, v)}
-                placeholder={s.phs?.[i]}
-                placeholderTextColor="#B3ABBD"
-                style={[st.field, st.oneLine]}
-              />
-            </View>
-          ))}
+          {(s.ids as string[]).map((id, i) => {
+            const raw = String(api.picks[id] ?? '');
+            /* ⚠ שדה הטלפון · מסכה חיה, נרמול ביציאה, ומסגרת אדומה
+               כשהמספר אינו תקין. בקשה של שקד (16 בספטמבר 2026). */
+            const phone = id === 'phone';
+            const bad = phone && raw.trim() !== '' && !isPhone(raw);
+            return (
+              <View key={id} style={st.grow}>
+                <Text style={st.smallLabel}>{s.labels?.[i]}</Text>
+                <TextInput
+                  value={raw}
+                  onChangeText={(v) => api.setValue(id, phone ? maskPhone(v) : v)}
+                  onBlur={phone ? () => api.setValue(id, normalizePhone(raw)) : undefined}
+                  keyboardType={phone ? 'phone-pad' : 'default'}
+                  placeholder={s.phs?.[i]}
+                  placeholderTextColor={bad ? MISSING_HINT : '#B3ABBD'}
+                  style={[st.field, st.oneLine, bad && st.fieldMissing]}
+                />
+                {bad ? <Text style={st.badNote}>מספר טלפון לא תקין</Text> : null}
+              </View>
+            );
+          })}
         </View>
       );
 
@@ -536,8 +547,9 @@ const st = StyleSheet.create({
     color: surface.ink,
   },
   oneLine: { minHeight: 46, paddingVertical: 12 },
-  /* ⚠ חובה שלא מולאה · ״חסר משהו״ בלי פירוט */
+  /* ⚠ חובה שלא מולאה · ״חסר משהו״ בלי פירוט, או טלפון לא תקין */
   fieldMissing: { borderColor: MISSING, backgroundColor: 'rgba(185,83,73,0.05)' },
+  badNote: { fontSize: 11, color: MISSING, paddingHorizontal: 4, paddingTop: 3 },
   pairText: { flexDirection: 'row', gap: space.sm },
   smallLabel: { fontSize: 11.5, color: surface.faint, marginBottom: 4, textAlign: 'center' },
   grow: { flex: 1 },

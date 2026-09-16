@@ -1,6 +1,6 @@
 import React from 'react';
 import { TEXT_START } from '../theme/rtl';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import {
   MIN_QUERY,
@@ -67,9 +67,29 @@ export function AddressField({
 }: Props) {
   const [text, setText] = React.useState(value ? `${value.street}, ${value.city}` : '');
   const [hits, setHits] = React.useState<AddressHit[]>([]);
+  /**
+   * ⚠ **הרשימה נפתחת למעלה כשהשדה נמוך · 16 בספטמבר 2026** · שקד
+   * דיווחה פעמיים ש״המקלדת מסתירה את האופציות אם כן הופיעו״, וש״לא
+   * ממלא אוטומטית״ — וזו אותה תקלה: היא פשוט מעולם לא ראתה את
+   * ההצעות. ההשלמה עצמה תקינה, **נמדד**: הקלדת ״נופר״ בדפדפן
+   * מחזירה שמונה רחובות, יבנה ראשונה.
+   *
+   * המקלדת תופסת את החצי התחתון של המסך. כשהשדה יושב שם, רשימה
+   * שנפתחת **מתחתיו** נמצאת מאחוריה תמיד — בלי קשר לגלילה.
+   * `automaticallyAdjustKeyboardInsets` נותן מקום לגלול, אבל לא
+   * מזיז את הרשימה. כאן היא פשוט נפתחת כלפי מעלה.
+   */
+  const wrapRef = React.useRef<View>(null);
+  const [above, setAbove] = React.useState(false);
+  const win = useWindowDimensions();
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+
+  /* איפה השדה יושב על המסך · נקבע כשהרשימה נפתחת */
+  const decideSide = React.useCallback(() => {
+    wrapRef.current?.measureInWindow((_x, y) => setAbove(y > win.height * 0.42));
+  }, [win.height]);
 
   React.useEffect(() => {
     /* כתובת שכבר נבחרה · לא מחפשים שוב עד שמקלידים מחדש */
@@ -86,6 +106,7 @@ export function AddressField({
       try {
         const found = await searchStreets(text, ctrl.signal);
         setHits(found);
+        decideSide();
         setOpen(true);
       } catch (e) {
         /* ביטול אינו שגיאה · רק כישלון אמיתי מדליק את ההודעה */
@@ -101,7 +122,7 @@ export function AddressField({
       clearTimeout(id);
       ctrl.abort();
     };
-  }, [text, value]);
+  }, [text, value, decideSide]);
 
   const pick = (h: AddressHit) => {
     setText(`${h.street}, ${h.city}`);
@@ -117,7 +138,7 @@ export function AddressField({
   const fill = outside ? BAD_BG : inside ? OK_BG : '#FFFFFF';
 
   return (
-    <View style={s.wrap}>
+    <View ref={wrapRef} style={s.wrap}>
       <View style={[s.field, { borderColor: edge, backgroundColor: fill }]}>
         <TextInput
           value={text}
@@ -134,7 +155,7 @@ export function AddressField({
       </View>
 
       {open && hits.length > 0 ? (
-        <View style={s.list}>
+        <View style={[s.list, above ? s.listAbove : s.listBelow]}>
           {hits.map((h) => (
             <Pressable key={`${h.street}|${h.city}`} onPress={() => pick(h)} style={s.row}>
               <Text style={s.rowStreet}>{h.street}</Text>
@@ -179,14 +200,26 @@ const s = StyleSheet.create({
   input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: TEXT_START, color: surface.ink },
   house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: TEXT_START, color: surface.ink },
 
+  /**
+   * ⚠ **מרחפת ולא בזרימה** · בזרימה היא דוחפת את שדה מספר הבית
+   * למטה בכל הקלדה, והמסך קופץ. כשהיא מרחפת היא גם יכולה להיפתח
+   * כלפי מעלה, מעל המקלדת.
+   */
   list: {
+    position: 'absolute',
+    right: 0,
+    left: 0,
+    zIndex: 20,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: IDLE_BD,
     backgroundColor: '#FFFFFF',
     maxHeight: LIST_MAX_H,
     overflow: 'hidden',
+    boxShadow: '0 12px 28px -14px rgba(60,48,84,0.5)',
   },
+  listBelow: { top: FIELD_H + 6 },
+  listAbove: { bottom: '100%', marginBottom: 6 },
   row: {
     height: ROW_H,
     paddingHorizontal: 12,

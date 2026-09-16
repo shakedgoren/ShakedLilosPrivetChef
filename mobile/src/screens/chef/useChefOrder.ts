@@ -11,6 +11,7 @@ import {
 import type { OrderLine } from '../../order/types';
 import type { PastaPick } from './PastaPopup';
 import { dayPartOpen } from '../../data/calendar';
+import { isPhone } from '../../lib/phone';
 
 export type Picks = Record<string, any>;
 
@@ -60,7 +61,19 @@ const sectionReady = (s: ChefSection, picks: Picks): boolean => {
   }
   if (s.kind === 'stepper') return typeof v === 'number' && v > 0;
   if (s.kind === 'cal' || s.kind === 'addr') return !!v;
-  if (s.kind === 'pairtext') return (s.ids as string[]).every((id) => !!picks[id]);
+  if (s.kind === 'pairtext') {
+    /**
+     * ⚠ **טלפון לא תקין נועל את הבקשה** · שקד ביקשה (16 בספטמבר
+     * 2026): ״אין בדיקה בהשארת פרטים אם הזנתי טלפון לא תקין — אם
+     * המספר לא תקין אי אפשר לשלוח בקשה להזמנה״. קודם הספיק ששדה
+     * הטלפון אינו ריק.
+     */
+    return (s.ids as string[]).every((id) => {
+      const v = String(picks[id] ?? '').trim();
+      if (!v) return false;
+      return id === 'phone' ? isPhone(v) : true;
+    });
+  }
   return true;
 };
 
