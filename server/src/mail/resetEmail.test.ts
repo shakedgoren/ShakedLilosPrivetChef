@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildResetEmail, resetLink, ttlLabel } from './resetEmail.ts';
+import { buildResetEmail, resetLink, ttlLabel, RESET_TTL_MINUTES } from './resetEmail.ts';
 
 /**
  * מייל איפוס הסיסמה · החלטה של שקד (16 בספטמבר 2026):
@@ -57,4 +57,12 @@ test('פנייה בשם כשיש שם, ובלי שם כשאין · בלי ״של
 test('שם עם תווי HTML אינו נשבר לתוך ה-HTML', () => {
   const mail = buildResetEmail({ name: '<script>x</script>', token: TOKEN, appUrl: 'https://bite.example' });
   assert.ok(!mail.html.includes('<script>'), 'שם לא עבר בריחה ונכנס כתגית');
+});
+
+test('תוקף הקישור הוא עשר דקות · ההחלטה של שקד', () => {
+  assert.equal(RESET_TTL_MINUTES, 10);
+  assert.equal(ttlLabel(), '10 דקות');
+  const mail = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
+  assert.match(mail.text, /10 דקות/);
+  assert.match(mail.html, /10 דקות/);
 });

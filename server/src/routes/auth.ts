@@ -9,7 +9,7 @@ import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
 import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
-import { buildResetEmail, RESET_TTL_HOURS } from '../mail/resetEmail.ts';
+import { buildResetEmail, RESET_TTL_MINUTES } from '../mail/resetEmail.ts';
 import { sendMail } from '../mail/mailer.ts';
 import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
 import { notifyOtp } from '../whatsapp/notify.ts';
@@ -87,7 +87,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
           : await prisma.user.findUnique({ where: { phone: who.phone } });
       if (user) {
         const token = randomBytes(24).toString('hex');
-        const expiresAt = new Date(Date.now() + RESET_TTL_HOURS * 60 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + RESET_TTL_MINUTES * 60 * 1000);
         await prisma.passwordReset.create({
           data: { userId: user.id, token, expiresAt },
         });

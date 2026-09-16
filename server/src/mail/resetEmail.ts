@@ -12,14 +12,19 @@
  * בהתראות של המכשיר ובתצוגה המקדימה של תיבת הדואר. הוא רק בקישור.
  */
 
-/** תוקף האסימון · חייב להיות זהה למה ש-`/auth/forgot-password` כותב */
-export const RESET_TTL_HOURS = 1;
+/**
+ * תוקף האסימון · חייב להיות זהה למה ש-`/auth/forgot-password` כותב.
+ * ⚠ עשר דקות · החלטה של שקד (16 בספטמבר 2026).
+ */
+export const RESET_TTL_MINUTES = 10;
 
 export type ResetMail = { subject: string; text: string; html: string; link: string };
 
-/** ״שעה אחת״ / ״3 שעות״ · נגזר מהקבוע, כדי שלא ייווצר פער בין הטקסט למציאות */
+/** ״10 דקות״ / ״שעה אחת״ · נגזר מהקבוע, כדי שלא ייווצר פער בין הטקסט למציאות */
 export const ttlLabel = (): string =>
-  RESET_TTL_HOURS === 1 ? 'שעה אחת' : `${RESET_TTL_HOURS} שעות`;
+  RESET_TTL_MINUTES % 60 === 0
+    ? (RESET_TTL_MINUTES === 60 ? 'שעה אחת' : `${RESET_TTL_MINUTES / 60} שעות`)
+    : `${RESET_TTL_MINUTES} דקות`;
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
