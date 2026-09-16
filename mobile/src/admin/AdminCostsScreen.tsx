@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { TEXT_START, TEXT_END } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { count } from '../text/counts';
@@ -403,12 +404,12 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
   w40: { width: 40, textAlign: 'center' },
   w52: { width: 52, textAlign: 'center' },
-  w48: { width: 48, textAlign: 'left' },
+  w48: { width: 48, textAlign: TEXT_END },
   partSum: { fontSize: 12, color: surface.ink },
   /* שני השדות · flex-end כדי שהשדה הבודד יישר לתחתית */
   fields: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },

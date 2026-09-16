@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { TEXT_START, TEXT_END } from '../theme/rtl';
 import { S } from '../components/Sym';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
@@ -315,7 +316,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: 'right',
+    textAlign: TEXT_START,
   },
   tabs: { flexDirection: 'row', gap: 6 },
   tab: { flex: 1 },
@@ -340,12 +341,12 @@ const s = StyleSheet.create({
   tagText: { fontSize: 10, fontWeight: '700' },
   line: { fontSize: 11.5, color: surface.faint, marginTop: 2 },
   noteFlag: { fontSize: 11, fontWeight: '500', color: '#A65E2A', marginTop: 4 },
-  spent: { fontSize: 14.5, fontWeight: '600', color: surface.ink, textAlign: 'left' },
-  spentTag: { fontSize: 10.5, color: '#A79FB2', textAlign: 'left' },
+  spent: { fontSize: 14.5, fontWeight: '600', color: surface.ink, textAlign: TEXT_END },
+  spentTag: { fontSize: 10.5, color: '#A79FB2', textAlign: TEXT_END },
   more: { gap: 8, borderTopWidth: 1, borderTopColor: 'rgba(130,112,162,0.14)', paddingTop: 10 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   rowK: { fontSize: 12, color: surface.faint },
-  rowV: { fontSize: 12.5, color: surface.ink, flex: 1, textAlign: 'left' },
+  rowV: { fontSize: 12.5, color: surface.ink, flex: 1, textAlign: TEXT_END },
   likes: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   like: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   likeText: { fontSize: 11, fontWeight: '600' },
@@ -358,7 +359,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
   acts: { flexDirection: 'row', gap: 8 },

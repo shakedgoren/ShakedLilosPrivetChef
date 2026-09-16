@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TEXT_END } from '../../theme/rtl';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
@@ -284,7 +285,7 @@ const s = StyleSheet.create({
   cardText: { flex: 1, minWidth: 0, gap: 4 },
   name: { fontSize: 14.5, fontWeight: '600', lineHeight: 18, color: surface.ink },
   desc: { fontSize: 11, fontWeight: '300', color: surface.muted, lineHeight: 16 },
-  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.hue, textAlign: 'left' },
+  price: { fontSize: 12.5, fontWeight: '600', color: ACCENT.hue, textAlign: TEXT_END },
 
   bar: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, marginBottom: 30 },
   /* כשהנאב-בר מוצג השורה עולה מעליו · המיקום מהקנבס */

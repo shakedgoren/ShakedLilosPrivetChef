@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_START } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
@@ -167,7 +168,7 @@ const s = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 44,
     fontSize: 15,
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
   /* ⚠ `right` פיזי · האייקון בקצה שאליו נכתב הטקסט */

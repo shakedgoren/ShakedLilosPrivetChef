@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { TEXT_START } from '../theme/rtl';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -574,7 +575,7 @@ const s = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 44,
     fontSize: 15,
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
   inputLocked: { backgroundColor: 'rgba(130,112,162,0.07)', color: '#8A8194' },

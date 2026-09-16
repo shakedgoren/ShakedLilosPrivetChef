@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { TEXT_END } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { count } from '../text/counts';
@@ -171,7 +172,7 @@ const s = StyleSheet.create({
   grow: { flex: 1 },
   w40: { width: 40, textAlign: 'center' },
   w52: { width: 52, textAlign: 'center' },
-  w48: { width: 48, textAlign: 'left' },
+  w48: { width: 48, textAlign: TEXT_END },
   /* שורת הסיכום של הקטגוריה · בתחתית הרשימה */
   catTotal: {
     flexDirection: 'row',

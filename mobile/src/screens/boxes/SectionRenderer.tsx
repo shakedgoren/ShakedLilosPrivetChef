@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Section } from '../../data/boxes';
 import { Stepper } from '../../components/Stepper';
@@ -487,7 +488,7 @@ const st = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 12,
     fontSize: 14,
-    textAlign: 'right',
+    textAlign: TEXT_START,
     textAlignVertical: 'top',
     color: surface.ink,
   },

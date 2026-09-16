@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_END } from '../../theme/rtl';
 import {
   Animated,
   Easing,
@@ -213,7 +214,7 @@ const s = StyleSheet.create({
   total: { fontSize: 20, fontWeight: '600', color: surface.ink, fontVariant: ['tabular-nums'] },
   currency: { fontSize: 13, fontWeight: '400', color: '#7A7080' },
   /* margin-top: -6 בקנבס · המחיר לסועד נצמד לשורת הסה״כ */
-  perHead: { marginTop: -6, textAlign: 'left', fontSize: 12, fontWeight: '400', color: surface.muted },
+  perHead: { marginTop: -6, textAlign: TEXT_END, fontSize: 12, fontWeight: '400', color: surface.muted },
 
   deposit: { fontSize: 12.5, fontWeight: '300', color: surface.muted, lineHeight: 18.75 },
 

@@ -81,3 +81,26 @@ export function enableRTL(): void {
   alignWithBrowser();
   reloadOnce();
 }
+
+/**
+ * ⚠ **יישור טקסט · הערך הפוך בין הפלטפורמות, וזה לא באג שלנו.**
+ *
+ * `RCTTextAttributes.mm` בריאקט-נייטיב (שורות 109–118) מחליף
+ * `right`↔`left` בטקסט **ללא תנאי** כשכיוון הפריסה RTL. זה אינו
+ * מותנה ב-`doLeftAndRightSwapInRTL`, ולכן הוא קורה גם אחרי
+ * `swapLeftAndRightInRTL(false)` שכיבה את ההחלפה למיקומים.
+ *
+ * בדפדפן אין החלפה כזו · `text-align: right` הוא ימין פיזי.
+ *
+ * נמדד בסימולטור (16 בספטמבר 2026) על השורה ״* כל מנה מגיעה לצד
+ * סלט חמוצים אישי.״ בקוסקוס: `'right'` יישר אותה **שמאלה**,
+ * `'left'` יישר אותה ימינה. זה מה ששקד ראתה.
+ *
+ * ⚠ **לא לכתוב `'right'` או `'left'` ישירות בסגנון טקסט** · תמיד
+ * דרך שני הקבועים האלה, אחרת המסך ייצא הפוך במכשיר או בדפדפן.
+ */
+export const TEXT_START: 'left' | 'right' =
+  Platform.OS === 'web' ? (IS_RTL ? 'right' : 'left') : I18nManager.isRTL ? 'left' : 'right';
+
+/** הצד הנגדי · יישור לקצה שבו הטקסט נגמר */
+export const TEXT_END: 'left' | 'right' = TEXT_START === 'left' ? 'right' : 'left';

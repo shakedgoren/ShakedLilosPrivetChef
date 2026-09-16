@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_START } from '../../theme/rtl';
 import {
   Modal,
   Pressable,
@@ -364,7 +365,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
     fontSize: 15,
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
 

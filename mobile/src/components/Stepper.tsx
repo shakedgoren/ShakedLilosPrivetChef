@@ -56,14 +56,11 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
   const size = tone?.key ?? KEY;
   const glyph = tone?.glyph ?? GLYPH;
   /**
-   * ⚠ **הסמל מחליף גם את העיגול** · בקשה של שקד (16 בספטמבר 2026).
-   * `plus.arrow.trianglehead.counterclockwise` ו-
-   * `minus.arrow.trianglehead.clockwise` מגיעים עם טבעת משלהם, ולכן
-   * עיגול רקע מאחוריהם יצר **שני** עיגולים מקוננים. הרקע ירד והסמל
-   * גדל לקוטר שהעיגול תפס. גוון הקטגוריה עבר מהעיגול אל הסמל עצמו,
-   * כדי שהשפה הצבעונית של המסכים תישמר.
+   * ⚠ **עיגול עם אייקון בתוכו** · שקד ראתה גרסה שבה הסמל החליף גם
+   * את העיגול ולא אהבה אותה (16 בספטמבר 2026). חזרה לצורה המקורית,
+   * עם `plus` ו-`minus` הפשוטים במקום אלה שמגיעים עם טבעת.
    */
-  const round = { width: size, height: size };
+  const round = { width: size, height: size, borderRadius: size / 2 };
   const atMin = value <= min;
 
   return (
@@ -71,11 +68,11 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(value + 1)}
         disabled={maxed}
-        style={[s.key, round, maxed && s.keyOff]}
+        style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG }, maxed && s.keyOff]}
         hitSlop={8}
       >
         {/* ⚠ SF Symbols · הסמלים שבחרה שקד ל-+ ול-‎- */}
-        <S k="plus" size={size} color={tone?.plusInk ?? PLUS_INK} />
+        <S k="plus" size={glyph} color={tone?.plusInk ?? PLUS_INK} />
       </Pressable>
 
       {center ?? (
@@ -85,10 +82,10 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(Math.max(min, value - 1))}
         disabled={atMin}
-        style={[s.key, round, atMin && s.keyOff]}
+        style={[s.key, round, { backgroundColor: tone?.minusBg ?? KEY_BG }, atMin && s.keyOff]}
         hitSlop={8}
       >
-        <S k="minus" size={size} color={atMin ? OFF : (tone?.minusInk ?? ON)} />
+        <S k="minus" size={glyph} color={atMin ? OFF : (tone?.minusInk ?? ON)} />
       </Pressable>
     </View>
   );

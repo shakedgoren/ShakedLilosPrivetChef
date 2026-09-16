@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_START } from '../theme/rtl';
 import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -414,7 +415,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 13,
     fontSize: 15,
-    textAlign: 'right',
+    textAlign: TEXT_START,
     color: surface.ink,
   },
 

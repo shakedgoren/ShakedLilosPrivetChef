@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TextInput } from 'react-native';
 import { DEFAULT_FAMILY, fontFor } from './fonts';
-import { IS_RTL } from './rtl';
+import { IS_RTL, TEXT_START } from './rtl';
 
 /**
  * מחיל את Assistant ואת כיוון הכתיבה על כל טקסט באפליקציה.
@@ -45,7 +45,7 @@ export function applyFonts() {
       const base = {
         fontFamily: fontFor(flat?.fontWeight),
         writingDirection: IS_RTL ? ('rtl' as const) : ('ltr' as const),
-        textAlign: IS_RTL ? ('right' as const) : ('left' as const),
+        textAlign: TEXT_START,
       };
       const withFont = { ...props, style: [base, props.style] };
       return original.call(this, withFont, ref);

@@ -128,8 +128,14 @@ export const SYM = {
   phone: { ios: 'phone.fill', other: 'call', motion: 'bounceWhole' },
   /* ⚠ wiggle אינו בגשר · התנועה כאן שלי */
   lock: { ios: 'lock.fill', other: 'lock', motion: 'wiggle' },
-  plus: { ios: 'plus.arrow.trianglehead.counterclockwise', other: 'add', motion: 'bounceWhole' },
-  minus: { ios: 'minus.arrow.trianglehead.clockwise', other: 'remove', motion: 'bounceWhole' },
+  /**
+   * ⚠ **שונה ב-16.9.2026** · היו plus/minus.arrow.trianglehead, שמגיעים
+   * עם טבעת משלהם. שקד ראתה את זה בתוך העיגול הקיים, לא אהבה, וביקשה
+   * לחזור לעיגול עם אייקון פשוט בתוכו. ⚠ `drawOn` אינו קיים בגשר של
+   * אקספו — התנועה כאן נכתבה ב-Animated והיא קירוב.
+   */
+  plus: { ios: 'plus', other: 'add', motion: 'drawOn' },
+  minus: { ios: 'minus', other: 'remove', motion: 'drawOn' },
   faceId: { ios: 'faceid', other: 'face', motion: 'bounceWhole' },
   male: { ios: 'mustache', other: 'face', motion: 'bounceWhole' },
   female: { ios: 'mouth', other: 'mood', motion: 'bounceWhole' },

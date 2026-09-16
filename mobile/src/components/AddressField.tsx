@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_START } from '../theme/rtl';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   MIN_QUERY,
@@ -167,8 +168,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: 'right', color: surface.ink },
-  house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: 'right', color: surface.ink },
+  input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: TEXT_START, color: surface.ink },
+  house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: TEXT_START, color: surface.ink },
 
   list: {
     borderRadius: 14,

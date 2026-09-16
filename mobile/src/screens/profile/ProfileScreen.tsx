@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { TEXT_START } from '../../theme/rtl';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import { apiEnabled, API_URL } from '../../api/config';
@@ -593,7 +594,7 @@ const s = StyleSheet.create({
     color: surface.ink,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    textAlign: 'right',
+    textAlign: TEXT_START,
   },
   hint: { fontSize: 11.5, color: '#B95349' },
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { TEXT_END } from '../../theme/rtl';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import { COLS, EMPTY_LABEL, EMPTY_SUB } from '../../data/adminShopping';
@@ -113,7 +114,7 @@ const s = StyleSheet.create({
   colName: { flex: 1 },
   colPrice: { width: W_PRICE, textAlign: 'center' },
   colQty: { width: W_QTY, textAlign: 'center' },
-  colSum: { width: W_SUM, textAlign: 'left' },
+  colSum: { width: W_SUM, textAlign: TEXT_END },
 
   row: {
     flexDirection: 'row',
