@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { S } from './Sym';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -57,8 +58,20 @@ const ARROW = 30;
 const ARROW_GLYPH = 15;
 const ARROW_STROKE = 2.4;
 
-/** ⚠ ב-RTL ההיסט האופקי שלילי · הכיוון נגזר מ-rtl.ts ולא מהמדידה */
-const DIR = IS_RTL ? -1 : 1;
+/**
+ * סימן ההיסט האופקי בגלילה · **שונה בין הפלטפורמות**.
+ *
+ * ⚠ **תוקן ב-16 בספטמבר 2026** · כאן היה `IS_RTL ? -1 : 1`, כלומר
+ * שלילי בכל מקום תחת RTL. זה נכון ל-`react-native-web` בלבד. במכשיר
+ * ההיסט **חיובי** — נמדד בסימולטור עם מד על המסך בקרוסלת פינת השף:
+ * `x=352 w=352`, אחרי החלקה אחת מהתמונה הראשונה.
+ *
+ * מה זה שבר: כל `scrollTo` עם ערך שלילי נחתך לאפס במכשיר. לכן
+ * ההצבה ההתחלתית של הקרוסלה המעגלית נחתה על השכפול במקום על
+ * התמונה האמיתית, והקפיצה השקטה בקצה לא עבדה כלל — כלומר
+ * **הקרוסלה נשארה לא מעגלית**, בדיוק כפי ששקד דיווחה פעם שנייה.
+ */
+const DIR = Platform.OS === 'web' && IS_RTL ? -1 : 1;
 
 /** קרוסלת תמונות אופקית · בית, שף וטאבון */
 export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: Props) {
