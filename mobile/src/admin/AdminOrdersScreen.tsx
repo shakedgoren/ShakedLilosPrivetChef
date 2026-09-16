@@ -86,9 +86,12 @@ export function AdminOrdersScreen() {
               isOpen={admin.open === x.i}
               note={admin.noteOf(x.i)}
               flow={admin.flow}
+              paymentStatus={admin.paymentOf(x.i)}
               onToggle={() => admin.toggle(x.i)}
               onAdvance={() => admin.advance(x.i)}
               onCancel={() => admin.askCancel(x.i)}
+              onMarkPaid={() => admin.markPaid(x.i, 'paid')}
+              onMarkUnpaid={() => admin.markPaid(x.i, 'pending')}
             />
           ))
         )}

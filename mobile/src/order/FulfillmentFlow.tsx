@@ -2,8 +2,8 @@ import React from 'react';
 import { TEXT_START } from '../theme/rtl';
 import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { CITIES, PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Linking } from 'react-native';
+import { CITIES, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -17,6 +17,16 @@ import { PayLogo } from '../components/PayLogo';
 import { OptionGrid } from '../components/OptionGrid';
 import { TILE_SHADOW } from '../theme/glass';
 import { ContinueButton } from '../components/ContinueButton';
+import {
+  LAUNCH_PAYMENTS,
+  PAY_BIT,
+  PAY_CASH,
+  PAY_PAYBOX,
+  channelFor,
+  payHref,
+  type PayConfig,
+} from './payments';
+import { getPayConfig } from '../api/payments';
 
 /* מידות שורות המסירה · מהקנבס · האיסוף בגוון הקטגוריה, המשלוח אפור */
 const OPTION_ICON = 21;
@@ -234,6 +244,8 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
  * ⚠ **עכשיו אלה הלוגואים האמיתיים** · שקד שלחה את ארבעת הקבצים
  * (16 בספטמבר 2026). קודם היו כאן אייקוני קו ניטרליים דווקא מפני
  * שאלה סימני מסחר; היא ביקשה את הלוגואים עצמם. ראו `PayLogo.tsx`.
+ * ⚠ **אפל פיי ירד מהבחירה** · השקה בביט / פייבוקס / מזומן בלבד,
+ * בלי סליקת אשראי. הרשימה ב-`LAUNCH_PAYMENTS`, לא ב-`shared.PAYMENTS`.
  */
 
 const PAY_GLYPH = 24;
@@ -241,6 +253,18 @@ const PAY_COLS = 2;
 /** ⚠ בהיר יותר · המסגרת הרגילה היא 0.16, ושקד ביקשה שתהיה עדינה */
 const PAY_EDGE = 'rgba(130,112,162,0.1)';
 const PAY_EDGE_ON = 0.3;
+
+function usePayConfig(): PayConfig {
+  const [cfg, setCfg] = React.useState<PayConfig>(() => ({
+    methods: LAUNCH_PAYMENTS,
+    bit: { link: '', phone: '' },
+    paybox: { link: '', phone: '' },
+  }));
+  React.useEffect(() => {
+    void getPayConfig().then(setCfg);
+  }, []);
+  return cfg;
+}
 
 function PayStep({
   busy,
@@ -256,22 +280,69 @@ function PayStep({
   return (
     <View style={s.stack}>
       <OptionGrid cols={PAY_COLS} gap={9}>
-        {PAYMENTS.map((p) => {
-          const payLogo = p;
-          return (
-            <Pressable
-              key={p}
-              disabled={busy}
-              onPress={() => onPay(p)}
-              style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
-            >
-              <PayLogo method={payLogo} size={PAY_GLYPH} />
-              <Text style={s.payLabel}>{p}</Text>
-            </Pressable>
-          );
-        })}
+        {LAUNCH_PAYMENTS.map((p) => (
+          <Pressable
+            key={p}
+            disabled={busy}
+            onPress={() => onPay(p)}
+            style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
+          >
+            <PayLogo method={p} size={PAY_GLYPH} />
+            <Text style={s.payLabel}>{p}</Text>
+          </Pressable>
+        ))}
       </OptionGrid>
       {err ? <Text style={s.toast}>{err}</Text> : null}
+    </View>
+  );
+}
+
+function payCopy(pay: string, isDelivery: boolean): { title: string; body: string } {
+  if (pay === PAY_BIT) return { title: COPY.payBitTitle, body: COPY.payBitBody };
+  if (pay === PAY_PAYBOX) return { title: COPY.payPayboxTitle, body: COPY.payPayboxBody };
+  if (pay === PAY_CASH) {
+    return {
+      title: PAY_CASH,
+      body: isDelivery ? COPY.payCashDelivery : COPY.payCashPickup,
+    };
+  }
+  return { title: pay, body: '' };
+}
+
+function PayHow({ pay, isDelivery, accent }: { pay: string; isDelivery: boolean; accent: Accent }) {
+  const cfg = usePayConfig();
+  const { title, body } = payCopy(pay, isDelivery);
+  const channel = channelFor(pay, cfg);
+  const href = channel ? payHref(channel) : '';
+  const hasLink = Boolean(channel && channel.link.trim());
+  const hasPhone = Boolean(channel && channel.phone.trim());
+  const digital = pay === PAY_BIT || pay === PAY_PAYBOX;
+
+  const open = (url: string) => {
+    if (!url) return;
+    void Linking.openURL(url).catch(() => undefined);
+  };
+
+  return (
+    <View style={[s.payHow, { borderColor: a(accent.rgb, 0.24), backgroundColor: a(accent.rgb, 0.08) }]}>
+      <View style={s.payHowHead}>
+        <PayLogo method={pay} size={22} />
+        <Text style={[s.payHowTitle, { color: accent.deep }]}>{title}</Text>
+      </View>
+      {body ? <Text style={s.payHowBody}>{body}</Text> : null}
+      <Text style={s.payHowStatus}>{COPY.payPending}</Text>
+      {digital && !href ? <Text style={s.payHowHint}>{COPY.payLinkMissing}</Text> : null}
+      {hasLink ? (
+        <Pressable onPress={() => open(href)} style={[s.payHowCta, { backgroundColor: a(accent.rgb, 0.18) }]}>
+          <Text style={[s.payHowCtaText, { color: accent.deep }]}>{COPY.payOpenLink}</Text>
+        </Pressable>
+      ) : hasPhone ? (
+        <Pressable onPress={() => open(href)} style={[s.payHowCta, { backgroundColor: a(accent.rgb, 0.18) }]}>
+          <Text style={[s.payHowCtaText, { color: accent.deep }]}>
+            {COPY.payCall} · {channel?.phone}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -294,6 +365,8 @@ function ConfirmStep({
   return (
     <View style={s.stack}>
       <Text style={s.doneNote}>נשלח לך אישור לוואטסאפ</Text>
+
+      {f.pay ? <PayHow pay={f.pay} isDelivery={f.isDelivery} accent={accent} /> : null}
 
       <View style={s.summary}>
         <Text style={s.summaryHead}>סיכום ההזמנה</Text>
@@ -326,7 +399,7 @@ function ConfirmStep({
         <View style={s.rule} />
         <Row k={f.isDelivery ? 'משלוח' : 'איסוף עצמי'} v={f.time ?? ''} />
         {f.isDelivery && <Row k="כתובת" v={`${f.addr}, ${f.city}`} />}
-        <Row k="תשלום" v={f.pay ?? ''} />
+        <Row k="תשלום" v={f.pay ? `${f.pay} · ${COPY.payPending}` : COPY.payPending} />
         <Row k="מועד" v={SALE_DATE} />
 
         {!f.isDelivery && <PickupMaps rgb={accent.rgb} ink={accent.deep} />}
@@ -421,6 +494,26 @@ const s = StyleSheet.create({
     paddingHorizontal: 8,
   },
   payLabel: { fontSize: 14, fontWeight: '500', color: surface.ink, textAlign: 'center' },
+
+  payHow: {
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: space.md,
+    gap: 8,
+  },
+  payHowHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  payHowTitle: { flex: 1, fontSize: 15.5, fontWeight: '600' },
+  payHowBody: { fontSize: type.body, color: surface.inkSoft, lineHeight: 20 },
+  payHowStatus: { fontSize: type.label, fontWeight: '600', color: '#A65E2A' },
+  payHowHint: { fontSize: type.label, color: surface.muted, lineHeight: 18 },
+  payHowCta: {
+    height: 40,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  payHowCtaText: { fontSize: 13.5, fontWeight: '600' },
 
   cta: { height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
 

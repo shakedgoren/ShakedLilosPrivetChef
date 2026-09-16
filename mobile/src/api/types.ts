@@ -32,6 +32,9 @@ export type Order = {
   city: string;
   address: string;
   pay: string;
+  /** pending · paid · waived · אישור ידני, בלי סליקה */
+  paymentStatus?: 'pending' | 'paid' | 'waived' | string;
+  paidAt?: string | null;
   saleDate: string;
   via: string;
   lines: OrderLine[];
@@ -58,6 +61,8 @@ export type AdminCard = {
   sum: number;
   ship: string;
   pay: string;
+  paymentStatus?: 'pending' | 'paid' | 'waived' | string;
+  paidAt?: string | null;
   via: string;
   hrs: number;
   cancelReason: string;

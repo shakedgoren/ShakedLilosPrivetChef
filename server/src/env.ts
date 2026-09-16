@@ -46,6 +46,12 @@ export const env = {
   },
   resetDebug: process.env.RESET_DEBUG === '1',
 
+  /* תשלום ידני · ביט / פייבוקס. בלי קישור הלקוחה רואה הוראות בלי כפתור מעבר */
+  bitPayLink: (process.env.BIT_PAY_LINK ?? '').trim(),
+  bitPayPhone: (process.env.BIT_PAY_PHONE ?? '').trim(),
+  payboxPayLink: (process.env.PAYBOX_PAY_LINK ?? '').trim(),
+  payboxPayPhone: (process.env.PAYBOX_PAY_PHONE ?? '').trim(),
+
   /* שליחת מייל · איפוס סיסמה. בלי אלה לא נשלח כלום (ראו mail/mailer.ts) */
   smtpHost: process.env.SMTP_HOST ?? '',
   smtpPort: Number(process.env.SMTP_PORT ?? 587),

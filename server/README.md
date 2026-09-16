@@ -5,7 +5,7 @@ API ב-Node/TypeScript + Express + Prisma.
 
 המחירים והקטלוג מגיעים מ-`mobile/src/data/` — לא מוקלדים שוב.
 
-אין מע״מ (עוסק פטור). סליקה מחוץ להיקף. וואטסאפ Cloud API אופציונלי — בלי משתני הסביבה השרת רץ כרגיל.
+אין מע״מ (עוסק פטור). **אין סליקת אשראי** — ביט, פייבוקס ומזומן בלבד, עם אישור ידני במסך הניהול. וואטסאפ Cloud API אופציונלי — בלי משתני הסביבה השרת רץ כרגיל.
 
 ## הרצה מקומית · SQLite (ברירת מחדל)
 
@@ -89,6 +89,7 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | GET/PATCH | `/users/me` | JWT | פרופיל: name, phone, address, city, וגם `image`/`imageBase64` ב-PATCH |
 | POST | `/users/me/photo` | JWT | תמונת פרופיל · multipart שדה `photo` או JSON `{ image: "data:image/png;base64,..." }` |
 | GET | `/uploads/avatars/:file` | כולם | קובץ תמונה שנשמר מקומית |
+| GET | `/payments` | כולם | קישורי ביט/פייבוקס ומספרי טלפון לתשלום ידני |
 | POST | `/orders` | JWT · שף גם בלי | יצירת הזמנה. השרת מחשב מחיר מהקטלוג ובודק יום מכירה/מכסות |
 | POST | `/orders/:id/reorder` | JWT | להזמין שוב · אותם פריטים, מחיר מהקטלוג, יום מכירה הבא הפתוח |
 | GET | `/orders` | JWT | ההזמנות שלי |
@@ -96,6 +97,7 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | GET | `/admin/orders` | admin | `?status=&category=&q=` |
 | GET | `/admin/orders/:id` | admin | |
 | PATCH | `/admin/orders/:id/status` | admin | `{ status, reason?, note? }` |
+| PATCH | `/admin/orders/:id/payment` | admin | `{ status: "paid" \| "pending" \| "waived" }` · סימון ידני שהתשלום התקבל |
 | POST | `/admin/orders` | admin | הזמנה ידנית (קוסקוס / שישניצל לפי התפריט ב-admin) |
 | GET | `/admin/customers` | admin | לקוחות עם ספירת הזמנות, מחזור והערה |
 | PATCH | `/admin/customers/:id` | admin | `{ note }` |
@@ -142,11 +144,40 @@ Authorization: `Bearer <token>`.
 משלוח: `ship: "deliv"`, `city` מתוך רשימת הערים, `address` עם מספר בית.
 חלונות הזמן נלקחים מאותם קבצי fulfillment שבאפליקציה.
 
+`pay` בהזמנת לקוחה: **ביט / פייבוקס / מזומן** בלבד. אפל פיי, אשראי וכרטיס נדחים (`400 invalid_order`). בקשת הצעה לשף נשמרת בלי אמצעי תשלום.
+
+### תשלום ידני · ביט / פייבוקס / מזומן
+
+אין סליקת אשראי בהשקה. הלקוחה בוחרת אמצעי, רואה הוראות (וקישור אם הוגדר), ושקד מסמנת במסך הניהול שהכסף הגיע.
+
+ב-`.env` של השרת:
+
+```
+BIT_PAY_LINK="https://www.bitpay.co.il/app/me/..."
+BIT_PAY_PHONE="0500000000"
+PAYBOX_PAY_LINK="https://links.payboxapp.com/..."
+PAYBOX_PAY_PHONE=""
+```
+
+`GET /payments` מחזיר את הקישורים לאפליקציה (בלי הזדהות). בלי קישור הלקוחה רואה הוראות בלבד.
+
+גיבוי באפליקציה (מצב דמה / בלי שרת): `EXPO_PUBLIC_BIT_PAY_LINK`, `EXPO_PUBLIC_PAYBOX_PAY_LINK`, ואותם `*_PHONE`.
+
+סימון ידני:
+
+```
+PATCH /admin/orders/:id/payment
+Authorization: Bearer <admin>
+{ "status": "paid" }
+```
+
+`pending` מחזיר לטרם שולם (`paidAt` מתרוקן). `waived` = ללא חיוב. לקוחה לא יכולה לשנות.
+
 הזמנת **קוסקוס / שישניצל** נדחית אם היום חסום, סגור, לא יום המכירה של הקטגוריה, או אם המכסה מלאה (כולל מנות שירדו). שף / ספיישל / פירות לא כפופים ליום שלישי/שישי, אבל יום חסום בלי חריגה נחסם גם להם.
 
 קודים: `day_closed` · `day_blocked` · `category_closed` · `quota_exceeded` (409) · הודעה בעברית בשדה `message`.
 
-הזמנות ידניות מ-`POST /admin/orders` **לא** עוברות את בדיקת המכסות (המנהלת יכולה לחרוג).
+הזמנות ידניות מ-`POST /admin/orders` **לא** עוברות את בדיקת המכסות (המנהלת יכולה לחרוג). `pay` אופציונלי (ברירת מחדל `טרם שולם`); אשראי נדחה גם שם.
 
 ### להזמין שוב (`POST /orders/:id/reorder`)
 
@@ -245,7 +276,7 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
 
 - `User` — role `customer` | `admin`, email ו/או phone, googleId, name, address, city, note, avatarUrl
 - `PasswordReset` — טוקן לשעה
-- `Order` — category, status, fulfillment, `itemsJson` / `detailsJson`, `itemsTotal` + `shippingFee` + `total` (בלי מע״מ)
+- `Order` — category, status, fulfillment, `pay`, `paymentStatus` (`pending` \| `paid` \| `waived`), `paidAt`, `itemsJson` / `detailsJson`, `itemsTotal` + `shippingFee` + `total` (בלי מע״מ)
 - `SaleDay` — תאריך, חסימה, קטגוריה, פתוח/סגור, מכסות, מנות שירדו
 - `SupplyItem` — מלאי לוגיסטי
 - `ShoppingList` — רשימת קניות פתוחה או סגורה (היסטוריה)

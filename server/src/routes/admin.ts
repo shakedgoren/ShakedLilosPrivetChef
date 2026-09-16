@@ -12,6 +12,7 @@ import { qtyOfOrder } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CATS, MONTHS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { notifyLater, notifyOrderConfirmed, notifyOrderStatus } from '../whatsapp/notify.ts';
+import { assertAdminPay, parsePaymentStatus, paymentPatch } from '../orders/payment.ts';
 
 export const adminRouter = Router();
 
@@ -102,6 +103,28 @@ adminRouter.patch('/orders/:id/status', async (req, res, next) => {
   }
 });
 
+/**
+ * אישור תשלום ידני · אין סליקה. שקד מסמנת שהכסף הגיע בביט/פייבוקס/מזומן.
+ * `paid` · התקבל · `pending` · טרם שולם · `waived` · בלי חיוב.
+ */
+adminRouter.patch('/orders/:id/payment', async (req, res, next) => {
+  try {
+    const body = z.object({ status: z.string().min(1) }).parse(req.body);
+    const status = parsePaymentStatus(body.status);
+    const id = String(req.params.id ?? '');
+    const row = await prisma.order.findUnique({ where: { id } });
+    if (!row) throw notFound();
+
+    const updated = await prisma.order.update({
+      where: { id: row.id },
+      data: paymentPatch(status),
+    });
+    res.json({ order: serializeOrder(updated), card: serializeAdminCard(updated) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 adminRouter.post('/orders', async (req, res, next) => {
   try {
     const body = z
@@ -123,6 +146,8 @@ adminRouter.post('/orders', async (req, res, next) => {
       .parse(req.body);
 
     if (!isPhone(body.phone)) throw badRequest('invalid_phone');
+    const pay = body.pay?.trim() || 'טרם שולם';
+    assertAdminPay(pay);
 
     const ship = body.ship === 'pickup' ? 'self' : body.ship;
     const quote = quoteAdminDraft({
@@ -147,7 +172,7 @@ adminRouter.post('/orders', async (req, res, next) => {
         time: body.time.trim(),
         city: ship === 'deliv' ? (body.area ?? '') : '',
         address: ship === 'deliv' ? (body.address ?? '').trim() : '',
-        pay: body.pay?.trim() || 'טרם שולם',
+        pay,
         saleDate: defaultSaleDate(body.saleDate),
         via: '',
         itemsJson: JSON.stringify(quote.lines),

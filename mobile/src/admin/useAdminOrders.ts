@@ -10,7 +10,7 @@ import {
 } from '../data/adminOrders';
 import { KITCHEN_FLOW } from '../api/status';
 import { apiEnabled } from '../api/config';
-import { adminCreateOrder, adminListOrders, adminSetStatus } from '../api/orders';
+import { adminCreateOrder, adminListOrders, adminSetPayment, adminSetStatus } from '../api/orders';
 import { adminListCustomers } from '../api/admin';
 import { useNav } from '../navigation/store';
 import type { AdminCard } from '../api/types';
@@ -34,7 +34,12 @@ const EMPTY_CX: CancelNote = { reason: '', note: '' };
 /** שעות ההזמנה שנפתחת ידנית · יום שלם קדימה, אף פעם לא ביטול מאוחר */
 const MANUAL_ORDER_HOURS = 24;
 
-const cardToOrder = (c: AdminCard): AdminOrder => ({
+export type AdminOrderRow = AdminOrder & {
+  paymentStatus?: string;
+  paidAt?: string | null;
+};
+
+const cardToOrder = (c: AdminCard): AdminOrderRow => ({
   id: c.id,
   key: c.key,
   status: c.status,
@@ -49,6 +54,8 @@ const cardToOrder = (c: AdminCard): AdminOrder => ({
   hrs: c.hrs,
   cancelReason: c.cancelReason,
   cancelNote: c.cancelNote,
+  paymentStatus: c.paymentStatus ?? 'pending',
+  paidAt: c.paidAt ?? null,
 });
 
 export function useAdminOrders() {
@@ -60,9 +67,10 @@ export function useAdminOrders() {
   const [open, setOpen] = useState(-1);
   /* הזמנות שקודמו ידנית · מפתח → מצב חדש */
   const [moved, setMoved] = useState<Record<number, string>>({});
+  const [payMoved, setPayMoved] = useState<Record<number, string>>({});
   const [notes, setNotes] = useState<Record<number, CancelNote>>({});
-  const [extra, setExtra] = useState<AdminOrder[]>([]);
-  const [remote, setRemote] = useState<AdminOrder[]>([]);
+  const [extra, setExtra] = useState<AdminOrderRow[]>([]);
+  const [remote, setRemote] = useState<AdminOrderRow[]>([]);
   const [book, setBook] = useState(BOOK);
   const [newOpen, setNewOpen] = useState(false);
   const [draft, setDraft] = useState<NewOrderDraft>(EMPTY_DRAFT);
@@ -269,7 +277,7 @@ export function useAdminOrders() {
       setDraft(EMPTY_DRAFT);
       return;
     }
-    const row: AdminOrder = {
+    const row: AdminOrderRow = {
       key: draft.cat,
       who: trim(draft.name),
       phone: draft.phone,
@@ -281,18 +289,41 @@ export function useAdminOrders() {
       hrs: MANUAL_ORDER_HOURS,
       via: '',
       status: FLOW[0],
+      paymentStatus: 'pending',
     };
     setExtra((e) => [...e, row]);
     setNewOpen(false);
     setDraft(EMPTY_DRAFT);
   }, [draft, live, reload]);
 
+  const paymentOf = useCallback(
+    (i: number) => {
+      if (payMoved[i]) return payMoved[i];
+      const o = allOrders[i] as AdminOrderRow | undefined;
+      return o?.paymentStatus ?? 'pending';
+    },
+    [payMoved, allOrders],
+  );
+
+  const markPaid = useCallback(
+    (i: number, status: 'paid' | 'pending') => {
+      if (live) {
+        const id = allOrders[i]?.id;
+        if (!id) return;
+        void adminSetPayment(id, status).then(reload).catch(() => undefined);
+        return;
+      }
+      setPayMoved((m) => ({ ...m, [i]: status }));
+    },
+    [live, allOrders, reload],
+  );
+
   const isKnown = book.some((b) => norm(b.phone) === norm(draft.phone));
 
   return {
     tab, open, moved, notes, extra, newOpen, draft, cancelling, cx, pop,
-    allOrders, statusOf, noteOf, isKnown, cancelReady, live, flow, book,
-    toggle, pickTab, advance,
+    allOrders, statusOf, noteOf, paymentOf, isKnown, cancelReady, live, flow, book,
+    toggle, pickTab, advance, markPaid,
     askCancel, closeCancel, setCxField, doCancel,
     openNew: useCallback(() => setNewOpen(true), []),
     closeNew: useCallback(() => setNewOpen(false), []),

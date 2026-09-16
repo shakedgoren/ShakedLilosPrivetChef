@@ -98,6 +98,9 @@ model Order {
   city         String   @default("")
   address      String   @default("")
   pay          String
+  /// pending · paid · waived · אישור ידני במסך הניהול (אין סליקה)
+  paymentStatus String  @default("pending")
+  paidAt       DateTime?
   saleDate     String   @default("")
   via          String   @default("")
   itemsJson    String

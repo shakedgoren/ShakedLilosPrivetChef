@@ -3,6 +3,7 @@ import { S } from '../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { CANCELLED, FLOW, HUES, LATE_FEE, LATE_HOURS, TONE, type AdminOrder } from '../data/adminOrders';
+import { COPY, payDetail } from '../api/copy';
 import type { CancelNote } from './useAdminOrders';
 type Props = {
   order: AdminOrder;
@@ -10,18 +11,21 @@ type Props = {
   isOpen: boolean;
   note?: CancelNote;
   flow?: string[];
+  paymentStatus?: string;
   onToggle: () => void;
   onAdvance: () => void;
   onCancel: () => void;
+  onMarkPaid?: () => void;
+  onMarkUnpaid?: () => void;
 };
 
 /** שורות הפירוט שנפתחות מתחת לכרטיס */
-function detailRows(order: AdminOrder, cancelled: boolean, note?: CancelNote) {
+function detailRows(order: AdminOrder, cancelled: boolean, note?: CancelNote, paymentStatus?: string) {
   const rows = [
     { k: 'טלפון', v: order.phone },
     { k: 'הפריטים', v: order.items },
     { k: 'איסוף / משלוח', v: order.ship },
-    { k: 'תשלום', v: order.pay },
+    { k: 'תשלום', v: payDetail(order.pay, paymentStatus) },
   ];
   if (!cancelled) return rows;
 
@@ -32,13 +36,26 @@ function detailRows(order: AdminOrder, cancelled: boolean, note?: CancelNote) {
   ]);
 }
 
-export function OrderCard({ order, status, isOpen, note, flow = FLOW, onToggle, onAdvance, onCancel }: Props) {
+export function OrderCard({
+  order,
+  status,
+  isOpen,
+  note,
+  flow = FLOW,
+  paymentStatus,
+  onToggle,
+  onAdvance,
+  onCancel,
+  onMarkPaid,
+  onMarkUnpaid,
+}: Props) {
   const hue = HUES[order.key];
   const cancelled = status === CANCELLED;
   const tone = TONE[status] ?? TONE['חדשה'];
   const step = flow.indexOf(status);
   const isLast = step >= flow.length - 1;
-  const rows = detailRows(order, cancelled, note);
+  const rows = detailRows(order, cancelled, note, paymentStatus);
+  const paid = paymentStatus === 'paid' || paymentStatus === 'waived';
 
   return (
     <Pressable onPress={onToggle} style={[s.card, { borderRightColor: hue.hue }]}>
@@ -47,6 +64,15 @@ export function OrderCard({ order, status, isOpen, note, flow = FLOW, onToggle, 
           <View style={s.chipRow}>
             <View style={[s.statusChip, { backgroundColor: tone.bg }]}>
               <Text style={[s.statusText, { color: tone.fg }]}>{status}</Text>
+            </View>
+            <View style={[s.statusChip, { backgroundColor: paid ? 'rgba(78,138,100,0.14)' : 'rgba(166,94,42,0.14)' }]}>
+              <Text style={[s.statusText, { color: paid ? '#4E8A64' : '#A65E2A' }]}>
+                {paymentStatus === 'paid'
+                  ? COPY.payPaid
+                  : paymentStatus === 'waived'
+                    ? COPY.payWaived
+                    : COPY.payPending}
+              </Text>
             </View>
             {order.via ? <Text style={s.source}>{order.via}</Text> : null}
           </View>
@@ -69,6 +95,17 @@ export function OrderCard({ order, status, isOpen, note, flow = FLOW, onToggle, 
               <Text style={s.rowVal}>{r.v}</Text>
             </View>
           ))}
+
+          {onMarkPaid || onMarkUnpaid ? (
+            <Pressable
+              onPress={paid ? onMarkUnpaid : onMarkPaid}
+              style={[s.payBtn, { backgroundColor: paid ? 'rgba(130,112,162,0.09)' : 'rgba(78,138,100,0.14)' }]}
+            >
+              <Text style={[s.payBtnText, { color: paid ? '#6E6478' : '#2C5A3E' }]}>
+                {paid ? COPY.payMarkUnpaid : COPY.payMarkPaid}
+              </Text>
+            </Pressable>
+          ) : null}
 
           <View style={s.actions}>
             <View style={s.call}>
@@ -140,6 +177,13 @@ const s = StyleSheet.create({
   callText: { fontSize: 12.5, fontWeight: '600', color: surface.inkSoft },
   next: { flex: 2, height: 38, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   nextText: { fontSize: 12.5, fontWeight: '600' },
+  payBtn: {
+    height: 38,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  payBtnText: { fontSize: 12.5, fontWeight: '600' },
   kill: {
     width: 38,
     height: 38,

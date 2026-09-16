@@ -49,6 +49,12 @@ export const adminSetStatus = (id: string, status: string, extra?: { reason?: st
     body: { status, ...extra },
   });
 
+export const adminSetPayment = (id: string, status: 'pending' | 'paid' | 'waived' | string) =>
+  api<{ order: Order; card: AdminCard }>(`/admin/orders/${id}/payment`, {
+    method: 'PATCH',
+    body: { status },
+  });
+
 export const adminCreateOrder = (body: {
   category: string;
   name: string;

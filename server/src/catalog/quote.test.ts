@@ -225,3 +225,12 @@ test('דמי משלוח · 20 בתוך יבנה, 60 מחוצה לה', () => {
   assert.equal(deliveryFee('deliv', 'יבנה'), 20);
   assert.equal(deliveryFee('deliv', 'ראשון לציון'), 60);
 });
+
+test('תשלום · אפל פיי ואשראי נדחים ב-assertFulfillment', () => {
+  const base = { ship: 'self' as const, time: '12:00', city: 'יבנה', address: 'נופר 25' };
+  assert.doesNotThrow(() => assertFulfillment('cous', 2, { ...base, pay: 'ביט' }));
+  assert.doesNotThrow(() => assertFulfillment('cous', 2, { ...base, pay: 'פייבוקס' }));
+  assert.doesNotThrow(() => assertFulfillment('cous', 2, { ...base, pay: 'מזומן' }));
+  assert.throws(() => assertFulfillment('cous', 2, { ...base, pay: 'אפל פיי' }));
+  assert.throws(() => assertFulfillment('cous', 2, { ...base, pay: 'אשראי' }));
+});
