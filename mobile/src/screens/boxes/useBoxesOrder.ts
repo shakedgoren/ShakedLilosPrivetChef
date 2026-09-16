@@ -89,10 +89,21 @@ export function useBoxesOrder() {
     return box.sections.every((s) => sectionReady(s, picks));
   }, [box, picks, total]);
 
-  /** שורות הסיכום · המארז ואחריו הבחירות שנעשו בו */
+  /**
+   * שורות הסיכום · המארז ואחריו הבחירות שנעשו בו.
+   *
+   * ⚠ **״קחו כמה שבא לכם״ יוצא מהכלל · 16 בספטמבר 2026** · בקשה של
+   * שקד: ״אם זה קחו כמה שבא לכם הוא לא צריך להיכנס בתוך סיכום
+   * ההזמנה, אלא מה שהזמנו בתוך הקטגוריה הזו נכנס, לעומת שאר
+   * הקטגוריות שזה מארזים מוכנים מראש״.
+   *
+   * ההיגיון: מארז מוכן מראש **הוא** הפריט, ולכן שמו הוא השורה.
+   * ב״קחו כמה שבא לכם״ אין מארז — יש חלות וסלטים שנבחרו אחד אחד,
+   * ולכן הם השורות. הסכום הכולל מוצג בשורת הסה״כ בכל מקרה.
+   */
   const lines: OrderLine[] = useMemo(() => {
     if (!box) return [];
-    const out: OrderLine[] = [{ qty: 1, name: box.name, sum: total }];
+    const out: OrderLine[] = box.key === 'free' ? [] : [{ qty: 1, name: box.name, sum: total }];
     box.sections.forEach((s) => {
       if (!s.id || isDormant(s, picks)) return;
       const v = picks[s.id];

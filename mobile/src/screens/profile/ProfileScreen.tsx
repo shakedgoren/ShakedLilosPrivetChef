@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { INPUT_START } from '../../theme/rtl';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, View, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '../../ui/text';
 import { apiEnabled, API_URL } from '../../api/config';
 import { changePassword, updateMe, uploadAvatar } from '../../api/auth';
@@ -116,7 +117,12 @@ function fromUser(user: PublicUser | null) {
 type Form = ReturnType<typeof fromUser>;
 
 /** אזור אישי · מקביל ל-Profile.dc.html, נשמר ב-PATCH /users/me */
+/** כפתור השמירה · מיושר לכפתור ההתנתקות שבצד השני של המסך */
+const SAVE_SIZE = 38;
+const SAVE_TOP = 22;
+
 export function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, signOut, setUser } = useNav();
   const seed = useMemo(() => fromUser(user), [user]);
   const [form, setForm] = useState<Form>(seed);
@@ -286,9 +292,29 @@ export function ProfileScreen() {
 
   return (
     <View style={s.page}>
+      {/* ⚠ **ממורכזת · 16 בספטמבר 2026** · בקשה של שקד. `head` היה
+          `space-between` עם ילד יחיד, ולכן הכותרת נצמדה לקצה. */}
       <View style={s.head}>
         <Text style={s.title}>אזור אישי</Text>
       </View>
+
+      {/* ⚠ **כפתור השמירה עלה לכאן · 16 בספטמבר 2026** · בקשה של
+          שקד: ״הכפתור שמור לא צריך להיות שם תוריד אותו במקום זה
+          תוסיף כפתור עם V מימין לאיזור אישי באותה השורה של הכפתור
+          התנתקות״.
+          ⚠ **מיקום מוחלט עם `insets.top`** · בדיוק כמו
+          `LogoutButton` שבצד השני. מיקום מוחלט אינו מכבד את ריפוד
+          האזור הבטוח, ובלי ההיסט הכפתור היה יושב על השעון. */}
+      <Pressable
+        onPress={() => void save()}
+        disabled={!canSave}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="שמירת הפרטים"
+        style={[s.saveFab, { top: insets.top + SAVE_TOP }, canSave ? s.saveOn : s.saveOff]}
+      >
+        <S k="check" size={18} color={canSave ? '#43307A' : '#A79FB2'} />
+      </Pressable>
 
       <ScrollView
         contentContainerStyle={[s.body, s.scrollPadNav]}
@@ -414,13 +440,6 @@ export function ProfileScreen() {
         ) : null}
         {err ? <Text style={s.err}>{err}</Text> : null}
 
-        <Pressable
-          onPress={() => void save()}
-          disabled={!canSave}
-          style={[s.save, canSave ? s.saveOn : s.saveOff]}
-        >
-          <Text style={[s.saveText, { color: canSave ? '#43307A' : '#A79FB2' }]}>שמור</Text>
-        </Pressable>
       </ScrollView>
 
       <Modal visible={passOpen} transparent animationType="fade" onRequestClose={() => setPassOpen(false)}>
@@ -521,7 +540,7 @@ const s = StyleSheet.create({
   head: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 6,
     paddingBottom: 16,
   },
@@ -659,18 +678,19 @@ const s = StyleSheet.create({
   savedText: { fontSize: 12.5, fontWeight: '600', color: '#4E8A64' },
   err: { fontSize: 12.5, color: '#B95349', textAlign: 'center' },
 
-  save: {
-    alignSelf: 'center',
-    marginTop: 4,
-    height: 44,
-    paddingHorizontal: 34,
-    borderRadius: radius.pill,
+  /* ⚠ מיושר לכפתור ההתנתקות שבצד השני · אותן מידות בדיוק */
+  saveFab: {
+    position: 'absolute',
+    right: 18,
+    width: SAVE_SIZE,
+    height: SAVE_SIZE,
+    borderRadius: SAVE_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 4,
   },
   saveOn: { backgroundColor: '#B9A4E4' },
   saveOff: { backgroundColor: 'rgba(130,112,162,0.11)' },
-  saveText: { fontSize: 15, fontWeight: '600' },
 
   scrim: {
     flex: 1,

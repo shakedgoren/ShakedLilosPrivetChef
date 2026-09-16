@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Linking, PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
@@ -15,6 +15,29 @@ import { iconOrbShadow } from '../theme/glass';
 const ARROW_GLYPH = 15;
 const ARROW_STROKE = 2.4;
 
+/**
+ * פתיחת הכתובת בוויז.
+ *
+ * ⚠ **בקשה של שקד (16 בספטמבר 2026)** · ״צריך להוסיף אייקון של וויז
+ * ליד הכתובת שפותח את הכתובת נופר 25 יבנה בוויז״.
+ *
+ * ⚠ **קישור אוניברסלי ולא `waze://`** · הסכמה הפרטית נכשלת בשקט
+ * כשהאפליקציה לא מותקנת; הקישור הזה פותח את האפליקציה אם היא
+ * קיימת, ואחרת את האתר.
+ *
+ * ⚠ **האייקון אינו הלוגו של וויז** · אין לנו את הקובץ, ולוגו הוא
+ * סימן מסחר שאסור לצייר בקירוב. כאן משמש אייקון האיסוף של
+ * האפליקציה לצד המילה ״וויז״. אם שקד תשלח את הקובץ הוא יוחלף,
+ * בדיוק כפי שנעשה בלוגואים של אמצעי התשלום.
+ */
+const WAZE_URL = `https://waze.com/ul?q=${encodeURIComponent(PICKUP.address)}&navigate=yes`;
+const openWaze = () => {
+  void Linking.openURL(WAZE_URL).catch(() => undefined);
+};
+
+/** מרחק אצבע מינימלי שנחשב החלקה · מתחת לזה זו לחיצה */
+const SWIPE_PX = 28;
+
 export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const [i, setI] = useState(0);
   const maps = PICKUP.maps;
@@ -22,12 +45,48 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
 
   const step = (d: number) => setI((n) => (n + d + maps.length) % maps.length);
 
+  /**
+   * ⚠ **החלקה בין המפות · בקשה של שקד** · ״צריך לאפשר לעבור בין
+   * התמונות עם החלקה של אצבע״. עד עכשיו היו רק חצים ונקודות.
+   *
+   * ⚠ **`onMoveShouldSet` ולא `onStartShouldSet`** · תפיסה בהתחלה
+   * הייתה בולעת את הלחיצה שמגדילה את המפה, ו״להגדיל את התמונות״
+   * היא חלק מאותה בקשה. כך אצבע שזזה גוררת, ואצבע שנחה מגדילה.
+   *
+   * ⚠ הכיוון · תחת RTL גרירה שמאלה היא ״הבא״, כמו בשאר הקרוסלות.
+   */
+  const pan = React.useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_e, g) =>
+          Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 6,
+        onPanResponderRelease: (_e, g) => {
+          if (Math.abs(g.dx) < SWIPE_PX) return;
+          step(g.dx < 0 ? 1 : -1);
+        },
+      }),
+    [maps.length],
+  );
+
   return (
     <View style={s.wrap}>
-      <Text style={s.address}>כתובת : {PICKUP.address}</Text>
+      <View style={s.addressRow}>
+        <Text style={s.address}>כתובת : {PICKUP.address}</Text>
+        <Pressable
+          onPress={openWaze}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="פתיחת הכתובת בוויז"
+          style={[s.waze, { backgroundColor: a(rgb, 0.12) }]}
+        >
+          <S k="pickup" size={15} color={ink} />
+          <Text style={[s.wazeText, { color: ink }]}>וויז</Text>
+        </Pressable>
+      </View>
       <Text style={s.note}>{PICKUP.note}</Text>
 
-      <View style={s.frame}>
+      <View style={s.frame} {...pan.panHandlers}>
+        {/* ⚠ `zoom` דלוק · לחיצה מגדילה את המפה במסך מלא · בקשת שקד */}
         <Photo name={cur.file} rgb={rgb} style={s.map} />
 
         <View style={s.badge}>
@@ -66,7 +125,17 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
 
 const s = StyleSheet.create({
   wrap: { gap: space.sm, marginTop: space.md },
-  address: { fontSize: 17, fontWeight: '600', color: surface.ink, lineHeight: 23 },
+  addressRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  address: { flexShrink: 1, fontSize: 17, fontWeight: '600', color: surface.ink, lineHeight: 23 },
+  waze: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
+    borderRadius: radius.pill,
+  },
+  wazeText: { fontSize: 12.5, fontWeight: '700' },
   note: { fontSize: type.label, color: surface.muted, lineHeight: 19 },
   frame: {
     width: '100%',

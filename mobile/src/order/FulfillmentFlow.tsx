@@ -1,9 +1,9 @@
 import React from 'react';
 import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
-import { PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
+import { PAYMENTS, SALE_DATE, deliveryFee, payLinkFor, shippingFeeFor } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -105,7 +105,7 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
               (f.isDelivery ? <SlotsStep f={f} accent={accent} /> : <ClockStep f={f} accent={accent} />)}
             {f.step === STEP.address && <AddressStep f={f} accent={accent} />}
             {f.step === STEP.pay && (
-              <PayStep busy={busy} err={err} onPay={onPay} accent={accent} />
+              <PayStep busy={busy} err={err} onPay={onPay} accent={accent} due={total + deliveryFee(f.ship ?? '', f.city)} />
             )}
             {(f.step === STEP.done || f.step === STEP.confirm) && (
               <ConfirmStep f={f} lines={lines} total={total} accent={accent} onHome={onHome} />
@@ -314,12 +314,27 @@ function PayStep({
   err,
   onPay,
   accent,
+  due,
 }: {
   busy: boolean;
   err: string;
   onPay: (p: string) => void;
   accent: Accent;
+  /** הסכום לתשלום · נשלח לאפליקציית התשלום */
+  due: number;
 }) {
+  /**
+   * ⚠ **מעבר לאפליקציית התשלום · בקשה של שקד** · ״בלחיצה על ביט או
+   * פייבוקס זה צריך להעביר לאפליקציה עם הסכום המתאים״.
+   * ⚠ הקישורים עדיין ריקים · ראו `PAY_LINKS` ב-`data/shared.ts`.
+   * כל עוד הם ריקים הלחיצה מתנהגת כפי שהתנהגה עד היום.
+   */
+  const choose = (p: string) => {
+    const link = payLinkFor(p, due);
+    if (link) void Linking.openURL(link).catch(() => undefined);
+    onPay(p);
+  };
+
   return (
     <View style={s.stack}>
       <OptionGrid cols={PAY_COLS} gap={9}>
@@ -329,7 +344,7 @@ function PayStep({
             <Pressable
               key={p}
               disabled={busy}
-              onPress={() => onPay(p)}
+              onPress={() => choose(p)}
               style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
             >
               <PayLogo method={payLogo} size={PAY_GLYPH} />
