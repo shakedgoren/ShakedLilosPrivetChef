@@ -45,10 +45,7 @@ const s = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#3C3054',
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: '0px 2px 4px rgba(60,48,84,0.35)',
   },
   /* בקנבס הידית מתחילה בקצה ההתחלתי (right ב-RTL) וזזה 22px החוצה */
   knobOn: { start: 3 },

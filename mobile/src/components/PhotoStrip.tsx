@@ -72,9 +72,39 @@ export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: 
   const [pageW, setPageW] = useState(0);
   const strip = useRef<ScrollView>(null);
   const win = useWindowDimensions();
-  if (names.length === 0) return null;
 
   const paging = tileWidth == null;
+  /**
+   * ⚠ **קרוסלה מעגלית · 16 בספטמבר 2026** · שקד דיווחה ש״הקרוסלה
+   * בפינת השף לא מעגלית״. החצים כן עברו במעגל (`jump` עושה modulo),
+   * אבל **האצבע לא** — `ScrollView` נעצר בתמונה האחרונה, ואי אפשר
+   * היה להחליק ממנה לראשונה.
+   *
+   * הפתרון הוא שכפול קצוות: לפני הראשונה נשתלת האחרונה, ואחרי
+   * האחרונה נשתלת הראשונה. כשנוחתים על אחת המשוכפלות קופצים בשקט
+   * (`animated: false`) אל האמיתית שמקבילה לה, וזה בלתי נראה כי
+   * התמונה זהה.
+   *
+   * ⚠ רק במצב דפים · ברצועות עם `tileWidth` רואים כמה אריחים יחד,
+   * ושכפול היה נראה על המסך.
+   */
+  const loop = paging && names.length > 1;
+
+  /**
+   * מציבים את הגלילה על התמונה האמיתית הראשונה, אחרי שהרוחב נמדד.
+   * ⚠ **לפני ה-`return` המוקדם** · הוק אחרי `return` מותנה משנה את
+   * סדר ההוקים בין רינדורים, וריאקט קורס ברגע שהרשימה מתמלאת.
+   */
+  React.useEffect(() => {
+    if (!loop || !pageW) return;
+    strip.current?.scrollTo({ x: DIR * (iRef.current + 1) * pageW, animated: false });
+  }, [loop, pageW]);
+
+  if (names.length === 0) return null;
+
+  const slides = loop ? [names[names.length - 1], ...names, names[0]] : names;
+  /** מאיזה מקום בגלילה מתחיל האינדקס האמיתי */
+  const offset = loop ? 1 : 0;
   /* המדידה גוברת כשהיא מגיעה · אחרת רוחב המסך פחות הריפודים */
   const shotW = tileWidth ?? (pageW || Math.max(0, win.width - inset));
   /* מרווח בין מרכזי אריחים · זהה לחישוב ב-onMomentumScrollEnd */
@@ -92,7 +122,7 @@ export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: 
     setI(next);
     /* ⚠ בלי animated · גלילה חלקה אל היסט שלילי ב-RTL נחסמת בדפדפן
        והמסלול נשאר במקום. השמה ישירה עובדת, ונמדדה. */
-    if (pitch) strip.current?.scrollTo({ x: DIR * next * pitch, animated: false });
+    if (pitch) strip.current?.scrollTo({ x: DIR * (next + offset) * pitch, animated: false });
   };
 
   return (
@@ -116,18 +146,30 @@ export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: 
           if (!w) return;
           /* ⚠ ב-RTL ההיסט יוצא שלילי · בלי abs האינדקס נחתך ל-0 */
           const k = Math.round(Math.abs(e.nativeEvent.contentOffset.x) / w);
-          iRef.current = k;
-          setI(k);
+          if (!loop) {
+            iRef.current = k;
+            setI(k);
+            return;
+          }
+          /* נחתנו על משוכפלת · קופצים בשקט אל האמיתית המקבילה */
+          const last = names.length;
+          const real = k === 0 ? last - 1 : k === last + 1 ? 0 : k - 1;
+          if (k === 0 || k === last + 1) {
+            strip.current?.scrollTo({ x: DIR * (real + 1) * w, animated: false });
+          }
+          iRef.current = real;
+          setI(real);
         }}
       >
-        {names.map((name) => (
+        {slides.map((name, k) => (
           /**
            * ⚠ `zoom={false}` · שקד ביקשה שבקרוסלת פינת השף לא תהיה
            * הגדלה בלחיצה, ושהשם יופיע על התמונה עצמה במקום.
            */
           /* ⚠ `overflow: hidden` ופינה · בלעדיהם המסגרת עוגלה
-             והתמונה עצמה נשארה מרובעת בפינות */
-          <View key={name} style={[s.tile, { width: shotW }]}>
+             והתמונה עצמה נשארה מרובעת בפינות
+             ⚠ המפתח לפי המיקום ולא לפי השם · במצב מעגלי יש שמות כפולים */
+          <View key={`${k}-${name}`} style={[s.tile, { width: shotW }]}>
             <Photo
               name={name}
               rgb={rgb}

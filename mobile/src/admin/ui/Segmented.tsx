@@ -39,10 +39,7 @@ const s = StyleSheet.create({
   tab: { flex: 1, height: 38, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
   tabOn: {
     backgroundColor: '#FFFFFF',
-    shadowColor: '#605084',
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: '0px 2px 5px rgba(96,80,132,0.3)',
   },
   label: { fontSize: 13.5 },
 });

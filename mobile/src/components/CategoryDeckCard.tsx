@@ -5,6 +5,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from './Photo';
 import { a, radius, stopOf, surface } from '../theme/tokens';
 import type { Category } from '../data/categories';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * כרטיס הקטגוריה בדף הבית · ״דק״.
@@ -79,7 +80,7 @@ export function CategoryDeckCard({ item, active, onPress }: Props) {
       <Photo name={PHOTO_BY_CATEGORY[item.key]} rgb={item.rgb} style={s.shot} zoom={false} />
 
       {/* המסך הרך · מתחת לכתב, מעל התמונה */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
         <Defs>
           <LinearGradient id={`${id}v`} x1="0" y1="0" x2="0" y2="1">
             {VEIL_STOPS.map((v) => (

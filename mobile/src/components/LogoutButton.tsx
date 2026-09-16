@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useNav } from '../navigation/store';
 import { LogoutConfirm } from './LogoutConfirm';
 import { S } from './Sym';
+import { PASS_TOUCH } from '../theme/pointerEvents';
 
 /**
  * כפתור ההתנתקות · מרחף בפינה השמאלית העליונה בכל רחבי האפליקציה.
@@ -45,7 +46,7 @@ export function LogoutButton() {
   if (screen.startsWith('admin')) return null;
 
   return (
-    <View style={s.slot} pointerEvents="box-none">
+    <View style={[s.slot, PASS_TOUCH]}>
       <Pressable onPress={() => setOpen(true)} style={s.button} hitSlop={8}>
         <S k="logout" size={GLYPH} />
       </Pressable>

@@ -3,6 +3,7 @@ import { S } from '../components/Sym';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
+import { PASS_TOUCH } from '../theme/pointerEvents';
 
 /**
  * ״האישור נשלח ללקוח״.
@@ -27,7 +28,7 @@ export function SentNotice({ who, onClose }: Props) {
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <View style={s.card} pointerEvents="box-none">
+      <View style={[s.card, PASS_TOUCH]}>
         <View style={s.disc}>
           <S k="check" size={28} color="#FFFFFF" />
         </View>

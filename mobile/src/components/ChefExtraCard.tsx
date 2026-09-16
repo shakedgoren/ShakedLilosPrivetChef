@@ -6,6 +6,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from './Photo';
 import { extraPhoto } from '../data/extraPhotos';
 import { hues } from '../theme/tokens';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * כרטיס שדרוג · `isCards` בקנבס (`Chef.dc.html`).
@@ -73,7 +74,7 @@ export function ChefExtraCard({ name, desc, badge, on, one = false, onPress }: P
 
       <View style={s.veil}>
         {/* המדרג · ל-React Native אין linear-gradient בסגנון, ולכן SVG */}
-        <Svg style={s.fade} width="100%" height="100%" pointerEvents="none">
+        <Svg style={[s.fade, NO_TOUCH]} width="100%" height="100%">
           <Defs>
             <LinearGradient id="extraFade" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0%" stopColor={SAND} stopOpacity={0} />

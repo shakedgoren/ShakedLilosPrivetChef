@@ -6,6 +6,7 @@ import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
 import { Mail, Send } from './LoginIcons';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * שתי היריעות של מסך ההתחברות · התנאים ואיפוס הסיסמה.
@@ -95,7 +96,7 @@ export function ForgotSheet({
           autoCapitalize="none"
           style={s.input}
         />
-        <View style={s.fieldIcon} pointerEvents="none">
+        <View style={[s.fieldIcon, NO_TOUCH]}>
           <Mail size={18} color="#9A93A6" />
         </View>
       </View>

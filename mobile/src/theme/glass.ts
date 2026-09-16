@@ -8,7 +8,19 @@
  * הערימה עוברת כמו שהיא. הגרדיאנטים עצמם מצוירים ב-react-native-svg
  * (`GlassFill` / `Orb`) כי `backgroundImage` עדיין לא נתמך בכל הפלטפורמות.
  */
+import type { TextStyle } from 'react-native';
 import { a } from './tokens';
+
+/**
+ * צל טקסט · `textShadow` אחד במקום שלושת ה-`textShadow*` הישנים.
+ *
+ * ⚠ **העטיפה נחוצה בגלל הטיפוסים** · הריצה של ריאקט־נייטיב כבר
+ * דורשת את הצורה החדשה ומדפיסה אזהרה על הישנה, אבל ההגדרות של
+ * TypeScript עדיין לא מכירות את `textShadow` ב-`TextStyle`. עד
+ * שיתעדכנו, ההמרה יושבת כאן במקום אחד ולא מפוזרת בקבצים.
+ */
+export const textShadow = (value: string): TextStyle =>
+  ({ textShadow: value }) as unknown as TextStyle;
 
 /** שכבת הזכוכית הבסיסית · linear-gradient(150deg …) בקנבס */
 export const GLASS_STOPS = ['rgba(255,255,255,0.66)', 'rgba(255,255,255,0.40)'] as const;

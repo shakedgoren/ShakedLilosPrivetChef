@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { stopOf } from '../theme/tokens';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * מילוי הזכוכית · הגרדיאנט הלבן שמתחת לכל משטח.
@@ -21,7 +22,7 @@ export function GlassFill({ stops, radius }: FillProps) {
   const id = React.useMemo(nextId, []);
   const step = stops.length > 1 ? 1 / (stops.length - 1) : 1;
   return (
-    <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, { borderRadius: radius }]} pointerEvents="none">
+    <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, { borderRadius: radius }, NO_TOUCH]}>
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0.5" y2="0.866">
           {stops.map((c, i) => (

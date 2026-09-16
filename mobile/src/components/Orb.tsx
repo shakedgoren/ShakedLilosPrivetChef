@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { a, stopOf } from '../theme/tokens';
 import { HALO_BLUR, HALO_INSET } from '../theme/glass';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * הבועה הצבעונית · שורת הקטגוריות בדף הבית והכרטיס בקרוסלה.
@@ -43,11 +44,10 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
     <View style={{ width: size, height: size }}>
       {halo > 0 && (
         <View
-          pointerEvents="none"
           style={[
             styles.halo,
             { inset: HALO_INSET, borderRadius: r - HALO_INSET, filter: `blur(${HALO_BLUR}px)` },
-          ]}
+          , NO_TOUCH]}
         >
           <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
             <Defs>
@@ -90,7 +90,6 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
       {/* נקודת האור · אליפסה קטנה ומטושטשת, המידות מהקנבס באחוזים */}
       {spark && (
         <View
-          pointerEvents="none"
           style={[
             styles.spark,
             {
@@ -101,11 +100,11 @@ export function Orb({ rgb, size, shadow, tint, halo, spark = true, children }: P
               borderRadius: size * 0.12,
               filter: 'blur(2.5px)',
             },
-          ]}
+          , NO_TOUCH]}
         />
       )}
 
-      <View style={styles.center} pointerEvents="none">
+      <View style={[styles.center, NO_TOUCH]}>
         {children}
       </View>
     </View>

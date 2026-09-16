@@ -34,8 +34,9 @@ export function OptionGrid({ cols, gap = 8, maxWidth, style, pointerEvents, chil
 
   return (
     <View
-      pointerEvents={pointerEvents}
-      style={[s.wrap, { gap }, maxWidth != null && { maxWidth }, style]}
+      /* ⚠ `pointerEvents` בסגנון ולא כ-prop · ה-prop הוצא משימוש
+         ומדפיס אזהרה בכל רינדור. 16 בספטמבר 2026. */
+      style={[s.wrap, { gap }, maxWidth != null && { maxWidth }, style, { pointerEvents }]}
     >
       {kids.map((kid, i) => (
         /* העטיפה מחזיקה את הרוחב · הילד נמתח אליה, כך שגם כרטיס עם

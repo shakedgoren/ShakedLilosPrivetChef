@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { NO_TOUCH } from '../../theme/pointerEvents';
 
 /**
  * ערכת ״לבנדר״ · שפת הצבע של דף הניהול.
@@ -51,7 +52,7 @@ const DOTS = [
 
 export function NightSky() {
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, NO_TOUCH]}>
       {DOTS.map(([x, y, r], i) => (
         <View
           key={i}

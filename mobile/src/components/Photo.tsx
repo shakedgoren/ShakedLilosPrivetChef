@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { photo } from '../data/photos';
 import { Image as ImageIcon } from '../icons';
-import { useLightbox } from './Lightbox';
+import { useLightbox } from './lightboxContext';
 import { photoTitle } from '../data/photoTitles';
 import { a, deepRgbOf } from '../theme/tokens';
 

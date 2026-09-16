@@ -28,6 +28,7 @@ import { maskPhone, normalizePhone } from '../lib/phone';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
 import { iconOrbShadow } from '../theme/glass';
+import { NO_TOUCH } from '../theme/pointerEvents';
 import {
   BRAND,
   BRAND_SUB,
@@ -130,7 +131,7 @@ function Field({
           autoCapitalize="none"
           style={[s.input, locked && s.inputLocked, eye && s.inputEye]}
         />
-        <View style={s.fieldIcon} pointerEvents="none">
+        <View style={[s.fieldIcon, NO_TOUCH]}>
           {sym ? <S k={sym} size={18} /> : Icon ? <Icon size={18} color="#9A93A6" strokeWidth={1.8} /> : null}
         </View>
         {eye ? (

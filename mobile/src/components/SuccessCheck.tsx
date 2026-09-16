@@ -3,6 +3,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { DRAW, EASE_OUT, EASE_POP, POP, RING, useReducedMotion } from '../theme/motion';
 import { a, stopOf } from '../theme/tokens';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * וי ההצלחה · במסך הסיום של פינת השף.
@@ -89,7 +90,7 @@ export function SuccessCheck({ accent }: { accent: Accent }) {
 
   return (
     <View style={s.badge}>
-      <View style={s.halo} pointerEvents="none">
+      <View style={[s.halo, NO_TOUCH]}>
         <Svg width="100%" height="100%">
           <Defs>
             <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">

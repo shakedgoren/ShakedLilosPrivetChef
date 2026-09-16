@@ -21,6 +21,7 @@ import {
   CTA_STOPS,
 } from '../theme/glass';
 import { a, radius, stopOf } from '../theme/tokens';
+import { NO_TOUCH } from '../theme/pointerEvents';
 /**
  * הכפתור הסגול הראשי · הגרדיאנט, ערימת הצללים ועיגול החץ
  * מגיעים אחד לאחד מכפתור ״מתחילים את המסע״ ב-Guest.dc.html.
@@ -34,7 +35,12 @@ import { a, radius, stopOf } from '../theme/tokens';
  * ולכן זו מנוחה חדשה. זה **שינוי לעומת הקנבס**, ונובע ישירות
  * מהבקשה; אם שקד מעדיפה שהידית תישאר בשמאל צריך להפוך את הגרירה.
  */
-const W = 250;
+/**
+ * ⚠ **הרוחב ירד מ-250 ל-220** · שקד ביקשה ״מעט לצמצם את הרוחב״
+ * (16 בספטמבר 2026), אחרי שהכיתוב קוצר ל״להתחברות״ והכפתור נראה
+ * רחב מדי ביחס למילה אחת. `TRAVEL` נגזר מ-W ולכן הגרירה מתקצרת איתו.
+ */
+const W = 220;
 const H = 40;
 const KNOB = 32;
 const KNOB_INSET = 4;
@@ -194,7 +200,7 @@ export function PrimaryButton({ label, onPress }: Props) {
     <View style={s.wrap}>
       {/* ההילה · אותה שפה של הבועות בשורת הקטגוריות. בקנבס לכפתור
           יש רק צל עדין, ושקד ביקשה שיזהר כמו שאר הדף. */}
-      <View pointerEvents="none" style={s.glow}>
+      <View style={[s.glow, NO_TOUCH]}>
         <Svg width="100%" height="100%">
           <Defs>
             <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">
@@ -220,7 +226,7 @@ export function PrimaryButton({ label, onPress }: Props) {
           style={s.button}
           {...pan.panHandlers}
         >
-        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
           <Defs>
             {/* 104 מעלות ב-CSS · הווקטור (sin104, ‎-cos104) = (0.97, 0.24) */}
             <LinearGradient id={id} x1="0" y1="0" x2="0.97" y2="0.24">
@@ -234,8 +240,7 @@ export function PrimaryButton({ label, onPress }: Props) {
 
         {/* השובל · נכנס מימין ככל שהידית מתקדמת שמאלה */}
         <Animated.View
-          pointerEvents="none"
-          style={[s.trail, { transform: [{ translateX: trail }] }]}
+          style={[s.trail, { transform: [{ translateX: trail }] }, NO_TOUCH]}
         />
 
         <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>

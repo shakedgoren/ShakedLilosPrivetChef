@@ -7,6 +7,7 @@ import { cardEdge, cardOrbShadow, cardShadow } from '../theme/glass';
 import type { Category } from '../data/categories';
 import { Orb } from './Orb';
 import { Photo } from './Photo';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /** תמונת הקטגוריה · שם הקובץ מהטבלה של שקד */
 const PHOTO_BY_CATEGORY: Record<string, string> = {
@@ -68,7 +69,7 @@ export function CategoryCard({ item, active, dots, onPress }: Props) {
       ]}
     >
       {/* הזכוכית · לבן אלכסוני ומעליו נגיעת צבע מהפינה העליונה */}
-      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
         <Defs>
           <LinearGradient id={`${id}g`} x1="0" y1="0" x2="0.5" y2="0.866">
             <Stop offset="0" {...stopOf('rgba(255,255,255,0.5)')} />
@@ -90,7 +91,7 @@ export function CategoryCard({ item, active, dots, onPress }: Props) {
         <Text style={s.desc}>{item.desc}</Text>
 
         {/* הנקודות · מתחת לתיאור, כמו בקנבס */}
-        <View style={s.dots} pointerEvents="none">
+        <View style={[s.dots, NO_TOUCH]}>
           {dots.map((d, i) => (
             <View key={i} style={[s.dot, { width: d.w, backgroundColor: d.bg }]} />
           ))}
@@ -106,7 +107,6 @@ export function CategoryCard({ item, active, dots, onPress }: Props) {
         {BEADS.map((b, i) => (
           <View
             key={i}
-            pointerEvents="none"
             style={[
               s.bead,
               b,
@@ -117,7 +117,7 @@ export function CategoryCard({ item, active, dots, onPress }: Props) {
                 backgroundColor: a(item.rgb, 0.34),
                 boxShadow: `0 3px 6px -3px ${a(item.rgb, 0.6)}`,
               },
-            ]}
+            , NO_TOUCH]}
           />
         ))}
       </View>

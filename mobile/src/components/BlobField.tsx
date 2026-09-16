@@ -1,6 +1,7 @@
 import React from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Filter, FeGaussianBlur, G, Path } from 'react-native-svg';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * רקע הכתמים של מסך ההתחברות · ״שכבות״.
@@ -133,7 +134,7 @@ function LayerView({ layer, w, h }: { layer: Layer; w: number; h: number }) {
   const id = `g${layer.key}`;
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, style]} pointerEvents="none">
+    <Animated.View style={[StyleSheet.absoluteFill, style, NO_TOUCH]}>
       <Svg width={w} height={h}>
         <Defs>
           {GLOW_PASSES.map((g, i) => (
@@ -162,8 +163,7 @@ export function BlobField() {
 
   return (
     <View
-      style={s.field}
-      pointerEvents="none"
+      style={[s.field, NO_TOUCH]}
       onLayout={(e) => {
         const { width, height } = e.nativeEvent.layout;
         setSize({ w: Math.round(width), h: Math.round(height) });

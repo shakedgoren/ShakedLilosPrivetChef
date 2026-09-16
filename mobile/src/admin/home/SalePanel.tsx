@@ -5,6 +5,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { GlassCard } from './GlassCard';
 import { LAV, NightSky, SOFT_SHADOW } from './NightSky';
 import type { DishRow } from './useAdminHome';
+import { NO_TOUCH } from '../../theme/pointerEvents';
 
 /**
  * לוח יום המכירה · ״גלקסיה״ עם דיאגרמת ״מסלולים״.
@@ -167,7 +168,7 @@ export function SalePanel({
               );
             })}
           </Svg>
-          <View style={s.ringText} pointerEvents="none">
+          <View style={[s.ringText, NO_TOUCH]}>
             <Text style={s.ringPct}>{`${pct}%`}</Text>
             <Text style={s.ringNote}>נמכר</Text>
           </View>

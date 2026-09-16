@@ -15,6 +15,7 @@ import {
 } from '../../data/chef';
 import { a, hues, stopOf, surface } from '../../theme/tokens';
 import type { Picks } from './useChefOrder';
+import { NO_TOUCH } from '../../theme/pointerEvents';
 
 /**
  * מסך סיום בקשת ההצעה · ענף `isConfirm` ב-Chef.dc.html.
@@ -101,7 +102,7 @@ export function ChefConfirm({ pkg, picks, total, onHome }: Props) {
           },
         ]}
       >
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <View style={[StyleSheet.absoluteFill, NO_TOUCH]}>
           <Svg width="100%" height="100%">
             <Defs>
               {WASH.map((w, i) => (

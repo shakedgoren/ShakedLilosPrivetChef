@@ -4,6 +4,7 @@ import { Modal, Pressable, StyleSheet, View, type ViewStyle } from 'react-native
 import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import { iconOrbShadow } from '../../theme/glass';
+import { PASS_TOUCH } from '../../theme/pointerEvents';
 type Props = {
   title: string;
   sub?: string;
@@ -24,7 +25,7 @@ export function Sheet({ title, sub, onClose, children, style, centerTitle = fals
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <View style={[s.card, style]} pointerEvents="box-none">
+      <View style={[s.card, style, PASS_TOUCH]}>
         <View style={s.head}>
           {/* ⚠ **מרווח מראה** · כדי שהכותרת תשב במרכז **הכרטיס**
               ולא במרכז השטח שנשאר לצד כפתור הסגירה. ניסיתי קודם
@@ -64,11 +65,8 @@ const s = StyleSheet.create({
     borderRadius: 28,
     padding: 18,
     backgroundColor: '#FEFCFB',
-    shadowColor: '#3C3054',
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 20 },
     elevation: 12,
+    boxShadow: '0px 20px 30px rgba(60,48,84,0.4)',
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   headText: { flex: 1, gap: 2 },

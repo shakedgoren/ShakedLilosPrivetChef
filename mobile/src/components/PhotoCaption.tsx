@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { textShadow } from '../theme/glass';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * שם התמונה כשכבה על התמונה עצמה · ממורכז לרוחב ולגובה.
@@ -37,7 +39,7 @@ export function PhotoCaption({ text, size = 13, align = 'center' }: Props) {
   const top = align === 'top';
 
   return (
-    <View style={[s.wrap, top && s.wrapTop]} pointerEvents="none">
+    <View style={[s.wrap, top && s.wrapTop, NO_TOUCH]}>
       {top ? (
         <Svg width="100%" height={FADE_H} style={s.fade}>
           <Defs>
@@ -73,8 +75,8 @@ const s = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
-    textShadowColor: SHADOW,
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 6,
+    /* ⚠ textShadow אחד במקום שלושת ה-textShadow* · אלה הוצאו משימוש
+       והדפיסו אזהרה שהצטברה לבאנר השחור. 16 בספטמבר 2026. */
+    ...textShadow(`0px 1px 6px ${SHADOW}`),
   },
 });

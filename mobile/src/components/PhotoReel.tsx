@@ -4,8 +4,9 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { HOME_PHOTOS } from '../data/photos';
 import { IS_RTL } from '../theme/rtl';
 import { Photo } from './Photo';
-import { useLightboxOpen } from './Lightbox';
+import { useLightboxOpen } from './lightboxContext';
 import { photoTitle } from '../data/photoTitles';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /* המידות מהקנבס · אריח 116×140, מרווח 10, פינה 18 */
 const TILE_W = 116;
@@ -89,7 +90,7 @@ export function PhotoReel() {
               {/* ההגדלה מגיעה מ-Photo · הרצועה כבר לא מחזיקה חלונית משלה */}
               <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} title={photoTitle(sh)} />
               {/* הצללה בתחתית · כמו הגרדיאנט שעל האריח בקנבס */}
-              <Svg style={s.fade} width={TILE_W} height={TILE_H} pointerEvents="none">
+              <Svg style={[s.fade, NO_TOUCH]} width={TILE_W} height={TILE_H}>
                 <Defs>
                   <LinearGradient id="tileFade" x1="0" y1="0" x2="0" y2="1">
                     <Stop offset="52%" stopColor="#14100C" stopOpacity={0} />

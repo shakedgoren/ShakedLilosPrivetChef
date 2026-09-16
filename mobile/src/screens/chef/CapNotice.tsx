@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { radius } from '../../theme/tokens';
+import { PASS_TOUCH } from '../../theme/pointerEvents';
 
 /**
  * חלונית ״נבחרה הכמות המקסימלית״ · המידות מ-`Chef.dc.html` (noticeOpen):
@@ -14,7 +15,7 @@ export function CapNotice({ note, onClose }: { note: string | null; onClose: () 
   return (
     <Modal visible={!!note} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <View style={s.panel} pointerEvents="box-none">
+      <View style={[s.panel, PASS_TOUCH]}>
         <View style={s.card}>
           <Text style={s.head}>נבחרה הכמות המקסימלית,</Text>
           <Text style={s.body}>{note}</Text>

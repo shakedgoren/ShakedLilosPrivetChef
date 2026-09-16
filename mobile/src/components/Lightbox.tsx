@@ -1,11 +1,18 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { S } from './Sym';
 import { Image, Modal, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Text } from '../ui/text';
 import { BlurView } from 'expo-blur';
 import { Photo } from './Photo';
 import { photo } from '../data/photos';
-import { iconOrbShadow } from '../theme/glass';
+import {
+  LightboxCtx,
+  LightboxOpenCtx,
+  type LightboxApi,
+  type LightboxShot,
+} from './lightboxContext';
+import { iconOrbShadow, textShadow } from '../theme/glass';
+import { NO_TOUCH, PASS_TOUCH } from '../theme/pointerEvents';
 
 /**
  * הגדלת תמונה · כל תמונה באפליקציה נפתחת בלחיצה על רקע מטושטש.
@@ -80,27 +87,16 @@ function Scrim({ onPress }: { onPress: () => void }) {
   return (
     <>
       {/* ⚠ 7px בקנבס · `intensity` של expo-blur הוא 0–100 */}
-      <BlurView intensity={28} tint="dark" style={s.scrimFill} pointerEvents="none" />
+      <BlurView intensity={28} tint="dark" style={[s.scrimFill, NO_TOUCH]} />
       <Pressable style={s.scrim} onPress={onPress} />
     </>
   );
 }
 
-type Shot = { name: string; title?: string };
-type Ctx = { open: (name: string, title?: string) => void };
-
-const LightboxCtx = createContext<Ctx | null>(null);
-/**
- * האם יש תמונה פתוחה · הופרד מהפעולות בכוונה. `Photo` צורכת רק
- * את הפעולות, וכך עשרות מופעי Photo לא מרונדרים מחדש בכל פתיחה.
- * רק `PhotoReel` מקשיבה למצב, כדי לעצור את הריצה.
- */
-const LightboxOpenCtx = createContext(false);
-
 export function LightboxProvider({ children }: { children: React.ReactNode }) {
-  const [shot, setShot] = useState<Shot | null>(null);
+  const [shot, setShot] = useState<LightboxShot | null>(null);
   const close = useCallback(() => setShot(null), []);
-  const value = useMemo<Ctx>(
+  const value = useMemo<LightboxApi>(
     () => ({ open: (name: string, title?: string) => setShot({ name, title }) }),
     [],
   );
@@ -116,7 +112,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
         {shot && (
           <Modal visible transparent animationType="none" onRequestClose={close}>
             <Scrim onPress={close} />
-            <View style={s.stage} pointerEvents="box-none">
+            <View style={[s.stage, PASS_TOUCH]}>
               {/* שם התמונה · מעל התמונה במרכז, כמו `shotName` בקנבס.
                   מוצג רק כשיש שם ב-`photoTitles.ts`. */}
               {shot.title ? <Text style={s.title}>{shot.title}</Text> : null}
@@ -140,15 +136,8 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** מחזיר null כשאין Provider · כך Photo עובדת גם מחוץ לאפליקציה */
-export function useLightbox(): Ctx | null {
-  return useContext(LightboxCtx);
-}
-
-/** האם תמונה פתוחה כרגע · משמש את רצועת התמונות כדי לעצור */
-export function useLightboxOpen(): boolean {
-  return useContext(LightboxOpenCtx);
-}
+/* ⚠ `useLightbox` ו-`useLightboxOpen` עברו ל-`lightboxContext.tsx` ·
+   ראו את ההערה שם על מעגל הייבוא. */
 
 const s = StyleSheet.create({
   scrim: { position: 'absolute', inset: 0, backgroundColor: SCRIM },
@@ -168,9 +157,9 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 14,
-    textShadowColor: 'rgba(20,16,12,0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 10,
+    /* ⚠ textShadow אחד במקום שלושת ה-textShadow* · אלה הוצאו משימוש
+       והדפיסו אזהרה שהצטברה לבאנר השחור. 16 בספטמבר 2026. */
+    ...textShadow('0px 2px 10px rgba(20,16,12,0.5)'),
   },
   /**
    * ⚠ העטיפה חייבת מידות · Pressable בלי מידות מתכווץ לאפס.

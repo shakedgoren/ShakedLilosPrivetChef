@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { a, hues, stopOf, surface, type CategoryKey } from '../theme/tokens';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * שטיפת הרקע של המסך · הועתקה אחת לאחת מהקנבס.
@@ -39,7 +40,7 @@ export function PageWash({ categoryKey }: Props) {
   const blobs = BASE.map((b, i) => (swap && swap.at === i ? { ...b, rgb: swap.rgb, alpha: swap.alpha } : b));
 
   return (
-    <View style={styles.wash} pointerEvents="none">
+    <View style={[styles.wash, NO_TOUCH]}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           {blobs.map((b, i) => (

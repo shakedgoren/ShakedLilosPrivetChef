@@ -11,6 +11,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from '../../components/Photo';
 import { iconOrbShadow, TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { eventPhoto } from './eventPhotos';
+import { NO_TOUCH } from '../../theme/pointerEvents';
 
 const ACCENT = hues.box;
 
@@ -269,7 +270,7 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                   כלומר הכף מתמוססת כלפי מעלה והתמונה נראית דרכה.
                   ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
                   ב-SVG מתחת לטקסט. */}
-              <View style={st.footFill} pointerEvents="none">
+              <View style={[st.footFill, NO_TOUCH]}>
                 <Svg width="100%" height="100%">
                   <Defs>
                     <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">

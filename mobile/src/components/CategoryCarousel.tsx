@@ -4,6 +4,7 @@ import { CARD, CategoryDeckCard } from './CategoryDeckCard';
 import { DOT, DOT_OFF } from './CategoryCard';
 import { SWIPE_SURFACE, useCategorySwipe } from './useCategorySwipe';
 import type { Category } from '../data/categories';
+import { PASS_TOUCH } from '../theme/pointerEvents';
 
 /**
  * קרוסלת הקטגוריות בדף הבית · ״דק״.
@@ -156,7 +157,7 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
   });
 
   return (
-    <View style={[s.window, SWIPE_SURFACE]} pointerEvents="box-none">
+    <View style={[s.window, SWIPE_SURFACE, PASS_TOUCH]}>
       <View {...pan.panHandlers} style={s.deck}>
         {items.map((c, i) => {
           /* המרחק המחזורי מהמרכז · הדק מקיף */
@@ -166,11 +167,12 @@ export function CategoryCarousel({ items, active, onActiveChange, onOpen }: Prop
           return (
             <Animated.View
               key={c.key}
-              pointerEvents={t.on ? 'auto' : 'none'}
+              /* ⚠ `pointerEvents` בסגנון ולא כ-prop · ה-prop הוצא משימוש */
               style={[
                 s.slot,
                 !t.on && NEIGHBOUR_FILTER,
                 {
+                  pointerEvents: t.on ? ('auto' as const) : ('none' as const),
                   opacity: a.opacity,
                   zIndex: 5 - t.far,
                   transform: [{ translateX: a.x }, { scale: a.scale }],

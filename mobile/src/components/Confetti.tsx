@@ -1,5 +1,6 @@
 import React from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
  * הקונפטי של מסך הסיום · `CONFETTI` ו-`@keyframes cfall` בקנבס.
@@ -100,7 +101,7 @@ export function Confetti({ onDone }: { onDone?: () => void } = {}) {
   }, [onDone]);
 
   return (
-    <View style={s.layer} pointerEvents="none">
+    <View style={[s.layer, NO_TOUCH]}>
       {FLAKES.map((f, i) => (
         <Flake key={i} f={f} />
       ))}
