@@ -66,3 +66,8 @@ test('תוקף הקישור הוא עשר דקות · ההחלטה של שקד',
   assert.match(mail.text, /10 דקות/);
   assert.match(mail.html, /10 דקות/);
 });
+
+test('תוקף האיפוס במסד זהה למה שהמייל מבטיח · מקור אמת אחד', async () => {
+  const { RESET_TTL_MS } = await import('../whatsapp/otp.ts');
+  assert.equal(RESET_TTL_MS, RESET_TTL_MINUTES * 60 * 1000);
+});

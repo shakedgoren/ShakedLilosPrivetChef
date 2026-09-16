@@ -93,21 +93,26 @@ authRouter.post('/forgot-password', async (req, res, next) => {
         });
 
         /**
-         * ⚠ **החלטה של שקד** (16 בספטמבר 2026) · הקישור נשלח למייל.
-         * אם לחשבון אין כתובת מייל אין לאן לשלוח — התשובה ללקוחה
-         * נשארת זהה, והשרת רושם זאת ביומן בלבד.
+         * ⚠ **ערוץ אחד בלבד** · החלטה של שקד (16 בספטמבר 2026):
+         * ״שיישלח קישור לאיפוס למייל״.
+         *
+         * ⚠ **מה שהיה שבור כאן** · במיזוג של ענף הוואטסאפ נוסף בלוק
+         * OTP **מעל** בלוק המייל, ולכן בקשת איפוס אחת שלחה גם קישור
+         * למייל וגם קוד בוואטסאפ — שני קודים שונים בשני ערוצים,
+         * ושתי שורות ב-passwordReset לאותה בקשה. הלקוחה לא יכלה
+         * לדעת באיזה מהם להשתמש.
+         *
+         * לוואטסאפ יש כבר נתיב ייעודי משלו, `POST /auth/otp/request`,
+         * ולכן כאן נשאר המייל. חשבון בלי כתובת מייל נופל בחזרה
+         * לוואטסאפ, אחרת אין לו שום דרך לאפס.
          */
+        let via: 'otp' | 'token' = 'token';
         if (user.email) {
           const mail = buildResetEmail({ name: user.name, token, appUrl: env.appUrl });
           /* ⚠ לא `res` · זה שם התשובה של אקספרס, והצללה כאן מסוכנת */
           const sent = await sendMail({ to: user.email, ...mail });
           if (!sent.sent) console.warn(`[איפוס] המייל לא יצא · ${sent.reason}`);
-        } else {
-          console.warn(`[איפוס] למשתמש ${user.id} אין כתובת מייל · לא נשלח קישור`);
-        }
-
-        let via: 'otp' | 'token' = 'token';
-        if (user.phone) {
+        } else if (user.phone) {
           const otp = generateOtp();
           await prisma.passwordReset.create({
             data: { userId: user.id, token: otp, expiresAt: new Date(Date.now() + OTP_TTL_MS) },
@@ -118,6 +123,8 @@ authRouter.post('/forgot-password', async (req, res, next) => {
             console.error('whatsapp otp failed', err);
           }
           via = 'otp';
+        } else {
+          console.warn(`[איפוס] למשתמש ${user.id} אין מייל ואין טלפון · לא נשלח דבר`);
         }
 
         if (env.resetDebug) {

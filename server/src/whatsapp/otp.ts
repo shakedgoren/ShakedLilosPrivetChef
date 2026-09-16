@@ -1,9 +1,15 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import { prisma } from '../db.ts';
 import { notifyOtp } from './notify.ts';
+import { RESET_TTL_MINUTES } from '../mail/resetEmail.ts';
 
 export const OTP_TTL_MS = 10 * 60 * 1000;
-export const RESET_TTL_MS = 60 * 60 * 1000;
+/**
+ * ⚠ **מקור אמת אחד לתוקף האיפוס** · היה כאן קבוע נפרד של שעה,
+ * בזמן שהמייל הבטיח ללקוחה עשר דקות. שקד קבעה עשר, והנוסח במייל
+ * והתוקף במסד חייבים לבוא מאותו מספר.
+ */
+export const RESET_TTL_MS = RESET_TTL_MINUTES * 60 * 1000;
 
 export function generateOtp(): string {
   return String(randomInt(0, 1_000_000)).padStart(6, '0');
