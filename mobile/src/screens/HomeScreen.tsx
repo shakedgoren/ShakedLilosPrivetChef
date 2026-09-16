@@ -14,7 +14,7 @@ import { GLASS_SHADOW, GLASS_STOPS } from '../theme/glass';
 import { useNav, type Screen } from '../navigation/store';
 import { SaleAlert } from '../components/SaleAlert';
 import { apiEnabled } from '../api/config';
-import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
+import { listNotifications, markNotificationSeen, saleDayStatus, type SaleNotification } from '../api/orders';
 
 /**
  * הכיתוב על כפתור הכניסה · שקד ביקשה את הנוסח הזה.
@@ -43,12 +43,21 @@ const RAIL_GAP = 26;
  */
 const HOME_PAD_NAV = BAR_BOTTOM_WITH_NAV - REEL_BOTTOM;
 
-const NEXT_SALE = {
-  label: 'שלישי 25.8 · קוסקוס',
-  stock: 'ניתן להזמין',
-  screen: 'cous' as Screen,
-  open: true,
-};
+/**
+ * ⚠ **שורת המכירה הקרובה · תוקנה ב-16 בספטמבר 2026.**
+ *
+ * שקד דיווחה: דף הבית מציג ״שלישי של הקוסקוס · ניתן להזמין״, וברגע
+ * שנכנסים להזמנה נאמר שעדיין אי אפשר. הסיבה: **השורה הזאת הייתה
+ * קבועה בקוד**, כולל המילים ״ניתן להזמין״, בעוד שהשער האמיתי
+ * (`useSaleGate`) שואל את השרת ומקבל תשובה אחרת.
+ *
+ * עכשיו שני המקומות שואלים **את אותו מקור** — `saleDayStatus`.
+ * ⚠ עד שהתשובה חוזרת, ובכל מצב שבו אין שרת, השורה **אינה מבטיחה
+ * שאפשר להזמין** ואינה לחיצה. עדיף לא להראות כלום מלהבטיח ולשקר.
+ */
+const SALE_CATEGORY = 'cous' as Screen;
+/** מה שכתוב כשיום המכירה פתוח · הנוסח של הקנבס */
+const SALE_OPEN_TEXT = 'ניתן להזמין';
 
 /**
  * דף הבית · משמש גם לפני ההתחברות וגם אחריה.
@@ -58,6 +67,23 @@ const NEXT_SALE = {
 export function HomeScreen() {
   const { loggedIn, go } = useNav();
   const [active, setActive] = useState(0);
+  /** יום המכירה הקרוב · מהשרת, לא מקובע */
+  const [sale, setSale] = useState<{ label: string; open: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!loggedIn || !apiEnabled) return;
+    let live = true;
+    void saleDayStatus(SALE_CATEGORY)
+      .then((d) => {
+        if (!live) return;
+        /* ⚠ הכיתוב מגיע מהשרת · `message` הוא מה שהוא אומר על היום */
+        setSale({ label: d.message || d.date, open: d.open });
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [loggedIn]);
 
   /**
    * ⚠ ההתראות של ״תזכירו לי״ · שקד החליטה שהתזכורת מגיעה כהתראה
@@ -108,19 +134,20 @@ export function HomeScreen() {
         />
       ))}
 
-      {loggedIn && (
-        <Pressable
-          disabled={!NEXT_SALE.open}
-          onPress={() => go(NEXT_SALE.screen)}
-          style={s.sale}
-        >
+      {loggedIn && sale ? (
+        <Pressable disabled={!sale.open} onPress={() => go(SALE_CATEGORY)} style={s.sale}>
           <GlassFill stops={GLASS_STOPS} radius={radius.field} />
-          <Text style={s.saleTitle}>{NEXT_SALE.label}</Text>
+          <Text style={s.saleTitle}>{sale.label}</Text>
           <View style={s.grow} />
-          <View style={s.dot} />
-          <Text style={s.saleStock}>{NEXT_SALE.stock}</Text>
+          {/* ⚠ הנקודה והכיתוב רק כשפתוח באמת · ראו את ההערה למעלה */}
+          {sale.open ? (
+            <>
+              <View style={s.dot} />
+              <Text style={s.saleStock}>{SALE_OPEN_TEXT}</Text>
+            </>
+          ) : null}
         </Pressable>
-      )}
+      ) : null}
 
       <CategoryCarousel
         items={CATEGORIES}

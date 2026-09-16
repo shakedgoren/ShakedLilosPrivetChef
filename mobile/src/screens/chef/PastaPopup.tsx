@@ -4,7 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { PASTA_SHAPES, PASTA_UP_EXTRA, T_PASTA_UPS } from '../../data/chef';
 import { radius } from '../../theme/tokens';
 import { iconOrbShadow } from '../../theme/glass';
-import { NO_TOUCH } from '../../theme/pointerEvents';
+import { PASS_TOUCH } from '../../theme/pointerEvents';
 
 /** גווני הבחירה של פינת השף · `chip()` ב-Chef.dc.html */
 const HUE_DEEP = '#7A3D18';
@@ -28,17 +28,20 @@ type Props = {
   pop: PastaPick | null;
   onPick: (field: 'shape' | 'up', value: string) => void;
   onClose: () => void;
-  onCommit: () => void;
 };
 
-export function PastaPopup({ pop, onPick, onClose, onCommit }: Props) {
-  const ready = !!(pop && (pop.shape || pop.up));
+export function PastaPopup({ pop, onPick, onClose }: Props) {
   return (
     <Modal visible={!!pop} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.scrim} onPress={onClose} />
       {/* ⚠ **מרכז את הלוח** · בלי המכל הזה הלוח היה נעוץ ל-top/bottom
           ונמתח לגובה המסך כולו. */}
-      <View style={[s.stage, NO_TOUCH]}>
+      {/* ⚠ **`box-none` ולא `none`** · תוקן ב-16 בספטמבר 2026.
+          כאן היה `NO_TOUCH`, וב-React Native ילד **אינו יכול** להחזיר
+          לעצמו מגע מתחת להורה שכבוי — בניגוד ל-CSS. התוצאה: כל לחיצה
+          על צורת פסטה נפלה דרך הלוח אל המסך הכהה שמאחוריו, שסוגר את
+          החלונית. שקד דיווחה שזה ״רק סוגר את הפופאפ וזהו״. */}
+      <View style={[s.stage, PASS_TOUCH]}>
         <View style={s.panel}>
         <View style={s.head}>
           <View style={s.headText}>
@@ -98,11 +101,6 @@ export function PastaPopup({ pop, onPick, onClose, onCommit }: Props) {
             );
           })}
         </ScrollView>
-
-        {/* ⚠ עמום עד שנבחרה צורה או שדרוג · `pastaOpacity` בקנבס */}
-          <Pressable onPress={onCommit} disabled={!ready} style={[s.cta, { opacity: ready ? 1 : 0.45 }]}>
-            <Text style={s.ctaText}>אישור</Text>
-          </Pressable>
         </View>
       </View>
     </Modal>
@@ -128,8 +126,6 @@ const s = StyleSheet.create({
     padding: 18,
     backgroundColor: '#FEFCFB',
     boxShadow: '0 26px 60px -22px rgba(60,48,84,0.72)',
-    /* ⚠ מבטל את ה-`NO_TOUCH` של המכל · הלוח עצמו כן לחיץ */
-    pointerEvents: 'auto',
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   /* הריפוד מאזן את כפתור הסגירה כדי שהכותרת תישאר במרכז הלוח */

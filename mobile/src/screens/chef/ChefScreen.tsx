@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RollingTotal } from '../../components/RollingTotal';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
@@ -54,6 +54,76 @@ const TRACK_GAP = 14;
  * שף וטאבון · שתי חבילות, כל אחת שאלון של שישה עמודים.
  * זו הקטגוריה היחידה שפתוחה עד הסוף גם בלי חשבון — החלטה של שקד.
  */
+/**
+ * ״בחר מסלול״ · כיתוב עם קו נמשך מתחתיו.
+ *
+ * ⚠ **הקו מונפש · בקשה של שקד (16 בספטמבר 2026)** · היא בחרה את
+ * עיצוב הקו התחתון ואז אמרה ש״לא נראה כל כך מובן שצריך ללחוץ עליו״.
+ * בלי קופסה ובלי חץ אין שום רמז שזו פעולה, ולכן הקו מצייר את עצמו
+ * שוב ושוב: נמשך, נח רגע, נמוג, וחוזר אחרי הפסקה.
+ *
+ * ⚠ **`scaleX` ולא `width`** · רק טרנספורמציות רצות בדרייבר המקורי.
+ * הקנה מידה סביב המרכז, ולכן הקו נפתח משני הצדדים החוצה.
+ *
+ * ⚠ **מכבד ״הפחתת תנועה״** · כמו בכפתור הכניסה. מי שכיבתה תנועות
+ * במערכת מקבלת קו מלא וסטטי.
+ */
+const LINE_DRAW_MS = 700;
+const LINE_HOLD_MS = 900;
+const LINE_FADE_MS = 420;
+const LINE_REST_MS = 1500;
+
+function PickCta({ onPress }: { onPress: () => void }) {
+  const v = React.useRef(new Animated.Value(0)).current;
+  const [reduce, setReduce] = React.useState(false);
+
+  React.useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((r) => alive && setReduce(r))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (reduce) {
+      v.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(v, {
+          toValue: 1,
+          duration: LINE_DRAW_MS,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.delay(LINE_HOLD_MS),
+        Animated.timing(v, {
+          toValue: 0,
+          duration: LINE_FADE_MS,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.delay(LINE_REST_MS),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [reduce, v]);
+
+  return (
+    <Pressable onPress={onPress} style={s.pickCta} hitSlop={12}>
+      <Text style={s.pickCtaText}>{PICK_CTA}</Text>
+      {/* הקו הבסיסי · דהוי, תמיד שם, כדי שלא ייווצר חלל בזמן ההפסקה */}
+      <View style={s.pickLineBase} />
+      <Animated.View style={[s.pickLine, { transform: [{ scaleX: v }] }]} />
+    </Pressable>
+  );
+}
+
 export function ChefScreen() {
   const { go, loggedIn } = useNav();
   const o = useChefOrder();
@@ -139,17 +209,14 @@ export function ChefScreen() {
           <View style={s.pkgCard}>
             {/* ⚠ הכפתור עלה מעל הקרוסלה ולבש את עיצוב ׮המשךׯ ·
                 שתי בקשות של שקד. קודם הוא היה גלולה שטוחה בתחתית. */}
-            {/* ⚠ **גרירה ולא לחיצה** · שקד ביקשה (16 בספטמבר 2026)
-                שהחץ יישב בצד ימין, ושגרירה שמאלה תמלא את הכפתור
-                בצבע ותעביר לדף הבא. זה הכפתור היחיד באפליקציה עם
-                המצב הזה חוץ מכפתור הכניסה. */}
-            <ContinueButton
-              onPress={() => o.openPackage(tab)}
-              accent={ACCENT}
-              label={PICK_CTA}
-              drag
-              style={s.pickCta}
-            />
+            {/* ⚠ **עיצוב ״קו תחתון״ · נבחר ב-16 בספטמבר 2026** · שקד
+                עברה כאן שלושה סבבים: קודם גלולת זכוכית, אחר כך ידית
+                עם חץ וגרירה שמאלה, ובסוף ביקשה ״שלא יהיה עם חץ
+                ותשנה לו ממש את העיצוב״ ובחרה מתוך חמישה את הכיתוב
+                עם הקו מתחתיו.
+                ⚠ **הגרירה ירדה איתו** · בלי ידית אין מה לגרור, וזה
+                סוכם איתה מראש. חזרה ללחיצה רגילה. */}
+            <PickCta onPress={() => o.openPackage(tab)} />
             {/* ⚠ **יחס 300×200** · בקשה של שקד (16 בספטמבר 2026).
                 היחס נשמר בכל רוחב מסך; `CARO.height` נשאר כנפילה
                 לאחור בלבד. */}
@@ -241,12 +308,8 @@ export function ChefScreen() {
       <CapNotice note={o.notice} onClose={o.closeNotice} />
 
       {/* חלונית סוג הפסטה · נפתחת מיד אחרי בחירת רוטב */}
-      <PastaPopup
-        pop={o.pasta}
-        onPick={o.pastaPick}
-        onClose={o.closePasta}
-        onCommit={o.pastaCommit}
-      />
+      {/* ⚠ הבחירה היא האישור · אין כאן כפתור אישור. ראו `pastaChoose`. */}
+      <PastaPopup pop={o.pasta} onPick={o.pastaChoose} onClose={o.closePasta} />
 
       {/* מסך סיום בקשת ההצעה · `isConfirm` בקנבס */}
       {sent && (
@@ -316,7 +379,27 @@ const s = StyleSheet.create({
   },
   pkgLines: { gap: 3, paddingHorizontal: 4 },
   /* מיקום בלבד · העיצוב, כולל הרווח מהחץ, מגיע מ-`ContinueButton` */
-  pickCta: { alignSelf: 'center', marginBottom: 2 },
+  /* ״בחר מסלול״ · כיתוב עם קו נמשך, בלי קופסה ובלי ידית */
+  pickCta: { alignSelf: 'center', paddingTop: 6, paddingBottom: 10, paddingHorizontal: 6 },
+  pickCtaText: { fontSize: 18, fontWeight: '700', color: ACCENT.deep },
+  pickLineBase: {
+    position: 'absolute',
+    right: 6,
+    left: 6,
+    bottom: 0,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: a(ACCENT.rgb, 0.22),
+  },
+  pickLine: {
+    position: 'absolute',
+    right: 6,
+    left: 6,
+    bottom: 0,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: ACCENT.hue,
+  },
 
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
   /**

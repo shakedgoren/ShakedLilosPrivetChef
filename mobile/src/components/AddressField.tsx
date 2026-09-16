@@ -151,6 +151,27 @@ export function AddressField({
           placeholderTextColor="#B3ABBD"
           style={s.input}
         />
+
+        {/* ⚠ **מספר הבית באותה כרטיסייה · 16 בספטמבר 2026** · שקד:
+            ״אני לא רוצה שזה יהיה מופרד לרחוב ועיר ואז למספר — אני
+            רוצה את כל הכתובת יחד בכרטיסייה אחת בלבד״. הוא היה שדה
+            נפרד מתחת. המאגר הממשלתי אינו מחזיק מספרי בתים, ולכן
+            הוא עדיין נכתב ביד — רק שעכשיו הוא יושב באותה שורה,
+            מופרד בקו דק, וכל הכתובת נקראת כיחידה אחת. */}
+        {value ? (
+          <>
+            <View style={s.divider} />
+            <TextInput
+              value={house}
+              onChangeText={onHouse}
+              placeholder="מס׳"
+              placeholderTextColor="#B3ABBD"
+              keyboardType="number-pad"
+              style={s.house}
+            />
+          </>
+        ) : null}
+
         {busy ? <ActivityIndicator size="small" color={surface.faint} /> : null}
       </View>
 
@@ -167,17 +188,7 @@ export function AddressField({
         </View>
       ) : null}
 
-      {/* מספר הבית · המאגר הממשלתי אינו מחזיק מספרי בתים */}
-      {value ? (
-        <TextInput
-          value={house}
-          onChangeText={onHouse}
-          placeholder="מספר בית"
-          placeholderTextColor="#B3ABBD"
-          keyboardType="number-pad"
-          style={[s.field, s.house, { borderColor: edge }]}
-        />
-      ) : null}
+
 
       {outside ? <Text style={[s.note, s.noteBad]}>{OUT_OF_ZONE}</Text> : null}
       {inside && okNote ? <Text style={[s.note, s.noteOk]}>{okNote}</Text> : null}
@@ -198,7 +209,9 @@ const s = StyleSheet.create({
     gap: 8,
   },
   input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: INPUT_START, color: surface.ink },
-  house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: INPUT_START, color: surface.ink },
+  /* מספר הבית · קופסה צרה באותה שורה, אחרי הקו המפריד */
+  house: { width: 54, fontSize: 15, textAlign: 'center', color: surface.ink },
+  divider: { width: 1, alignSelf: 'stretch', marginVertical: 9, backgroundColor: IDLE_BD },
 
   /**
    * ⚠ **מרחפת ולא בזרימה** · בזרימה היא דוחפת את שדה מספר הבית

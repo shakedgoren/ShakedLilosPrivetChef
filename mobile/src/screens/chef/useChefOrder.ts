@@ -208,33 +208,41 @@ export function useChefOrder() {
   );
 
   /** ⚠ או צורה או שדרוג · בחירה באחד מנקה את השני, ולחיצה חוזרת מבטלת */
-  const pastaPick = useCallback((field: 'shape' | 'up', value: string) => {
-    setPasta((p) => {
-      if (!p) return p;
-      const other = field === 'shape' ? 'up' : 'shape';
-      const next = { ...p, [field]: p[field] === value ? null : value };
-      if (next[field]) next[other] = null;
-      return next;
-    });
-  }, []);
+  /* ⚠ `pastaPick` ו-`pastaCommit` הוסרו ב-16 בספטמבר 2026 · אחרי
+     שהבחירה עצמה הפכה לאישור (`pastaChoose`), לא נשאר להם צרכן. */
 
-  const pastaCommit = useCallback(() => {
-    if (!pasta || (!pasta.shape && !pasta.up)) return;
-    const entry: PastaPick = { sauce: pasta.sauce, shape: pasta.shape, up: pasta.up };
-    setPicks((p) => {
-      const cur: PastaPick[] = p[pasta.sec] || [];
-      const list = pasta.edit
-        ? cur.map((x) => (x.sauce === pasta.sauce ? entry : x))
-        : [...cur, entry];
-      /* אותה חלונית מכסה כמו בסלטים · פעם אחת לכל סעיף */
-      if (!pasta.edit && pasta.cap != null && list.length === pasta.cap && !seen[pasta.sec]) {
-        setSeen((v) => ({ ...v, [pasta.sec]: true }));
-        setNotice(pasta.note ?? null);
-      }
-      return { ...p, [pasta.sec]: list };
-    });
-    setPasta(null);
-  }, [pasta, seen]);
+  /**
+   * ⚠ **הבחירה היא האישור · 16 בספטמבר 2026** · שקד ביקשה ״לא צריך
+   * להיות שם כפתור אישור, כי האישור כביכול זה הבחירה בסוג פסטה או
+   * בשדרוג״. לחיצה על צורה או על שדרוג שומרת וסוגרת מיד.
+   *
+   * ⚠ **או צורה או שדרוג, לא שניהם** · כמו בקנבס. השדה השני נשאר null.
+   */
+  const pastaChoose = useCallback(
+    (field: 'shape' | 'up', value: string) => {
+      if (!pasta) return;
+      const entry: PastaPick = {
+        sauce: pasta.sauce,
+        shape: field === 'shape' ? value : null,
+        up: field === 'up' ? value : null,
+      };
+      setPicks((p) => {
+        const cur: PastaPick[] = p[pasta.sec] || [];
+        const list = pasta.edit
+          ? cur.map((x) => (x.sauce === pasta.sauce ? entry : x))
+          : [...cur, entry];
+        /* אותה חלונית מכסה כמו בסלטים · פעם אחת לכל סעיף */
+        if (!pasta.edit && pasta.cap != null && list.length === pasta.cap && !seen[pasta.sec]) {
+          setSeen((v) => ({ ...v, [pasta.sec]: true }));
+          setNotice(pasta.note ?? null);
+        }
+        return { ...p, [pasta.sec]: list };
+      });
+      setPasta(null);
+    },
+    [pasta, seen],
+  );
+
 
   const setValue = useCallback((id: string, value: unknown) => {
     setPicks((p) => {
@@ -295,6 +303,6 @@ export function useChefOrder() {
     pageReady, lastPage, next, prev,
     total, lines, perHead,
     notice, closeNotice: () => setNotice(null),
-    pasta, pickSauce, pastaPick, pastaCommit, closePasta: () => setPasta(null),
+    pasta, pickSauce, pastaChoose, closePasta: () => setPasta(null),
   };
 }

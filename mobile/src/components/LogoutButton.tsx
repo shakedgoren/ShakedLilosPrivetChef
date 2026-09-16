@@ -4,6 +4,7 @@ import { useNav } from '../navigation/store';
 import { LogoutConfirm } from './LogoutConfirm';
 import { S } from './Sym';
 import { PASS_TOUCH } from '../theme/pointerEvents';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * כפתור ההתנתקות · מרחף בפינה השמאלית העליונה בכל רחבי האפליקציה.
@@ -33,6 +34,22 @@ const INK = '#6E6478';
 export function LogoutButton() {
   const { loggedIn, signOut, loginOverlay, screen } = useNav();
   const [open, setOpen] = useState(false);
+  /**
+   * ⚠ **חייב להוסיף את האזור הבטוח ידנית** · תוקן ב-16 בספטמבר 2026.
+   *
+   * שקד דיווחה שכפתור ההתנתקות אינו באותו גובה של חץ החזרה ״בכל
+   * רחבי האפליקציה״ אחרי התחברות. נמדד בסימולטור: הכפתור ישב
+   * **בתוך שורת הסטטוס**, חופף לשעון, וחץ החזרה הרבה מתחתיו.
+   *
+   * הסיבה: השכבה כאן היא `position: absolute` בתוך `SafeAreaView`,
+   * ו**מיקום מוחלט אינו מכבד את הריפוד של האזור הבטוח** — `top: 22`
+   * נמדד מקצה המסך ולא מתחת למגרעת. חץ החזרה לעומת זאת יושב בתוך
+   * הזרימה, כלומר כבר אחרי הריפוד.
+   *
+   * ⚠ בדפדפן זה לא נראה · שם אין מגרעת ושני הכפתורים יצאו ב-y=22.
+   * נמדד בשניהם.
+   */
+  const insets = useSafeAreaInsets();
 
   /* אין למי להתנתק, ובשכבת ההתחברות הכפתור רק היה מבלבל */
   if (!loggedIn || loginOverlay) return null;
@@ -47,7 +64,7 @@ export function LogoutButton() {
 
   return (
     <View style={[s.slot, PASS_TOUCH]}>
-      <Pressable onPress={() => setOpen(true)} style={s.button} hitSlop={8}>
+      <Pressable onPress={() => setOpen(true)} style={[s.button, { top: insets.top + TOP }]} hitSlop={8}>
         <S k="logout" size={GLYPH} />
       </Pressable>
 
@@ -67,9 +84,9 @@ const s = StyleSheet.create({
   /* ⚠ `box-none` · השכבה פרושה על כל המסך כדי למקם את הכפתור,
      ובלי זה היא בולעת את כל הלחיצות במסך שמתחתיה */
   slot: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 3 },
+  /* ⚠ `top` נקבע בזמן ריצה · הוא תלוי באזור הבטוח */
   button: {
     position: 'absolute',
-    top: TOP,
     left: SIDE,
     width: SIZE,
     height: SIZE,
