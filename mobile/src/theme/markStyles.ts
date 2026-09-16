@@ -89,7 +89,7 @@ export const MARK_STYLES = {
      * בכרטיס הקטגוריה היא Assistant במשקל 200, ולכן גם זה. הגודל
      * עלה מ-11 ל-15, והרווח מהכותרת ירד מ-10 ל-0.
      */
-    sub: { size: 15, weight: '200', gap: 0 },
+    sub: { size: 18, weight: '200', gap: 0 },
   },
 } as const satisfies Record<string, MarkStyle & { letterSpacing?: number }>;
 

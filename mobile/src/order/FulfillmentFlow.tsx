@@ -18,6 +18,7 @@ import { PayLogo } from '../components/PayLogo';
 import { OptionGrid } from '../components/OptionGrid';
 import { TILE_SHADOW } from '../theme/glass';
 import { ContinueButton } from '../components/ContinueButton';
+import { Confetti } from '../components/Confetti';
 
 /* מידות שורות המסירה · מהקנבס · האיסוף בגוון הקטגוריה, המשלוח אפור */
 const OPTION_ICON = 21;
@@ -111,7 +112,9 @@ const titleFor = (f: Fulfillment) => {
   if (f.step === STEP.time) return f.isDelivery ? 'שעת משלוח' : 'שעת איסוף';
   if (f.step === STEP.address) return 'כתובת למשלוח';
   if (f.step === STEP.pay) return 'אמצעי תשלום';
-  return 'ההזמנה התקבלה';
+  /* ⚠ **ריק במסך האישור · בקשת שקד** · ״למחוק את הכיתוב ההזמנה
+     התקבלה״ · הבשורה עברה לכותרת הגדולה שבתוך המסך עצמו. */
+  return '';
 };
 
 const window = (from: number, to: number) => `${hhmm(from)}–${hhmm(to)}`;
@@ -237,8 +240,14 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
  * שאלה סימני מסחר; היא ביקשה את הלוגואים עצמם. ראו `PayLogo.tsx`.
  */
 
-const PAY_GLYPH = 24;
-const PAY_COLS = 2;
+/**
+ * ⚠ **שלושה בשורה אחת · 16 בספטמבר 2026** · בקשה של שקד: ״אני רוצה
+ * ששלושתם יופיעו באותה השורה כאשר האייקונים שלהם צריכים להיות
+ * גדולים יותר ומתחת לכל אייקון הכיתוב המתאים״.
+ * היה 24 בשתי עמודות.
+ */
+const PAY_GLYPH = 38;
+const PAY_COLS = 3;
 /** ⚠ בהיר יותר · המסגרת הרגילה היא 0.16, ושקד ביקשה שתהיה עדינה */
 const PAY_EDGE = 'rgba(130,112,162,0.1)';
 const PAY_EDGE_ON = 0.3;
@@ -294,7 +303,11 @@ function ConfirmStep({
 
   return (
     <View style={s.stack}>
-      <Text style={s.doneNote}>נשלח לך אישור לוואטסאפ</Text>
+      {/* ⚠ **החליף את ״נשלח לך אישור לוואטסאפ״ · 16 בספטמבר 2026** ·
+          בקשה מפורשת של שקד: ״במקום הכיתוב נשלח לך אישור לוואטצפ
+          לכתוב בגדול במיקום שם ההזמנה התקבלה! (עם קונפטי)״. */}
+      <Text style={s.doneTitle}>ההזמנה התקבלה!</Text>
+      <Confetti />
 
       <View style={s.summary}>
         <Text style={s.summaryHead}>סיכום ההזמנה</Text>
@@ -333,10 +346,9 @@ function ConfirmStep({
         {!f.isDelivery && <PickupMaps rgb={accent.rgb} ink={accent.deep} />}
       </View>
 
-      {/* ⚠ שקד לא ביקשה לשנות את הכפתור הזה · הוא חלק את אותו סגנון
-          בדיוק עם ״המשך״, ולהשאיר אותו בגובה 46 היה מותיר כפתור יחיד
-          וחריג במסך האישור. דווח לה. */}
-      <ContinueButton onPress={onHome} accent={accent} label="חזרה לדף הבית" style={s.homeCta} />
+      {/* ⚠ **בלי חץ · 16 בספטמבר 2026** · בקשה של שקד. החץ מבטיח
+          המשך, והלחיצה כאן מסיימת וחוזרת הביתה. */}
+      <ContinueButton onPress={onHome} accent={accent} label="חזרה לדף הבית" bare style={s.homeCta} />
     </View>
   );
 }
@@ -410,7 +422,7 @@ const s = StyleSheet.create({
   /* כרטיס אמצעי תשלום · אייקון מעל השם, מסגרת בהירה */
   pay: {
     flex: 1,
-    minHeight: 84,
+    minHeight: 104,
     borderRadius: 18,
     borderWidth: 1.5,
     borderColor: PAY_EDGE,
@@ -421,11 +433,18 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
-  payLabel: { fontSize: 14, fontWeight: '500', color: surface.ink, textAlign: 'center' },
+  payLabel: { fontSize: 13, fontWeight: '600', color: surface.ink, textAlign: 'center' },
 
   cta: { height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
 
-  doneNote: { fontSize: type.body, color: surface.muted, textAlign: 'center' },
+  /* ⚠ הוגדל והוחלף · ראו ההערה ב-`ConfirmStep` */
+  doneTitle: {
+    fontSize: 27,
+    fontWeight: '700',
+    color: surface.ink,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
   summary: { borderRadius: 24, padding: space.lg, backgroundColor: 'rgba(255,255,255,0.8)', gap: 8 },
   summaryHead: { fontSize: 10.5, letterSpacing: 2, fontWeight: '600', color: '#A69EAE' },
   /* מיקום בלבד · הכפתור במסך האישור ממורכז עם רווח מעליו */

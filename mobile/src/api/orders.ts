@@ -10,8 +10,21 @@ export const reorderOrder = (id: string, body: Partial<CreateOrderBody> = {}) =>
 export const listMyOrders = () => api<{ orders: Order[] }>('/orders');
 
 /** האם יום המכירה של הקטגוריה פתוח · נבדק לפני ״להזמין שוב״ */
+/**
+ * שלושת מצבי יום המכירה · ראו `saleDayState` בשרת.
+ * ⚠ `state` אופציונלי · שרת ישן שעדיין לא עודכן מחזיר `open` בלבד.
+ */
+export type SaleState = 'open' | 'pending' | 'sold_out';
+
 export const saleDayStatus = (category: string) =>
-  api<{ category: string; date: string; open: boolean; reason: string; message: string }>(
+  api<{
+    category: string;
+    date: string;
+    open: boolean;
+    state?: SaleState;
+    reason: string;
+    message: string;
+  }>(
     `/orders/sale-day?category=${encodeURIComponent(category)}`,
     { method: 'GET' },
   );

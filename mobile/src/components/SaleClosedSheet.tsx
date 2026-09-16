@@ -69,7 +69,9 @@ export function SaleClosedSheet({
 
           {err ? <Text style={s.err}>{err}</Text> : null}
 
-          <ContinueButton onPress={onRemind} accent={accent} disabled={busy} label="כן, תזכירו לי" wide />
+          {/* ⚠ **בלי חץ וברוחב מינימלי · 16 בספטמבר 2026** · בקשה של
+              שקד. היה `wide`, כלומר נמתח לכל רוחב החלונית. */}
+          <ContinueButton onPress={onRemind} accent={accent} disabled={busy} label="כן, תזכירו לי" bare />
 
           <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
             <Text style={s.skipText}>לא תודה</Text>

@@ -1,20 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Text } from '../ui/text';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Masthead } from '../components/Masthead';
 import { CategoryCarousel } from '../components/CategoryCarousel';
 import { CategoryRail } from '../components/CategoryRail';
 import { PhotoReel, REEL_BOTTOM } from '../components/PhotoReel';
 import { BAR_BOTTOM_WITH_NAV } from '../components/BottomNav';
 import { PrimaryButton } from '../components/PrimaryButton';
-import { GlassFill } from '../components/Glass';
 import { CATEGORIES } from '../data/categories';
-import { radius, space, surface, type } from '../theme/tokens';
-import { GLASS_SHADOW, GLASS_STOPS } from '../theme/glass';
+import { space } from '../theme/tokens';
 import { useNav, type Screen } from '../navigation/store';
 import { SaleAlert } from '../components/SaleAlert';
+import { SaleDayRow } from '../components/SaleDayRow';
 import { apiEnabled } from '../api/config';
-import { listNotifications, markNotificationSeen, saleDayStatus, type SaleNotification } from '../api/orders';
+import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
 
 /**
  * הכיתוב על כפתור הכניסה · שקד ביקשה את הנוסח הזה.
@@ -22,13 +20,6 @@ import { listNotifications, markNotificationSeen, saleDayStatus, type SaleNotifi
  */
 const CTA_LABEL = 'להתחברות';
 
-/**
- * המכירה הקרובה · הכיתוב מוטבע בקנבס (`Main.dc.html`, שורה 57).
- * ⚠ `screen` ו-`open` נוספו כאן · בקנבס השורה אינה לחיצה. שקד ביקשה
- * שלחיצה על מכירה פתוחה תעביר לדף ההזמנה של אותה קטגוריה.
- * ⚠ הערכים עדיין לא מגיעים מהשרת · כשיהיה מקור אמת ליום המכירה
- * הקרוב, שלושת השדות האלה מוחלפים בו.
- */
 /**
  * המרווח שמחליף את גוש הכפתור אחרי ההתחברות · בקשה של שקד.
  * ⚠ לא מהקנבס.
@@ -44,22 +35,6 @@ const RAIL_GAP = 26;
 const HOME_PAD_NAV = BAR_BOTTOM_WITH_NAV - REEL_BOTTOM;
 
 /**
- * ⚠ **שורת המכירה הקרובה · תוקנה ב-16 בספטמבר 2026.**
- *
- * שקד דיווחה: דף הבית מציג ״שלישי של הקוסקוס · ניתן להזמין״, וברגע
- * שנכנסים להזמנה נאמר שעדיין אי אפשר. הסיבה: **השורה הזאת הייתה
- * קבועה בקוד**, כולל המילים ״ניתן להזמין״, בעוד שהשער האמיתי
- * (`useSaleGate`) שואל את השרת ומקבל תשובה אחרת.
- *
- * עכשיו שני המקומות שואלים **את אותו מקור** — `saleDayStatus`.
- * ⚠ עד שהתשובה חוזרת, ובכל מצב שבו אין שרת, השורה **אינה מבטיחה
- * שאפשר להזמין** ואינה לחיצה. עדיף לא להראות כלום מלהבטיח ולשקר.
- */
-const SALE_CATEGORY = 'cous' as Screen;
-/** מה שכתוב כשיום המכירה פתוח · הנוסח של הקנבס */
-const SALE_OPEN_TEXT = 'ניתן להזמין';
-
-/**
  * דף הבית · משמש גם לפני ההתחברות וגם אחריה.
  * ההבדל היחיד: לפני התחברות מוצג כפתור הכניסה,
  * אחרי התחברות מוצגת תיבת המכירה הקרובה — כמו בקנבס.
@@ -67,23 +42,6 @@ const SALE_OPEN_TEXT = 'ניתן להזמין';
 export function HomeScreen() {
   const { loggedIn, go } = useNav();
   const [active, setActive] = useState(0);
-  /** יום המכירה הקרוב · מהשרת, לא מקובע */
-  const [sale, setSale] = useState<{ label: string; open: boolean } | null>(null);
-
-  useEffect(() => {
-    if (!loggedIn || !apiEnabled) return;
-    let live = true;
-    void saleDayStatus(SALE_CATEGORY)
-      .then((d) => {
-        if (!live) return;
-        /* ⚠ הכיתוב מגיע מהשרת · `message` הוא מה שהוא אומר על היום */
-        setSale({ label: d.message || d.date, open: d.open });
-      })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, [loggedIn]);
 
   /**
    * ⚠ ההתראות של ״תזכירו לי״ · שקד החליטה שהתזכורת מגיעה כהתראה
@@ -134,20 +92,7 @@ export function HomeScreen() {
         />
       ))}
 
-      {loggedIn && sale ? (
-        <Pressable disabled={!sale.open} onPress={() => go(SALE_CATEGORY)} style={s.sale}>
-          <GlassFill stops={GLASS_STOPS} radius={radius.field} />
-          <Text style={s.saleTitle}>{sale.label}</Text>
-          <View style={s.grow} />
-          {/* ⚠ הנקודה והכיתוב רק כשפתוח באמת · ראו את ההערה למעלה */}
-          {sale.open ? (
-            <>
-              <View style={s.dot} />
-              <Text style={s.saleStock}>{SALE_OPEN_TEXT}</Text>
-            </>
-          ) : null}
-        </Pressable>
-      ) : null}
+      {loggedIn ? <SaleDayRow onOpen={(key) => go(key as Screen)} /> : null}
 
       <CategoryCarousel
         items={CATEGORIES}
@@ -177,24 +122,6 @@ export function HomeScreen() {
 const s = StyleSheet.create({
   page: { flex: 1 },
   content: { paddingHorizontal: space.lg, paddingTop: space.xxl },
-
-  sale: {
-    height: 46,
-    borderRadius: radius.field,
-    paddingHorizontal: 14,
-    marginTop: space.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    borderWidth: 1,
-    borderColor: surface.glassEdge,
-    boxShadow: GLASS_SHADOW,
-    overflow: 'hidden',
-  },
-  saleTitle: { fontSize: 13, fontWeight: '600', color: surface.ink },
-  grow: { flex: 1 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#437C59' },
-  saleStock: { fontSize: type.label, color: '#437C59' },
 
   cta: { alignItems: 'center', paddingTop: 30, paddingBottom: 18 },
   railGap: { height: RAIL_GAP },

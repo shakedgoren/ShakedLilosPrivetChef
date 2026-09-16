@@ -16,6 +16,7 @@ import {
   assertCustomerOrderDay,
   evaluateCustomerSaleDay,
   loadSaleDayView,
+  saleDayState,
   resolveCustomerSaleDate,
 } from '../orders/saleDay.ts';
 import { isoDate } from '../admin/sold.ts';
@@ -178,6 +179,8 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
       category,
       date,
       open: problem === null,
+      /* ⚠ שלושת המצבים · ראו `saleDayState` */
+      state: saleDayState({ rec, category, today: isoDate(new Date()) }),
       reason: problem?.code ?? '',
       message: problem?.message ?? '',
     });

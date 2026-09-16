@@ -126,8 +126,10 @@ const s = StyleSheet.create({
   bar: {
     position: 'absolute',
     bottom: 26,
-    right: 18,
-    left: 18,
+    /* ⚠ **צומצם · 16 בספטמבר 2026** · בקשה של שקד: ״צמצם את הרוחב
+       של הנב בר״. היה 18 מכל צד, כלומר כמעט כל רוחב המסך. */
+    right: 46,
+    left: 46,
     height: 64,
     borderRadius: radius.pill,
     backgroundColor: BAR_BG,

@@ -86,6 +86,39 @@ export function evaluateCustomerSaleDay(opts: {
   return null;
 }
 
+/**
+ * שלושת מצבי יום המכירה שהלקוחה רואה בדף הבית.
+ *
+ * ⚠ **נוסף ב-16 בספטמבר 2026** · שקד ביקשה שדף הבית יציג ״טרם
+ * נפתחה / החלה / נסגרה״ בשלושה צבעים. עד עכשיו השרת החזיר `open`
+ * בלבד, ולכן אי אפשר היה להבחין בין יום שעוד לא נפתח לבין יום
+ * שנפתח ואזל.
+ *
+ * ⚠ **ההבחנה היא לפי המכסות** · אין בבסיס הנתונים שדה ״היה פתוח״.
+ * יום שכל המנות שלו מוקצות במלואן נחשב **נסגר**; כל יתר המקרים
+ * שאינם פתוחים הם ״טרם החלה״. זו הקירוב הנאמן ביותר למה שהלקוחה
+ * רואה, ובלי שינוי סכימה.
+ */
+export type SaleState = 'open' | 'pending' | 'sold_out';
+
+export function saleDayState(opts: {
+  rec: SaleDayView | null;
+  category: string;
+  today: string;
+}): SaleState {
+  const { rec, category, today } = opts;
+  if (evaluateCustomerSaleDay({ rec, category, requested: {}, today }) === null) return 'open';
+  if (!rec) return 'pending';
+
+  const dishes = CATS[category as DayCatKey]?.dishes ?? [];
+  const quoted = dishes
+    .map((d) => ({ quota: rec.quotas[d.id] ?? d.q, used: (rec.sold[d.id] ?? 0) + (rec.waste[d.id] ?? 0) }))
+    .filter((x) => x.quota !== undefined);
+
+  if (quoted.length > 0 && quoted.every((x) => x.used >= (x.quota as number))) return 'sold_out';
+  return 'pending';
+}
+
 export function throwSaleDayError(err: SaleDayError): never {
   if (err.code === 'quota_exceeded') throw conflict(err.code, err.message);
   throw badRequest(err.code, err.message);
