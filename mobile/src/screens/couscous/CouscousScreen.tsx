@@ -138,12 +138,26 @@ export function CouscousScreen() {
 
         onRemind={() => void saleGate.remind()}
 
-        onClose={saleGate.close}
+        onClose={() => {
+          saleGate.close();
+          go('main');
+        }}
 
       />
 
       {/* ⚠ קונפטי במקום חלונית ״נרשמת״ · בקשה של שקד */}
-      {saleGate.celebrate && <Confetti onDone={saleGate.endCelebrate} />}
+      {/* ⚠ **חוזר לדף הבית אחרי הקונפטי · 16 בספטמבר 2026** · בקשה
+          של שקד: ״אם כן מופיע הקונפטי אם לא אין קונפטי, צריכה
+          להיות חזרה לדף הבית״. הקונפטי מרונדר במסך הזה, ולכן ניווט
+          מיידי היה קוטע אותו באמצע — לכן החזרה נתלית בסיומו. */}
+      {saleGate.celebrate && (
+        <Confetti
+          onDone={() => {
+            saleGate.endCelebrate();
+            go('main');
+          }}
+        />
+      )}
 
 
       <FulfillmentFlow
