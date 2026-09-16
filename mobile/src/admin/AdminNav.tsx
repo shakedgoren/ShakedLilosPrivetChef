@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius } from '../theme/tokens';
 import { LAV, SOFT_SHADOW } from './home/NightSky';
-import { Bars, Calendar, Cart, Home, Receipt, type IconProps } from '../icons';
+import { INDIGO_70, S, type SYM } from '../components/Sym';
 import { useNav, type Screen } from '../navigation/store';
 
 /**
@@ -24,24 +24,25 @@ const ICON = 22;
  * ימי מכירה · הזמנות · כספים. ״מלאי״ ירד מכאן ועבר לאריחים בדף
  * הבית, וקניות וימי מכירה עלו לכאן מהאריחים.
  */
-const TABS: { key: Screen; label: string; Icon: (p: IconProps) => React.JSX.Element }[] = [
-  { key: 'admin', label: 'בית', Icon: Home },
-  { key: 'adminShopping', label: 'קניות', Icon: Cart },
-  { key: 'adminDays', label: 'ימי מכירה', Icon: Calendar },
-  { key: 'adminOrders', label: 'הזמנות', Icon: Receipt },
-  { key: 'adminMoney', label: 'כספים', Icon: Bars },
+/** ⚠ SF Symbols · בקשה של שקד (16 בספטמבר 2026) */
+const TABS: { key: Screen; label: string; sym: keyof typeof SYM }[] = [
+  { key: 'admin', label: 'בית', sym: 'home' },
+  { key: 'adminShopping', label: 'קניות', sym: 'shopping' },
+  { key: 'adminDays', label: 'ימי מכירה', sym: 'saleDays' },
+  { key: 'adminOrders', label: 'הזמנות', sym: 'orders' },
+  { key: 'adminMoney', label: 'כספים', sym: 'money' },
 ];
 
 export function AdminNav() {
   const { screen, go } = useNav();
   return (
     <View style={s.bar}>
-      {TABS.map(({ key, label, Icon }) => {
+      {TABS.map(({ key, label, sym }) => {
         const on = screen === key;
         return (
           <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
             {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
-            <Icon size={ICON} color={on ? ON : OFF} strokeWidth={on ? 2 : 1.7} />
+            <S k={sym} size={ICON} color={on ? ON : INDIGO_70} />
             <Text style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}>
               {label}
             </Text>

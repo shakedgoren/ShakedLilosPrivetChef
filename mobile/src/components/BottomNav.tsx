@@ -3,18 +3,22 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { radius, type } from '../theme/tokens';
 import { NAV_EDGE, NAV_SHADOW, NAV_STOPS } from '../theme/glass';
 import { GlassFill } from './Glass';
-import { Home, Receipt, User } from '../icons';
+import { INDIGO_70, S, type SYM } from './Sym';
 import { useNav } from '../navigation/store';
 
 /**
  * סרגל הניווט התחתון · מופיע אך ורק כשהמשתמשת מחוברת,
  * בדיוק כמו בקנבס. כשלא מחוברים הוא לא מרונדר בכלל.
  */
+/**
+ * ⚠ **SF Symbols** · בקשה של שקד (16 בספטמבר 2026), עם התנועה
+ * שהיא הגדירה לכל אחד. ראו `Sym.tsx` למה נתמך ומה קירוב.
+ */
 const TABS = [
-  { key: 'main', label: 'בית', Icon: Home },
-  { key: 'orders', label: 'הזמנות', Icon: Receipt },
-  { key: 'profile', label: 'אזור אישי', Icon: User },
-] as const;
+  { key: 'main', label: 'בית', sym: 'home' },
+  { key: 'orders', label: 'הזמנות', sym: 'orders' },
+  { key: 'profile', label: 'אזור אישי', sym: 'personalArea' },
+] as const satisfies readonly { key: string; label: string; sym: keyof typeof SYM }[];
 
 /**
  * המרווח שמסך עם שורה תחתונה חייב להשאיר לנאב-בר.
@@ -48,7 +52,8 @@ export function BottomNav() {
         const on = screen === t.key;
         return (
           <Pressable key={t.key} onPress={() => go(t.key)} style={[s.tab, on && s.tabOn]}>
-            <t.Icon size={22} color={on ? ON_INK : OFF_INK} strokeWidth={on ? ON_STROKE : OFF_STROKE} />
+            {/* ⚠ הלשונית הפעילה מקבלת את האינדיגו המלא · הרדומה שקופה יותר */}
+            <S k={t.sym} size={22} color={on ? ON_INK : INDIGO_70} />
             <Text style={[s.label, { color: on ? ON_INK : OFF_INK, fontWeight: on ? '700' : '400' }]}>
               {t.label}
             </Text>

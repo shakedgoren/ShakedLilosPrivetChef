@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import { useNav } from '../navigation/store';
 import { LogoutConfirm } from './LogoutConfirm';
+import { S } from './Sym';
 
 /**
  * כפתור ההתנתקות · מרחף בפינה השמאלית העליונה בכל רחבי האפליקציה.
@@ -29,29 +29,6 @@ const INK = '#6E6478';
  * דלת עם חץ יוצא · החץ מצביע שמאלה, כלומר החוצה מהדלת,
  * כי זה כיוון היציאה בממשק RTL.
  */
-function ExitDoor({ size = GLYPH, color = INK, strokeWidth = STROKE }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* מסגרת הדלת · פתוחה בצד שממנו יוצאים */}
-      <Path
-        d="M10 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-8"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* החץ היוצא */}
-      <Path
-        d="M14 12H3m3-3-3 3 3 3"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
 export function LogoutButton() {
   const { loggedIn, signOut, loginOverlay, screen } = useNav();
   const [open, setOpen] = useState(false);
@@ -70,7 +47,7 @@ export function LogoutButton() {
   return (
     <View style={s.slot} pointerEvents="box-none">
       <Pressable onPress={() => setOpen(true)} style={s.button} hitSlop={8}>
-        <ExitDoor />
+        <S k="logout" size={GLYPH} />
       </Pressable>
 
       <LogoutConfirm

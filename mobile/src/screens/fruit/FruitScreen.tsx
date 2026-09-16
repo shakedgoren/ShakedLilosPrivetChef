@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { S } from '../../components/Sym';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
@@ -106,7 +107,7 @@ export function FruitScreen() {
 
         {/* לחיצה מחייגת · האייקון והמספר יחד הם הכפתור */}
         <Pressable onPress={() => void Linking.openURL(PHONE_HREF)} style={s.phone}>
-          <Phone size={PHONE_GLYPH} color={ACCENT.deep} strokeWidth={1.9} />
+          <S k="phone" size={PHONE_GLYPH} color={ACCENT.deep} />
           <Text style={s.phoneText}>{PHONE_LABEL}</Text>
         </Pressable>
 

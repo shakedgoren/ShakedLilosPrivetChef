@@ -14,6 +14,7 @@ const MAX_SUGGESTIONS = 4;
 import { useNav } from '../../navigation/store';
 import { a, radius, space, surface } from '../../theme/tokens';
 import { ChevronLeft, Close } from '../../icons';
+import { S } from '../../components/Sym';
 
 const IDLE_BD = 'rgba(130,112,162,0.18)';
 const BAD_BD = 'rgba(185,83,73,0.5)';
@@ -281,7 +282,8 @@ export function ProfileScreen() {
               <Text style={s.avatarGlyph}>☺</Text>
             )}
             <View style={s.cam}>
-              <Text style={s.camGlyph}>📷</Text>
+              {/* ⚠ היה אמוג׳י · עכשיו camera.fill כפי שביקשה שקד */}
+              <S k="camera" size={15} />
             </View>
           </Pressable>
           <Text style={s.displayName}>{displayName}</Text>

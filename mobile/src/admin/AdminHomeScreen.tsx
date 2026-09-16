@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
@@ -69,7 +70,7 @@ export function AdminHomeScreen() {
             הנגישות של הכפתור. */}
         <View style={s.headStart}>
         <Pressable onPress={admin.openNew} accessibilityLabel={NEW_ORDER_LABEL} style={s.newChip} hitSlop={8}>
-          <Plus size={18} color={LAV.chipInk} strokeWidth={2.6} />
+          <S k="plus" size={18} color={LAV.chipInk} />
         </Pressable>
         </View>
 

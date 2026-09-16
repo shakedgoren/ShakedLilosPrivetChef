@@ -27,8 +27,9 @@ import { ApiError, type Session } from '../api/types';
 import { BlobField } from '../components/BlobField';
 import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
-import { FaceId, Female, Mail, Male, Other, WhatsApp } from '../components/LoginIcons';
-import { Check, Clock, Lock, Phone, User } from '../icons';
+import { Mail, WhatsApp } from '../components/LoginIcons';
+import { S } from '../components/Sym';
+import { Check, Clock, User } from '../icons';
 import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
@@ -74,11 +75,12 @@ const OTP_LEN = 6;
 const okPhone = (v: string) => /^0(5\d|[2-4,8-9])-?\d{7}$/.test(v.trim().replace(/\s/g, ''));
 const okMail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
 
-const GENDERS: { key: Exclude<Gender, ''>; label: string; Icon: typeof Male }[] = [
-  { key: 'male', label: T.gMale, Icon: Male },
-  { key: 'female', label: T.gFemale, Icon: Female },
-  { key: 'other', label: T.gOther, Icon: Other },
-];
+/** ⚠ הסמלים שבחרה שקד · שפם, פה ומוח */
+const GENDERS = [
+  { key: 'male', label: T.gMale, sym: 'male' },
+  { key: 'female', label: T.gFemale, sym: 'female' },
+  { key: 'other', label: T.gOther, sym: 'other' },
+] as const satisfies readonly { key: Exclude<Gender, ''>; label: string; sym: 'male' | 'female' | 'other' }[];
 
 /**
  * ⚠ **מוגדר מחוץ לרכיב, ובכוונה** · כשהוא היה בתוך `LoginScreen`
@@ -92,6 +94,7 @@ function Field({
   onChange,
   placeholder,
   Icon,
+  sym,
   secure,
   eye,
   keyboard,
@@ -104,7 +107,8 @@ function Field({
   value: string;
   onChange?: (v: string) => void;
   placeholder: string;
-  Icon: typeof User;
+  Icon?: typeof User;
+  sym?: 'phone' | 'lock';
   secure?: boolean;
   eye?: boolean;
   keyboard?: 'phone-pad' | 'email-address';
@@ -129,7 +133,7 @@ function Field({
           style={[s.input, locked && s.inputLocked, eye && s.inputEye]}
         />
         <View style={s.fieldIcon} pointerEvents="none">
-          <Icon size={18} color="#9A93A6" strokeWidth={1.8} />
+          {sym ? <S k={sym} size={18} /> : Icon ? <Icon size={18} color="#9A93A6" strokeWidth={1.8} /> : null}
         </View>
         {eye ? (
           <View style={s.eye}>
@@ -304,13 +308,13 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   if (step === 'in') {
     body = (
       <>
-        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" Icon={Phone} keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field
           label="סיסמה"
           value={pass}
           onChange={setPass}
           placeholder={`לפחות ${PASS_MIN} תווים`}
-          Icon={Lock}
+          sym="lock"
           secure
           eye={!armed}
           onPress={armed ? onPassPress : undefined}
@@ -321,14 +325,14 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
     /* ⚠ **בלי אות אחת** · בקשה מפורשת של שקד · רק הפנים */
     body = (
       <Pressable onPress={() => setStep('in')} style={s.faceWrap}>
-        <FaceId size={124} color={PLUM} strokeWidth={1.3} />
+        <S k="faceId" size={124} />
       </Pressable>
     );
   } else if (step === 'ask') {
     body = (
       <View style={s.faceWrap}>
         <View style={s.ring}>
-          <FaceId size={40} color="#A9812A" strokeWidth={1.5} />
+          <S k="faceId" size={40} />
         </View>
         <Text style={s.askTitle}>{T.faceAsk}</Text>
         <Pressable onPress={() => onArm(true)} style={s.cta}>
@@ -346,7 +350,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       <>
         <Dots at={0} />
         <Text style={s.stepTitle}>{T.verifyTitle}</Text>
-        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" Icon={Phone} keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <View style={s.waRow}>
           <View style={s.waPill}>
             <WhatsApp size={13} color="#127A3E" strokeWidth={1.8} />
@@ -391,11 +395,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
     body = (
       <>
         <Dots at={2} />
-        <Field label="טלפון" value={phone} placeholder="050-0000000" Icon={Phone} locked showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="טלפון" value={phone} placeholder="050-0000000" sym="phone" locked showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={User} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="אימייל" value={mail} onChange={setMail} placeholder="name@mail.com" Icon={Mail} keyboard="email-address" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} Icon={Lock} secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" Icon={Lock} secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} sym="lock" secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" sym="lock" secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
 
         <Text style={s.label}>{T.gender}</Text>
         <View style={s.genders}>
@@ -407,7 +411,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                 onPress={() => setGender(on ? '' : g.key)}
                 style={[s.gender, on && s.genderOn]}
               >
-                <g.Icon size={23} color={on ? DEEP : '#8A8194'} strokeWidth={1.8} />
+                <S k={g.sym} size={23} />
                 <Text style={[s.genderText, on && s.genderTextOn]}>{g.label}</Text>
               </Pressable>
             );
@@ -431,7 +435,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
             </Text>
             {!read ? (
               <View style={s.needRow}>
-                <Lock size={11} color="#9A7A3A" strokeWidth={2.2} />
+                <S k="lock" size={12} />
                 <Text style={s.needText}>{T.termsNeed}</Text>
               </View>
             ) : null}

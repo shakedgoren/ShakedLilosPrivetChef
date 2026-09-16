@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import {
@@ -128,14 +129,14 @@ export function DayPanel({ admin }: Props) {
                       onPress={() => admin.bumpQuota(q.id, 1)}
                       style={[s.round, { backgroundColor: `rgba(${cat.rgb},0.13)` }]}
                     >
-                      <Plus size={13} color={cat.deep} strokeWidth={2.4} />
+                      <S k="plus" size={13} color={cat.deep} />
                     </Pressable>
                     <Text style={s.quotaNum}>{q.n}</Text>
                     <Pressable
                       onPress={() => admin.bumpQuota(q.id, -1)}
                       style={[s.round, s.minus, { opacity: q.n > 0 ? 1 : 0.4 }]}
                     >
-                      <Minus size={13} color="#2A2430" strokeWidth={2.4} />
+                      <S k="minus" size={13} color="#2A2430" />
                     </Pressable>
                   </View>
                   </View>

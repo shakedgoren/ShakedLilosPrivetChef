@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { CITIES, PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
@@ -135,7 +136,8 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
           { backgroundColor: a(accent.rgb, PICKUP_BG), borderColor: a(accent.rgb, PICKUP_EDGE) },
         ]}
       >
-        <Bag size={OPTION_ICON} color={accent.hue} strokeWidth={OPTION_STROKE} />
+        {/* ⚠ SF Symbols · mappin.and.ellipse לאיסוף עצמי */}
+        <S k="pickup" size={OPTION_ICON} color={accent.hue} />
         <View style={s.optionText}>
           <Text style={s.optionTitle}>איסוף עצמי</Text>
           <Text style={s.optionSub}>נופר 25, יבנה · {window(pickupFrom, pickupTo)}</Text>
@@ -144,7 +146,8 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
       </Pressable>
 
       <Pressable onPress={f.wantDelivery} style={[s.option, s.optionPlain]}>
-        <Truck size={OPTION_ICON} color={TRUCK_INK} strokeWidth={OPTION_STROKE} />
+        {/* ⚠ SF Symbols · paperplane למשלוח, כפי שביקשה שקד */}
+        <S k="delivery" size={OPTION_ICON} color={TRUCK_INK} />
         <View style={s.optionText}>
           <Text style={s.optionTitle}>משלוח</Text>
           <Text style={s.optionSub}>

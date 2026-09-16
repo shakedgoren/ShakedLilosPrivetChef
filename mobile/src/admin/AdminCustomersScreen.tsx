@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { S } from '../components/Sym';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { count as plural } from '../text/counts';
@@ -264,14 +265,14 @@ export function AdminCustomersScreen() {
                         accessibilityLabel={CALL_LABEL}
                         style={s.act}
                       >
-                        <PhoneCall size={17} color="#6E6478" strokeWidth={1.9} />
+                        <S k="phone" size={17} color="#6E6478" />
                       </Pressable>
                       <Pressable
                         onPress={() => startOrder(p)}
                         accessibilityLabel={ORDER_LABEL}
                         style={[s.act, s.actGo]}
                       >
-                        <Plus size={17} color="#43307A" strokeWidth={2.4} />
+                        <S k="plus" size={17} color="#43307A" />
                       </Pressable>
                     </View>
                   </View>

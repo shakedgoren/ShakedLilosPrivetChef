@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from '../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { HUES, MENU, ROLL, SCH_ROLLS } from '../data/adminOrders';
@@ -32,7 +33,7 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
                 onPress={() => onBump(it.id, 1)}
                 style={[s.round, { backgroundColor: `rgba(${hue.rgb},0.13)` }]}
               >
-                <Plus size={13} color={hue.deep} strokeWidth={2.4} />
+                <S k="plus" size={13} color={hue.deep} />
               </Pressable>
               <Text
                 style={[
@@ -46,7 +47,7 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
                 onPress={() => onBump(it.id, -1)}
                 style={[s.round, s.minus, { opacity: n > 0 ? 1 : 0.35 }]}
               >
-                <Minus size={13} color="#2A2430" strokeWidth={2.4} />
+                <S k="minus" size={13} color="#2A2430" />
               </Pressable>
             </View>
           </View>

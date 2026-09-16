@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Minus, Plus } from '../icons';
+import { S } from './Sym';
 import { IS_RTL } from '../theme/rtl';
 
 const OFF = '#C0B9CA';
@@ -66,7 +66,8 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
         style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG }, maxed && s.keyOff]}
         hitSlop={8}
       >
-        <Plus size={glyph} color={tone?.plusInk ?? PLUS_INK} strokeWidth={GLYPH_STROKE} />
+        {/* ⚠ SF Symbols · הסמלים שבחרה שקד ל-+ ול-‎- */}
+        <S k="plus" size={glyph} color={tone?.plusInk ?? PLUS_INK} />
       </Pressable>
 
       {center ?? (
@@ -79,7 +80,7 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
         style={[s.key, round, { backgroundColor: tone?.minusBg ?? KEY_BG }, atMin && s.keyOff]}
         hitSlop={8}
       >
-        <Minus size={glyph} color={atMin ? OFF : (tone?.minusInk ?? ON)} strokeWidth={GLYPH_STROKE} />
+        <S k="minus" size={glyph} color={atMin ? OFF : (tone?.minusInk ?? ON)} />
       </Pressable>
     </View>
   );
