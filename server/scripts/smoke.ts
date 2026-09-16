@@ -9,6 +9,23 @@ import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
+const isoDay = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const addDays = (iso: string, n: number) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return isoDay(new Date(y, m - 1, d + n));
+};
+/** שלישי הבא (או היום אם היום שלישי) · יום מכירת קוסקוס לא יכול להיות בעבר */
+const nextTuesday = () => {
+  const now = new Date();
+  const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  dt.setDate(dt.getDate() + ((2 - dt.getDay() + 7) % 7));
+  return isoDay(dt);
+};
+const OPEN_COUS = nextTuesday();
+const QUOTA_DAY = addDays(OPEN_COUS, 7);
+const CLOSED_DAY = addDays(OPEN_COUS, 14);
+
 const root = new URL('..', import.meta.url).pathname;
 const dir = mkdtempSync(join(tmpdir(), 'bite-tell-smoke-'));
 const db = join(dir, 'smoke.db');
@@ -22,6 +39,10 @@ process.env.ADMIN_PASSWORD = 'changeme';
 process.env.ADMIN_NAME = 'שקד לילוז';
 process.env.NODE_ENV = 'test';
 process.env.UPLOAD_DIR = join(dir, 'uploads');
+process.env.BIT_PAY_LINK = 'https://bit.example/pay';
+process.env.PAYBOX_PAY_LINK = 'https://paybox.example/pay';
+process.env.BIT_PAY_PHONE = '0500000000';
+process.env.PAYBOX_PAY_PHONE = '';
 delete process.env.WHATSAPP_TOKEN;
 delete process.env.WHATSAPP_PHONE_NUMBER_ID;
 delete process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
@@ -48,7 +69,7 @@ await prisma.user.create({
 
 await prisma.saleDay.create({
   data: {
-    date: '2026-09-15',
+    date: OPEN_COUS,
     sale: 'cous',
     open: true,
     quotasJson: JSON.stringify({
@@ -155,10 +176,48 @@ const created = await api('/orders', {
   }),
 });
 if (created.status !== 201) fail('create order', created);
-const order = (created.body as { order: { id: string; total: number; status: string; saleDate: string } }).order;
+const order = (created.body as {
+  order: { id: string; total: number; status: string; saleDate: string; paymentStatus?: string; paidAt?: string | null };
+}).order;
 if (order.total !== 145) fail('price', order);
 if (order.status !== 'חדשה') fail('status', order);
-if (order.saleDate !== '2026-09-15') fail('saleDate resolved to open couscous day', order);
+if (order.saleDate !== OPEN_COUS) fail('saleDate resolved to open couscous day', order);
+if (order.paymentStatus !== 'pending') fail('new order should be pending payment', order);
+if (order.paidAt) fail('new order should not have paidAt', order);
+
+const applePay = await api('/orders', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({
+    ship: 'self',
+    time: '12:30',
+    pay: 'אפל פיי',
+    details: { category: 'cous', qty: [1, 0, 0, 0, 0, 0] },
+  }),
+});
+if (applePay.status !== 400) fail('apple pay should 400', applePay);
+if ((applePay.body as { error?: string }).error !== 'invalid_order') fail('apple pay error code', applePay);
+
+const creditPay = await api('/orders', {
+  method: 'POST',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({
+    ship: 'self',
+    time: '12:30',
+    pay: 'אשראי',
+    details: { category: 'cous', qty: [1, 0, 0, 0, 0, 0] },
+  }),
+});
+if (creditPay.status !== 400) fail('credit should 400', creditPay);
+
+const payCfg = await api('/payments');
+if (payCfg.status !== 200) fail('payments config', payCfg);
+const cfg = payCfg.body as { methods?: string[]; bit?: { link?: string }; paybox?: { link?: string } };
+if (!cfg.methods || !cfg.methods.includes('ביט') || cfg.methods.includes('אפל פיי')) {
+  fail('payments methods', payCfg);
+}
+if (cfg.bit?.link !== 'https://bit.example/pay') fail('bit pay link', payCfg);
+if (cfg.paybox?.link !== 'https://paybox.example/pay') fail('paybox pay link', payCfg);
 
 const listed = await api('/orders', { headers: { authorization: `Bearer ${customerToken}` } });
 if (listed.status !== 200) fail('list mine', listed);
@@ -198,6 +257,43 @@ const asAdmin = await api(`/orders/${order.id}`, {
 });
 if (asAdmin.status !== 200) fail('admin get customer order', asAdmin);
 
+const customerMarkPaid = await api(`/admin/orders/${order.id}/payment`, {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${customerToken}` },
+  body: JSON.stringify({ status: 'paid' }),
+});
+if (customerMarkPaid.status !== 403) fail('customer cannot mark paid', customerMarkPaid);
+
+const markedPaid = await api(`/admin/orders/${order.id}/payment`, {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ status: 'paid' }),
+});
+if (markedPaid.status !== 200) fail('admin mark paid', markedPaid);
+const paidOrder = (markedPaid.body as { order: { paymentStatus?: string; paidAt?: string | null } }).order;
+if (paidOrder.paymentStatus !== 'paid') fail('paymentStatus paid', markedPaid);
+if (!paidOrder.paidAt) fail('paidAt missing', markedPaid);
+
+const markedUnpaid = await api(`/admin/orders/${order.id}/payment`, {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ status: 'pending' }),
+});
+if (markedUnpaid.status !== 200) fail('admin mark unpaid', markedUnpaid);
+const unpaidOrder = (markedUnpaid.body as { order: { paymentStatus?: string; paidAt?: string | null } }).order;
+if (unpaidOrder.paymentStatus !== 'pending') fail('paymentStatus pending', markedUnpaid);
+if (unpaidOrder.paidAt) fail('paidAt should clear', markedUnpaid);
+
+const waived = await api(`/admin/orders/${order.id}/payment`, {
+  method: 'PATCH',
+  headers: { authorization: `Bearer ${adminToken}` },
+  body: JSON.stringify({ status: 'waived' }),
+});
+if (waived.status !== 200) fail('admin waive', waived);
+if ((waived.body as { order: { paymentStatus?: string } }).order.paymentStatus !== 'waived') {
+  fail('paymentStatus waived', waived);
+}
+
 const customers = await api('/admin/customers', {
   headers: { authorization: `Bearer ${adminToken}` },
 });
@@ -232,7 +328,7 @@ if (!avatarUrl.startsWith('/uploads/avatars/')) fail('avatarUrl path', photo.bod
 const served = await api(avatarUrl);
 if (served.status !== 200) fail('serve avatar', served);
 
-const quotaDay = await api('/admin/days/2026-09-22', {
+const quotaDay = await api(`/admin/days/${QUOTA_DAY}`, {
   method: 'PUT',
   headers: { authorization: `Bearer ${adminToken}` },
   body: JSON.stringify({
@@ -250,14 +346,14 @@ const overQuota = await api('/orders', {
     ship: 'self',
     time: '12:30',
     pay: 'ביט',
-    saleDate: '2026-09-22',
+    saleDate: QUOTA_DAY,
     details: { category: 'cous', qty: [2, 0, 0, 0, 0, 0] },
   }),
 });
 if (overQuota.status !== 409) fail('quota should 409', overQuota);
 if ((overQuota.body as { error?: string }).error !== 'quota_exceeded') fail('quota code', overQuota);
 
-const closedDay = await api('/admin/days/2026-09-29', {
+const closedDay = await api(`/admin/days/${CLOSED_DAY}`, {
   method: 'PUT',
   headers: { authorization: `Bearer ${adminToken}` },
   body: JSON.stringify({ sale: 'cous', open: false }),
@@ -271,7 +367,7 @@ const closedOrder = await api('/orders', {
     ship: 'self',
     time: '12:30',
     pay: 'ביט',
-    saleDate: '2026-09-29',
+    saleDate: CLOSED_DAY,
     details: { category: 'cous', qty: [1, 0, 0, 0, 0, 0] },
   }),
 });
@@ -287,7 +383,7 @@ if (again.status !== 201) fail('reorder', again);
 const copy = (again.body as { order: { id: string; total: number; saleDate: string } }).order;
 if (copy.id === order.id) fail('reorder must be a new order', again);
 if (copy.total !== 145) fail('reorder price from catalog', again);
-if (copy.saleDate !== '2026-09-15') fail('reorder saleDate', again);
+if (copy.saleDate !== OPEN_COUS) fail('reorder saleDate', again);
 
 process.env.GOOGLE_CLIENT_ID = 'smoke.apps.googleusercontent.com';
 const googleNoToken = await api('/auth/google', { method: 'POST', body: JSON.stringify({}) });

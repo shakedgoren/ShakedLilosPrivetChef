@@ -1,4 +1,4 @@
-import { CITIES, PAYMENTS, SALE_DATE } from '../../../mobile/src/data/shared.ts';
+import { CITIES, SALE_DATE } from '../../../mobile/src/data/shared.ts';
 import {
   COUSCOUS_FULFILLMENT,
   COUSCOUS_MENU,
@@ -28,6 +28,7 @@ import {
 } from '../../../mobile/src/data/adminOrders.ts';
 import { isAddressValid, toMinutes, type OrderLine } from '../../../mobile/src/order/types.ts';
 import { badRequest } from '../errors.ts';
+import { assertCustomerPay } from '../orders/payment.ts';
 
 export const CATEGORIES = ['cous', 'schn', 'box', 'fruit', 'chef'] as const;
 export type CategoryKey = (typeof CATEGORIES)[number];
@@ -191,7 +192,7 @@ export function quoteCustomer(details: CustomerDetails): Quote {
 export function assertFulfillment(category: CategoryKey, meals: number, f: FulfillmentInput) {
   const cfg = FULFILLMENT[category];
   if (f.ship !== 'self' && f.ship !== 'deliv') throw badRequest('invalid_order', 'ship');
-  if (!(PAYMENTS as readonly string[]).includes(f.pay)) throw badRequest('invalid_order', 'pay');
+  assertCustomerPay(f.pay);
 
   const minutes = toMinutes(f.time);
   if (minutes === null) throw badRequest('invalid_order', 'time');

@@ -12,6 +12,7 @@ import { adminStockRouter } from './routes/adminStock.ts';
 import { adminShopRouter } from './routes/adminShop.ts';
 import { adminFinanceRouter } from './routes/adminFinance.ts';
 import { whatsappWebhookRouter } from './routes/whatsappWebhook.ts';
+import { paymentsRouter } from './routes/payments.ts';
 
 export function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp() {
   });
 
   app.use('/webhooks/whatsapp', whatsappWebhookRouter);
+  app.use('/payments', paymentsRouter);
   app.use('/auth', authRouter);
   app.use('/users', usersRouter);
   app.use('/orders', ordersRouter);

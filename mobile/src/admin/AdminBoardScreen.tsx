@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { COPY } from '../api/copy';
 import { surface } from '../theme/tokens';
 import {
   BAND as BOARD_BAND,
@@ -64,12 +65,16 @@ type Row = {
   time: string;
   ship: 'pickup' | 'deliv';
   pay: string;
+  paymentStatus?: string;
   status: string;
   note: string;
   q: Record<string, number>;
   gone?: boolean;
   hrs: number;
 };
+
+const payCell = (pay: string, status?: string) =>
+  status === 'paid' ? `${pay} · ${COPY.payPaid}` : pay;
 
 const sumOf = (q: Record<string, number>) =>
   BOARD_CAT.items.reduce((s, it) => s + (q[it.id] || 0) * it.price, 0);
@@ -101,6 +106,7 @@ export function AdminBoardScreen() {
         time: c.time,
         ship: c.ship.includes('משלוח') ? 'deliv' : 'pickup',
         pay: c.pay,
+        paymentStatus: c.paymentStatus,
         status: BOARD_FLOW.includes(c.status as (typeof BOARD_FLOW)[number])
           ? c.status
           : c.status === 'בהכנה' || c.status === 'מאושרת'
@@ -336,7 +342,7 @@ export function AdminBoardScreen() {
                 </View>
 
                 <View style={s.oFoot}>
-                  <Text style={s.oPay}>{x.o.pay}</Text>
+                  <Text style={s.oPay}>{payCell(x.o.pay, x.o.paymentStatus)}</Text>
                   <View style={s.oSteps}>
                     {BOARD_STEPS.map((st) => {
                       const on = x.o.status === st.id;
@@ -421,7 +427,7 @@ export function AdminBoardScreen() {
                       </View>
                     ))}
                     <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
-                    <Text style={[s.cell, { width: w.pay }]}>{x.o.pay}</Text>
+                    <Text style={[s.cell, { width: w.pay }]}>{payCell(x.o.pay, x.o.paymentStatus)}</Text>
                     {/* ⚠ **שלושה אייקונים ולא כפתורי טקסט** · כך זה בקנבס:
                         `STEPS` נושא את הנתיבים, והפעיל נצבע בגוון השורה. */}
                     <View style={[s.steps, { width: w.status }]}>

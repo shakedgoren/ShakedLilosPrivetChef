@@ -6,7 +6,7 @@ import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { OrderTracker } from '../../components/OrderTracker';
 import { StepIn } from '../../components/StepIn';
 import { apiEnabled } from '../../api/config';
-import { COPY, orderError } from '../../api/copy';
+import { COPY, orderError, payDetail, paymentStatusLabel } from '../../api/copy';
 import { ApiError, type Order } from '../../api/types';
 import { useNav, type Screen } from '../../navigation/store';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -201,7 +201,7 @@ function OrderCard({
   const rows = [
     { k: 'הפריטים', v: itemsLine(order) || '—' },
     { k: 'מועד', v: whenLine(order) },
-    { k: 'תשלום', v: order.pay },
+    { k: 'תשלום', v: payDetail(order.pay, order.paymentStatus) },
     { k: 'מספר הזמנה', v: shortRef(order.id) },
   ];
   if (cancelled) rows.push({ k: 'דמי ביטול', v: 'ללא חיוב' });
@@ -227,6 +227,20 @@ function OrderCard({
           )}
           <Text style={[s.cardName, cancelled && s.cancelledName]}>{categoryName(order.category)}</Text>
           {variant === 'live' ? <Text style={[s.when, { color: hue.deep }]}>{whenLine(order)}</Text> : null}
+          {variant === 'live' ? (
+            <Text
+              style={[
+                s.payChip,
+                order.paymentStatus === 'paid'
+                  ? s.payChipPaid
+                  : order.paymentStatus === 'waived'
+                    ? s.payChipMuted
+                    : s.payChipWait,
+              ]}
+            >
+              {paymentStatusLabel(order.paymentStatus ?? 'pending')}
+            </Text>
+          ) : null}
         </View>
         <View style={s.cardSide}>
           <View style={s.sumRow}>
@@ -345,6 +359,10 @@ const s = StyleSheet.create({
   cardName: { fontSize: 19, fontWeight: '600', color: surface.ink, lineHeight: 23 },
   cancelledName: { color: '#8A8194' },
   when: { fontSize: 13, fontWeight: '500' },
+  payChip: { fontSize: 11.5, fontWeight: '600', marginTop: 1 },
+  payChipWait: { color: '#A65E2A' },
+  payChipPaid: { color: '#4E8A64' },
+  payChipMuted: { color: '#A79FB2' },
   cardSide: { alignItems: 'flex-end', gap: 7 },
   sumRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   sum: { fontSize: 20, fontWeight: '600', color: surface.ink },

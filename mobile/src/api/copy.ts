@@ -26,6 +26,21 @@ export const COPY = {
   /* ⚠ עודכן · שקד קבעה (16.9.2026) שהאיפוס נשלח למייל, לא בוואטסאפ */
   resetSentBody: 'אם יש חשבון עם הכתובת הזו, הקישור לאיפוס נשלח אליה · תקף ל-10 דקות.',
   otpInvalid: 'הקוד לא תקין או שפג תוקפו',
+  /* חדש · לא בקנבס · תשלום ביט / פייבוקס / מזומן בלי סליקת אשראי */
+  payBitTitle: 'תשלום בביט',
+  payBitBody: 'מעבירים את הסכום בביט לפי הקישור או המספר. האישור ידני — כשהתשלום מתקבל ההזמנה מסומנת כשולמה.',
+  payPayboxTitle: 'תשלום בפייבוקס',
+  payPayboxBody: 'מעבירים את הסכום בפייבוקס לפי הקישור או המספר. האישור ידני — כשהתשלום מתקבל ההזמנה מסומנת כשולמה.',
+  payCashPickup: 'משלמים במזומן באיסוף · נופר 25, יבנה.',
+  payCashDelivery: 'משלמים במזומן במסירה.',
+  payOpenLink: 'מעבר לתשלום',
+  payCall: 'חיוג',
+  payLinkMissing: 'קישור התשלום יתווסף כאן. בינתיים אפשר לפנות לשקד לביט או לפייבוקס.',
+  payPending: 'ממתין לתשלום',
+  payPaid: 'שולם',
+  payWaived: 'ללא חיוב',
+  payMarkPaid: 'סמני כשולם',
+  payMarkUnpaid: 'סמני כטרם שולם',
 };
 
 /**
@@ -61,4 +76,17 @@ export function orderError(code: string, serverMessage?: string): string {
   if (code === 'reorder_unavailable') return COPY.reorderUnavailable;
   if (code === 'login_required') return COPY.authFail;
   return COPY.orderFail;
+}
+
+export function paymentStatusLabel(status: string): string {
+  if (status === 'paid') return COPY.payPaid;
+  if (status === 'waived') return COPY.payWaived;
+  return COPY.payPending;
+}
+
+export function payDetail(pay: string, status?: string): string {
+  const st = paymentStatusLabel(status ?? 'pending');
+  const method = pay.trim();
+  if (!method) return st;
+  return `${method} · ${st}`;
 }

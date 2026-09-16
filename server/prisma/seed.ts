@@ -226,6 +226,8 @@ async function main() {
       const hit = [...PEOPLE, ...BOOK].find((p) => p.name === name);
       return hit ? normalizePhone(hit.phone) : '0500000001';
     };
+    const paidFields = (status: string, when: Date) =>
+      status === 'נמסרה' ? { paymentStatus: 'paid' as const, paidAt: when } : {};
 
     for (const o of BOARD_SEED) {
       const qty = { ...o.q };
@@ -264,6 +266,7 @@ async function main() {
           shippingFee: quote.shippingFee,
           total: quote.total,
           createdAt: new Date('2026-09-01T08:00:00'),
+          ...paidFields(o.status, new Date('2026-09-01T08:00:00')),
         },
       });
     }
@@ -278,7 +281,7 @@ async function main() {
       date: string;
       created: string;
     }> = [
-      { who: 'יעל לוי', cat: 'schn', qty: { boxThin: 0 }, status: 'נמסרה', time: '11:40', pay: 'אפל פיי', date: '2026-08-21', created: '2026-08-21T09:00:00' },
+      { who: 'יעל לוי', cat: 'schn', qty: { boxThin: 0 }, status: 'נמסרה', time: '11:40', pay: 'ביט', date: '2026-08-21', created: '2026-08-21T09:00:00' },
       { who: 'רונית שגב', cat: 'fruit', qty: {}, status: 'נמסרה', time: '09:20', pay: 'מזומן', date: '2026-08-27', created: '2026-08-27T08:00:00' },
       { who: 'דנה כהן', cat: 'cous', qty: { veg: 2, chick: 1 }, status: 'נמסרה', time: '12:30', pay: 'ביט', date: '2026-08-25', created: '2026-08-25T09:00:00' },
       { who: 'שירה מזרחי', cat: 'chef', qty: {}, status: 'נמסרה', time: '18:00', pay: 'ביט', date: '2026-08-29', created: '2026-08-29T10:00:00' },
@@ -315,6 +318,7 @@ async function main() {
             shippingFee: 0,
             total: quote.total,
             createdAt: new Date(o.created),
+            ...paidFields(o.status, new Date(o.created)),
           },
         });
       } else {
@@ -343,6 +347,7 @@ async function main() {
             shippingFee: 0,
             total,
             createdAt: new Date(o.created),
+            ...paidFields(o.status, new Date(o.created)),
           },
         });
       }
