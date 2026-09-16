@@ -1,47 +1,37 @@
 import React from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text } from '../ui/text';
-import Svg, { Circle, Defs, Line, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { brand, space, type } from '../theme/tokens';
-import { MARK_STYLES, type MarkStyleKey } from '../theme/markStyles';
+import { MARK_STYLES, REF_BAND, type MarkStyleKey } from '../theme/markStyles';
 
 /**
- * הכותרת · עיצוב ״שטיפה״, אופציה 04 מתוך הסבב השני.
+ * הכותרת · ״חתימה״.
  *
- * ⚠ **נבחר על ידי שקד ב-16 בספטמבר 2026** · מתוך חמש תצוגות שהוצגו
- * על צילום אמיתי של מסך הבית. היא ביקשה גם שהכיתוב שמתחת לשם יהיה
- * ״באותו הפונט כמו של הכיתוב בתוך הקטגוריות״.
+ * ⚠ **נבחרה על ידי שקד ב-16 בספטמבר 2026** · מתוך עשר תצוגות
+ * מקדימות בגופנים שונים, שמתוכן היא ביקשה לראות שלוש בנויות על
+ * האייפון. הכיתוב שמתחת לשם הוא **באותו הגופן של כותרות
+ * הקטגוריות** — בקשה מפורשת שלה, וזו הסיבה שהמשקל שם הוא 200.
  *
  * הזהב של השם הוא גרדיאנט על הטקסט עצמו (background-clip: text
  * בקנבס). ב-React Native אין גרדיאנט על טקסט, ולכן השם מצויר ב-SVG.
  */
-const MARK_HEIGHT_PAD = 10;
 const SUB = 'אוכל ביתי · ארוחות שף · עמדת טאבון';
 
 /**
- * ⚠ **הסגנון הפעיל · 16 בספטמבר 2026** · שקד בחרה שלושה מועמדים
- * מתוך עשר תצוגות מקדימות וביקשה לראות את דף הבית עם כל אחד:
- * `breath` (03 · נשימה), `signature` (05 · חתימה) ו-`home` (10 · בית).
- * עד שתחליט נשאר `anton` — מה שיש היום. **החלפת המילה הזו היא כל
- * מה שצריך**, וכשתיבחר אחת, השתיים האחרות ומשפחות הגופן שלהן יוסרו.
+ * הסגנון הפעיל.
+ * ⚠ `anton` הוא מה שהיה כאן עד ה-16 בספטמבר, והוא נשאר בטבלה
+ * כדי שאפשר יהיה לחזור אליו במילה אחת.
  */
-const MARK_STYLE: MarkStyleKey = 'anton';
-
-/** הרווח בין הכיתוב לקווים שלצידו · ״נשימה״ */
-const FLANK_GAP = 15;
-/** הנקודה והקו שמשני הצדדים · ״בית״ */
-const ORN_GAP = 16;
-const ORN_DOT = 3;
-const ORN_LINE = 20;
+const MARK_STYLE: MarkStyleKey = 'signature';
 
 export function Masthead() {
   const { width } = useWindowDimensions();
   const v = MARK_STYLES[MARK_STYLE];
   /* ⚠ `HomeScreen` מרפד 18 מכל צד · הלוח צר מהמסך בדיוק בכפולה */
   const band = Math.max(0, width - space.lg * 2);
-  const cx = band / 2;
-  /* הקצה הימני והשמאלי של הכיתוב · ידוע רק כשהרוחב כפוי */
-  const half = ('textWidth' in v ? v.textWidth : 0) / 2;
+  /* המתיחה ביחס למסך הייחוס · ראו `fit` ב-`markStyles` */
+  const k = 'fit' in v && v.fit ? band / REF_BAND : 1;
 
   return (
     <View style={s.band}>
@@ -49,7 +39,7 @@ export function Masthead() {
           היה לבן, כדי לחמם את ראשו. שקד בחרה מאז רקע לילכי לכל
           העמוד, ושתי שכבות צבע זו על זו יצרו פס עכור מעל הכותרת.
           עכשיו הרקע עושה את העבודה, והזהב נשאר בכותרת עצמה. */}
-      <Svg width={band} height={v.height + MARK_HEIGHT_PAD}>
+      <Svg width={band} height={v.height * k}>
         <Defs>
           {/* ⚠ **זהב מטאלי · אנכי · 16 בספטמבר 2026** · שקד שלחה
               תמונת ייחוס וביקשה כותרת בסגנון הזה. הגרדיאנט הקודם היה
@@ -66,96 +56,51 @@ export function Masthead() {
           </LinearGradient>
         </Defs>
 
-        {/* ״נשימה״ · שני קווים שנמשכים מהכיתוב אל קצוות הלוח */}
-        {'flank' in v && v.flank ? (
-          <>
-            <Line
-              x1={0}
-              y1={v.baseline - v.size * 0.32}
-              x2={cx - half - FLANK_GAP}
-              y2={v.baseline - v.size * 0.32}
-              stroke={brand.goldInk}
-              strokeOpacity={0.5}
-              strokeWidth={1}
-            />
-            <Line
-              x1={cx + half + FLANK_GAP}
-              y1={v.baseline - v.size * 0.32}
-              x2={band}
-              y2={v.baseline - v.size * 0.32}
-              stroke={brand.goldInk}
-              strokeOpacity={0.5}
-              strokeWidth={1}
-            />
-          </>
-        ) : null}
-
-        {/* ״בית״ · נקודה וקו קצר משני צדי השם */}
-        {'ornaments' in v && v.ornaments
-          ? ([1, -1] as const).map((dir) => {
-              const dot = cx + dir * (half + ORN_GAP);
-              const y = v.baseline - v.size * 0.3;
-              return (
-                <React.Fragment key={dir}>
-                  <Circle cx={dot} cy={y} r={ORN_DOT} fill={brand.goldMid} />
-                  <Line
-                    x1={dot + dir * (ORN_DOT + 4)}
-                    y1={y}
-                    x2={dot + dir * (ORN_DOT + 4 + ORN_LINE)}
-                    y2={y}
-                    stroke={brand.goldInk}
-                    strokeOpacity={0.5}
-                    strokeWidth={1}
-                  />
-                </React.Fragment>
-              );
-            })
-          : null}
-
         <SvgText
-          x={cx}
-          y={v.baseline}
+          x={band / 2 + ('nudge' in v ? v.nudge : 0) * k}
+          y={v.baseline * k}
           textAnchor="middle"
           fontFamily={v.family}
-          fontSize={v.size}
+          fontSize={v.size * k}
           {...('letterSpacing' in v ? { letterSpacing: v.letterSpacing } : null)}
-          {...('textWidth' in v ? { textLength: v.textWidth } : null)}
           fill="url(#gold)"
         >
           {v.text}
         </SvgText>
       </Svg>
 
-      {/* ⚠ הקו הדק מתחת לשם · מופיע בתמונה ששקד שלחה.
-          בשלושת המועמדים החדשים יש כבר גבול משלהם, ולכן הוא יורד. */}
+      {/* ⚠ הקו הדק מתחת לשם · היה בתמונה ששקד שלחה לכותרת הקודמת.
+          ב״חתימה״ הוא יורד — לכתב יד יש כבר זנב משלו. */}
       {v.rule ? <View style={[s.rule, { width: v.rule }]} /> : null}
-      <Text style={s.sub}>{SUB}</Text>
+
+      <Text
+        style={[s.sub, { fontSize: v.sub.size, fontWeight: v.sub.weight, marginTop: v.sub.gap }]}
+      >
+        {SUB}
+      </Text>
     </View>
   );
 }
 
-/** גוון הכיתוב · זהב כהה שנקרא על השטיפה */
+/** גוון הכיתוב · זהב כהה שנקרא על הרקע הלילכי */
 const SUB_INK = '#7A5F22';
 
 const s = StyleSheet.create({
   band: { alignItems: 'center', paddingTop: 16, paddingBottom: 14 },
-  /**
-   * ⚠ **אותו כיתוב כמו בשורת הקטגוריות** · בקשה מפורשת של שקד.
-   * הערכים מועתקים מ-`CategoryRail`: `type.tiny` וגובה שורה של
-   * 1.25. מה שהיה כאן קודם היה 18px עם `letterSpacing` של 0.09 —
-   * וזה מה שנתן לו מראה אחר מכל שאר האפליקציה.
-   */
   rule: {
     height: 1,
     marginTop: 7,
     backgroundColor: brand.goldMid,
     opacity: 0.6,
   },
+  /**
+   * ⚠ **הגודל, המשקל והרווח מגיעים מהסגנון** · הם שונים בין
+   * הכותרות, ולכן הם נקבעים ב-`markStyles` ולא כאן. `type.tiny`
+   * נשאר רק כברירת מחדל אם סגנון כלשהו לא יגדיר גודל.
+   */
   sub: {
     fontSize: type.tiny,
-    lineHeight: type.tiny * 1.25,
     color: SUB_INK,
-    marginTop: 10,
     textAlign: 'center',
   },
 });
