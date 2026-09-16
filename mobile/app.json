@@ -40,7 +40,8 @@
             "he"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

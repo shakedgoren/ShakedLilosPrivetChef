@@ -1,0 +1,83 @@
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+/**
+ * אייקונים של מסך ההתחברות שאינם בקנבס.
+ *
+ * ⚠ **לא ב-`icons/index.tsx`** · הקובץ ההוא נוצר אוטומטית מהקנבס,
+ * וכל אייקון שאינו שם נמחק בסריקה הבאה. אותו טעם כמו `EyeToggle`.
+ *
+ * הקווים באותה שפה של שאר הסט · עובי 1.8, קצוות וחיבורים עגולים.
+ */
+
+type Props = { size?: number; color?: string; strokeWidth?: number };
+
+const SW = 1.8;
+
+function Icon({ d, size = 20, color = '#2A2430', strokeWidth = SW }: Props & { d: string[] }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {d.map((p, i) => (
+        <Path
+          key={i}
+          d={p}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ))}
+    </Svg>
+  );
+}
+
+export const Mail = (p: Props) => <Icon {...p} d={['M3.5 6.5h17v11h-17z', 'M3.8 7l8.2 6 8.2-6']} />;
+
+/** מאדים · עיגול וחץ אלכסוני */
+export const Male = (p: Props) => (
+  <Icon {...p} d={['M14 14a4.5 4.5 0 1 1-4.5-4.5A4.5 4.5 0 0 1 14 14Z', 'M13 10.5 19 4.5m-4.5 0H19v4.5']} />
+);
+
+/** נוגה · עיגול וצלב מתחתיו */
+export const Female = (p: Props) => (
+  <Icon {...p} d={['M12 4.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z', 'M12 13.5v6m-2.6-3h5.2']} />
+);
+
+/** אחר · העיגול נושא את שני הסימנים יחד */
+export const Other = (p: Props) => (
+  <Icon
+    {...p}
+    d={['M12 8.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z', 'M12 16.5v3.5m-2.3-2h4.6', 'M14.6 9.6 19 5.2m-3.4 0H19v3.4']}
+  />
+);
+
+/** זיהוי פנים · ארבע פינות, שתי עיניים וחיוך */
+export const FaceId = (p: Props) => (
+  <Icon
+    {...p}
+    d={[
+      'M4.5 9V6.6A2 2 0 0 1 6.6 4.5H9',
+      'M15 4.5h2.4A2 2 0 0 1 19.5 6.6V9',
+      'M19.5 15v2.4a2 2 0 0 1-2.1 2.1H15',
+      'M9 19.5H6.6a2 2 0 0 1-2.1-2.1V15',
+      'M9.3 9.6v2.2M14.7 9.6v2.2',
+      'M9.6 15.2c1.4 1.3 3.4 1.3 4.8 0',
+    ]}
+  />
+);
+
+/** מטוס נייר · שליחה */
+export const Send = (p: Props) => (
+  <Icon {...p} d={['M4.5 12 20 4.5l-4 15.5-4.6-4.9L20 4.5', 'M11.4 15.1 8 19v-4.3']} />
+);
+
+/** בועת וואטסאפ · שפופרת בתוך בועה */
+export const WhatsApp = (p: Props) => (
+  <Icon
+    {...p}
+    d={[
+      'M12 3.6a8.4 8.4 0 0 0-7.2 12.7L3.6 20.4l4.2-1.1A8.4 8.4 0 1 0 12 3.6Z',
+      'M9.1 8.2c.5-.1.7.1.9.5l.6 1.3c.1.3.1.5-.1.7l-.5.6c-.2.2-.2.4 0 .7a6.4 6.4 0 0 0 2.5 2.2c.3.1.5.1.7-.1l.6-.6c.2-.2.4-.2.6-.1l1.4.7c.3.2.4.4.3.7-.2.9-1 1.5-2 1.5-2.9 0-6.2-3.3-6.2-6.2 0-1 .5-1.7 1.2-1.9Z',
+    ]}
+  />
+);
