@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { META_UTILITY_TEMPLATES } from './whatsapp/vars.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(here, '../.env') });
@@ -12,6 +13,13 @@ const required = (key: string, fallback?: string): string => {
   }
   return v;
 };
+
+/** תבנית אופציונלית · לא מוגדר = ברירת מחדל · מחרוזת ריקה = כבוי */
+function optionalTemplate(key: string, fallback: string): string {
+  const raw = process.env[key];
+  if (raw === undefined) return fallback;
+  return raw.trim();
+}
 
 const node = process.env.NODE_ENV ?? 'development';
 const isProd = node === 'production';
@@ -47,6 +55,38 @@ export const env = {
   /** הכתובת שאליה מפנה הקישור במייל · בפיתוח זה שרת ה-Expo בדפדפן */
   appUrl: process.env.APP_URL ?? 'http://localhost:8081',
   uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
+  /** WhatsApp Cloud API · נקרא בזמן אמת כדי שבדיקות יוכלו לשנות env */
+  get whatsapp() {
+    const token = (process.env.WHATSAPP_TOKEN ?? '').trim();
+    const phoneNumberId = (process.env.WHATSAPP_PHONE_NUMBER_ID ?? '').trim();
+    const graphVersion = (process.env.WHATSAPP_GRAPH_VERSION ?? 'v21.0').trim() || 'v21.0';
+    return {
+      token,
+      phoneNumberId,
+      wabaId: (process.env.WHATSAPP_WABA_ID ?? '').trim(),
+      graphVersion,
+      templateOtp: (process.env.WHATSAPP_TEMPLATE_OTP ?? 'bite_otp').trim() || 'bite_otp',
+      templateOrderConfirmedPickup: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP',
+        META_UTILITY_TEMPLATES.confirmPickup,
+      ),
+      templateOrderConfirmedDelivery: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY',
+        META_UTILITY_TEMPLATES.confirmDelivery,
+      ),
+      templateOrderReadyPickup: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_READY_PICKUP',
+        META_UTILITY_TEMPLATES.readyPickup,
+      ),
+      templateOrderDelivered: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_DELIVERED',
+        META_UTILITY_TEMPLATES.delivered,
+      ),
+      templateLang: (process.env.WHATSAPP_TEMPLATE_LANG ?? 'he').trim() || 'he',
+      webhookVerifyToken: (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '').trim(),
+      enabled: Boolean(token && phoneNumberId),
+    };
+  },
 };
 
 export { isProd };

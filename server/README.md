@@ -5,7 +5,7 @@ API ב-Node/TypeScript + Express + Prisma.
 
 המחירים והקטלוג מגיעים מ-`mobile/src/data/` — לא מוקלדים שוב.
 
-אין מע״מ (עוסק פטור). סליקה ווואטסאפ מחוץ להיקף.
+אין מע״מ (עוסק פטור). סליקה מחוץ להיקף. וואטסאפ Cloud API אופציונלי — בלי משתני הסביבה השרת רץ כרגיל.
 
 ## הרצה מקומית · SQLite (ברירת מחדל)
 
@@ -78,8 +78,12 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | GET | `/health` | כולם | חי |
 | POST | `/auth/register` | | `{ who, password, name? }` · who = אימייל או טלפון |
 | POST | `/auth/login` | | `{ who, password }` |
-| POST | `/auth/forgot-password` | | `{ who }` · תמיד `{ ok: true }`. עם `RESET_DEBUG=1` מוחזר גם `resetToken` |
-| POST | `/auth/reset-password` | | `{ token, password }` |
+| POST | `/auth/forgot-password` | | `{ who }` · תמיד `{ ok: true }`. קישור איפוס נשלח למייל אם יש כתובת; קוד OTP בוואטסאפ אם יש טלפון. עם `RESET_DEBUG=1` מוחזר גם `resetToken` |
+| POST | `/auth/reset-password` | | `{ token, password }` · `token` יכול להיות קוד OTP או טוקן ארוך |
+| POST | `/auth/otp/request` | | `{ who }` · תמיד `{ ok: true }`. שולח תבנית Authentication אם יש טלפון ו-WhatsApp מוגדר. עם `RESET_DEBUG=1` מוחזר `code` |
+| POST | `/auth/otp/verify` | | `{ who, code }` · מאמת את הקוד ומחזיר `{ token, user }` כמו login |
+| GET | `/webhooks/whatsapp` | Meta | אימות webhook · `hub.mode` + `hub.verify_token` + `hub.challenge` |
+| POST | `/webhooks/whatsapp` | Meta | קבלת סטטוסי מסירה (stub · תמיד 200) |
 | POST | `/auth/google` | | `{ idToken }` · אימות Google ID token כש-`GOOGLE_CLIENT_ID` מוגדר. בלי זה `501 google_not_configured` |
 | GET | `/auth/me` | JWT | המשתמשת המחוברת |
 | GET/PATCH | `/users/me` | JWT | פרופיל: name, phone, address, city, וגם `image`/`imageBase64` ב-PATCH |
@@ -163,6 +167,64 @@ Authorization: Bearer <token>
 ```
 
 כש-`GOOGLE_CLIENT_ID` מוגדר (אפשר כמה מזהים בפסיק), השרת מאמת מול Google, מוצא או יוצר משתמשת לפי `googleId` / אימייל, ומחזיר `{ token, user }` כמו ב-login. בלי המשתנה: `501 { "error": "google_not_configured" }`. טוקן חסר: `400 google_token_required`. טוקן לא תקין: `401 invalid_google_token`.
+
+### WhatsApp Cloud API (ישירות מול Meta)
+
+שליחה אוטומטית של **קוד אימות (OTP)** ו**אישור/סטטוס הזמנה** דרך WhatsApp Cloud API — בלי ספק BSP. SMS לא כלול.
+
+בלי `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` **לא נשלח כלום** והשרת עולה כרגיל. `GET /health` מחזיר `"whatsapp": false`.
+
+#### מה שקד ממלאת ב-Meta
+
+1. [developers.facebook.com](https://developers.facebook.com) → אפליקציה → WhatsApp → API Setup.
+2. מספר עסקי (או מספר בדיקה) → מעתיקים את **Phone number ID**.
+3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`).
+4. מזהה WABA (WhatsApp Business Account ID) — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
+5. יוצרים ומאשרים תבניות בעברית (`he`). **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
+
+| משתנה | שם ב-Meta | קטגוריה | מתי נשלח |
+|---|---|---|---|
+| `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `order_pickup_confirmed` | Utility | יצירת הזמנת איסוף (`ship=self`) |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_delivary_confirmed` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **delivary** |
+| `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `order_pick_up` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
+| `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `order_dalivery` | Utility | סטטוס **נמסרה** בהזמנת משלוח · **dalivery** |
+
+מחרוזת ריקה במשתנה מכבה רק את התבנית הזו. בלי TOKEN לא נשלח כלום.
+
+**גוף התבנית:** ידוע ש-`{{1}}` הוא שם הלקוחה. `{{2}}…` עדיין לא ידועים. כרגע נשלח רק שם (`UTILITY_BODY_KEYS = ['name']` ב-`server/src/whatsapp/vars.ts`). אם Meta דוחה בגלל מספר פרמטרים — להוסיף לשם `orderId` / `total` / `timeOrAddress` (כבר מחושבים ב-`orderUtilitySlots`).
+
+6. Webhook (להמשך, סטטוסי מסירה): כתובת `https://<שרת>/webhooks/whatsapp`, verify token = `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. בדיקת חתימה עדיין לא מיושמת.
+
+ב-`.env`:
+
+```
+WHATSAPP_TOKEN="EAAG..."
+WHATSAPP_PHONE_NUMBER_ID="123456789012345"
+WHATSAPP_WABA_ID="123456789012345"
+WHATSAPP_TEMPLATE_OTP="bite_otp"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="order_pickup_confirmed"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_delivary_confirmed"
+WHATSAPP_TEMPLATE_ORDER_READY_PICKUP="order_pick_up"
+WHATSAPP_TEMPLATE_ORDER_DELIVERED="order_dalivery"
+WHATSAPP_TEMPLATE_LANG="he"
+WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
+```
+
+#### מתי נשלח
+
+- **OTP** — `POST /auth/otp/request` (וואטסאפ) וגם `POST /auth/forgot-password` כשיש טלפון בחשבון. קישור איפוס למייל נשלח בנפרד כשיש כתובת. תבנית Authentication עם copy-code (תבנית Meta עדיין חסרה). הקוד בן 6 ספרות, 10 דקות. `POST /auth/otp/verify` מחזיר סשן.
+- **אישור הזמנה** — אחרי `POST /orders` (לקוחה, כולל שכפול) ואחרי `POST /admin/orders`. איסוף מול משלוח לפי `ship`.
+- **מוכנה לאיסוף** — `PATCH /admin/orders/:id/status` ל-`מוכנה` (או `ready`) בהזמנת איסוף.
+- **המשלוח הגיע** — אותו PATCH ל-`נמסרה` (או `delivered`) בהזמנת משלוח.
+
+כישלון Meta **לא** מפיל הזמנה או איפוס סיסמה; נרשם ללוג.
+
+מספרים ישראליים מנורמלים ל-`9725…` (בלי `+`).
+
+#### הסכמה באפליקציה
+
+יש שורת הסכמה ליד מסך הכניסה (`COPY.whatsappOptIn`). מסך הזנת קוד OTP עדיין לא מחובר ב-UI — הלקוח יכול לקרוא `requestOtp` / `verifyOtp` מ-`mobile/src/api/auth.ts`. כפתור ״שכחתי סיסמה״ כבר שולח קוד בוואטסאפ כשיש טלפון.
 
 ### תמונת פרופיל
 

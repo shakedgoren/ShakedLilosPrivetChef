@@ -172,6 +172,9 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         );
       })}
 
+      {/* ⚠ לא מהקנבס · הסכמה קצרה לשליחת וואטסאפ (OTP + אישור הזמנה) */}
+      <Text style={s.optIn}>{COPY.whatsappOptIn}</Text>
+
       {isIn ? (
         <Pressable onPress={onForgot} style={s.forgotWrap}>
           <Text style={s.link}>{FORGOT_LABEL}</Text>
@@ -193,8 +196,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
       {sent && (
         <View style={s.note}>
-          <Text style={s.noteTitle}>שלחנו לך קישור לאיפוס</Text>
-          <Text style={s.noteBody}>בדקי את ההודעות · הקישור תקף לשעה.</Text>
+          <Text style={s.noteTitle}>{COPY.resetSentTitle}</Text>
+          <Text style={s.noteBody}>{COPY.resetSentBody}</Text>
           <Pressable onPress={() => setSent(false)} style={s.noteBtn}>
             <Text style={s.noteBtnText}>סגירה</Text>
           </Pressable>
@@ -235,6 +238,14 @@ const s = StyleSheet.create({
   eye: { position: 'absolute', left: 11, top: 0, bottom: 0, justifyContent: 'center' },
   fieldLabel: { fontSize: 11.5, fontWeight: '500', color: surface.faint },
   forgotWrap: { alignSelf: 'flex-start' },
+  optIn: {
+    fontSize: 11.5,
+    fontWeight: '300',
+    color: surface.faint,
+    textAlign: 'right',
+    lineHeight: 17,
+    marginBottom: 10,
+  },
   grow: { flex: 1 },
 
   logoRing: {

@@ -22,6 +22,7 @@ import { isoDate } from '../admin/sold.ts';
 import { serializeOrder } from '../orders/serialize.ts';
 import { readJson } from '../json.ts';
 import { deliveryFee } from '../../../mobile/src/data/shared.ts';
+import { notifyLater, notifyOrderConfirmed } from '../whatsapp/notify.ts';
 
 export const ordersRouter = Router();
 
@@ -269,6 +270,7 @@ ordersRouter.post('/', optionalAuth, async (req, res, next) => {
       details: body.details as CustomerDetails,
     });
 
+    notifyLater(notifyOrderConfirmed(row));
     res.status(201).json({ order: serializeOrder(row) });
   } catch (err) {
     next(err);
@@ -315,6 +317,7 @@ ordersRouter.post('/:id/reorder', requireAuth, async (req, res, next) => {
       details,
     });
 
+    notifyLater(notifyOrderConfirmed(row));
     res.status(201).json({ order: serializeOrder(row), from: original.id });
   } catch (err) {
     next(err);

@@ -20,6 +20,11 @@ export const COPY = {
   quotaExceeded: 'אין מספיק מלאי לאחת המנות',
   reorderFail: 'לא הצלחנו לשכפל את ההזמנה · נסי שוב',
   reorderUnavailable: 'אי אפשר להזמין שוב את ההזמנה הזו',
+  /* חדש · לא בקנבס · וואטסאפ / קוד חד-פעמי */
+  whatsappOptIn: 'קוד אימות ואישור הזמנה עשויים להישלח בוואטסאפ למספר שבחשבון.',
+  resetSentTitle: 'שלחנו קוד לאיפוס',
+  resetSentBody: 'אם יש טלפון בחשבון, הקוד מגיע בוואטסאפ · תקף ל-10 דקות.',
+  otpInvalid: 'הקוד לא תקין או שפג תוקפו',
 };
 
 export function authError(code: string): string {
@@ -28,6 +33,7 @@ export function authError(code: string): string {
   if (code === 'invalid_who') return COPY.whoInvalid;
   if (code === 'google_not_configured') return COPY.google;
   if (code === 'google_token_required' || code === 'invalid_google_token') return COPY.google;
+  if (code === 'otp_invalid') return COPY.otpInvalid;
   return COPY.net;
 }
 

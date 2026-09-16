@@ -11,6 +11,7 @@ import { adminDaysRouter } from './routes/adminDays.ts';
 import { adminStockRouter } from './routes/adminStock.ts';
 import { adminShopRouter } from './routes/adminShop.ts';
 import { adminFinanceRouter } from './routes/adminFinance.ts';
+import { whatsappWebhookRouter } from './routes/whatsappWebhook.ts';
 
 export function createApp() {
   const app = express();
@@ -19,9 +20,10 @@ export function createApp() {
   app.use('/uploads', express.static(env.uploadDir));
 
   app.get('/health', (_req, res) => {
-    res.json({ ok: true, service: 'bite-and-tell' });
+    res.json({ ok: true, service: 'bite-and-tell', whatsapp: env.whatsapp.enabled });
   });
 
+  app.use('/webhooks/whatsapp', whatsappWebhookRouter);
   app.use('/auth', authRouter);
   app.use('/users', usersRouter);
   app.use('/orders', ordersRouter);

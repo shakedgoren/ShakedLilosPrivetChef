@@ -10,6 +10,12 @@ export const register = (who: string, password: string, name?: string) =>
 export const forgotPassword = (who: string) =>
   api<{ ok: true }>('/auth/forgot-password', { body: { who }, auth: false });
 
+export const requestOtp = (who: string) =>
+  api<{ ok: true; code?: string }>('/auth/otp/request', { body: { who }, auth: false });
+
+export const verifyOtp = (who: string, code: string) =>
+  api<Session>('/auth/otp/verify', { body: { who, code }, auth: false });
+
 export const googleSignIn = (idToken: string) =>
   api<Session>('/auth/google', { body: { idToken }, auth: false });
 

@@ -11,6 +11,8 @@ import { hashPassword, verifyPassword } from '../auth/passwords.ts';
 import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
 import { buildResetEmail, RESET_TTL_HOURS } from '../mail/resetEmail.ts';
 import { sendMail } from '../mail/mailer.ts';
+import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
+import { notifyOtp } from '../whatsapp/notify.ts';
 
 export const authRouter = Router();
 
@@ -76,7 +78,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
   try {
     const body = z.object({ who: z.string().min(3) }).parse(req.body);
     const who = parseWho(body.who);
-    const payload: { ok: true; resetToken?: string; expiresAt?: string } = { ok: true };
+    const payload: { ok: true; resetToken?: string; expiresAt?: string; via?: 'otp' | 'token' } = { ok: true };
 
     if (who) {
       const user =
@@ -104,9 +106,24 @@ authRouter.post('/forgot-password', async (req, res, next) => {
           console.warn(`[איפוס] למשתמש ${user.id} אין כתובת מייל · לא נשלח קישור`);
         }
 
+        let via: 'otp' | 'token' = 'token';
+        if (user.phone) {
+          const otp = generateOtp();
+          await prisma.passwordReset.create({
+            data: { userId: user.id, token: otp, expiresAt: new Date(Date.now() + OTP_TTL_MS) },
+          });
+          try {
+            await notifyOtp(user.phone, otp);
+          } catch (err) {
+            console.error('whatsapp otp failed', err);
+          }
+          via = 'otp';
+        }
+
         if (env.resetDebug) {
           payload.resetToken = token;
           payload.expiresAt = expiresAt.toISOString();
+          payload.via = via;
         }
       }
     }
@@ -119,7 +136,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
 
 authRouter.post('/reset-password', async (req, res, next) => {
   try {
-    const body = z.object({ token: z.string().min(8), password: z.string().min(6) }).parse(req.body);
+    const body = z.object({ token: z.string().min(4), password: z.string().min(6) }).parse(req.body);
     const row = await prisma.passwordReset.findUnique({ where: { token: body.token } });
     if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
       throw badRequest('reset_invalid');
@@ -135,6 +152,58 @@ authRouter.post('/reset-password', async (req, res, next) => {
       }),
     ]);
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * קוד חד-פעמי בוואטסאפ (תבנית Authentication).
+ * תמיד `{ ok: true }` כדי לא לחשוף אם יש חשבון.
+ * עם `RESET_DEBUG=1` מוחזר גם `code` כשיש טלפון בחשבון.
+ */
+authRouter.post('/otp/request', async (req, res, next) => {
+  try {
+    const body = z.object({ who: z.string().min(3) }).parse(req.body);
+    const who = parseWho(body.who);
+    const payload: { ok: true; code?: string; expiresAt?: string } = { ok: true };
+
+    if (who) {
+      const user =
+        who.kind === 'email'
+          ? await prisma.user.findUnique({ where: { email: who.email } })
+          : await prisma.user.findUnique({ where: { phone: who.phone } });
+      if (user?.phone) {
+        const issued = await issuePasswordReset({ userId: user.id, phone: user.phone });
+        if (env.resetDebug) {
+          payload.code = issued.token;
+          payload.expiresAt = issued.expiresAt.toISOString();
+        }
+      }
+    }
+
+    res.json(payload);
+  } catch (err) {
+    next(err);
+  }
+});
+
+authRouter.post('/otp/verify', async (req, res, next) => {
+  try {
+    const body = z.object({ who: z.string().min(3), code: z.string().min(4).max(16) }).parse(req.body);
+    const who = parseWho(body.who);
+    if (!who) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    const user =
+      who.kind === 'email'
+        ? await prisma.user.findUnique({ where: { email: who.email } })
+        : await prisma.user.findUnique({ where: { phone: who.phone } });
+    if (!user) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    const row = await consumeOtp(user.id, body.code);
+    if (!row) throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
+
+    res.json(sessionOf(user));
   } catch (err) {
     next(err);
   }
