@@ -57,6 +57,7 @@ export function DateCalendar({
   const now = new Date();
   const [y, setY] = useState(now.getFullYear());
   const [m, setM] = useState(now.getMonth());
+  const [gridW, setGridW] = useState(0);
 
   /* כמה תאים ריקים לפני הראשון בחודש · `getDay()` של ה-1 */
   const lead = new Date(y, m, 1).getDay();
@@ -71,8 +72,19 @@ export function DateCalendar({
     setM(next);
   };
 
+  /**
+   * ⚠ **רוחב התא נמדד ולא מחושב ב-CSS** · תוקן ב-16 בספטמבר 2026.
+   *
+   * כאן ישב `width: 'calc((100% - 18px) / 7)'`. זה עובד ב-
+   * `react-native-web`, שמעביר את המחרוזת כמו שהיא ל-CSS — אבל
+   * **מנוע הפריסה של ריאקט־נייטיב אינו מכיר `calc`**. במכשיר הרוחב
+   * פשוט נזרק, כל תא הצטמצם לרוחב הספרה שבתוכו, והלוח יצא מפורק.
+   * זה מה ששקד דיווחה עליו כ״הלוח שנה לא נראה כמו שצריך״.
+   */
+  const cellW = gridW > 0 ? (gridW - GRID_GAP * (COLS - 1)) / COLS : undefined;
+
   const cells: React.ReactNode[] = [];
-  for (let i = 0; i < lead; i++) cells.push(<View key={`pad-${i}`} style={st.cell} />);
+  for (let i = 0; i < lead; i++) cells.push(<View key={`pad-${i}`} style={[st.cell, { width: cellW }]} />);
   for (let d = 1; d <= total; d++) {
     const k = dayKey(y, m, d);
     const open = isOpen(k);
@@ -82,7 +94,10 @@ export function DateCalendar({
         key={k}
         onPress={open ? () => onPick(k) : undefined}
         disabled={!open}
-        style={[st.cell, { backgroundColor: sel ? MARK : open ? MARK_SOFT : 'transparent' }]}
+        style={[
+          st.cell,
+          { width: cellW, backgroundColor: sel ? MARK : open ? MARK_SOFT : 'transparent' },
+        ]}
       >
         <Text
           style={[
@@ -119,9 +134,9 @@ export function DateCalendar({
         </Pressable>
       </View>
 
-      <View style={st.grid}>
+      <View style={st.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
         {DOWS.map((t) => (
-          <View key={t} style={st.dowCell}>
+          <View key={t} style={[st.dowCell, { width: cellW }]}>
             <Text style={st.dow}>{t}</Text>
           </View>
         ))}
@@ -133,8 +148,6 @@ export function DateCalendar({
   );
 }
 
-/** רוחב תא · אותה נוסחה של `--opt-basis` בקנבס */
-const CELL_BASIS = `calc((100% - ${(COLS - 1) * GRID_GAP}px) / ${COLS})` as unknown as number;
 
 const st = StyleSheet.create({
   board: {
@@ -163,10 +176,9 @@ const st = StyleSheet.create({
   },
   month: { flex: 1, textAlign: 'center', fontSize: 13.5, fontWeight: '600', color: '#2A2430' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP, marginTop: 10 },
-  dowCell: { width: CELL_BASIS, alignItems: 'center' },
+  dowCell: { alignItems: 'center' },
   dow: { fontSize: 10, fontWeight: '600', color: MUTE },
   cell: {
-    width: CELL_BASIS,
     height: CELL_H,
     borderRadius: CELL_RADIUS,
     alignItems: 'center',

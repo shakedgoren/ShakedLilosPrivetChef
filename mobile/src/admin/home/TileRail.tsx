@@ -8,7 +8,15 @@ import { AMBER, PLUM, STATE, TILES, type TileKey } from '../../data/adminHome';
 /** ארבעה אריחים בשורה · שלושה רווחים של 10 ביניהם */
 const PER_ROW = 4;
 const GAP = 10;
-const TILE_W = `calc((100% - ${(PER_ROW - 1) * GAP}px) / ${PER_ROW})` as unknown as number;
+/**
+ * ⚠ **הרוחב נמדד ולא מחושב ב-CSS · תוקן ב-16 בספטמבר 2026** · כאן
+ * ישב `calc((100% - 30px) / 4)`. זה עובד ב-`react-native-web` אבל
+ * **מנוע הפריסה של ריאקט־נייטיב אינו מכיר `calc`**, ובמכשיר הרוחב
+ * נזרק וכל אריח הצטמצם לרוחב התוכן. אותה תקלה בדיוק הייתה ב-
+ * `OptionGrid` וב-`DateCalendar`.
+ */
+const GUESS_W = 360;
+const FALLBACK_W = `${100 / PER_ROW - (GAP * (PER_ROW - 1)) / (GUESS_W / 100) / PER_ROW}%`;
 
 /** התג שעל האריח · ענבר לדבר שדורש טיפול, שזיף למספר שגרתי */
 const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = {
@@ -42,10 +50,13 @@ export function TileRail({
   /** אילו אריחים להציג ובאיזה סדר · ברירת המחדל היא כל השמונה */
   keys?: TileKey[];
 }) {
+  const [w, setW] = React.useState(0);
+  const tileW: number | string =
+    w > 0 ? (w - GAP * (PER_ROW - 1)) / PER_ROW : FALLBACK_W;
   /* ⚠ הסדר הוא של `keys` ולא של `TILES` · שקד קבעה סדר משלה */
   const shown = keys ? keys.map((k) => TILES.find((t) => t.key === k)!).filter(Boolean) : TILES;
   return (
-    <View style={s.grid}>
+    <View style={s.grid} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       {shown.map((t) => {
         const fallback = BADGES[t.key];
         const raw = badges
@@ -89,7 +100,6 @@ const s = StyleSheet.create({
   /* ⚠ ארבעה בשורה · הרוחב אחוזי כדי שהשורה תתמלא בכל מסך */
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingBottom: 2 },
   tile: {
-    width: TILE_W,
     height: 62,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',

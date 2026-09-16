@@ -9,10 +9,17 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
  * הכרטיסים באותה קטגוריה יוצאים באותו רוחב בדיוק**, בלי קשר לאורך
  * הטקסט שבתוכם.
  *
- * ⚠ הרוחב הוא `calc` ולא מדידה · `react-native-web` מעביר מחרוזת
- * רוחב כמו שהיא ל-CSS, ולכן הנוסחה של הקנבס עובדת כאן מילה במילה.
- * גרסה קודמת מדדה את הרוחב ב-`onLayout` וחילקה בעצמה, וזה עלה
- * בהבהוב של פריים אחד שבו הכרטיסים עוד ברוחב התוכן. נמדד בדפדפן.
+ * ⚠ **הרוחב נמדד · תוקן ב-16 בספטמבר 2026** · כאן ישב
+ * `width: 'calc(...)'` בדיוק כמו בקנבס. זה עובד ב-`react-native-web`,
+ * שמעביר מחרוזת רוחב כמו שהיא ל-CSS — אבל **מנוע הפריסה של
+ * ריאקט־נייטיב אינו מכיר `calc`**, ובמכשיר הרוחב נזרק לגמרי וכל
+ * כרטיס הצטמצם לרוחב התוכן שבתוכו.
+ *
+ * ⚠ בהערה הקודמת כאן היה כתוב שגרסה מודדת נזנחה בגלל הבהוב של
+ * פריים אחד, ״נמדד בדפדפן״ — **וזו בדיוק הבעיה**: הדפדפן הוא המקום
+ * היחיד שבו ה-`calc` עבד, ולכן המדידה נעשתה במקום שלא יכול היה
+ * להראות את התקלה. ההבהוב נפתר כאן באחוזים כערך ביניים, עד
+ * שהמדידה מגיעה.
  */
 type Props = {
   /** מספר העמודות · מגיע מנתוני הקנבס (`cols`, או ברירת מחדל לפי הסוג) */
@@ -27,16 +34,26 @@ type Props = {
   children: React.ReactNode;
 };
 
+/** רוחב מסך טיפוסי · רק כדי לאמוד את המרווחים בפריים הראשון */
+const GUESS_W = 360;
+
 export function OptionGrid({ cols, gap = 8, maxWidth, style, pointerEvents, children }: Props) {
   const kids = React.Children.toArray(children);
-  /* בדיוק הנוסחה של `--opt-basis` בקנבס */
-  const basis = `calc((100% - ${(cols - 1) * gap}px) / ${cols})`;
+  const [w, setW] = React.useState(0);
+
+  /**
+   * ערך ביניים לפריים הראשון · אחוזים, שמנוע הפריסה כן מכיר.
+   * אחרי ה-`onLayout` הרוחב נגזר מהמדידה והוא מדויק לפיקסל.
+   */
+  const fallback = `${100 / cols - (gap * (cols - 1)) / (GUESS_W / 100) / cols}%`;
+  const basis: number | string = w > 0 ? (w - gap * (cols - 1)) / cols : fallback;
 
   return (
     <View
       /* ⚠ `pointerEvents` בסגנון ולא כ-prop · ה-prop הוצא משימוש
          ומדפיס אזהרה בכל רינדור. 16 בספטמבר 2026. */
       style={[s.wrap, { gap }, maxWidth != null && { maxWidth }, style, { pointerEvents }]}
+      onLayout={(e) => setW(e.nativeEvent.layout.width)}
     >
       {kids.map((kid, i) => (
         /* העטיפה מחזיקה את הרוחב · הילד נמתח אליה, כך שגם כרטיס עם
