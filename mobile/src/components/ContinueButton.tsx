@@ -83,6 +83,12 @@ type Props = {
    * מתמלא בצבע וממשיך. בקשה של שקד עבור ״בחר מסלול״ בפינת השף.
    */
   drag?: boolean;
+  /**
+   * בלי הידית והחץ · לכפתור שאינו ״ממשיכים הלאה״ אלא פעולה סופית.
+   * ⚠ שקד ביקשה את זה ב״שליחה בוואטסאפ״ במגשי הפירות: ״שהוא לא
+   * יהיה עם חץ בסופו זה מבלבל״. החץ מבטיח המשך, והלחיצה שם שולחת.
+   */
+  bare?: boolean;
   /** מיקום בלבד · מרווחים ויישור מהמסך הקורא, לא עיצוב הכפתור */
   style?: StyleProp<ViewStyle>;
 };
@@ -94,6 +100,7 @@ export function ContinueButton({
   disabled = false,
   wide = false,
   drag = false,
+  bare = false,
   style,
 }: Props) {
   if (drag) return <DragButton onPress={onPress} accent={accent} label={label} disabled={disabled} style={style} />;
@@ -105,6 +112,7 @@ export function ContinueButton({
       style={[
         s.button,
         wide && s.wide,
+        bare && s.bare,
         {
           backgroundColor: a(accent.rgb, FILL_ALPHA),
           boxShadow: `${GLASS_EDGE}, 0 2px 10px ${a(accent.rgb, 0.13)}`,
@@ -115,9 +123,11 @@ export function ContinueButton({
     >
       <Text style={[s.label, { color: accent.deep }]}>{label}</Text>
 
-      <View style={s.knob}>
-        <S k="arrowLeft" size={ARROW} color={accent.deep} />
-      </View>
+      {bare ? null : (
+        <View style={s.knob}>
+          <S k="arrowLeft" size={ARROW} color={accent.deep} />
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -252,6 +262,12 @@ const s = StyleSheet.create({
   },
   /* רחב וממורכז · `alignSelf: stretch` מבטל את הרוחב המינימלי */
   wide: { alignSelf: 'stretch', width: '100%' },
+  /**
+   * בלי ידית · הריפוד שפינה לה מקום יורד, והכפתור מתכווץ לכיתוב.
+   * ⚠ `alignSelf: 'center'` גובר על ה-`flex-start` של `button` ·
+   * בלעדיו הכפתור נצמד לקצה במקום להתמרכז.
+   */
+  bare: { paddingLeft: PAD_END, paddingRight: PAD_END, alignSelf: 'center' },
   /* מצב גרירה · רוחב קבוע, והריפוד מתבטל כי הידית עברה לימין */
   dragBox: {
     width: DRAG_W,

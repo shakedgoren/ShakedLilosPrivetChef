@@ -4,8 +4,8 @@ import { TEXT_START } from '../../theme/rtl';
 import { Modal, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Text, TextInput } from '../../ui/text';
 import { DateCalendar } from '../../components/DateCalendar';
+import { TimeWheel } from '../../components/TimeWheel';
 import { ContinueButton } from '../../components/ContinueButton';
-import { Bag, Truck } from '../../icons';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
 import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
 import { shippingFee } from './whatsappOrder';
@@ -160,16 +160,20 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
 
             <View style={s.field}>
               <Text style={s.label}>שעה</Text>
-              <View style={s.clockBox}>
-                <TextInput
-                  value={time}
-                  onChangeText={setTime}
-                  onBlur={settleTime}
-                  keyboardType="numbers-and-punctuation"
-                  style={s.clock}
-                />
-                <Text style={s.hint}>בין {hhmm(FRUIT_FULFILLMENT.pickupFrom)} ל-{hhmm(FRUIT_FULFILLMENT.pickupTo)}</Text>
-              </View>
+              {/* ⚠ **גלגל במקום שדה טקסט** · שקד ביקשה ״כמו השעון
+                  המעורר באייפון, שניתן להזיז את השעה עם האצבע״.
+                  הכרטיסייה גם הצטמצמה — היא הייתה 42 פיקסלים של ספרות
+                  עם ריפוד של 20 מלמעלה ומלמטה. */}
+              <TimeWheel
+                value={time}
+                onChange={setTime}
+                from={FRUIT_FULFILLMENT.pickupFrom}
+                to={FRUIT_FULFILLMENT.pickupTo}
+                accent={ACCENT}
+              />
+              <Text style={s.hint}>
+                בין {hhmm(FRUIT_FULFILLMENT.pickupFrom)} ל-{hhmm(FRUIT_FULFILLMENT.pickupTo)}
+              </Text>
             </View>
 
             <View style={s.field}>
@@ -179,7 +183,9 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                 onPress={() => setShip('self')}
                 style={[s.option, ship === 'self' ? s.optionOn : s.optionOff]}
               >
-                <Bag size={OPTION_ICON} color={ACCENT.hue} strokeWidth={OPTION_STROKE} />
+                {/* ⚠ SF Symbols · `pickup` ו-`delivery` מהרשימה ששקד
+                    שלחה. כאן נשארו שני אייקוני הקו הישנים. */}
+                <S k="pickup" size={OPTION_ICON} color={ACCENT.hue} />
                 <View style={s.optionText}>
                   <Text style={s.optionTitle}>איסוף עצמי</Text>
                   <Text style={s.optionSub}>{window_}</Text>
@@ -192,11 +198,7 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                 onPress={() => setAddrOpen(true)}
                 style={[s.option, deliv ? s.optionOn : s.optionOff]}
               >
-                <Truck
-                  size={OPTION_ICON}
-                  color={deliv ? ACCENT.hue : TRUCK_INK}
-                  strokeWidth={OPTION_STROKE}
-                />
+                <S k="delivery" size={OPTION_ICON} color={deliv ? ACCENT.hue : TRUCK_INK} />
                 <View style={s.optionText}>
                   <Text style={s.optionTitle}>משלוח</Text>
                   <Text style={s.optionSub}>
@@ -217,14 +219,19 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
               </View>
             </View>
 
-            {/* ⚠ רחב וממורכז · בקשה של שקד, גם באיסוף וגם במשלוח */}
-            <ContinueButton
-              onPress={send}
-              accent={ACCENT}
-              disabled={!ready}
-              label="שליחה בוואטסאפ"
-              wide
-            />
+            {/* ⚠ **בלי חץ וברוחב מינימלי** · שקד ביקשה (16 בספטמבר
+                2026) ״שהוא לא יהיה עם חץ בסופו זה מבלבל, ושהוא יהיה
+                ברוחב מינימלי״. החץ מסמן ״ממשיכים הלאה״, וכאן הלחיצה
+                **שולחת** — ולכן הוא באמת מטעה. `wide` ירד איתו. */}
+            <View style={s.sendRow}>
+              <ContinueButton
+                onPress={send}
+                accent={ACCENT}
+                disabled={!ready}
+                label="שליחה בוואטסאפ"
+                bare
+              />
+            </View>
           </ScrollView>
         </View>
       </View>
@@ -364,8 +371,19 @@ const s = StyleSheet.create({
   },
 
   body: { paddingTop: 16, paddingBottom: space.sm, gap: 16 },
-  field: { gap: 7 },
-  label: { fontSize: 11.5, fontWeight: '500', color: '#8A8194', paddingHorizontal: 4 },
+  /**
+   * ⚠ **הכול ממורכז** · שקד ביקשה (16 בספטמבר 2026) ״תשים את כל
+   * הכיתוב ממורכז לאמצע״ בפרטי ההזמנה.
+   */
+  field: { gap: 7, alignItems: 'center' },
+  label: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: '#8A8194',
+    paddingHorizontal: 4,
+    textAlign: 'center',
+  },
+  sendRow: { alignItems: 'center' },
   input: {
     height: FIELD_H,
     borderRadius: 14,
@@ -389,7 +407,7 @@ const s = StyleSheet.create({
     borderColor: a(ACCENT.rgb, 0.24),
   },
   clock: { fontSize: 42, fontWeight: '600', textAlign: 'center', minWidth: 168, color: ACCENT.deep },
-  hint: { fontSize: 11.5, fontWeight: '300', color: surface.muted },
+  hint: { fontSize: 11.5, fontWeight: '300', color: surface.muted, textAlign: 'center' },
 
   option: {
     height: 66,
