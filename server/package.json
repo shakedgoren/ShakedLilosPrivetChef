@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "start:prod": "node scripts/db-mode.mjs migrate-deploy && tsx src/index.ts",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:admin": "tsx prisma/seed-admin.ts",
     "db:postgres:up": "docker compose up -d",
     "db:postgres:down": "docker compose down",
     "db:postgres:push": "node scripts/db-mode.mjs push",
+    "db:postgres:render": "node scripts/db-mode.mjs render",
+    "db:postgres:migrate:deploy": "node scripts/db-mode.mjs migrate-deploy",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
     "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts src/whatsapp/payloads.test.ts src/whatsapp/client.test.ts src/auth/phoneVerify.test.ts"

@@ -1,13 +1,17 @@
+// GENERATED — אל תערכי מודלים כאן.
+// מקור: prisma/schema.prisma (sqlite). עדכון: npm run db:postgres:render
+// פרודקשן: npx prisma migrate deploy --schema prisma-pg/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ספק ברירת מחדל: sqlite. ל-Postgres מקומי (docker compose) ראו README · npm run db:postgres:push
+// Postgres · מקור המודלים: prisma/schema.prisma · מיגרציות: prisma-pg/migrations
 // פרודקשן (Railway): prisma-pg/schema.prisma + prisma-pg/migrations · npm run start:prod
 
 /// לקוחה או מנהלת · email ו/או phone, כמו בשדה ״טלפון או אימייל״ באפליקציה

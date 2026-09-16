@@ -6,7 +6,8 @@ const app = createApp();
 
 const server = app.listen(env.port, env.host, () => {
   const wa = env.whatsapp.enabled ? 'WhatsApp Cloud API פועל' : 'WhatsApp כבוי (חסר TOKEN או PHONE_NUMBER_ID)';
-  console.log(`BITE & TELL · http://${env.host}:${env.port} · ${wa}`);
+  const db = env.databaseUrl.startsWith('postgres') ? 'postgres' : 'sqlite';
+  console.log(`BITE & TELL · http://${env.host}:${env.port} · db=${db} · ${wa}`);
 });
 
 const shutdown = async () => {
