@@ -294,11 +294,15 @@ export function ChefScreen() {
           <RollingTotal value={o.total} style={s.total} />
           <Text style={s.currency}>₪</Text>
         </View>
+        {/* ⚠ **החץ בלבד · 16 בספטמבר 2026** · בקשה של שקד לכל שלבי
+            השאלון. הדף האחרון נשאר עם כיתוב — שם הלחיצה שולחת
+            בקשת הצעה ולא ממשיכה, ולכן חץ לבדו היה מטעה. */}
         <ContinueButton
           onPress={onNext}
           accent={ACCENT}
           disabled={!o.pageReady || busy}
           label={o.lastPage ? 'לבקשת הצעה' : 'המשך'}
+          iconOnly={!o.lastPage}
         />
       </View>
 

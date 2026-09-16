@@ -1118,6 +1118,8 @@ export const BOXES_FULFILLMENT = {
   pickupTo: 900,
   deliverySlots: buildSlots(540, 900, DELIVERY_STEP_MINUTES),
   clockFallback: '10:00',
+  /* ⚠ למארזים אין יום מכירה קבוע · ראו `pickDate` ב-`FulfillmentConfig` */
+  pickDate: true,
 } as const;
 
 /** סכום ההזמנה · לכל מארז חוקי תמחור משלו, כמו בקנבס */

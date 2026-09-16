@@ -3,6 +3,7 @@ import { INPUT_START } from '../theme/rtl';
 import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import {
+  DELIVERY_CITIES,
   MIN_QUERY,
   OUT_OF_ZONE,
   inDeliveryZone,
@@ -19,6 +20,15 @@ import { a, surface } from '../theme/tokens';
  *
  * `zone` מדליק את בדיקת אזור החלוקה: כתובת בתוך האזור מסומנת
  * בירוק, וכתובת מחוצה לו באדום עם ההערה של שקד.
+ *
+ * ⚠ **מסלול ידני · 16 בספטמבר 2026** · שקד דיווחה ״לא מצליח לטעון
+ * כתובות…״. נמדד: המאגר הממשלתי `data.gov.il` **אינו עונה** —
+ * המשאב מחזיר 404 בשלוש בקשות רצופות, ושאר נקודות ה-CKAN נתקעות
+ * עד פסק זמן. זו תקלה במקור ולא בקוד כאן.
+ *
+ * מה שנוסף הוא **הגנה**: כשהחיפוש נכשל השדה אינו חוסם עוד. מופיעות
+ * ערי אזור החלוקה, הלקוחה בוחרת עיר, ומה שהקלידה נחשב לשם הרחוב.
+ * כך אפשר להשלים הזמנה גם כשהמאגר למטה.
  */
 
 const FIELD_H = 48;
@@ -124,6 +134,16 @@ export function AddressField({
     };
   }, [text, value, decideSide]);
 
+  /**
+   * בחירה ידנית · מה שהוקלד הוא הרחוב, והעיר נבחרת מהרשימה.
+   * ⚠ פעיל רק כשהחיפוש נכשל · ראו ההערה בראש הקובץ.
+   */
+  const pickManual = (city: string) => {
+    const street = text.trim();
+    if (!street) return;
+    onPick({ street, city });
+  };
+
   const pick = (h: AddressHit) => {
     setText(`${h.street}, ${h.city}`);
     setHits([]);
@@ -192,13 +212,34 @@ export function AddressField({
 
       {outside ? <Text style={[s.note, s.noteBad]}>{OUT_OF_ZONE}</Text> : null}
       {inside && okNote ? <Text style={[s.note, s.noteOk]}>{okNote}</Text> : null}
-      {failed ? <Text style={s.note}>לא הצלחנו לטעון כתובות · אפשר לנסות שוב</Text> : null}
+      {/* ⚠ מסלול ידני · ראו ההערה בראש הקובץ */}
+      {failed && !value ? (
+        <View style={s.manual}>
+          <Text style={s.note}>רשימת הרחובות לא נטענה · בחרי עיר ומה שהקלדת יישמר כרחוב</Text>
+          <View style={s.cityRow}>
+            {DELIVERY_CITIES.map((c) => (
+              <Pressable key={c} onPress={() => pickManual(c)} style={s.cityChip} hitSlop={4}>
+                <Text style={s.cityChipText}>{c}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const s = StyleSheet.create({
   wrap: { gap: 7, width: '100%', maxWidth: MAX_W, alignSelf: 'center' },
+  manual: { gap: 7 },
+  cityRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  cityChip: {
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(130,112,162,0.1)',
+  },
+  cityChipText: { fontSize: 12.5, color: surface.inkSoft },
   field: {
     minHeight: FIELD_H,
     borderRadius: 14,

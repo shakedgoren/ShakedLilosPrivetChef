@@ -1,10 +1,9 @@
 import React from 'react';
-import { INPUT_START } from '../theme/rtl';
 import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Text, TextInput } from '../ui/text';
-import { CITIES, PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
+import { Text } from '../ui/text';
+import { PAYMENTS, SALE_DATE, deliveryFee, shippingFeeFor } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -16,6 +15,9 @@ import { ApiError, type OrderDetails } from '../api/types';
 import { Truck } from '../icons';
 import { PayLogo } from '../components/PayLogo';
 import { OptionGrid } from '../components/OptionGrid';
+import { TimeWheel } from '../components/TimeWheel';
+import { DateCalendar } from '../components/DateCalendar';
+import { AddressField, type AddressValue } from '../components/AddressField';
 import { TILE_SHADOW } from '../theme/glass';
 import { ContinueButton } from '../components/ContinueButton';
 import { Confetti } from '../components/Confetti';
@@ -34,6 +36,14 @@ const CHEV_STROKE = 2.4;
 /* דמי המשלוח · לתצוגה בלבד, החישוב ב-`deliveryFee` */
 const SHIP_NEAR = shippingFeeFor('יבנה');
 const SHIP_FAR = shippingFeeFor('אחר');
+
+/**
+ * ⚠ **״אישור״ ולא ״להמשך״ · 16 בספטמבר 2026** · בקשה של שקד בשני
+ * השלבים — שעת האיסוף וכתובת המשלוח.
+ */
+const CONFIRM_LABEL = 'אישור';
+/** מה שכתוב כשהכתובת בתוך אזור החלוקה */
+const DELIVERY_OK = 'הכתובת בתוך אזור החלוקה';
 
 type Props = {
   f: Fulfillment;
@@ -167,20 +177,45 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   );
 }
 
+/**
+ * שעת האיסוף.
+ *
+ * ⚠ **גלגל במקום שדה טקסט · 16 בספטמבר 2026** · בקשה של שקד:
+ * ״בבחירה של שעת איסוף זה צריך להיות כמו הבחירה של שעה בשעון
+ * מעורר שאפשר להזיז את הספרות עם האצבע״. אותו `TimeWheel` שכבר
+ * משמש את מגשי הפירות.
+ *
+ * ⚠ **״אישור״ ממורכז ובלי חץ** · גם זו בקשה מפורשת, במקום ״להמשך״.
+ *
+ * ⚠ **לוח תאריכים למארזים** · ראו `pickDate` ב-`FulfillmentConfig`.
+ */
 function ClockStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   return (
     <View style={s.stack}>
-      <View style={[s.clockBox, { backgroundColor: a(accent.rgb, 0.08), borderColor: a(accent.rgb, 0.24) }]}>
-        <TextInput
-          value={f.clock}
-          onChangeText={f.setClock}
-          onBlur={f.settleClock}
-          keyboardType="numbers-and-punctuation"
-          style={[s.clock, { color: accent.deep }]}
+      {f.cfg.pickDate ? (
+        <DateCalendar
+          value={f.date ?? undefined}
+          onPick={f.setDate}
+          accent={accent}
         />
-        <Text style={s.hint}>בין {hhmm(f.cfg.pickupFrom)} ל־{hhmm(f.cfg.pickupTo)}</Text>
-      </View>
-      <ContinueButton onPress={f.clockNext} accent={accent} />
+      ) : null}
+
+      <TimeWheel
+        value={f.clock}
+        onChange={f.setClock}
+        from={f.cfg.pickupFrom}
+        to={f.cfg.pickupTo}
+        accent={accent}
+      />
+      <Text style={s.hint}>בין {hhmm(f.cfg.pickupFrom)} ל־{hhmm(f.cfg.pickupTo)}</Text>
+
+      <ContinueButton
+        onPress={f.clockNext}
+        accent={accent}
+        label={CONFIRM_LABEL}
+        disabled={!f.clockReady}
+        bare
+      />
     </View>
   );
 }
@@ -201,30 +236,52 @@ function SlotsStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   );
 }
 
+/**
+ * כתובת המשלוח.
+ *
+ * ⚠ **הוחלפה ב-`AddressField` · 16 בספטמבר 2026** · בקשה של שקד:
+ * ״במשלוח צריך להתאים את הכתובת לאיך שהיא מוצגת בשאר האפליקציה״.
+ * כאן היו גלולות ערים ושדה טקסט חופשי, בעוד שבפינת השף ובמגשי
+ * הפירות כבר עובד שדה אחד עם השלמה, בדיקת אזור חלוקה ומספר בית
+ * באותה כרטיסייה.
+ *
+ * העיר נגזרת מהכתובת שנבחרה ונשמרת ב-`f.city`, כי דמי המשלוח
+ * מחושבים לפיה.
+ *
+ * ⚠ **״אישור״ ממורכז ובלי חץ** · בקשה מפורשת, במקום ״להמשך״.
+ */
 function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
+  const [picked, setPicked] = React.useState<AddressValue>(null);
+  const [house, setHouse] = React.useState('');
+
+  /* הכתובת המלאה חוזרת ל-`f` בכל שינוי · שם היא נשמרת ונשלחת */
+  React.useEffect(() => {
+    if (!picked) {
+      f.setAddr('');
+      return;
+    }
+    f.setCity(picked.city);
+    f.setAddr(`${picked.street} ${house}`.trim());
+  }, [picked, house]);
+
   return (
     <View style={s.stack}>
-      <View style={s.cities}>
-        {CITIES.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => f.setCity(c)}
-            style={[s.city, f.city === c && { backgroundColor: a(accent.rgb, 0.22) }]}
-          >
-            <Text style={[s.cityText, f.city === c && { color: accent.deep, fontWeight: '600' }]}>{c}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <TextInput
-        value={f.addr}
-        onChangeText={f.setAddr}
-        placeholder="רחוב ומספר בית"
-        placeholderTextColor="#B3ABBD"
-        style={s.field}
+      <AddressField
+        value={picked}
+        onPick={setPicked}
+        house={house}
+        onHouse={setHouse}
+        zone
+        okNote={DELIVERY_OK}
       />
 
-      <ContinueButton onPress={f.addressNext} accent={accent} disabled={!f.addressOk} />
+      <ContinueButton
+        onPress={f.addressNext}
+        accent={accent}
+        label={CONFIRM_LABEL}
+        disabled={!f.addressOk}
+        bare
+      />
     </View>
   );
 }
@@ -391,33 +448,12 @@ const s = StyleSheet.create({
   optionSub: { fontSize: type.label, color: surface.muted },
   toast: { fontSize: type.label, color: '#B95349', textAlign: 'center' },
 
-  clockBox: { borderRadius: 22, paddingVertical: 20, alignItems: 'center', gap: 6, borderWidth: 1.5 },
-  clock: { fontSize: 42, fontWeight: '600', textAlign: 'center', minWidth: 168 },
   hint: { fontSize: 11.5, color: surface.muted },
 
   slots: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 9 },
   slot: { width: '30%', height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   slotText: { fontSize: 14, fontWeight: '600' },
 
-  cities: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
-  city: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(130,112,162,0.09)',
-  },
-  cityText: { fontSize: 13, color: surface.inkSoft },
-  field: {
-    height: 48,
-    borderRadius: radius.field,
-    borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.2)',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 13,
-    fontSize: 15,
-    textAlign: INPUT_START,
-    color: surface.ink,
-  },
 
   /* כרטיס אמצעי תשלום · אייקון מעל השם, מסגרת בהירה */
   pay: {

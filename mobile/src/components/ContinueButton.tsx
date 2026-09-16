@@ -30,6 +30,15 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  * שקד ביקשה אותה בצד שמאל, וזה אותו צד בכל הכיוונים.
  */
 const H = 38;
+/**
+ * מצב החץ בלבד · ראו `iconOnly`.
+ * ⚠ **גדול מהכפתור הרגיל** · שקד ביקשה ״ותגדיל אותו מעט שיראו
+ * אותו״, ובלי כיתוב לצידו הוא היה נבלע.
+ */
+const ICON_SIZE = 50;
+const ICON_ARROW = 20;
+/** מלא יותר מהכפתור הרגיל · בלי כיתוב צריך יותר נוכחות */
+const ICON_FILL = 0.2;
 const KNOB = 30;
 const KNOB_INSET = 4;
 const ARROW = 13;
@@ -89,6 +98,14 @@ type Props = {
    * יהיה עם חץ בסופו זה מבלבל״. החץ מבטיח המשך, והלחיצה שם שולחת.
    */
   bare?: boolean;
+  /**
+   * החץ בלבד, בלי כיתוב · כפתור עגול.
+   * ⚠ **בקשה של שקד (16 בספטמבר 2026)** · ״בכל שלב בתוך השאלון של
+   * השף אני רוצה שהכפתור של ההמשך לא יכיל את הכיתוב ״המשך״ ורק
+   * יהיה את החץ ותגדיל אותו מעט שיראו אותו״.
+   * ה-`label` עדיין נדרש · הוא הופך לשם הנגיש של הכפתור.
+   */
+  iconOnly?: boolean;
   /** מיקום בלבד · מרווחים ויישור מהמסך הקורא, לא עיצוב הכפתור */
   style?: StyleProp<ViewStyle>;
 };
@@ -101,9 +118,33 @@ export function ContinueButton({
   wide = false,
   drag = false,
   bare = false,
+  iconOnly = false,
   style,
 }: Props) {
   if (drag) return <DragButton onPress={onPress} accent={accent} label={label} disabled={disabled} style={style} />;
+
+  /* ⚠ החץ בלבד · ראו `iconOnly` */
+  if (iconOnly) {
+    return (
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={[
+          s.icon,
+          {
+            backgroundColor: a(accent.rgb, ICON_FILL),
+            boxShadow: `${GLASS_EDGE}, 0 2px 10px ${a(accent.rgb, 0.16)}`,
+            opacity: disabled ? DISABLED_OPACITY : 1,
+          },
+          style,
+        ]}
+      >
+        <S k="arrowLeft" size={ICON_ARROW} color={accent.deep} />
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -262,6 +303,15 @@ const s = StyleSheet.create({
   },
   /* רחב וממורכז · `alignSelf: stretch` מבטל את הרוחב המינימלי */
   wide: { alignSelf: 'stretch', width: '100%' },
+  /* החץ בלבד · עיגול, ראו `iconOnly` */
+  icon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    borderRadius: ICON_SIZE / 2,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   /**
    * בלי ידית · הריפוד שפינה לה מקום יורד, והכפתור מתכווץ לכיתוב.
    * ⚠ `alignSelf: 'center'` גובר על ה-`flex-start` של `button` ·

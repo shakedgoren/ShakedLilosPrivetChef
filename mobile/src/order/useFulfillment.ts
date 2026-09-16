@@ -30,6 +30,8 @@ export function useFulfillment(cfg: FulfillmentConfig) {
   const [city, setCity] = useState(CITIES[0]);
   const [addr, setAddr] = useState('');
   const [pay, setPay] = useState<string | null>(null);
+  /** תאריך האיסוף · רק בקטגוריות עם `pickDate`. ראו `FulfillmentConfig` */
+  const [date, setDate] = useState<string | null>(null);
   const [toast, setToast] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -68,12 +70,16 @@ export function useFulfillment(cfg: FulfillmentConfig) {
 
   const settleClock = useCallback(() => setClock((c) => clamp(c)), [clamp]);
 
+  /** ⚠ כשצריך תאריך, אי אפשר להמשיך בלעדיו */
+  const clockReady = !cfg.pickDate || date !== null;
+
   const clockNext = useCallback(() => {
+    if (!clockReady) return;
     const c = clamp(clock);
     setClock(c);
     setTime(c);
     setStep(STEP.pay);
-  }, [clamp, clock]);
+  }, [clamp, clock, clockReady]);
 
   const pickSlot = useCallback((t: string) => {
     setTime(t);
@@ -98,13 +104,15 @@ export function useFulfillment(cfg: FulfillmentConfig) {
     setShip(null);
     setTime(null);
     setPay(null);
+    setDate(null);
   }, []);
 
   return {
     cfg,
     step, setStep, open, reset,
     ship, isDelivery: ship === 'deliv',
-    time, clock, setClock, settleClock, clockNext, pickSlot,
+    time, clock, setClock, settleClock, clockNext, clockReady, pickSlot,
+    date, setDate,
     city, setCity, addr, setAddr, addressNext, addressOk,
     pay, pickPay,
     toast, wantDelivery, wantPickup,
