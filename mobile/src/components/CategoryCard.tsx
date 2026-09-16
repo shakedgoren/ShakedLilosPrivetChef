@@ -138,9 +138,15 @@ const s = StyleSheet.create({
     gap: space.sm,
   },
   text: { flex: 1, minWidth: 0, justifyContent: 'center' },
-  title: { fontSize: type.title, fontWeight: '600', lineHeight: type.title * 1.1, color: surface.ink },
-  sub: { fontSize: type.subtitle, lineHeight: type.subtitle * 1.3, marginTop: 5 },
-  desc: { fontSize: type.body, lineHeight: type.body * 1.65, color: surface.muted, marginTop: 6 },
+  /**
+   * ⚠ **הודגש · 16 בספטמבר 2026** · שקד: ״הכתב לא בולט או לא חד על
+   * הקטגוריה הגדולה״. שלושתם ישבו על מדרג בהיר שנמוג לתמונה, ובמשקל
+   * נמוך וגוון אפור הם נבלעו בו. השם עלה ל-700, הכותרת המשנית ל-700,
+   * והתיאור עבר מהאפור העמום (`muted`) לדיו הרך (`inkSoft`).
+   */
+  title: { fontSize: type.title, fontWeight: '700', lineHeight: type.title * 1.12, color: surface.ink },
+  sub: { fontSize: type.subtitle, fontWeight: '700', lineHeight: type.subtitle * 1.3, marginTop: 5 },
+  desc: { fontSize: type.body, lineHeight: type.body * 1.6, color: surface.inkSoft, marginTop: 6 },
   dots: { flexDirection: 'row', gap: DOT.gap, marginTop: 10 },
   dot: { height: DOT.size, borderRadius: DOT.size / 2 },
   medal: { width: MEDAL, height: MEDAL, alignSelf: 'center' },

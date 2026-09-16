@@ -167,7 +167,13 @@ export default function App() {
         <View style={s.root}>
           <StatusBar style="dark" />
           <Wash />
-          <SafeAreaView style={s.safe} edges={['top']}>
+          {/* ⚠ **בלי אזור בטוח עליון · 16 בספטמבר 2026** · שקד ביקשה
+              ״להסיר את ה-safe area מהחלק העליון״. עכשיו התוכן מתחיל
+              מקצה המסך ממש, והרקע הלילכי רץ עד מתחת לשעון בלי פס.
+              ⚠ **מה שמחזיק את הכותרת מתחת למגרעת הוא הריפוד של
+              המסך עצמו** (`paddingTop: space.xxl`). מי שמסיר גם אותו
+              יקבל כיתוב מתחת לשעון. */}
+          <SafeAreaView style={s.safe} edges={[]}>
             {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
             <BackSwipe>
               <Router />

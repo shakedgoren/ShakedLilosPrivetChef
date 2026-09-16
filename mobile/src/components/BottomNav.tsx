@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Text } from '../ui/text';
 import { radius, type } from '../theme/tokens';
 import { INDIGO_70, S, type SYM } from './Sym';
@@ -16,6 +17,19 @@ import { useNav } from '../navigation/store';
  *
  * ⚠ **בלי SVG** · כל הצורה היא `View` עם `borderRadius` — אין כאן
  * מגרעת ואין עיגול מרחף, ולכן אין צורך במסלול מצויר.
+ *
+ * ⚠ **Liquid Glass אמיתי · 16 בספטמבר 2026** · שקד ביקשה ״להתאים
+ * את הנאב בר להיות של ממש׳ iOS בתצורה liquid glass עם כל התכונות
+ * שלו״. `expo-glass-effect` חושף את הזכוכית **של המערכת** — אותה
+ * שכבה שאפל משתמשת בה, עם השבירה, ההשתקפות והתגובה לתנועה — ולא
+ * חיקוי שלה בצבע ובצל.
+ *
+ * ⚠ **`isInteractive`** · זו ה״תכונה״ המרכזית: הזכוכית מגיבה למגע
+ * ומתעוותת סביב האצבע, בדיוק כמו בפקדים של המערכת.
+ *
+ * ⚠ **דורש iOS 26 ומעלה** · `isLiquidGlassAvailable()` נבדק בזמן
+ * ריצה, ומתחתיו נשאר בדיוק הסרגל הלבן שהיה — באנדרואיד, בדפדפן,
+ * ובאייפונים ישנים. אף אחד לא נשאר בלי נאב-בר.
  */
 const TABS = [
   { key: 'main', label: 'בית', sym: 'home' },
@@ -50,10 +64,44 @@ const CUSHION = 'rgba(123,92,188,0.14)';
 const BAR_BG = 'rgba(255,255,255,0.95)';
 const BAR_SHADOW =
   'inset 0 0 0 1px rgba(255,255,255,0.9), 0 12px 26px -18px rgba(96,80,132,0.6)';
+/**
+ * גוון הזכוכית · לבן דליל מאוד.
+ * ⚠ **דליל בכוונה** · הזכוכית של המערכת כבר מביאה את הבהירות
+ * מהרקע. גוון חזק היה הופך אותה חזרה ללוח אטום, וזה בדיוק מה
+ * שביקשנו לא לעשות.
+ */
+const GLASS_TINT = 'rgba(255,255,255,0.18)';
 
 export function BottomNav() {
   const { screen, loggedIn, go } = useNav();
   if (!loggedIn) return null;
+
+  const tabs = TABS.map((t) => {
+    const on = screen === t.key;
+    return (
+      <Pressable key={t.key} onPress={() => go(t.key)} style={s.tab}>
+        {/* הכרית · מאחורי האייקון והכיתוב, לא מסביב ללשונית כולה */}
+        {on ? <View style={s.cushion} /> : null}
+        <S k={t.sym} size={22} color={on ? ON_INK : INDIGO_70} />
+        <Text style={[s.label, { color: on ? ON_INK : OFF_INK, fontWeight: on ? '700' : '400' }]}>
+          {t.label}
+        </Text>
+      </Pressable>
+    );
+  });
+
+  if (isLiquidGlassAvailable()) {
+    return (
+      <GlassView
+        style={[s.bar, s.glass]}
+        glassEffectStyle="regular"
+        isInteractive
+        tintColor={GLASS_TINT}
+      >
+        {tabs}
+      </GlassView>
+    );
+  }
 
   return (
     <View style={s.bar}>
@@ -88,6 +136,8 @@ const s = StyleSheet.create({
     alignItems: 'stretch',
     paddingHorizontal: 8,
   },
+  /* ⚠ הזכוכית מביאה רקע וצל משלה · המילוי והצל שלנו יורדים */
+  glass: { backgroundColor: 'transparent', boxShadow: undefined },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3 },
   /* ⚠ מרחפת מאחור · `inset` כדי שתתפוס את כל הלשונית פחות מרווח */
   cushion: {

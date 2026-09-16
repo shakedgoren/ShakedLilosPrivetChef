@@ -65,11 +65,18 @@ export function Masthead() {
 
       <Svg width="100%" height={MARK_HEIGHT}>
         <Defs>
-          <LinearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0%" stopColor={brand.goldDark} />
-            <Stop offset="34%" stopColor={brand.gold} />
-            <Stop offset="58%" stopColor={brand.goldMid} />
-            <Stop offset="100%" stopColor={brand.goldDark} />
+          {/* ⚠ **זהב מטאלי · אנכי · 16 בספטמבר 2026** · שקד שלחה
+              תמונת ייחוס וביקשה כותרת בסגנון הזה. הגרדיאנט הקודם היה
+              **אופקי** בארבע עצירות, וזה נותן זהב שטוח. מתכת אמיתית
+              נקראת מהשתקפות לאורך הגובה: אור בקצה העליון, פס כהה
+              באמצע, ברק מתחתיו, וכהה בתחתית. */}
+          <LinearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#F6E9B0" />
+            <Stop offset="0.26" stopColor="#CDA63C" />
+            <Stop offset="0.48" stopColor="#8A6A1F" />
+            <Stop offset="0.6" stopColor="#DCBA4B" />
+            <Stop offset="0.82" stopColor="#F4E5A6" />
+            <Stop offset="1" stopColor="#A9812A" />
           </LinearGradient>
         </Defs>
         <SvgText
@@ -85,6 +92,8 @@ export function Masthead() {
         </SvgText>
       </Svg>
 
+      {/* ⚠ הקו הדק מתחת לשם · מופיע בתמונה ששקד שלחה */}
+      <View style={s.rule} />
       <Text style={s.sub}>{SUB}</Text>
     </View>
   );
@@ -103,6 +112,13 @@ const s = StyleSheet.create({
    * 1.25. מה שהיה כאן קודם היה 18px עם `letterSpacing` של 0.09 —
    * וזה מה שנתן לו מראה אחר מכל שאר האפליקציה.
    */
+  rule: {
+    width: 188,
+    height: 1,
+    marginTop: 7,
+    backgroundColor: brand.goldMid,
+    opacity: 0.6,
+  },
   sub: {
     fontSize: type.tiny,
     lineHeight: type.tiny * 1.25,
