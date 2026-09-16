@@ -24,7 +24,7 @@ npm run dev
 
 ## הרצה מקומית · Postgres (Docker Compose)
 
-לא מחליף את מסלול ה-SQLite. `prisma/schema.prisma` נשאר sqlite; ל-Postgres נוצר `prisma/schema.postgresql.prisma` בזמן `db:postgres:push` (לא בגיט).
+לא מחליף את מסלול ה-SQLite. `prisma/schema.prisma` נשאר sqlite; ל-Postgres נכתב `prisma-pg/schema.prisma` (בגיט) בזמן `db:postgres:push` / `db:postgres:render`.
 
 ```bash
 cd server
@@ -42,6 +42,103 @@ npm run dev
 חזרה ל-SQLite: `DATABASE_URL="file:./dev.db"` ב-`.env`, ואז `npx prisma generate` (ולפי הצורך `npx prisma migrate dev`).
 
 `docker compose down` עוצר את Postgres. הווליום `bite_pg_data` שומר את הנתונים עד `docker compose down -v`.
+
+מיגרציות **פרודקשן** הן ב-`prisma-pg/migrations/` (Postgres). תיקיית `prisma/migrations/` היא SQLite מקומי בלבד — `prisma migrate deploy` הרגיל לא רץ מול Railway.
+
+## Deploy on Railway
+
+ה-API רץ על Railway. המסד הוא **Postgres** של Railway (`DATABASE_URL`).  
+SQLite נשאר רק למחשב המקומי. **אין סודות בגיט** — הכל ב-Variables במסך השירות.
+
+הקונטיינר: `server/Dockerfile` (הקשר הוא **שורש הריפו**, כי השרת מייבא מחירים מ-`mobile/src/data`).  
+פקודת העלייה: `npm run start:prod` = `npx prisma migrate deploy` (סכמת `prisma-pg`) ואז `tsx src/index.ts`.
+
+`railway.toml` בשורש הריפו קובע Dockerfile, start command, ו-healthcheck.
+
+### צ׳קליסט לשקד
+
+1. [railway.app](https://railway.app) → Sign up (Hobby). יש עלות חודשית אצל Railway — לא סליקה באפליקציה.
+2. **New Project** → **Empty project**.
+3. **Create** → **Database** → **PostgreSQL** (באותו פרויקט). מחכים עד שסטטוס Ready.
+4. **Create** → **GitHub Repo** → `ShakedLilosPrivetChef`.
+   - Root Directory: **לא למלא** (להשאיר את שורש הריפו).
+   - אם Railway לא מוצא Dockerfile: ב-Variables `RAILWAY_DOCKERFILE_PATH=server/Dockerfile`.
+5. מחברים את שירות ה-API ל-Postgres: ב-Variables של ה-API, **Variable Reference** → `DATABASE_URL` של שירות ה-Postgres (או מדביקים את הערך מ-Postgres → Variables → `DATABASE_URL`).
+6. מדביקים את שאר המשתנים (טבלה למטה). **Deploy**.
+7. Settings → Networking → **Generate Domain**. בודקים `https://<דומיין>/health`.
+8. פעם אחת אחרי הדיפלוי הראשון — חשבון מנהלת (בלי נתוני דמה):
+
+```bash
+# מקומית, אחרי railway login וחיבור לפרויקט (CLI), או מ-Railway → service → shell:
+cd server   # בקונטיינר WORKDIR כבר /app/server
+npm run db:seed:admin
+```
+
+ב-Railway Dashboard: השירות → **...** → **One-off command** / Shell: `npm run db:seed:admin`.
+
+**לא** מריצים `npm run db:seed` בפרודקשן — הוא טוען לקוחות והזמנות דמה מהאפליקציה.
+
+9. באפליקציה (`mobile/.env`, לא בגיט): `EXPO_PUBLIC_API_URL=https://<דומיין-railway>`.
+10. וואטסאפ webhook אצל Meta: `https://<דומיין-railway>/webhooks/whatsapp` · verify token = `WHATSAPP_WEBHOOK_VERIFY_TOKEN`.
+
+אין טוקן Railway בגיט ואין דיפלוי מ-CI. אחרי חיבור הריפו, Push ל-`main` (אחרי מיזוג PR) בונה מחדש.
+
+### משתני סביבה (Railway Variables)
+
+מדביקים **במסך Variables של שירות ה-API**. אף ערך סודי לא נכנס לגיט.
+
+| משתנה | חובה? | מה להדביק |
+|---|---|---|
+| `DATABASE_URL` | כן | מתוסף/שירות **Postgres** ב-Railway (Variable Reference). Prisma מקבל גם `postgres://` וגם `postgresql://`. |
+| `JWT_SECRET` | כן בפרודקשן | מחרוזת ארוכה אקראית. למשל מקומית: `openssl rand -base64 48` — **לא** ערך ה-dev. |
+| `NODE_ENV` | כן | `production` (גם ה-Dockerfile מגדיר; עדיף מפורש). |
+| `HOST` | לא | ברירת מחדל בקוד `0.0.0.0`. אפשר להדביק `0.0.0.0`. |
+| `PORT` | לא | Railway **מזריק לבד**. לא חובה להדביק; השרת מאזין ל-`PORT`. |
+| `WHATSAPP_TOKEN` | לשליחת וואטסאפ | Permanent token מ-Meta. **שקד מדביקה; אף פעם לא בגיט.** בלי זה השרת חי והשליחות מדולגות. |
+| `WHATSAPP_PHONE_NUMBER_ID` | לשליחת וואטסאפ | `1378990205287782` |
+| `WHATSAPP_WABA_ID` | לא | מזהה WhatsApp Business Account — תיעוד/תבניות, לא חובה לשליחה. |
+| `WHATSAPP_TEMPLATE_OTP` | לא | ברירת מחדל `bite_otp` |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | לא | ברירת מחדל `order_pickup_confirmed` |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | לא | ברירת מחדל `order_delivary_confirmed` (הכתיב ב-Meta) |
+| `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | לא | ברירת מחדל `order_pick_up` |
+| `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | לא | ברירת מחדל `order_dalivery` (הכתיב ב-Meta) |
+| `WHATSAPP_TEMPLATE_LANG` | לא | `he` |
+| `WHATSAPP_GRAPH_VERSION` | לא | `v21.0` |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | ל-webhook | מחרוזת אקראית שבוחרים, אותה מדביקים גם ב-Meta. |
+| `ADMIN_EMAIL` | לזריעת מנהלת | אימייל הכניסה לניהול (ברירת מחדל בקוד `shaked@localhost` — בפרודקשן לשים אימייל אמיתי). |
+| `ADMIN_PHONE` | לזריעת מנהלת | טלפון הכניסה. |
+| `ADMIN_PASSWORD` | לזריעת מנהלת | סיסמה חזקה. **לא** להשאיר `changeme`. |
+| `ADMIN_NAME` | לא | ברירת מחדל `שקד לילוז`. |
+| `GOOGLE_CLIENT_ID` | להתחברות גוגל | מזהי OAuth מופרדים בפסיק. בלי זה `/auth/google` מחזיר 501. |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` | לאיפוס סיסמה במייל | בלי אלה לא נשלח מייל; השרת רץ. |
+| `APP_URL` | לקישור באימייל | כתובת האפליקציה (Expo / אתר), לא כתובת ה-API. |
+| `RESET_DEBUG` | לא בפרודקשן | **לא להגדיר** (או לא `1`) — אחרת טוקן איפוס חוזר ב-JSON. |
+
+**Bit / PayBox:** אין משתני סליקה בשרת הזה. קישורי תשלום, אם יתווספו, יגיעו מ-PR נפרד — לא כאן.
+
+אחרי שינוי `schema.prisma` (sqlite): `npx prisma migrate dev` מקומית, ואז `npm run db:postgres:render` ומיגרציית Postgres חדשה תחת `prisma-pg/migrations/` (למשל `npx prisma migrate dev --schema prisma-pg/schema.prisma --name ...` מול Docker Compose). בלי זה Railway ישאר מאחורי הסכמה.
+
+### Healthcheck · `GET /health`
+
+- Railway (`railway.toml`): `healthcheckPath = /health`, timeout 300 שניות (מיגרציה ראשונה + עליית השרת).
+- השרת מאזין ל-`HOST`/`PORT` (ברירת מחדל `0.0.0.0` ו-`3001`; ב-Railway `PORT` מוזרק).
+- תשובה תקינה: **HTTP 200** וגוף JSON:
+
+```json
+{ "ok": true, "service": "bite-and-tell", "whatsapp": false }
+```
+
+`whatsapp: true` רק כש-`WHATSAPP_TOKEN` ו-`WHATSAPP_PHONE_NUMBER_ID` שניהם מוגדרים.
+
+הנתיב **לא** בודק את Postgres (רק שהתהליך חי). אם `migrate deploy` נכשל, הקונטיינר לא עולה והדיפלוי נכשל.
+
+בלוג העלייה אמורה להופיע שורה: `BITE & TELL · http://0.0.0.0:<PORT> · db=postgres · ...`.
+
+### מה לא נכנס לכאן
+
+- סליקת אשראי / Bit / PayBox (PR נפרד).
+- טוקנים בגיט, דיפלוי מ-GitHub Actions עם `RAILWAY_TOKEN`.
+- שינוי `mobile/src/data/` או `design/app/`.
 
 ## בדיקות
 

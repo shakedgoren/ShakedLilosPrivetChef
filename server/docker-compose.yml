@@ -1,3 +1,4 @@
+# Postgres מקומי בלבד · פרודקשן רץ על Railway Postgres (DATABASE_URL).
 services:
   postgres:
     image: postgres:16-alpine

@@ -20,6 +20,8 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 
 וואטסאפ Cloud API אופציונלי · ראו [README.md](README.md#whatsapp-cloud-api-ישירות-מול-meta). בלי `WHATSAPP_TOKEN` השרת רץ והשליחות מדולגות.
 
+פרודקשן (Railway + Postgres): [README.md — Deploy on Railway](README.md#deploy-on-railway).
+
 ## ההתחברות
 
 השדה בבקשה נקרא `who` — טלפון או אימייל, לא `email`.
