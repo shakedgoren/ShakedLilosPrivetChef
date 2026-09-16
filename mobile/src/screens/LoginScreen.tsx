@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { TEXT_START } from '../theme/rtl';
+import { INPUT_START } from '../theme/rtl';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, space, surface } from '../theme/tokens';
@@ -587,7 +587,7 @@ const s = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 44,
     fontSize: 15,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     color: surface.ink,
   },
   inputLocked: { backgroundColor: 'rgba(130,112,162,0.07)', color: '#8A8194' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { S } from './Sym';
-import { TEXT_START } from '../theme/rtl';
+import { INPUT_START } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
@@ -170,7 +170,7 @@ const s = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 44,
     fontSize: 15,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     color: surface.ink,
   },
   /* ⚠ `right` פיזי · האייקון בקצה שאליו נכתב הטקסט */

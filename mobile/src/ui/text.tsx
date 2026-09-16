@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text as RNText, TextInput as RNTextInput } from 'react-native';
 import { fontFor } from '../theme/fonts';
-import { IS_RTL, TEXT_START } from '../theme/rtl';
+import { INPUT_START, IS_RTL, TEXT_START } from '../theme/rtl';
 
 /**
  * ה-Text וה-TextInput של האפליקציה · כל מסך מייבא מכאן ולא
@@ -31,26 +31,30 @@ import { IS_RTL, TEXT_START } from '../theme/rtl';
  *
  * ⚠ `Animated.Text` אינו עובר כאן · שני המקומות שמשתמשים בו
  * (`PrimaryButton`, `OrderTracker`) מגדירים סגנון מלא בעצמם.
+ *
+ * ⚠ **`TextInput` מקבל יישור הפוך** · ההחלפה של ריאקט־נייטיב חלה על
+ * `Text` בלבד. ראו את ההערה המלאה ב-`INPUT_START` שב-`theme/rtl.ts`,
+ * עם המדידה שהוכיחה את זה.
  */
 
 type TextProps = React.ComponentProps<typeof RNText>;
 type TextInputProps = React.ComponentProps<typeof RNTextInput>;
 
-function baseFor(style: unknown) {
+function baseFor(style: unknown, align: 'left' | 'right') {
   const flat = StyleSheet.flatten(style as never) as { fontWeight?: string } | undefined;
   return {
     fontFamily: fontFor(flat?.fontWeight),
     writingDirection: IS_RTL ? ('rtl' as const) : ('ltr' as const),
-    textAlign: TEXT_START,
+    textAlign: align,
   };
 }
 
 export const Text = React.forwardRef<React.ComponentRef<typeof RNText>, TextProps>(
-  ({ style, ...rest }, ref) => <RNText ref={ref} {...rest} style={[baseFor(style), style]} />,
+  ({ style, ...rest }, ref) => <RNText ref={ref} {...rest} style={[baseFor(style, TEXT_START), style]} />,
 );
 Text.displayName = 'Text';
 
 export const TextInput = React.forwardRef<React.ComponentRef<typeof RNTextInput>, TextInputProps>(
-  ({ style, ...rest }, ref) => <RNTextInput ref={ref} {...rest} style={[baseFor(style), style]} />,
+  ({ style, ...rest }, ref) => <RNTextInput ref={ref} {...rest} style={[baseFor(style, INPUT_START), style]} />,
 );
 TextInput.displayName = 'TextInput';

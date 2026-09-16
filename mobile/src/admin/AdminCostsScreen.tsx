@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { S, SymDownload } from '../components/Sym';
-import { TEXT_START, TEXT_END } from '../theme/rtl';
+import { INPUT_START, TEXT_END } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { surface } from '../theme/tokens';
@@ -405,7 +405,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     color: surface.ink,
   },
   w40: { width: 40, textAlign: 'center' },

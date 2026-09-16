@@ -112,3 +112,22 @@ export const TEXT_START: 'left' | 'right' =
 
 /** הצד הנגדי · יישור לקצה שבו הטקסט נגמר */
 export const TEXT_END: 'left' | 'right' = TEXT_START === 'left' ? 'right' : 'left';
+
+/**
+ * ⚠ **יישור בשדות קלט · הפוך מ-`TEXT_START`. תוקן ב-16.9.2026.**
+ *
+ * ההחלפה של `right`↔`left` תחת RTL חלה על `Text` — **אבל לא על
+ * `TextInput`**. נמדד בסימולטור אייפון 17 Pro עם ארבעה שדות זה לצד
+ * זה, שניים בכל יישור, אחד עם ערך ואחד עם פלייס־הולדר בלבד:
+ *
+ * · `textAlign: 'left'`  → הערך **והפלייס־הולדר** שמאלה.
+ * · `textAlign: 'right'` → הערך **והפלייס־הולדר** ימינה.
+ *
+ * כלומר בשדה קלט אין החלפה כלל, והערך זהה לדפדפן. בגלל זה כל
+ * הפלייס־הולדרים באפליקציה יצאו שמאלה: הם קיבלו `TEXT_START`,
+ * שהוא `'left'` במכשיר — נכון ל-`Text` והפוך ל-`TextInput`.
+ *
+ * ⚠ **`TEXT_START` ל-`Text`, `INPUT_START` ל-`TextInput`.**
+ */
+export const INPUT_START: 'left' | 'right' = IS_RTL ? 'right' : 'left';
+export const INPUT_END: 'left' | 'right' = INPUT_START === 'left' ? 'right' : 'left';

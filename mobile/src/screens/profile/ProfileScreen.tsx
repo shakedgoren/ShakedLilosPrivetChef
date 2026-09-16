@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { TEXT_START } from '../../theme/rtl';
+import { INPUT_START } from '../../theme/rtl';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, View, Image } from 'react-native';
 import { Text, TextInput } from '../../ui/text';
@@ -67,13 +67,24 @@ function cityOf(addr: string): string {
  * ⚠ היה ״לקוחה מאז״ קבוע · זו בדיוק הסיבה ששקד ביקשה שדה מגדר.
  * בלי בחירה נשארת לשון נקבה, כפי שהיה.
  */
-/** ⚠ הסמלים ששקד בחרה · שפם, פה ומוח · זהים למסך ההרשמה */
-const GENDER_SYM = {
-  female: 'female',
-  male: 'male',
-  other: 'other',
-  '': 'other',
-} as const satisfies Record<Gender, 'male' | 'female' | 'other'>;
+/**
+ * בורר המגדר · אייקון גדול ומתחתיו הכיתוב.
+ *
+ * ⚠ **הסדר והכיתוב לפי בקשת שקד** (16 בספטמבר 2026): ״האייקון בגדול
+ * ומתחתיו יהיה כתוב גבר, בשני אישה, ובשלישי אחר״. לכן הסדר כאן קבוע
+ * ואינו נגזר מ-`GENDERS` שב-`api/types` (שם הסדר הוא female קודם).
+ *
+ * ⚠ **כיתוב נפרד מ-`GENDER_LABEL`** · זה האחרון משמש את שורת
+ * ״לקוחה מאז…״ ואסור לו להשתנות ל״אישה מאז…״.
+ */
+const GENDER_PICK = [
+  { key: 'male', label: 'גבר', sym: 'male' },
+  { key: 'female', label: 'אישה', sym: 'female' },
+  { key: 'other', label: 'אחר', sym: 'other' },
+] as const satisfies readonly { key: Exclude<Gender, ''>; label: string; sym: 'male' | 'female' | 'other' }[];
+
+/** גודל האייקון בבורר · ״בגדול״ */
+const GENDER_ICON = 30;
 
 /** הסגול של הבחירה · כמו בשאר המסך */
 const PLUM = '#7B5CBC';
@@ -341,15 +352,15 @@ export function ProfileScreen() {
                 סמלים בדיוק שכבר במסך ההרשמה. כאן היה כיתוב בלבד,
                 והיא דיווחה על זה ב-16 בספטמבר 2026. */}
             <View style={s.genders}>
-              {GENDERS.map((g) => (
+              {GENDER_PICK.map((g) => (
                 <Pressable
-                  key={g}
-                  onPress={() => set('gender', form.gender === g ? '' : g)}
-                  style={[s.gender, form.gender === g && s.genderOn]}
+                  key={g.key}
+                  onPress={() => set('gender', form.gender === g.key ? '' : g.key)}
+                  style={[s.gender, form.gender === g.key && s.genderOn]}
                 >
-                  <S k={GENDER_SYM[g]} size={20} color={form.gender === g ? PLUM : undefined} />
-                  <Text style={[s.genderText, form.gender === g && s.genderTextOn]}>
-                    {GENDER_LABEL[g]}
+                  <S k={g.sym} size={GENDER_ICON} color={form.gender === g.key ? PLUM : undefined} />
+                  <Text style={[s.genderText, form.gender === g.key && s.genderTextOn]}>
+                    {g.label}
                   </Text>
                 </Pressable>
               ))}
@@ -544,17 +555,18 @@ const s = StyleSheet.create({
   genderBlock: { gap: 6 },
   genderLabel: { fontSize: 11.5, fontWeight: '500', color: '#8A8194', paddingHorizontal: 4 },
   genders: { flexDirection: 'row', gap: 8 },
-  /* ⚠ שורה · האייקון לצד הכיתוב. הגובה עלה מ-40 ל-44 כדי שהסמל
-     לא ייגע בשפה. */
+  /**
+   * ⚠ **טור ולא שורה** · האייקון גדול ומעל, הכיתוב מתחתיו. בקשה
+   * מפורשת של שקד. הגלולה הפכה לכרטיס מרובע יותר כדי שיהיה מקום.
+   */
   gender: {
     flex: 1,
-    height: 44,
-    borderRadius: radius.pill,
+    height: 74,
+    borderRadius: 18,
     backgroundColor: 'rgba(130,112,162,0.09)',
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   genderOn: { backgroundColor: a('123,92,188', 0.22) },
   genderText: { fontSize: 13, color: surface.inkSoft },
@@ -617,7 +629,7 @@ const s = StyleSheet.create({
     color: surface.ink,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
   },
   hint: { fontSize: 11.5, color: '#B95349' },
 

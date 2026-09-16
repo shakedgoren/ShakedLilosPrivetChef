@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEXT_START } from '../../theme/rtl';
+import { INPUT_START } from '../../theme/rtl';
 import { StyleSheet, View, type KeyboardTypeOptions } from 'react-native';
 import { Text, TextInput } from '../../ui/text';
 import { surface } from '../../theme/tokens';
@@ -66,7 +66,7 @@ const s = StyleSheet.create({
     color: surface.ink,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
   },
   note: { fontSize: 11.5, fontWeight: '500' },
 });

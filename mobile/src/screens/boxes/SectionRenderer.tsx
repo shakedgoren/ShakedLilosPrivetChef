@@ -1,6 +1,6 @@
 import React from 'react';
 import { S } from '../../components/Sym';
-import { TEXT_START } from '../../theme/rtl';
+import { INPUT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../../ui/text';
 import type { Section } from '../../data/boxes';
@@ -496,7 +496,7 @@ const st = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 12,
     fontSize: 14,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     textAlignVertical: 'top',
     color: surface.ink,
   },

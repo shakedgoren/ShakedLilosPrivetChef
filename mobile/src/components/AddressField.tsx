@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEXT_START } from '../theme/rtl';
+import { INPUT_START } from '../theme/rtl';
 import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import {
@@ -197,8 +197,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: TEXT_START, color: surface.ink },
-  house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: TEXT_START, color: surface.ink },
+  input: { flexGrow: 1, flexShrink: 1, fontSize: 15, textAlign: INPUT_START, color: surface.ink },
+  house: { backgroundColor: '#FFFFFF', fontSize: 15, textAlign: INPUT_START, color: surface.ink },
 
   /**
    * ⚠ **מרחפת ולא בזרימה** · בזרימה היא דוחפת את שדה מספר הבית

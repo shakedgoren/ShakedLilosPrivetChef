@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEXT_START } from '../../theme/rtl';
+import { INPUT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../../ui/text';
 import { TIER_LINES, tierPrices, type ChefSection } from '../../data/chef';
@@ -542,7 +542,7 @@ const st = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 12,
     fontSize: 14,
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     textAlignVertical: 'top',
     color: surface.ink,
   },

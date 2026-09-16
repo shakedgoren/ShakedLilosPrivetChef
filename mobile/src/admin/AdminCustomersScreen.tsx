@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { TEXT_START, TEXT_END } from '../theme/rtl';
+import { INPUT_START, TEXT_END } from '../theme/rtl';
 import { S } from '../components/Sym';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
@@ -317,7 +317,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
   },
   tabs: { flexDirection: 'row', gap: 6 },
   tab: { flex: 1 },
@@ -360,7 +360,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: 'rgba(130,112,162,0.18)',
-    textAlign: TEXT_START,
+    textAlign: INPUT_START,
     color: surface.ink,
   },
   acts: { flexDirection: 'row', gap: 8 },
