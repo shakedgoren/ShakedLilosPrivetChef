@@ -271,7 +271,7 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                   ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
                   ב-SVG מתחת לטקסט. */}
               <View style={[st.footFill, NO_TOUCH]}>
-                <Svg width="100%" height="100%">
+                <Svg width="100%" height={FADE_H}>
                   <Defs>
                     <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">
                       {FOOT_STOPS.map(([at, op]) => (
@@ -279,7 +279,7 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                       ))}
                     </LinearGradient>
                   </Defs>
-                  <Rect x="0" y="0" width="100%" height="100%" fill="url(#cardFoot)" />
+                  <Rect x="0" y="0" width="100%" height={FADE_H} fill="url(#cardFoot)" />
                 </Svg>
               </View>
               <Text style={st.cardName}>{o.n}</Text>
@@ -412,21 +412,26 @@ const CARD_BORDER = 2;
  * כדי שהכף תסתיר פחות מהתמונה המרובעת.
  */
 const FOOT_PAD_TOP = 12;
-/**
- * עצירות הגרדיאנט של הכף · `linear-gradient(to top, …)` בקנבס.
- * ה-offset נמדד **מלמטה** (`y1=1 → y2=0`), ולכן ערך גבוה יותר
- * הוא גבוה יותר על הכרטיס.
- *
- * ⚠ שונה מהקנבס · שם הירוק המלא מגיע רק ב-46%, כלומר **מתחת**
- * לשורת התיאור, והתיאור יושב על ירוק חלקי. שקד ביקשה שהפס יתחיל
- * מעט מעל התיאור, ולכן הוא מגיע לאטימות מלאה ב-70% — נמדד כ-7
- * פיקסלים מעל ראש התיאור.
- */
 const FOOT_RGB = 'rgb(198,228,211)';
+/**
+ * ⚠ **הכף אטומה, והמעבר יצא ממנה · 16 בספטמבר 2026** · שקד דיווחה
+ * ש״בנראות של חלה לכל אירוע הפס הירוק נשבר שם ולא רואים את
+ * הכיתוב״. נמדד בסימולטור בכרטיס ״פינוק לגן/לכיתה״: **גבול הירוק
+ * חוצה את השם באמצע** — חציו העליון של הכיתוב יושב על החלה
+ * הבהירה.
+ *
+ * הסיבה: הגרדיאנט נמתח על **כל גובה הכף**, וגובהה נגזר מאורך
+ * הכיתוב. שם ארוך דוחף את עצמו אל תוך אזור הדעיכה.
+ *
+ * עכשיו הכף אטומה מתחת לכל הכתב, והמעבר הוא רצועה קצרה בגובה
+ * קבוע **מעליה**.
+ */
+const FOOT_FILL = 'rgba(198,228,211,0.96)';
+const FADE_H = 28;
+/** עצירות רצועת המעבר בלבד · מלמטה (אטום) למעלה (שקוף) */
 const FOOT_STOPS: [number, number][] = [
   [0, 0.96],
-  [0.7, 0.94],
-  [0.9, 0.6],
+  [0.5, 0.6],
   [1, 0],
 ];
 
@@ -595,8 +600,10 @@ const st = StyleSheet.create({
     paddingBottom: 11,
     alignItems: 'center',
     gap: 3,
+    backgroundColor: FOOT_FILL,
   },
-  footFill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  /* ⚠ **מעל הכף ולא בתוכה** · `top` שלילי · ראו ההערה ב-`FOOT_FILL` */
+  footFill: { position: 'absolute', top: -FADE_H, right: 0, left: 0, height: FADE_H },
   cardName: { fontSize: 13, fontWeight: '600', color: '#22452F', lineHeight: 15.6, textAlign: 'center' },
   cardDesc: { fontSize: 10, fontWeight: '300', lineHeight: 14.5, color: '#37634A', textAlign: 'center' },
   addPill: {

@@ -42,6 +42,22 @@ const DESC_MIN_H = { one: 0, pair: 58 } as const;
 const SEL_BD = 'rgba(168,90,40,0.42)';
 const IDLE_BD = 'rgba(130,112,162,0.16)';
 const SAND = '#F2D8C0';
+/**
+ * ⚠ **הלוח אטום, והמעבר יצא ממנו · 16 בספטמבר 2026** · שקד דיווחה
+ * פעמיים — ״ארוחת שף פרטית · אפשר גם לשדרג״ ו״עמדת טאבון · אפשר גם
+ * לשדרג״ — ש״הפס הכתום נשבר שם ולא רואים את הכיתוב״.
+ *
+ * הסיבה: המדרג היה **גרדיאנט על כל גובה הלוח**, מ-0 למעלה ועד 0.96
+ * למטה. גובה הלוח נגזר מאורך התיאור, ובשדרוגים התיאורים ארוכים —
+ * ולכן השם נחת באזור שבו החול שקוף ב-55% בלבד, מעל תמונה בהירה.
+ *
+ * עכשיו הלוח **אטום מתחת לכל הכתב**, והמעבר הרך הוא רצועה קצרה
+ * בגובה קבוע **מעליו**. כך הכתב יושב על רקע מלא בכל אורך תיאור.
+ */
+const SAND_ALPHA = 0.96;
+const SAND_FILL = 'rgba(242,216,192,0.96)';
+/** גובה רצועת המעבר · קבוע, ואינו תלוי באורך הטקסט */
+const FADE_H = 30;
 const INK = '#5E2E12';
 const INK_SOFT = '#6B3F22';
 const MARK = '#A85A28';
@@ -82,17 +98,18 @@ export function ChefExtraCard({ name, desc, badge, on, one = false, onPress }: P
       <Photo name={extraPhoto(name)} rgb={hues.chef.rgb} zoom={false} style={s.shot} />
 
       <View style={s.veil}>
-        {/* המדרג · ל-React Native אין linear-gradient בסגנון, ולכן SVG */}
-        <Svg style={[s.fade, NO_TOUCH]} width="100%" height="100%">
+        {/* ⚠ **המעבר יצא מהמדרג · 16 בספטמבר 2026** · ראו ההערה
+            ב-`FADE_H`. רצועה קצרה וקבועה **מעל** הלוח, במקום
+            גרדיאנט שנמתח לכל גובהו. */}
+        <Svg style={[s.fade, NO_TOUCH]} width="100%" height={FADE_H}>
           <Defs>
             <LinearGradient id="extraFade" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0%" stopColor={SAND} stopOpacity={0} />
-              <Stop offset="22%" stopColor={SAND} stopOpacity={0.55} />
-              <Stop offset="54%" stopColor={SAND} stopOpacity={0.9} />
-              <Stop offset="100%" stopColor={SAND} stopOpacity={0.96} />
+              <Stop offset="55%" stopColor={SAND} stopOpacity={0.62} />
+              <Stop offset="100%" stopColor={SAND} stopOpacity={SAND_ALPHA} />
             </LinearGradient>
           </Defs>
-          <Rect x={0} y={0} width="100%" height="100%" fill="url(#extraFade)" />
+          <Rect x={0} y={0} width="100%" height={FADE_H} fill="url(#extraFade)" />
         </Svg>
 
         <Text numberOfLines={1} style={[s.name, { fontSize: NAME_SIZE[k] }]}>
@@ -156,15 +173,21 @@ const s = StyleSheet.create({
   },
   /* `padding: 26px 10px 11px` · המרווח העליון נותן למדרג להתחיל רך */
   /* ⚠ **בזרימה ולא מוחלט** · ראו את ההערה ב-`CARD_H`. */
+  /**
+   * ⚠ הריפוד העליון ירד מ-26 ל-10 · הוא היה קיים כדי לתת למדרג
+   * ״להתחיל רך״, וזה עבר לרצועה שמעל הלוח.
+   */
   veil: {
     width: '100%',
-    paddingTop: 26,
+    paddingTop: 10,
     paddingHorizontal: 10,
     paddingBottom: 11,
     alignItems: 'center',
     gap: 3,
+    backgroundColor: SAND_FILL,
   },
-  fade: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  /* ⚠ **מעל הלוח ולא בתוכו** · `top` שלילי · ראו ההערה ב-`FADE_H` */
+  fade: { position: 'absolute', top: -FADE_H, right: 0, left: 0, height: FADE_H },
   name: { fontWeight: '600', color: INK, lineHeight: 17, textAlign: 'center' },
   desc: { fontWeight: '400', color: INK_SOFT, textAlign: 'center' },
   price: { marginTop: 3, fontWeight: '600', color: INK, textAlign: 'center' },
