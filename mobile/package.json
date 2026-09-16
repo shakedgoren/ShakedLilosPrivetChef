@@ -5,6 +5,9 @@
   "dependencies": {
     "@expo-google-fonts/anton": "^0.4.2",
     "@expo-google-fonts/assistant": "^0.4.1",
+    "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+    "@expo-google-fonts/great-vibes": "^0.4.1",
+    "@expo-google-fonts/yeseva-one": "^0.4.1",
     "@expo/metro-runtime": "~57.0.15",
     "expo": "~57.0.20",
     "expo-blur": "~57.0.3",
