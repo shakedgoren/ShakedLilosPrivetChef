@@ -1,5 +1,6 @@
 import React from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { KITCHEN_CANCELLED, KITCHEN_FLOW } from '../api/status';
 import { EASE_OUT, TRACK, useReducedMotion } from '../theme/motion';
 import { a } from '../theme/tokens';

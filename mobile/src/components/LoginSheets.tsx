@@ -1,7 +1,8 @@
 import React from 'react';
 import { S } from './Sym';
 import { TEXT_START } from '../theme/rtl';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
 import { Mail, Send } from './LoginIcons';

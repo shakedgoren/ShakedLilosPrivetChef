@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import Svg, { Path } from 'react-native-svg';
 import { LAV, SOFT_SHADOW } from './NightSky';
 import { AMBER, PLUM, STATE, TILES, type TileKey } from '../../data/adminHome';

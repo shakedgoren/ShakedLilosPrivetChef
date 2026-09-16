@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { CATEGORIES } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';

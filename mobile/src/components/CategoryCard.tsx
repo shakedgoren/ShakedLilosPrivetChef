@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { a, radius, space, stopOf, surface, type } from '../theme/tokens';
 import { cardEdge, cardOrbShadow, cardShadow } from '../theme/glass';

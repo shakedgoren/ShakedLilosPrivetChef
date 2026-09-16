@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 
 /* צבעי הצ׳יפ הכבוי · זהים בכל מסכי הניהול בקנבס */

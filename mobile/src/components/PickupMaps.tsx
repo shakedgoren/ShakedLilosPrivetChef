@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';

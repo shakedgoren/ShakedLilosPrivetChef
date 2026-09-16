@@ -1,15 +1,7 @@
 import React from 'react';
 import { TEXT_END } from '../../theme/rtl';
-import {
-  Animated,
-  Easing,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Easing, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Confetti } from '../../components/Confetti';
 import { SuccessCheck } from '../../components/SuccessCheck';

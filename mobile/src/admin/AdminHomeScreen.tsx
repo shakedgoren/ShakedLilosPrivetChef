@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../components/Sym';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
 import { NewOrderSheet } from './NewOrderSheet';

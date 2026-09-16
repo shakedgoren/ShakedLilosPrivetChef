@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { S } from './Sym';
-import { Image, Modal, Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Image, Modal, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Text } from '../ui/text';
 import { BlurView } from 'expo-blur';
 import { Photo } from './Photo';
 import { photo } from '../data/photos';

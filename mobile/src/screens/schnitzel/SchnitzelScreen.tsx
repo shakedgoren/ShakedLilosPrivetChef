@@ -6,7 +6,8 @@ import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import {
   COCOTTES,
   COCOTTE_PRICE,

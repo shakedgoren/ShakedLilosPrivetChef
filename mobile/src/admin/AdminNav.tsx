@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { radius } from '../theme/tokens';
 import { LAV, SOFT_SHADOW } from './home/NightSky';
 import { INDIGO_70, S, type SYM } from '../components/Sym';

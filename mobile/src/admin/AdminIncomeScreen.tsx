@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { MONTHS } from '../data/adminDays';
 import { AdminShell } from './ui/AdminShell';

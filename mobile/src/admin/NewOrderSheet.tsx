@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { BOOK, DELIV_MIN_MEALS, HUES, MANUAL_CATS, SHIP_FEE } from '../data/adminOrders';
 import { Sheet } from './ui/Sheet';

@@ -1,7 +1,8 @@
 import React from 'react';
 import { S } from '../../components/Sym';
 import { TEXT_END } from '../../theme/rtl';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import { COLS, EMPTY_LABEL, EMPTY_SUB } from '../../data/adminShopping';
 import { lineSum, nf, type ShopRow } from './useAdminShopping';

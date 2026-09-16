@@ -1,4 +1,5 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import Svg, { Path } from 'react-native-svg';
 import { PASTA_SHAPES, PASTA_UP_EXTRA, T_PASTA_UPS } from '../../data/chef';
 import { radius } from '../../theme/tokens';

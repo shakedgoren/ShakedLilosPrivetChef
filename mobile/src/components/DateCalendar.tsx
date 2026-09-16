@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { CAL_HINT, DOWS, MONTHS, dateOpen, dayKey } from '../data/calendar';
 import { IS_RTL } from '../theme/rtl';
 import { a, hues } from '../theme/tokens';

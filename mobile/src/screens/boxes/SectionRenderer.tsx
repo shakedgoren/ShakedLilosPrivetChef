@@ -1,7 +1,8 @@
 import React from 'react';
 import { S } from '../../components/Sym';
 import { TEXT_START } from '../../theme/rtl';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../../ui/text';
 import type { Section } from '../../data/boxes';
 import { Stepper } from '../../components/Stepper';
 import { a, hues, radius, space, surface } from '../../theme/tokens';

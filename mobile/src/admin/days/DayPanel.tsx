@@ -3,7 +3,8 @@ import React from 'react';
 /** קוטר העיגול שהיה מאחורי ה-+ · הסמל תופס אותו עכשיו */
 const ROUND = 32;
 import { S } from '../../components/Sym';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import {
   CATS,

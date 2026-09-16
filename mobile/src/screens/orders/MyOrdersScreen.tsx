@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { OrderTracker } from '../../components/OrderTracker';

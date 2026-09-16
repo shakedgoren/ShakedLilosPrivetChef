@@ -1,6 +1,7 @@
 import React from 'react';
 import { TEXT_START } from '../../theme/rtl';
-import { StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from 'react-native';
+import { StyleSheet, View, type KeyboardTypeOptions } from 'react-native';
+import { Text, TextInput } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 
 const BORDER = 'rgba(130,112,162,0.18)';

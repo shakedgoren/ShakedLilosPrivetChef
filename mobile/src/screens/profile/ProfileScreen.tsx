@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TEXT_START } from '../../theme/rtl';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, Image } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View, Image } from 'react-native';
+import { Text, TextInput } from '../../ui/text';
 import { apiEnabled, API_URL } from '../../api/config';
 import { changePassword, updateMe, uploadAvatar } from '../../api/auth';
 import { pickAvatar } from '../../lib/pickImage';

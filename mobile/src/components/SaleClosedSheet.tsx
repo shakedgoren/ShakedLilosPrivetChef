@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { Bell } from '../icons';
 import { ContinueButton } from './ContinueButton';
 import { a, radius, space, surface } from '../theme/tokens';

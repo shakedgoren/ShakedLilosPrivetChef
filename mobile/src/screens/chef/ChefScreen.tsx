@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RollingTotal } from '../../components/RollingTotal';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { PhotoStrip } from '../../components/PhotoStrip';

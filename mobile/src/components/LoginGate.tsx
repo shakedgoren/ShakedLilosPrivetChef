@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { a, radius, space, surface } from '../theme/tokens';
 import type { Accent } from '../order/types';
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import * as I from '../icons';
 
 /** מסך בדיקה זמני · מציג את כל האייקונים שנוצרו מהקנבס */

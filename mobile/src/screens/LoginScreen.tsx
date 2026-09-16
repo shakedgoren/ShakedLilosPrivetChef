@@ -1,15 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TEXT_START } from '../theme/rtl';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../ui/text';
 import { radius, space, surface } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import { apiEnabled } from '../api/config';

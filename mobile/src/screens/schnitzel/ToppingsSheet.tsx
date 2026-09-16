@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { SCHNITZEL_TYPES } from '../../data/schnitzel';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { TOP_CARD } from '../../data/schnitzelCopy';

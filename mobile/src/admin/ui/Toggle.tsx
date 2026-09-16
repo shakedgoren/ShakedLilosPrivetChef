@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 
 const OFF_TRACK = 'rgba(130,112,162,0.22)';

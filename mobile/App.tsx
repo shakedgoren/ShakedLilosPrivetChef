@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { Modal, StyleSheet, View } from 'react-native';
+import { Text } from './src/ui/text';
 /**
  * ⚠ **לא ה-`SafeAreaView` של react-native** · לזה שלו אין `edges`,
  * והוא מרפד תמיד את כל ארבעת הצדדים. שקד ביקשה
@@ -10,7 +11,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { FONTS } from './src/theme/fonts';
-import { applyFonts } from './src/theme/applyFonts';
 import { NavProvider, useNav, type Screen } from './src/navigation/store';
 import { BottomNav } from './src/components/BottomNav';
 import { PageWash } from './src/components/PageWash';
@@ -140,9 +140,11 @@ function LoginOverlay() {
 
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
-  /* הגופן מוחל פעם אחת · לפני הרינדור הראשון של טקסט כלשהו */
-  if (fontsLoaded) applyFonts();
-  /* עד שהגופן נטען לא מרנדרים · אחרת הטקסט קופץ מגופן המערכת ל-Assistant */
+  /**
+   * עד שהגופן נטען לא מרנדרים · אחרת הטקסט קופץ מגופן המערכת ל-Assistant.
+   * ⚠ הגופן עצמו מוחל ב-`src/ui/text.tsx` · היה כאן `applyFonts()` שדרס
+   * את `Text.render`, וזה **לא עבד במכשיר** (ראו את ההערה שם).
+   */
   if (!fontsLoaded) return null;
 
   return (

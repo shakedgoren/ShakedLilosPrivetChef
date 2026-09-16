@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { Masthead } from '../components/Masthead';
 import { CategoryCarousel } from '../components/CategoryCarousel';
 import { CategoryRail } from '../components/CategoryRail';

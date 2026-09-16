@@ -1,6 +1,7 @@
 import React from 'react';
 import { TEXT_START } from '../theme/rtl';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../ui/text';
 import {
   MIN_QUERY,
   OUT_OF_ZONE,

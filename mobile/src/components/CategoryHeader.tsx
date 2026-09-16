@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import { BackButton } from './BackButton';

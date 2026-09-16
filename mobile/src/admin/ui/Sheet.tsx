@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../../components/Sym';
-import { Modal, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Modal, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import { iconOrbShadow } from '../../theme/glass';
 type Props = {

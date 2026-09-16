@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { S } from './Sym';
 import { BellSwing } from './BellSwing';
 import { a, hues, radius, space, surface, type CategoryKey } from '../theme/tokens';

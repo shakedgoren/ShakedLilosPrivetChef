@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import { SUPPLY_NOTE } from '../../data/adminStock';
 import type { SupplyRow, useAdminStock } from './useAdminStock';

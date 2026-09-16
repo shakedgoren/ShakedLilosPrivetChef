@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from './Photo';
 import { extraPhoto } from '../data/extraPhotos';

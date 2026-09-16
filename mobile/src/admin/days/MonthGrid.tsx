@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../../components/Sym';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { surface } from '../../theme/tokens';
 import { CATS, DOWS, LEGEND, MONTHS, type DayRecord } from '../../data/adminDays';
 import { dayKey } from './useAdminDays';

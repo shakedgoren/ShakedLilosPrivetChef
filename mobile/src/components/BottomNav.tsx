@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { radius, type } from '../theme/tokens';
 import { NAV_EDGE, NAV_SHADOW, NAV_STOPS } from '../theme/glass';
 import { GlassFill } from './Glass';

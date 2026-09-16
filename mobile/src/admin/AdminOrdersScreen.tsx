@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
 import { AdminShell, KpiRow } from './ui/AdminShell';

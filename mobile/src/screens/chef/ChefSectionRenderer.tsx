@@ -1,6 +1,7 @@
 import React from 'react';
 import { TEXT_START } from '../../theme/rtl';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../../ui/text';
 import { TIER_LINES, tierPrices, type ChefSection } from '../../data/chef';
 import { Stepper } from '../../components/Stepper';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';

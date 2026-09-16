@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../ui/text';
 import { S } from './Sym';
 import { IS_RTL } from '../theme/rtl';
 import { iconOrbShadow } from '../theme/glass';

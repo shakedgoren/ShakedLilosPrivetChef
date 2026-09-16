@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { TEXT_START, TEXT_END } from '../theme/rtl';
 import { S } from '../components/Sym';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { count as plural } from '../text/counts';
 import {

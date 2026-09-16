@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../../components/Sym';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Text } from '../../ui/text';
 import { radius, surface } from '../../theme/tokens';
 import { type IconProps } from '../../icons';
 import { useNav } from '../../navigation/store';

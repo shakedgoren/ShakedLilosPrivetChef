@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '../../ui/text';
 import { ADD, SUP_GROUPS, SUP_UNITS } from '../../data/adminStock';
 import { Sheet } from '../ui/Sheet';
 import { Field, FieldLabel } from '../ui/Field';

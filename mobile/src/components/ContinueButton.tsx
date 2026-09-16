@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text } from '../ui/text';
 import { a, radius } from '../theme/tokens';
 
 /**

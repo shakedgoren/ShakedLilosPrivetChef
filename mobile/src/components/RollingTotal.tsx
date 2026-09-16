@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, Animated, type StyleProp, type TextStyle } from 'react-native';
+import { StyleSheet, Animated, type StyleProp, type TextStyle } from 'react-native';
+import { Text } from '../ui/text';
 import { EASE_OUT, ROLL, useReducedMotion } from '../theme/motion';
 
 /**
