@@ -258,9 +258,9 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.92)',
     boxShadow: '0 8px 20px -14px rgba(90,80,70,0.5)',
   } as never,
-  tileK: { fontSize: 10, color: surface.faint, fontWeight: '500' },
-  tileV: { fontSize: 17, fontWeight: '700', marginTop: 2 },
-  tileNote: { fontSize: 9.5, fontWeight: '600', color: '#4E8A64', opacity: 0.75, marginTop: 1 },
+  tileK: { fontSize: 11.5, color: surface.faint, fontWeight: '500' },
+  tileV: { fontSize: 19.5, fontWeight: '700', marginTop: 2 },
+  tileNote: { fontSize: 11, fontWeight: '600', color: '#4E8A64', opacity: 0.75, marginTop: 1 },
   /* ⚠ לבן מלא ולא זכוכית · כך הכרטיס בהצעה שנבחרה */
   card: {
     borderRadius: 20,
@@ -270,13 +270,13 @@ const s = StyleSheet.create({
     borderColor: 'rgba(142,111,208,0.16)',
     boxShadow: '0 2px 4px -2px rgba(90,80,70,0.1), 0 16px 32px -18px rgba(90,80,70,0.28)',
   } as never,
-  cardTitle: { fontSize: 11.5, fontWeight: '600', letterSpacing: 0.7, color: '#9488B5', marginBottom: 4 },
+  cardTitle: { fontSize: 13, fontWeight: '600', letterSpacing: 0.7, color: '#9488B5', marginBottom: 4 },
   /* שורת הרשימה · אייקון, שם, סכום — וקו שיער בין השורות */
   line: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 7 },
   lineTop: { borderTopWidth: 1, borderTopColor: 'rgba(142,111,208,0.09)' },
   lineIcon: { width: 24, height: 24, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   lineText: { flex: 1 },
-  lineName: { flex: 1, fontSize: 12, fontWeight: '500', color: '#54467A' },
-  lineSub: { fontSize: 10.5, fontWeight: '300', color: surface.faint, marginTop: 1 },
-  lineVal: { fontSize: 12.5, fontWeight: '700' },
+  lineName: { flex: 1, fontSize: 14, fontWeight: '500', color: '#54467A' },
+  lineSub: { fontSize: 12, fontWeight: '300', color: surface.faint, marginTop: 1 },
+  lineVal: { fontSize: 14.5, fontWeight: '700' },
 });

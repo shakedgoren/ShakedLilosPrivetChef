@@ -228,9 +228,9 @@ const s = StyleSheet.create({
   } as never,
 
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  day: { flex: 1, fontSize: 13, fontWeight: '600', color: LAV.dim },
+  day: { flex: 1, fontSize: 15, fontWeight: '600', color: LAV.dim },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  state: { fontSize: 11.5, fontWeight: '600' },
+  state: { fontSize: 13, fontWeight: '600' },
   track: { width: 40, height: 23, borderRadius: 999, justifyContent: 'center' },
   knob: { position: 'absolute', width: 18, height: 18, borderRadius: 9, backgroundColor: '#FFFFFF' },
   knobOn: { start: 2.5 },
@@ -239,17 +239,17 @@ const s = StyleSheet.create({
   body: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 },
   ringBox: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   ringText: { position: 'absolute', alignItems: 'center' },
-  ringPct: { fontSize: 21, fontWeight: '300', color: LAV.ink },
-  ringNote: { fontSize: 9, fontWeight: '600', letterSpacing: 1.1, color: LAV.faint },
+  ringPct: { fontSize: 24, fontWeight: '300', color: LAV.ink },
+  ringNote: { fontSize: 10.5, fontWeight: '600', letterSpacing: 1.1, color: LAV.faint },
 
   rows: { flex: 1, gap: 9 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
-  name: { flex: 1, fontSize: 11, fontWeight: '400', color: LAV.soft },
+  name: { flex: 1, fontSize: 12.5, fontWeight: '400', color: LAV.soft },
   /* ⚠ רוחב מינימלי זהה לשניהם · כך הלוכסנים יושבים בטור אחד */
-  sold: { fontSize: 11.5, fontWeight: '700', minWidth: 22, textAlign: 'center' },
-  slash: { fontSize: 11, fontWeight: '300', color: LAV.faint },
-  quota: { minWidth: 22, textAlign: 'center', fontSize: 11.5, fontWeight: '700' },
+  sold: { fontSize: 13, fontWeight: '700', minWidth: 22, textAlign: 'center' },
+  slash: { fontSize: 12.5, fontWeight: '300', color: LAV.faint },
+  quota: { minWidth: 22, textAlign: 'center', fontSize: 13, fontWeight: '700' },
   /* שדה ההקלדה · אותן מידות של המספר, כדי שהשורה לא תקפוץ */
   input: { width: 26, padding: 0, borderBottomWidth: 1.5, borderBottomColor: LAV.accent },
 

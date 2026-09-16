@@ -161,7 +161,7 @@ const s = StyleSheet.create({
   },
   headText: { alignItems: 'center', gap: 2 },
   title: { fontWeight: '600', color: surface.ink, textAlign: 'center' },
-  sub: { fontSize: 12.5, fontWeight: '300', color: surface.faint, textAlign: 'center' },
+  sub: { fontSize: 14.5, fontWeight: '300', color: surface.faint, textAlign: 'center' },
   action: {
     height: 38,
     paddingHorizontal: 13,
@@ -189,8 +189,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: 'rgba(123,92,188,0.13)',
   },
-  actionTint: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
-  actionText: { fontSize: 13, fontWeight: '600', color: '#43307A' },
+  actionTint: { fontSize: 14.5, fontWeight: '600', color: '#43307A' },
+  actionText: { fontSize: 15, fontWeight: '600', color: '#43307A' },
   kpiBar: {
     flexDirection: 'row',
     borderRadius: 18,
@@ -201,6 +201,6 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.78)',
   },
   kpi: { flex: 1, alignItems: 'center', gap: 1 },
-  kpiValue: { fontSize: 17, fontWeight: '600' },
-  kpiLabel: { fontSize: 10.5, fontWeight: '300', color: surface.faint },
+  kpiValue: { fontSize: 19.5, fontWeight: '600' },
+  kpiLabel: { fontSize: 12, fontWeight: '300', color: surface.faint },
 });

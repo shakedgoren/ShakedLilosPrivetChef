@@ -4,6 +4,7 @@ import { Text } from '../ui/text';
 import { radius } from '../theme/tokens';
 import { LAV, SOFT_SHADOW } from './home/NightSky';
 import { INDIGO_70, S, type SYM } from '../components/Sym';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useNav, type Screen } from '../navigation/store';
 
 /**
@@ -34,24 +35,41 @@ const TABS: { key: Screen; label: string; sym: keyof typeof SYM }[] = [
   { key: 'adminMoney', label: 'כספים', sym: 'money' },
 ];
 
+/**
+ * ⚠ **Liquid Glass אמיתי · 16 בספטמבר 2026** · בקשה של שקד:
+ * ״גם להתאים את הנאב בר להיות של ממש׳ ios בתצורה liqueed glass עם
+ * כל התכונות שלו״ — בדיוק כמו שכבר נעשה בצד הלקוחה.
+ * `expo-glass-effect` חושף את הזכוכית **של המערכת**, עם השבירה
+ * וההשתקפות, ו-`isInteractive` מגיב למגע.
+ * ⚠ **דורש iOS 26** · מתחתיו נשאר בדיוק הפס הלבן שהיה.
+ */
+const GLASS_TINT = 'rgba(255,255,255,0.18)';
+
 export function AdminNav() {
   const { screen, go } = useNav();
-  return (
-    <View style={s.bar}>
-      {TABS.map(({ key, label, sym }) => {
-        const on = screen === key;
-        return (
-          <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
-            {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
-            <S k={sym} size={ICON} color={on ? ON : INDIGO_70} />
-            <Text style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}>
-              {label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
+
+  const tabs = TABS.map(({ key, label, sym }) => {
+    const on = screen === key;
+    return (
+      <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
+        {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
+        <S k={sym} size={ICON} color={on ? ON : INDIGO_70} />
+        <Text style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}>
+          {label}
+        </Text>
+      </Pressable>
+    );
+  });
+
+  if (isLiquidGlassAvailable()) {
+    return (
+      <GlassView style={[s.bar, s.glass]} glassEffectStyle="regular" isInteractive tintColor={GLASS_TINT}>
+        {tabs}
+      </GlassView>
+    );
+  }
+
+  return <View style={s.bar}>{tabs}</View>;
 }
 
 const s = StyleSheet.create({
@@ -71,6 +89,8 @@ const s = StyleSheet.create({
     elevation: 8,
     zIndex: 20,
   } as never,
+  /* ⚠ הזכוכית מביאה רקע וצל משלה · המילוי והצל שלנו יורדים */
+  glass: { backgroundColor: 'transparent', boxShadow: undefined, elevation: 0 } as never,
   /* ⚠ צר יותר · חמש לשוניות במקום ארבע, ו-52+12 לא נכנסו */
   tab: {
     minWidth: 44,
@@ -82,5 +102,5 @@ const s = StyleSheet.create({
     gap: 4,
   },
   tabOn: { backgroundColor: LAV.pill },
-  label: { fontSize: 10.5 },
+  label: { fontSize: 12 },
 });

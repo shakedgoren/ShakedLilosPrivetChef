@@ -36,8 +36,8 @@ export function ToggleRow({ title, sub, on, onToggle, onColor = ON_TRACK }: Prop
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   text: { flex: 1 },
-  title: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
-  sub: { fontSize: 11.5, fontWeight: '300', color: surface.muted, marginTop: 1 },
+  title: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
+  sub: { fontSize: 13, fontWeight: '300', color: surface.muted, marginTop: 1 },
   track: { width: 52, height: 30, borderRadius: 999, justifyContent: 'center' },
   knob: {
     position: 'absolute',

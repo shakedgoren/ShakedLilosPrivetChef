@@ -53,5 +53,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaText: { fontSize: 14.5, fontWeight: '600', color: '#43307A' },
+  ctaText: { fontSize: 16.5, fontWeight: '600', color: '#43307A' },
 });

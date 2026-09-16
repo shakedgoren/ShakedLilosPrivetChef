@@ -72,6 +72,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   label: { textAlign: 'center' },
-  count: { fontSize: 10, fontWeight: '500' },
+  count: { fontSize: 11.5, fontWeight: '500' },
   row: { flexDirection: 'row', gap: 6 },
 });

@@ -65,8 +65,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  title: { fontSize: 17, fontWeight: '600', color: surface.ink },
-  body: { fontSize: 12.5, fontWeight: '300', color: surface.muted, textAlign: 'center' },
+  title: { fontSize: 19.5, fontWeight: '600', color: surface.ink },
+  body: { fontSize: 14.5, fontWeight: '300', color: surface.muted, textAlign: 'center' },
   cta: {
     height: 42,
     paddingHorizontal: 28,
@@ -76,5 +76,5 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 10,
   },
-  ctaText: { fontSize: 14, fontWeight: '600', color: '#43307A' },
+  ctaText: { fontSize: 16, fontWeight: '600', color: '#43307A' },
 });

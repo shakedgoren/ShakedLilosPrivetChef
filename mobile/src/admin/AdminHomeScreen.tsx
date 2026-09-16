@@ -255,8 +255,8 @@ const s = StyleSheet.create({
    */
   headStart: { position: 'absolute', left: 0, top: 0, bottom: 0, justifyContent: 'center' },
   headEnd: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
-  title: { fontSize: 21, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
-  sub: { fontSize: 12.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
+  title: { fontSize: 24, fontWeight: '600', color: LAV.ink, textAlign: 'center' },
+  sub: { fontSize: 14.5, fontWeight: '300', color: LAV.faint, textAlign: 'center' },
   /* עיגול בגוון הצ׳יפ · אותה מידה של כפתור ההתנתקות שלצידו */
   newChip: {
     width: 38,
@@ -287,12 +287,12 @@ const s = StyleSheet.create({
   statRow: { flexDirection: 'row', gap: 12, height: 66 },
   /* ⚠ ממורכז · בקשה של שקד (15 בספטמבר 2026) */
   stat: { flex: 1, borderRadius: 26, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 3 },
-  statLabel: { fontSize: 11, color: LAV.faint, textAlign: 'center' },
-  statValue: { fontSize: 21, fontWeight: '700', color: LAV.ink },
+  statLabel: { fontSize: 12.5, color: LAV.faint, textAlign: 'center' },
+  statValue: { fontSize: 24, fontWeight: '700', color: LAV.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
-  currency: { fontSize: 11, color: surface.faint },
-  currencySm: { fontSize: 10, color: surface.faint },
-  currencyBig: { fontSize: 12, color: surface.faint },
+  currency: { fontSize: 12.5, color: surface.faint },
+  currencySm: { fontSize: 11.5, color: surface.faint },
+  currencyBig: { fontSize: 14, color: surface.faint },
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
   revCard: { height: 196, borderRadius: 26, paddingTop: 14, paddingHorizontal: 16, paddingBottom: 8 },
@@ -319,20 +319,20 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   rangeOn: { backgroundColor: '#FFFFFF', boxShadow: '0 2px 6px -2px rgba(90,80,70,0.3)' } as never,
-  rangeText: { fontSize: 11, fontWeight: '400', color: LAV.dim },
+  rangeText: { fontSize: 12.5, fontWeight: '400', color: LAV.dim },
   rangeTextOn: { fontWeight: '700', color: LAV.ink },
 
   pair: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  pipe: { fontSize: 15, fontWeight: '300', color: 'rgba(130,112,162,0.5)' },
+  pipe: { fontSize: 17, fontWeight: '300', color: 'rgba(130,112,162,0.5)' },
   cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  cardTitle: { fontSize: 12.5, fontWeight: '600', color: LAV.dim },
-  revTotal: { fontSize: 15, fontWeight: '700', color: LAV.ink },
+  cardTitle: { fontSize: 14.5, fontWeight: '600', color: LAV.dim },
+  revTotal: { fontSize: 17, fontWeight: '700', color: LAV.ink },
   chart: { flex: 1, marginTop: 4 },
   months: { flexDirection: LTR_ROW, alignItems: 'center' },
   axisPad: { width: 30 },
   /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */
   monthRow: { flex: 1, flexDirection: LTR_ROW, justifyContent: 'space-around' },
-  month: { fontSize: 10, fontWeight: '300', color: '#9A93A6' },
+  month: { fontSize: 11.5, fontWeight: '300', color: '#9A93A6' },
   expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
@@ -352,7 +352,7 @@ const s = StyleSheet.create({
   },
   legendCell: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingEnd: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendName: { fontSize: 10.5, fontWeight: '500', color: LAV.soft },
+  legendName: { fontSize: 12, fontWeight: '500', color: LAV.soft },
 
   profitCard: {
     flex: 1,
@@ -363,9 +363,9 @@ const s = StyleSheet.create({
     paddingBottom: 12,
   },
   profitNet: { fontSize: 26, fontWeight: '300', color: LAV.ink },
-  profitNote: { fontSize: 10.5, fontWeight: '300', color: LAV.faint },
+  profitNote: { fontSize: 12, fontWeight: '300', color: LAV.faint },
   rule: { height: 1, backgroundColor: LAV.edge, marginVertical: 7 },
   grossRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 },
-  gross: { fontSize: 12.5, fontWeight: '600', color: LAV.soft },
+  gross: { fontSize: 14.5, fontWeight: '600', color: LAV.soft },
   spacer: { flex: 1 },
 });

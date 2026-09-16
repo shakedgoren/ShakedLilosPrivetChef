@@ -19,7 +19,12 @@ import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 export type WavePoint = { k: string; rev: number; exp: number };
 
 /** ⚠ **גובה מינימלי** · בקשה של שקד · מספיק לגל ולא יותר */
-const H = 78;
+/**
+ * ⚠ **הוגדל · 16 בספטמבר 2026** · בקשה של שקד: ״בכספים תגדיל את
+ * הגובה של הדיאגרמת רווחיות״. היה 78, וזה נתן גל שטוח שבו הפרשים
+ * בין חודשים כמעט לא נראו.
+ */
+const H = 112;
 const TOP = 7;
 /**
  * ⚠ **קו האפס גבוה מהתחתית** · עובי הקו 2.6, ואם הוא יושב על

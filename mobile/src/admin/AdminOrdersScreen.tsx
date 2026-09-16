@@ -128,5 +128,5 @@ const s = StyleSheet.create({
   tab: { flex: 1 },
   list: { flex: 1 },
   listPad: { gap: 9, paddingBottom: 120 },
-  empty: { fontSize: 14, fontWeight: '500', color: '#A79FB2', textAlign: 'center', marginTop: 60 },
+  empty: { fontSize: 16, fontWeight: '500', color: '#A79FB2', textAlign: 'center', marginTop: 60 },
 });

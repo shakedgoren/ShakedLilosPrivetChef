@@ -58,15 +58,15 @@ export function FieldLabel({ text }: { text: string }) {
 
 const s = StyleSheet.create({
   wrap: { gap: 5 },
-  label: { fontSize: 11.5, fontWeight: '500', color: surface.faint },
+  label: { fontSize: 13, fontWeight: '500', color: surface.faint },
   input: {
     borderRadius: 15,
     paddingHorizontal: 13,
-    fontSize: 13.5,
+    fontSize: 15.5,
     color: surface.ink,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     textAlign: INPUT_START,
   },
-  note: { fontSize: 11.5, fontWeight: '500' },
+  note: { fontSize: 13, fontWeight: '500' },
 });

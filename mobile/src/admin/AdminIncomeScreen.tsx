@@ -93,7 +93,7 @@ export function AdminIncomeScreen() {
 const s = StyleSheet.create({
   body: { flex: 1 },
   pad: { paddingBottom: 120, gap: 12 },
-  empty: { fontSize: 12.5, color: surface.faint, textAlign: 'center', marginTop: 24 },
+  empty: { fontSize: 14.5, color: surface.faint, textAlign: 'center', marginTop: 24 },
 
   card: {
     borderRadius: 20,
@@ -104,14 +104,14 @@ const s = StyleSheet.create({
     gap: 9,
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
-  cardSum: { fontSize: 13.5, fontWeight: '700', color: '#43307A' },
+  cardTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
+  cardSum: { fontSize: 15.5, fontWeight: '700', color: '#43307A' },
 
   row: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   /* פס בגוון הקטגוריה · מזהה את יום המכירה במבט */
   bar: { width: 3, alignSelf: 'stretch', borderRadius: 2, minHeight: 28 },
   rowText: { flex: 1, gap: 1 },
-  rowCat: { fontSize: 12.5, fontWeight: '600' },
-  rowSub: { fontSize: 11, fontWeight: '300', color: surface.faint },
-  rowVal: { fontSize: 13.5, fontWeight: '700', color: surface.ink },
+  rowCat: { fontSize: 14.5, fontWeight: '600' },
+  rowSub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
+  rowVal: { fontSize: 15.5, fontWeight: '700', color: surface.ink },
 });

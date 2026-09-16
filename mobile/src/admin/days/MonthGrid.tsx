@@ -116,13 +116,13 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   boxShadow: iconOrbShadow('123,92,188'),
   },
-  arrowGlyph: { fontSize: 18, color: PLUM, lineHeight: 20 },
-  month: { flex: 1, textAlign: 'center', fontSize: 14.5, fontWeight: '600', color: surface.ink },
+  arrowGlyph: { fontSize: 20.5, color: PLUM, lineHeight: 20 },
+  month: { flex: 1, textAlign: 'center', fontSize: 16.5, fontWeight: '600', color: surface.ink },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 12 },
   /* שבע עמודות · המרווח נוצר מריפוד התא עצמו, לא מ-gap, כדי לא לגלוש */
   cellBox: { width: `${100 / 7}%`, paddingHorizontal: CELL_GAP / 2, paddingVertical: CELL_GAP / 2 },
-  dow: { textAlign: 'center', fontSize: 10.5, fontWeight: '600', color: '#A79FB2' },
+  dow: { textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#A79FB2' },
   cell: {
     height: 42,
     borderRadius: 12,
@@ -131,11 +131,11 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 1,
   },
-  num: { fontSize: 13 },
+  num: { fontSize: 15 },
   dot: { width: 5, height: 5, borderRadius: 2.5 },
 
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 3 },
-  legendText: { fontSize: 11, color: surface.muted },
+  legendText: { fontSize: 12.5, color: surface.muted },
 });

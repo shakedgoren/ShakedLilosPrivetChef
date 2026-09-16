@@ -237,7 +237,7 @@ export function AdminExpensesScreen() {
 const s = StyleSheet.create({
   body: { flex: 1 },
   pad: { paddingBottom: 120, gap: 12 },
-  empty: { fontSize: 12.5, color: surface.faint, textAlign: 'center', marginTop: 24 },
+  empty: { fontSize: 14.5, color: surface.faint, textAlign: 'center', marginTop: 24 },
 
   card: {
     borderRadius: 20,
@@ -248,15 +248,15 @@ const s = StyleSheet.create({
     gap: 8,
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 13.5, fontWeight: '600', color: surface.ink },
-  cardSum: { fontSize: 13.5, fontWeight: '700', color: AMBER },
+  cardTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
+  cardSum: { fontSize: 15.5, fontWeight: '700', color: AMBER },
 
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   rowText: { flex: 1, gap: 1 },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rowCat: { fontSize: 12.5, fontWeight: '600', color: surface.ink },
-  rowSub: { fontSize: 11, fontWeight: '300', color: surface.faint },
-  rowVal: { fontSize: 13.5, fontWeight: '700', color: surface.ink },
+  rowCat: { fontSize: 14.5, fontWeight: '600', color: surface.ink },
+  rowSub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
+  rowVal: { fontSize: 15.5, fontWeight: '700', color: surface.ink },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,7 +266,7 @@ const s = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(123,92,188,0.12)',
   },
-  tagText: { fontSize: 9.5, fontWeight: '600', color: PLUM.deep },
+  tagText: { fontSize: 11, fontWeight: '600', color: PLUM.deep },
   kill: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
 
   confirm: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -278,11 +278,11 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(130,112,162,0.1)',
   },
-  miniText: { fontSize: 11, fontWeight: '600', color: '#6E6478' },
+  miniText: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
   miniYes: { backgroundColor: 'rgba(185,83,73,0.14)' },
-  miniYesText: { fontSize: 11, fontWeight: '600', color: '#B95349' },
+  miniYesText: { fontSize: 12.5, fontWeight: '600', color: '#B95349' },
 
-  catHint: { fontSize: 11, fontWeight: '300', color: surface.faint, marginTop: -4 },
+  catHint: { fontSize: 12.5, fontWeight: '300', color: surface.faint, marginTop: -4 },
   pair: { flexDirection: 'row', gap: 10 },
   half: { flex: 1 },
   save: {
@@ -294,5 +294,5 @@ const s = StyleSheet.create({
     marginTop: 2,
   },
   saveOff: { opacity: 0.45 },
-  saveText: { fontSize: 14, fontWeight: '700', color: '#2E2148' },
+  saveText: { fontSize: 16, fontWeight: '700', color: '#2E2148' },
 });

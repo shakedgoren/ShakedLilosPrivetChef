@@ -358,7 +358,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ringPct: { fontSize: 15, fontWeight: '600', color: surface.ink },
+  ringPct: { fontSize: 17, fontWeight: '600', color: surface.ink },
   donutBox: { width: 74, height: 74 },
   donutCenter: {
     position: 'absolute',
@@ -369,5 +369,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  donutText: { fontSize: 13, fontWeight: '600', color: surface.ink },
+  donutText: { fontSize: 15, fontWeight: '600', color: surface.ink },
 });

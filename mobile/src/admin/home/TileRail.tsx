@@ -33,6 +33,14 @@ const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = 
 /**
  * אריחי הניווט · שער למסכי הניהול שאינם בנאב-בר.
  *
+ * ⚠ **הרוחב נמדד ולא הוחל · תוקן ב-16 בספטמבר 2026** · שקד דיווחה
+ * ״צריך לסדר את הנראות של ארבעת הקטגוריות בתחתית המסך בדף הבית״.
+ * נמדד בסימולטור: ארבעת האריחים **נדחסו לחצי הימני של המסך**
+ * והחצי השמאלי נשאר ריק.
+ *
+ * הסיבה: `tileW` חושב כאן מ-`onLayout` — ו**מעולם לא הועבר
+ * לאריח**. בלי רוחב כל אריח התכווץ לרוחב התוכן שלו.
+ *
  * ⚠ **שורה אחת של ארבעה** · שקד ביקשה (15 בספטמבר 2026) שבדף
  * הבית יופיעו רק תפריט · עלויות · לקוחות · מלאי. הזמנות, ימי
  * מכירה, קניות וכספים עברו לנאב-בר.
@@ -69,7 +77,11 @@ export function TileRail({
         const value = raw === true ? '!' : raw === false ? 0 : (raw ?? fallback.value);
         const tone = fallback.tone;
         return (
-          <Pressable key={t.key} onPress={() => onOpen(t.key)} style={s.tile}>
+          <Pressable
+            key={t.key}
+            onPress={() => onOpen(t.key)}
+            style={[s.tile, { width: tileW as never }]}
+          >
             <Svg width={21} height={21} viewBox="0 0 24 24">
               {t.paths.map((d) => (
                 <Path
@@ -108,12 +120,17 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
   },
-  name: { fontSize: 10.5, fontWeight: '600', color: LAV.soft },
+  name: { fontSize: 12, fontWeight: '600', color: LAV.soft },
+  /**
+   * ⚠ **התג נכנס פנימה · 16 בספטמבר 2026** · הוא ישב בפינה
+   * **החיצונית** (`top: -5, end: -4`), כמו בקנבס. נמדד בסימולטור:
+   * האריח הבא בשורה נצבע **אחריו** ולכן כיסה אותו, והמספרים ״3״
+   * ו״7״ יצאו חתוכים. בתוך האריח הוא נקרא במלואו תמיד.
+   */
   badge: {
     position: 'absolute',
-    top: -5,
-    /* בקנבס התג יושב בפינה החיצונית · left ב-RTL הוא end */
-    end: -4,
+    top: 4,
+    end: 4,
     minWidth: 19,
     height: 19,
     borderRadius: 999,
@@ -123,5 +140,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { fontSize: 10, fontWeight: '700' },
+  badgeText: { fontSize: 11.5, fontWeight: '700' },
 });

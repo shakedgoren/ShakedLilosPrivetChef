@@ -41,5 +41,5 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     boxShadow: '0px 2px 5px rgba(96,80,132,0.3)',
   },
-  label: { fontSize: 13.5 },
+  label: { fontSize: 15.5 },
 });

@@ -125,11 +125,11 @@ const s = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(130,112,162,0.1)',
   },
-  hitName: { fontSize: 13, fontWeight: '500', color: surface.ink },
-  hitSub: { fontSize: 11, fontWeight: '300', color: '#A79FB2', marginTop: 1 },
+  hitName: { fontSize: 15, fontWeight: '500', color: surface.ink },
+  hitSub: { fontSize: 12.5, fontWeight: '300', color: '#A79FB2', marginTop: 1 },
   totalRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  totalLabel: { fontSize: 13, fontWeight: '500', color: surface.inkSoft },
-  totalValue: { fontSize: 18, fontWeight: '700', color: '#43307A' },
+  totalLabel: { fontSize: 15, fontWeight: '500', color: surface.inkSoft },
+  totalValue: { fontSize: 20.5, fontWeight: '700', color: '#43307A' },
   cta: {
     alignSelf: 'center',
     height: 48,
@@ -139,5 +139,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaText: { fontSize: 15, fontWeight: '600' },
+  ctaText: { fontSize: 17, fontWeight: '600' },
 });

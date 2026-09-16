@@ -83,7 +83,7 @@ export function SupplyStock({ admin }: Props) {
 const s = StyleSheet.create({
   wrap: { gap: 12 },
   group: { gap: 7 },
-  groupName: { fontSize: 12, fontWeight: '600', letterSpacing: 0.7, color: '#A79FB2', paddingHorizontal: 4 },
+  groupName: { fontSize: 14, fontWeight: '600', letterSpacing: 0.7, color: '#A79FB2', paddingHorizontal: 4 },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -94,19 +94,19 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
   },
   itemText: { flex: 1 },
-  itemName: { fontSize: 13, fontWeight: '500', color: surface.ink },
-  itemSub: { fontSize: 11, fontWeight: '300', marginTop: 1 },
+  itemName: { fontSize: 15, fontWeight: '500', color: surface.ink },
+  itemSub: { fontSize: 12.5, fontWeight: '300', marginTop: 1 },
 
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   round: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', boxShadow: iconOrbShadow('130,112,162')},
   plusBg: { backgroundColor: 'rgba(123,92,188,0.13)' },
   greyBg: { backgroundColor: 'rgba(130,112,162,0.09)' },
-  sign: { fontSize: 16, fontWeight: '700', color: '#6E6478', lineHeight: 19 },
+  sign: { fontSize: 18.5, fontWeight: '700', color: '#6E6478', lineHeight: 19 },
   count: { minWidth: 42, alignItems: 'center' },
-  n: { fontSize: 16, fontWeight: '700' },
-  unit: { fontSize: 10, fontWeight: '300', color: '#A79FB2' },
+  n: { fontSize: 18.5, fontWeight: '700' },
+  unit: { fontSize: 11.5, fontWeight: '300', color: '#A79FB2' },
   drop: { width: 22, alignItems: 'center' },
-  dropGlyph: { fontSize: 12, color: '#C4BDCE' },
+  dropGlyph: { fontSize: 14, color: '#C4BDCE' },
 
-  note: { fontSize: 11, fontWeight: '300', color: surface.muted, textAlign: 'center' },
+  note: { fontSize: 12.5, fontWeight: '300', color: surface.muted, textAlign: 'center' },
 });

@@ -118,5 +118,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaText: { fontSize: 15, fontWeight: '600' },
+  ctaText: { fontSize: 17, fontWeight: '600' },
 });

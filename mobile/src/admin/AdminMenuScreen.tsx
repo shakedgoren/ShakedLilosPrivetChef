@@ -128,11 +128,11 @@ const s = StyleSheet.create({
     borderRightWidth: 3,
     gap: 11,
   },
-  name: { fontSize: 14.5, fontWeight: '600', color: surface.ink },
-  margin: { fontSize: 11.5, marginTop: -8 },
+  name: { fontSize: 16.5, fontWeight: '600', color: surface.ink },
+  margin: { fontSize: 13, marginTop: -8 },
   vals: { flexDirection: 'row', gap: 8 },
   box: { flex: 1 },
-  lab: { fontSize: 10.5, fontWeight: '500', color: surface.faint, marginBottom: 3 },
+  lab: { fontSize: 12, fontWeight: '500', color: surface.faint, marginBottom: 3 },
   valBox: {
     height: 40,
     borderRadius: 13,
@@ -140,5 +140,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  val: { fontSize: 14.5, fontWeight: '700', color: surface.ink },
+  val: { fontSize: 16.5, fontWeight: '700', color: surface.ink },
 });

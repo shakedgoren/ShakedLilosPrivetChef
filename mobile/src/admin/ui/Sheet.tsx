@@ -70,8 +70,8 @@ const s = StyleSheet.create({
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   headText: { flex: 1, gap: 2 },
-  title: { fontSize: 17, fontWeight: '600', color: surface.ink },
-  sub: { fontSize: 12, color: surface.muted, marginTop: 2 },
+  title: { fontSize: 19.5, fontWeight: '600', color: surface.ink },
+  sub: { fontSize: 14, color: surface.muted, marginTop: 2 },
   close: {
     width: 32,
     height: 32,
@@ -81,5 +81,5 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   boxShadow: iconOrbShadow('130,112,162'),
   },
-  closeGlyph: { fontSize: 13, color: '#6E6478', lineHeight: 16 },
+  closeGlyph: { fontSize: 15, color: '#6E6478', lineHeight: 16 },
 });
