@@ -8,19 +8,18 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import {
-  CTA_GLOW_BLUR,
-  CTA_GLOW_CORE_ALPHA,
-  CTA_GLOW_MID_ALPHA,
-  CTA_GLOW_RGB,
-  CTA_GLOW_SPREAD,
-  CTA_KNOB_SHADOW,
   CTA_DROP,
+  CTA_FILL_STOPS,
+  CTA_GLASS_STOPS,
+  CTA_INK,
+  CTA_KNOB_RADIUS,
+  CTA_KNOB_SHADOW,
+  CTA_RADIUS,
   CTA_SHADOW,
-  CTA_STOPS,
 } from '../theme/glass';
-import { a, radius, stopOf } from '../theme/tokens';
+import { stopOf } from '../theme/tokens';
 import { NO_TOUCH } from '../theme/pointerEvents';
 /**
  * הכפתור הסגול הראשי · הגרדיאנט, ערימת הצללים ועיגול החץ
@@ -36,15 +35,15 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  * מהבקשה; אם שקד מעדיפה שהידית תישאר בשמאל צריך להפוך את הגרירה.
  */
 /**
- * ⚠ **הרוחב ירד מ-250 ל-220** · שקד ביקשה ״מעט לצמצם את הרוחב״
- * (16 בספטמבר 2026), אחרי שהכיתוב קוצר ל״להתחברות״ והכפתור נראה
- * רחב מדי ביחס למילה אחת. `TRAVEL` נגזר מ-W ולכן הגרירה מתקצרת איתו.
+ * ⚠ **המידות · סבב שלישי, 16 בספטמבר 2026** · הרוחב ירד 250 → 220 →
+ * 196 בשלוש בקשות נפרדות של שקד, אחרי שהכיתוב קוצר ל״להתחברות״.
+ * `TRAVEL` נגזר מ-W ולכן הגרירה מתקצרת איתו.
  */
-const W = 220;
-const H = 40;
-const KNOB = 32;
-const KNOB_INSET = 4;
-const ARROW = 15;
+const W = 196;
+const H = 48;
+const KNOB = 38;
+const KNOB_INSET = 5;
+const ARROW = 16;
 
 /** אורך המסלול · מקצה לקצה, פחות הידית ושני הריפודים */
 const TRAVEL = W - KNOB - KNOB_INSET * 2;
@@ -66,7 +65,7 @@ const nextId = () => `cta${(seq += 1)}`;
 
 export function PrimaryButton({ label, onPress }: Props) {
   const id = React.useMemo(nextId, []);
-  const step = 1 / (CTA_STOPS.length - 1);
+  const step = 1 / (CTA_FILL_STOPS.length - 1);
 
   /** מיקום הידית · 0 במנוחה, ‎-TRAVEL בסוף המסלול */
   const x = React.useRef(new Animated.Value(0)).current;
@@ -198,24 +197,11 @@ export function PrimaryButton({ label, onPress }: Props) {
 
   return (
     <View style={s.wrap}>
-      {/* ההילה · אותה שפה של הבועות בשורת הקטגוריות. בקנבס לכפתור
-          יש רק צל עדין, ושקד ביקשה שיזהר כמו שאר הדף. */}
-      <View style={[s.glow, NO_TOUCH]}>
-        <Svg width="100%" height="100%">
-          <Defs>
-            <RadialGradient id={`${id}h`} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" {...stopOf(a(CTA_GLOW_RGB, CTA_GLOW_CORE_ALPHA))} />
-              <Stop offset="0.55" {...stopOf(a(CTA_GLOW_RGB, CTA_GLOW_MID_ALPHA))} />
-              <Stop offset="0.88" {...stopOf(a(CTA_GLOW_RGB, 0))} />
-            </RadialGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}h)`} />
-        </Svg>
-      </View>
-
-      {/* ⚠ שכבת הצל · **לא** חותכת. ראו את ההערה ב-`CTA_SHADOW`:
-          `overflow: 'hidden'` ב-iOS חותך גם את הצל החיצוני, וזה מה
-          שנראה כצל שחור מתחת לכפתור. */}
+      {/* ⚠ **אין כאן הילה** · הייתה שכבת גרדיאנט רדיאלי סגול מטושטשת
+          מסביב לכפתור. שקד דיווחה עליה פעמיים כ״זוהר שחור״ — על הרקע
+          הכמעט־לבן של המכשיר היא נקראה כלכלוך אפרפר ולא כזוהר. */}
+      {/* שכבת הצל · **לא** חותכת. `overflow: 'hidden'` ב-iOS חותך גם
+          את הצל החיצוני ומשאיר קצה כהה וקשה. */}
       <View style={s.shade}>
         <View
           accessible
@@ -226,27 +212,39 @@ export function PrimaryButton({ label, onPress }: Props) {
           style={s.button}
           {...pan.panHandlers}
         >
-        <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
-          <Defs>
-            {/* 104 מעלות ב-CSS · הווקטור (sin104, ‎-cos104) = (0.97, 0.24) */}
-            <LinearGradient id={id} x1="0" y1="0" x2="0.97" y2="0.24">
-              {CTA_STOPS.map((c, i) => (
-                <Stop key={c + i} offset={i === 1 ? 0.58 : i * step} {...stopOf(c)} />
-              ))}
-            </LinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100%" height="100%" rx={H / 2} fill={`url(#${id})`} />
-        </Svg>
+          {/* גוף הזכוכית */}
+          <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
+            <Defs>
+              <LinearGradient id={`${id}g`} x1="0" y1="0" x2="0.5" y2="0.866">
+                {CTA_GLASS_STOPS.map((c, i) => (
+                  <Stop key={c + i} offset={i} {...stopOf(c)} />
+                ))}
+              </LinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" rx={CTA_RADIUS} fill={`url(#${id}g)`} />
+          </Svg>
 
-        {/* השובל · נכנס מימין ככל שהידית מתקדמת שמאלה */}
-        <Animated.View
-          style={[s.trail, { transform: [{ translateX: trail }] }, NO_TOUCH]}
-        />
+          {/* ⚠ **המילוי בלילך של אופציה 01** · בקשה מפורשת של שקד.
+              הוא נכנס מימין ככל שהידית מתקדמת שמאלה. */}
+          <Animated.View
+            style={[s.fill, NO_TOUCH, { transform: [{ translateX: trail }] }]}
+          >
+            <Svg width="100%" height="100%">
+              <Defs>
+                <LinearGradient id={`${id}f`} x1="0" y1="0" x2="0.97" y2="0.24">
+                  {CTA_FILL_STOPS.map((c, i) => (
+                    <Stop key={c + i} offset={i === 1 ? 0.58 : i * step} {...stopOf(c)} />
+                  ))}
+                </LinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}f)`} />
+            </Svg>
+          </Animated.View>
 
-        <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>
+          <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>
 
           <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
-            <S k="arrowLeft" size={ARROW} />
+            <S k="arrowLeft" size={ARROW} color={CTA_INK} />
           </Animated.View>
         </View>
       </View>
@@ -256,40 +254,24 @@ export function PrimaryButton({ label, onPress }: Props) {
 
 const s = StyleSheet.create({
   wrap: { width: W, height: H, alignItems: 'center', justifyContent: 'center' },
-  glow: {
-    position: 'absolute',
-    left: -CTA_GLOW_SPREAD,
-    right: -CTA_GLOW_SPREAD,
-    top: -CTA_GLOW_SPREAD,
-    bottom: -CTA_GLOW_SPREAD,
-    borderRadius: 999,
-    filter: `blur(${CTA_GLOW_BLUR}px)`,
-  },
   /** נושאת את הצל החיצוני · בלי חיתוך */
-  shade: { width: W, height: H, borderRadius: radius.pill, boxShadow: CTA_DROP },
+  shade: { width: W, height: H, borderRadius: CTA_RADIUS, boxShadow: CTA_DROP },
   button: {
     width: W,
     height: H,
-    borderRadius: radius.pill,
+    borderRadius: CTA_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: CTA_SHADOW,
     overflow: 'hidden',
   },
-  label: { fontSize: 20, fontWeight: '600', color: '#FFFFFF' },
-  /* ⚠ לבן שקוף ולא צבע חדש · השובל רק מבהיר את הגרדיאנט הקיים */
-  trail: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(255,255,255,0.28)',
-  },
+  label: { fontSize: 18, fontWeight: '600', color: CTA_INK },
+  fill: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
   /**
    * ⚠ **`right` ולא `left`** · הידית נחה בקצה הימני, ומשם נגררת
    * שמאלה. `right` פיזי ולא `end`, כי `end` תלוי ב-`I18nManager`
    * שאינו אמין בדפדפן.
+   * ⚠ ריבוע מעוגל ולא עיגול · כך היא נראתה בתצוגה ששקד בחרה.
    */
   knob: {
     position: 'absolute',
@@ -297,7 +279,7 @@ const s = StyleSheet.create({
     top: KNOB_INSET,
     width: KNOB,
     height: KNOB,
-    borderRadius: KNOB / 2,
+    borderRadius: CTA_KNOB_RADIUS,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',

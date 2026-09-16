@@ -72,23 +72,30 @@ export function ChefTierCard({ name, lines, price, on, locked, onPress }: Props)
   );
 }
 
+/**
+ * ⚠ **הוגדל · 16 בספטמבר 2026** · שקד ביקשה ״להגדיל את הכרטיסיות
+ * של סוגי המסלולים ואת הכיתוב בתוכם״. שלושת הכרטיסים יושבים
+ * בשלוש עמודות ברוחב טלפון, ומידות הקנבס (שם 13, שורות 10,
+ * מחיר 15) יצאו זעירות על המסך.
+ *
+ * ⚠ **זה שינוי לעומת הקנבס** · שם `padding: 12px 6px` והטיפוגרפיה
+ * קטנה יותר. הפרופורציות נשמרו — כל מידה גדלה באותו יחס בערך.
+ */
 const s = StyleSheet.create({
-  /* `border-radius: 18; padding: 12px 6px; gap: 4` · מהקנבס */
   card: {
     width: '100%',
     borderRadius: 18,
     borderWidth: 1.5,
-    paddingVertical: 12,
-    paddingHorizontal: 6,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
-  name: { fontSize: 13, lineHeight: 16.25, textAlign: 'center' },
-  spark: { fontSize: 12, lineHeight: 12 },
-  /* `gap: 1; padding: 2px 0` · מהקנבס */
-  lines: { alignItems: 'center', gap: 1, paddingVertical: 2 },
-  line: { fontSize: 10, fontWeight: '300', color: LINE_INK },
+  name: { fontSize: 15, lineHeight: 19, textAlign: 'center', fontWeight: '600' },
+  spark: { fontSize: 14, lineHeight: 14 },
+  lines: { alignItems: 'center', gap: 2, paddingVertical: 3 },
+  line: { fontSize: 12, fontWeight: '300', color: LINE_INK, lineHeight: 17 },
   /* `font-variant-numeric: tabular-nums` · שלושת המחירים מיושרים */
-  price: { fontSize: 15, fontWeight: '700', color: PRICE_INK, fontVariant: ['tabular-nums'] },
-  per: { fontSize: 9.5, fontWeight: '400', color: LINE_INK },
+  price: { fontSize: 18, fontWeight: '700', color: PRICE_INK, fontVariant: ['tabular-nums'] },
+  per: { fontSize: 11, fontWeight: '400', color: LINE_INK },
 });
