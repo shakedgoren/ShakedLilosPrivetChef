@@ -113,6 +113,8 @@ export function ChefScreen() {
         <ScrollView
           contentContainerStyle={[s.list, loggedIn && s.scrollPadNav]}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
         >
           <View style={s.intro}>
             <Text style={s.introTitle}>{INTRO_TITLE}</Text>
@@ -195,7 +197,22 @@ export function ChefScreen() {
         <View style={[s.fill, { width: `${((o.page + 1) / o.pkg.pages.length) * 100}%` }]} />
       </View>
 
-      <ScrollView ref={body} contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+      {/* ⚠ **שתי ההגדרות האלה הן מה שתיקן את שדה הכתובת** · שקד
+          דיווחה (16 בספטמבר 2026) ש״המקלדת מסתירה לי את מה שאני
+          מקלידה״ ושהכתובת ״לא משלימה באופן אוטומטי״. שתי התלונות
+          הן תקלה אחת:
+          · בלי `automaticallyAdjustKeyboardInsets` המקלדת מכסה את
+            השדה **ואת רשימת ההצעות שמתחתיו**.
+          · בלי `keyboardShouldPersistTaps` הלחיצה הראשונה על הצעה
+            רק **סוגרת את המקלדת** ואינה בוחרת — ולכן זה נראה כאילו
+            ההשלמה לא עובדת. המאגר עצמו תקין, נבדק מול data.gov.il. */}
+      <ScrollView
+        ref={body}
+        contentContainerStyle={s.body}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         {/* ⚠ אין כאן קרוסלה ואין תיאור · בקנבס ענף `isOpts` מתחיל
             ישר בסעיפים, ושקד ביקשה את זה מפורשות. הקרוסלה והתיאור
             חיים רק בעמוד הראשי, לפני בחירת המסלול. */}

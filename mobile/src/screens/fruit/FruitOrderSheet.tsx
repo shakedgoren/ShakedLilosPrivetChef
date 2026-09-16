@@ -127,7 +127,15 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+          {/* ⚠ ראו את ההערה ב-`ChefScreen` · בלי שתי ההגדרות האלה
+              המקלדת מכסה את שדה הכתובת, ולחיצה על הצעה רק סוגרת
+              אותה במקום לבחור. */}
+          <ScrollView
+            contentContainerStyle={s.body}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+          >
             <View style={s.field}>
               <Text style={s.label}>שם מלא</Text>
               <TextInput
@@ -281,7 +289,15 @@ function AddressPopup({
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+          {/* ⚠ ראו את ההערה ב-`ChefScreen` · בלי שתי ההגדרות האלה
+              המקלדת מכסה את שדה הכתובת, ולחיצה על הצעה רק סוגרת
+              אותה במקום לבחור. */}
+          <ScrollView
+            contentContainerStyle={s.body}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+          >
             <View style={s.addrField}>
               <Text style={s.label}>כתובת</Text>
               {/* ⚠ היו כאן גלולות של שש ערים · שקד ביקשה הקלדה

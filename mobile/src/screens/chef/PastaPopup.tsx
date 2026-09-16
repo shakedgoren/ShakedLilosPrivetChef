@@ -4,6 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { PASTA_SHAPES, PASTA_UP_EXTRA, T_PASTA_UPS } from '../../data/chef';
 import { radius } from '../../theme/tokens';
 import { iconOrbShadow } from '../../theme/glass';
+import { NO_TOUCH } from '../../theme/pointerEvents';
 
 /** גווני הבחירה של פינת השף · `chip()` ב-Chef.dc.html */
 const HUE_DEEP = '#7A3D18';
@@ -35,7 +36,10 @@ export function PastaPopup({ pop, onPick, onClose, onCommit }: Props) {
   return (
     <Modal visible={!!pop} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <View style={s.panel}>
+      {/* ⚠ **מרכז את הלוח** · בלי המכל הזה הלוח היה נעוץ ל-top/bottom
+          ונמתח לגובה המסך כולו. */}
+      <View style={[s.stage, NO_TOUCH]}>
+        <View style={s.panel}>
         <View style={s.head}>
           <View style={s.headText}>
             <Text style={s.title}>{pop?.sauce ?? ''}</Text>
@@ -96,9 +100,10 @@ export function PastaPopup({ pop, onPick, onClose, onCommit }: Props) {
         </ScrollView>
 
         {/* ⚠ עמום עד שנבחרה צורה או שדרוג · `pastaOpacity` בקנבס */}
-        <Pressable onPress={onCommit} disabled={!ready} style={[s.cta, { opacity: ready ? 1 : 0.45 }]}>
-          <Text style={s.ctaText}>אישור</Text>
-        </Pressable>
+          <Pressable onPress={onCommit} disabled={!ready} style={[s.cta, { opacity: ready ? 1 : 0.45 }]}>
+            <Text style={s.ctaText}>אישור</Text>
+          </Pressable>
+        </View>
       </View>
     </Modal>
   );
@@ -106,16 +111,25 @@ export function PastaPopup({ pop, onPick, onClose, onCommit }: Props) {
 
 const s = StyleSheet.create({
   scrim: { position: 'absolute', inset: 0, backgroundColor: 'rgba(42,36,48,0.34)' },
+  /**
+   * ⚠ **הגובה לפי התוכן · תוקן ב-16 בספטמבר 2026** · הלוח היה
+   * `position: absolute` עם `top: 46` ו-`bottom: 46`, כלומר **נמתח
+   * לגובה המסך כולו** בלי קשר לכמה תוכן יש בו. שקד דיווחה על
+   * ״סתם רווח מיותר״ בחלונית הפסטות, וזה המקור.
+   * `maxHeight` שומר שגם רשימה ארוכה לא תגלוש מהמסך — אז ה-`ScrollView`
+   * שבפנים מקבל גלילה.
+   */
+  stage: { position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center', padding: 16 },
   panel: {
-    position: 'absolute',
-    top: 46,
-    bottom: 46,
-    right: 16,
-    left: 16,
+    width: '100%',
+    maxWidth: 360,
+    maxHeight: '84%',
     borderRadius: 28,
     padding: 18,
     backgroundColor: '#FEFCFB',
     boxShadow: '0 26px 60px -22px rgba(60,48,84,0.72)',
+    /* ⚠ מבטל את ה-`NO_TOUCH` של המכל · הלוח עצמו כן לחיץ */
+    pointerEvents: 'auto',
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   /* הריפוד מאזן את כפתור הסגירה כדי שהכותרת תישאר במרכז הלוח */
@@ -131,7 +145,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   boxShadow: iconOrbShadow('130,112,162'),
   },
-  body: { flex: 1, marginTop: 14 },
+  /* ⚠ `flexShrink` ולא `flex: 1` · אחרת הרשימה מותחת את הלוח לגובה מלא */
+  body: { flexShrink: 1, marginTop: 14 },
   bodyPad: { gap: 7 },
   shapes: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 7 },
   shape: {

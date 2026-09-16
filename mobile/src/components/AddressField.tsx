@@ -32,6 +32,13 @@ const IDLE_BD = 'rgba(130,112,162,0.18)';
 const DEBOUNCE_MS = 250;
 /** גובה מרבי לרשימת ההצעות · מעבר לזה היא נגללת */
 const LIST_MAX_H = ROW_H * 4.5;
+/**
+ * רוחב מרבי · שקד ביקשה (16 בספטמבר 2026) ״את הכרטיסייה של הרחוב
+ * תצמצם מעט ברוחב״. השדה היה נמתח לכל רוחב העמוד, והוא היחיד בטופס
+ * שאין לצידו כלום. גם רשימת ההצעות מצטמצמת איתו כדי שהשתיים
+ * יישארו באותו קו.
+ */
+const MAX_W = 322;
 
 export type AddressValue = { street: string; city: string } | null;
 
@@ -159,7 +166,7 @@ export function AddressField({
 }
 
 const s = StyleSheet.create({
-  wrap: { gap: 7 },
+  wrap: { gap: 7, width: '100%', maxWidth: MAX_W, alignSelf: 'center' },
   field: {
     minHeight: FIELD_H,
     borderRadius: 14,

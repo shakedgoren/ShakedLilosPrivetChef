@@ -60,7 +60,51 @@ const ONE_PER_ROW = ['textras'];
 const SAUCE_MIN_H = 71;
 const isOnePerRow = (s: ChefSection) => !!s.one || ONE_PER_ROW.includes(String(s.id));
 
+/**
+ * ⚠ **עקיפת סדר ומספר עמודות · 16 בספטמבר 2026** · שקד ביקשה סדר
+ * מדויק לשלוש שורות ב״מנות ראשונות״:
+ *   קרפצ׳יו סלק · קרפצ׳יו חציל · חציל בפנקו מטוגן
+ *   כרובית מטוגנת · מגש גבינות · מגש ירקות
+ *   אנטיפסטי בטאבון · ארטישוק א-לה רומנה
+ *
+ * בקנבס הסעיף מוגדר `cols: 2` ובסדר אחר, ו-`chef.ts` **נוצר
+ * אוטומטית מהקנבס ואין לערוך אותו ביד**. לכן העקיפה יושבת כאן.
+ *
+ * ⚠ **המקום הנכון לזה בסוף הוא הקנבס** · ברגע שהסדר יעודכן שם,
+ * אפשר למחוק את הבלוק הזה לגמרי.
+ * ⚠ `maxw` מבוטל · 292 פיקסלים בשלוש עמודות הוציאו כרטיסים צרים מדי.
+ */
+const CANVAS_OVERRIDE: Record<string, { cols: number; maxw?: number; order: readonly string[] }> = {
+  firsts: {
+    cols: 3,
+    order: [
+      'קרפצ׳יו סלק',
+      'קרפצ׳יו חציל',
+      'חציל בפנקו מטוגן',
+      'כרובית מטוגנת',
+      'מגש גבינות',
+      'מגש ירקות',
+      'אנטיפסטי בטאבון',
+      'ארטישוק א-לה רומנה',
+    ],
+  },
+};
+
+/** מסדר אפשרויות לפי העקיפה · מה שאינו ברשימה נשאר בסוף, בסדר המקורי */
+function ordered<T>(id: string | undefined, opts: T[]): T[] {
+  const ov = CANVAS_OVERRIDE[id ?? ''];
+  if (!ov) return opts;
+  const rank = new Map(ov.order.map((n, i) => [n, i]));
+  return [...opts].sort((a, b) => {
+    const ra = rank.get(nameOf(a)) ?? Number.MAX_SAFE_INTEGER;
+    const rb = rank.get(nameOf(b)) ?? Number.MAX_SAFE_INTEGER;
+    return ra - rb;
+  });
+}
+
 const colsFor = (s: ChefSection, n: number): number => {
+  const ov = CANVAS_OVERRIDE[s.id ?? ''];
+  if (ov) return ov.cols;
   if (s.cols) return +s.cols;
   if (s.kind === 'tiers') return 3;
   if (s.kind === 'pair') return 2;
@@ -72,6 +116,8 @@ const colsFor = (s: ChefSection, n: number): number => {
 
 /** הצרת הרשת · `narrow` בקנבס הוא 272, ו-`maxw` נותן ערך מפורש */
 const maxWidthFor = (s: ChefSection): number | undefined => {
+  const ov = CANVAS_OVERRIDE[s.id ?? ''];
+  if (ov) return ov.maxw;
   if (s.maxw) return parseFloat(String(s.maxw));
   return s.narrow ? NARROW : undefined;
 };
@@ -353,7 +399,7 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
     case 'multi':
     case 'multicap':
     case 'sauces': {
-      const opts: unknown[] = s.options ?? [];
+      const opts: unknown[] = ordered(s.id, s.options ?? []);
       const cur: string[] = api.picks[s.id] || [];
 
       const cap = s.cap ?? null;
