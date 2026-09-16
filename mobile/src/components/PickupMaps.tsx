@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';
+import { iconOrbShadow } from '../theme/glass';
 /**
  * מפות ההגעה לחנייה · הכתובת בגדול, הערת הוויז מתחתיה,
  * וארבע המפות עם כותרת הכיוון על התמונה מימין למעלה.
@@ -95,6 +96,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   arrowRight: { right: 8 },
   arrowLeft: { left: 8 },

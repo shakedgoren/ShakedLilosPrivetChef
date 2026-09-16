@@ -26,6 +26,7 @@ import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import type { CancelNote } from './useAdminOrders';
 import Svg, { Path } from 'react-native-svg';
+import { iconOrbShadow } from '../theme/glass';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -520,6 +521,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   backGlyph: { fontSize: 20, color: '#6E6478' },
   headText: { alignItems: 'center', gap: 2 },

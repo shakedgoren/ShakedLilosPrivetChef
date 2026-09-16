@@ -130,6 +130,8 @@ export function FruitScreen() {
                   plusInk: ACCENT.deep,
                   minusBg: ACCENT.hue,
                   minusInk: ACCENT.deep,
+                  plusRgb: ACCENT.rgb,
+                  minusRgb: ACCENT.rgb,
                 }}
               />
             </StepIn>

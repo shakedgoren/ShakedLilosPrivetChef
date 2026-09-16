@@ -4,6 +4,7 @@ import { Image, Modal, Platform, Pressable, StyleSheet, Text, View, type ViewSty
 import { BlurView } from 'expo-blur';
 import { Photo } from './Photo';
 import { photo } from '../data/photos';
+import { iconOrbShadow } from '../theme/glass';
 
 /**
  * הגדלת תמונה · כל תמונה באפליקציה נפתחת בלחיצה על רקע מטושטש.
@@ -194,5 +195,6 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.34)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
 });

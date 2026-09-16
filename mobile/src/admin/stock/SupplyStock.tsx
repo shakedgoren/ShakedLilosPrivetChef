@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import { SUPPLY_NOTE } from '../../data/adminStock';
 import type { SupplyRow, useAdminStock } from './useAdminStock';
+import { iconOrbShadow } from '../../theme/glass';
 
 const AMBER = '#A65E2A';
 
@@ -96,7 +97,7 @@ const s = StyleSheet.create({
   itemSub: { fontSize: 11, fontWeight: '300', marginTop: 1 },
 
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  round: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  round: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', boxShadow: iconOrbShadow('130,112,162')},
   plusBg: { backgroundColor: 'rgba(123,92,188,0.13)' },
   greyBg: { backgroundColor: 'rgba(130,112,162,0.09)' },
   sign: { fontSize: 16, fontWeight: '700', color: '#6E6478', lineHeight: 19 },

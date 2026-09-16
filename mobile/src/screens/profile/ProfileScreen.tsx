@@ -15,6 +15,7 @@ const MAX_SUGGESTIONS = 4;
 import { useNav } from '../../navigation/store';
 import { a, radius, space, surface } from '../../theme/tokens';
 import { S } from '../../components/Sym';
+import { iconOrbShadow } from '../../theme/glass';
 
 const IDLE_BD = 'rgba(130,112,162,0.18)';
 const BAD_BD = 'rgba(185,83,73,0.5)';
@@ -505,6 +506,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FAF7FD',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   authGlyph: { fontSize: 18, color: '#8A8194' },
 
@@ -517,6 +519,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(123,92,188,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: iconOrbShadow('123,92,188'),
   },
   avatarBusy: { opacity: 0.6 },
   avatarImg: { position: 'absolute', width: 92, height: 92, borderRadius: 46 },
@@ -549,6 +552,7 @@ const s = StyleSheet.create({
     borderColor: '#FCFBFB',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('123,92,188'),
   },
   camGlyph: { fontSize: 11 },
   displayName: { fontSize: 19, fontWeight: '600', color: surface.ink },
@@ -658,6 +662,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(130,112,162,0.09)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   closeX: { fontSize: 13, color: '#6E6478' },
   passCta: {

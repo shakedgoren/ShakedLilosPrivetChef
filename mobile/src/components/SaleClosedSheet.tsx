@@ -4,6 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Bell } from '../icons';
 import { ContinueButton } from './ContinueButton';
 import { a, radius, space, surface } from '../theme/tokens';
+import { iconOrbShadow } from '../theme/glass';
 
 /**
  * ״יום המכירה עדיין לא נפתח״.
@@ -122,6 +123,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   ring: {
     width: BELL_RING,

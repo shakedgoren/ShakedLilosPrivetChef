@@ -5,6 +5,7 @@ import { surface } from '../../theme/tokens';
 import { CATS, DOWS, LEGEND, MONTHS, type DayRecord } from '../../data/adminDays';
 import { dayKey } from './useAdminDays';
 import { LTR_ROW } from '../ui/ltrRow';
+import { iconOrbShadow } from '../../theme/glass';
 const CELL_GAP = 4;
 const PLUM = '#43307A';
 
@@ -112,6 +113,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(123,92,188,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('123,92,188'),
   },
   arrowGlyph: { fontSize: 18, color: PLUM, lineHeight: 20 },
   month: { flex: 1, textAlign: 'center', fontSize: 14.5, fontWeight: '600', color: surface.ink },

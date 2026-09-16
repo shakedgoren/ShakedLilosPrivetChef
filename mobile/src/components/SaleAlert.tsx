@@ -4,6 +4,7 @@ import { S } from './Sym';
 import { BellSwing } from './BellSwing';
 import { a, hues, radius, space, surface, type CategoryKey } from '../theme/tokens';
 import { categoryName, categoryKey } from '../screens/orders/format';
+import { iconOrbShadow } from '../theme/glass';
 
 /**
  * שורת ההתראה ״המכירה נפתחה״.
@@ -69,7 +70,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     marginBottom: space.md,
   },
-  ring: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  ring: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', boxShadow: iconOrbShadow('130,112,162')},
   text: { flexGrow: 1, flexShrink: 1, gap: 2 },
   title: { fontSize: 14, fontWeight: '600' },
   sub: { fontSize: 11.5, fontWeight: '300', color: surface.muted },

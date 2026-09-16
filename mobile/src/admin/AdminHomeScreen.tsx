@@ -13,9 +13,10 @@ import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
 import { CategoryPie, ProfitBars, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
-import { LAV, NightSky, SOFT_SHADOW } from './home/NightSky';
+import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
 import { LogOut, Plus } from '../icons';
+import { iconOrbShadow } from '../theme/glass';
 
 /** כל אריח מצביע על מסך ניהול · אותה מפה שבקנבס, בשמות של הניווט */
 const TILE_ROUTES: Record<TileKey, Screen> = {
@@ -263,6 +264,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: LAV.chip,
+  boxShadow: iconOrbShadow('123,92,188'),
   },
   /* כפתור ההתנתקות · אותו עיגול 38 שיושב בפינה הזו בקנבס */
   exit: {
@@ -270,7 +272,7 @@ const s = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     backgroundColor: '#FFFFFF',
-    boxShadow: SOFT_SHADOW,
+    boxShadow: iconOrbShadow('130,112,162'),
     alignItems: 'center',
     justifyContent: 'center',
   } as never,

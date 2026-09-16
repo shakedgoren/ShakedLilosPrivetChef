@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
 import { Pressable, StyleSheet } from 'react-native';
+import { iconOrbShadow } from '../theme/glass';
 /**
  * חץ החזרה של המסכים הפנימיים · מרחף בפינה הימנית העליונה.
  *
@@ -19,6 +20,13 @@ const SIDE = 18;
 const GLYPH = 16;
 const STROKE = 2;
 const INK = '#6E6478';
+/**
+ * הגוון שממנו נגזרת הזכוכית · הסגול העמום של הקנבס.
+ * ⚠ שקד ביקשה (16 בספטמבר 2026) שכל עיגול שמקיף אייקון ייראה כמו
+ * בועות הזכוכית שבתמונת הייחוס. הרקע נשאר ה-`tint` של כל מסך —
+ * נוסף רק הנפח והשפה הלבנה.
+ */
+const GLASS_RGB = '130,112,162';
 
 type Props = {
   onPress: () => void;
@@ -26,11 +34,17 @@ type Props = {
   tint: string;
   /** גוון החץ · ברירת המחדל היא האפור של הקנבס */
   ink?: string;
+  /** שלישיית ה-rgb שממנה נגזרת הזכוכית · ברירת המחדל סגול עמום */
+  rgb?: string;
 };
 
-export function BackButton({ onPress, tint, ink = INK }: Props) {
+export function BackButton({ onPress, tint, ink = INK, rgb = GLASS_RGB }: Props) {
   return (
-    <Pressable onPress={onPress} style={[s.back, { backgroundColor: tint }]} hitSlop={10}>
+    <Pressable
+      onPress={onPress}
+      style={[s.back, { backgroundColor: tint, boxShadow: iconOrbShadow(rgb) }]}
+      hitSlop={10}
+    >
       <S k="chevronRight" size={GLYPH} color={ink} />
     </Pressable>
   );

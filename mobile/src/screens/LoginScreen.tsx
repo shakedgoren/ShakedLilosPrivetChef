@@ -34,6 +34,7 @@ import { User } from '../icons';
 import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
+import { iconOrbShadow } from '../theme/glass';
 import {
   BRAND,
   BRAND_SUB,
@@ -631,6 +632,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(212,175,55,0.45)',
     backgroundColor: 'rgba(212,175,55,0.09)',
+  boxShadow: iconOrbShadow('212,175,55'),
   },
   askTitle: { fontSize: 16, fontWeight: '700', color: surface.ink, textAlign: 'center' },
 

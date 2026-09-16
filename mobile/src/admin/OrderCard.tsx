@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { CANCELLED, FLOW, HUES, LATE_FEE, LATE_HOURS, TONE, type AdminOrder } from '../data/adminOrders';
 import type { CancelNote } from './useAdminOrders';
+import { iconOrbShadow } from '../theme/glass';
 type Props = {
   order: AdminOrder;
   status: string;
@@ -147,6 +148,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(185,83,73,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('185,83,73'),
   },
   killGlyph: { fontSize: 14, fontWeight: '700', color: '#B95349' },
 });

@@ -104,3 +104,24 @@ export const CTA_GLOW_BLUR = 24;
  */
 export const CTA_GLOW_CORE_ALPHA = 0.82;
 export const CTA_GLOW_MID_ALPHA = 0.42;
+
+/**
+ * שפת הבועה של האייקונים · המתכון שמאחורי `IconOrb`.
+ *
+ * ⚠ **לא מהקנבס** · שקד שלחה ב-16 בספטמבר 2026 תמונת ייחוס של חמש
+ * הקטגוריות בתוך בועות זכוכית, וביקשה ש**כל עיגול שמקיף אייקון**
+ * באפליקציה ייראה כך. המתכון כאן הוא אותה שפה של `orbShadow`,
+ * בעוצמה נמוכה יותר כי הבועות האלה קטנות ויושבות על זכוכית לבנה:
+ * צל פנימי בגוון בפינה התחתונה־ימנית, אור פנימי בעליונה־שמאלית,
+ * שפה לבנה דקה, וצל רך מתחת.
+ */
+export const ICON_ORB_TINT = 0.16;
+export const ICON_ORB_HALO = 0.22;
+/** שפת הזכוכית · הטבעת הדקה שנראית בתמונת הייחוס */
+export const ICON_ORB_EDGE = 'rgba(255,255,255,0.62)';
+
+export const iconOrbShadow = (rgb: string): string =>
+  `inset -3px -4px 9px ${a(rgb, 0.2)}` +
+  ', inset 2px 3px 7px rgba(255,255,255,0.96)' +
+  `, 0 0 0 1px ${ICON_ORB_EDGE}` +
+  `, 0 6px 14px -8px ${a(rgb, 0.42)}`;

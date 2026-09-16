@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { S } from './Sym';
 import { IS_RTL } from '../theme/rtl';
+import { iconOrbShadow } from '../theme/glass';
 
 const OFF = '#C0B9CA';
 const ON = '#2A2430';
@@ -26,7 +27,18 @@ export type StepperTone = {
   /** קוטר הכפתור העגול · 26 בשורת החלות, 32 בשורת הסלטים */
   key?: number;
   glyph?: number;
+  /**
+   * הגוון שממנו נגזרת הזכוכית · שלישיית rgb.
+   * ⚠ שקד ביקשה (16 בספטמבר 2026) שכל עיגול שמקיף אייקון ייראה כמו
+   * בועות הזכוכית שבתמונת הייחוס. הצבעים עצמם נשארים של הקנבס —
+   * נוסף רק הנפח: צל פנימי בגוון, אור פנימי, ושפה לבנה דקה.
+   */
+  plusRgb?: string;
+  minusRgb?: string;
 };
+
+/** ברירת המחדל לזכוכית · הסגול העמום של הקנבס, כמו ב-KEY_BG */
+const GLASS_RGB = '130,112,162';
 
 /**
  * בורר כמות · הפלוס תמיד מימין לכמות והמינוס תמיד משמאל,
@@ -61,6 +73,8 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
    * עם `plus` ו-`minus` הפשוטים במקום אלה שמגיעים עם טבעת.
    */
   const round = { width: size, height: size, borderRadius: size / 2 };
+  const plusGlass = iconOrbShadow(tone?.plusRgb ?? GLASS_RGB);
+  const minusGlass = iconOrbShadow(tone?.minusRgb ?? GLASS_RGB);
   const atMin = value <= min;
 
   return (
@@ -68,7 +82,7 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(value + 1)}
         disabled={maxed}
-        style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG }, maxed && s.keyOff]}
+        style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG, boxShadow: plusGlass }, maxed && s.keyOff]}
         hitSlop={8}
       >
         {/* ⚠ SF Symbols · הסמלים שבחרה שקד ל-+ ול-‎- */}
@@ -82,7 +96,7 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(Math.max(min, value - 1))}
         disabled={atMin}
-        style={[s.key, round, { backgroundColor: tone?.minusBg ?? KEY_BG }, atMin && s.keyOff]}
+        style={[s.key, round, { backgroundColor: tone?.minusBg ?? KEY_BG, boxShadow: minusGlass }, atMin && s.keyOff]}
         hitSlop={8}
       >
         <S k="minus" size={glyph} color={atMin ? OFF : (tone?.minusInk ?? ON)} />

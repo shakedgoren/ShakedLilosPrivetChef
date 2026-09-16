@@ -27,7 +27,7 @@ import {
   MY_ORDERS_TITLE,
   PAST_LABEL,
 } from '../../data/myOrders';
-import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
+import { iconOrbShadow, TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 
 /** ההזמנות שלי · מקביל ל-MyOrders.dc.html, מחובר ל-GET /orders */
 export function MyOrdersScreen() {
@@ -282,6 +282,7 @@ const s = StyleSheet.create({
     backgroundColor: '#FAF7FD',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   authGlyph: { fontSize: 18, color: '#8A8194' },
 
@@ -293,6 +294,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(123,92,188,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('123,92,188'),
   },
   emptyGlyph: { fontSize: 36, color: '#43307A' },
   emptyTitle: {

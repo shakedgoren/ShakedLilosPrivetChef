@@ -25,6 +25,7 @@ const STEP_TONE = {
   minusInk: '#6E6478',
   key: 32,
   glyph: 13,
+  plusRgb: ACCENT.rgb,
 } as const;
 
 type Api = {

@@ -2,6 +2,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import Svg, { Path } from 'react-native-svg';
 import { PASTA_SHAPES, PASTA_UP_EXTRA, T_PASTA_UPS } from '../../data/chef';
 import { radius } from '../../theme/tokens';
+import { iconOrbShadow } from '../../theme/glass';
 
 /** גווני הבחירה של פינת השף · `chip()` ב-Chef.dc.html */
 const HUE_DEEP = '#7A3D18';
@@ -127,6 +128,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(130,112,162,0.09)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   body: { flex: 1, marginTop: 14 },
   bodyPad: { gap: 7 },

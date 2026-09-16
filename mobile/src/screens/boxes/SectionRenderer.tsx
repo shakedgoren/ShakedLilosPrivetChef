@@ -8,7 +8,7 @@ import { a, hues, radius, space, surface } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from '../../components/Photo';
-import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
+import { iconOrbShadow, TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { eventPhoto } from './eventPhotos';
 
 const ACCENT = hues.box;
@@ -40,6 +40,7 @@ const ROW_TONE = {
   minusInk: '#6E6478',
   key: 26,
   glyph: 12,
+  plusRgb: ACCENT.rgb,
 } as const;
 const COUNT_TONE = { ...ROW_TONE, key: 32, glyph: 13 } as const;
 
@@ -609,7 +610,7 @@ const st = StyleSheet.create({
     backgroundColor: ACCENT.hue,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 8px -2px rgba(44,90,62,0.7)',
+    boxShadow: iconOrbShadow('44,90,62'),
   },
 
   pair: { flexDirection: 'row', flexWrap: 'wrap', gap: PAIR_GAP },

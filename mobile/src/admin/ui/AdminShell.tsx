@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native'
 import { radius, surface } from '../../theme/tokens';
 import { type IconProps } from '../../icons';
 import { useNav } from '../../navigation/store';
+import { iconOrbShadow } from '../../theme/glass';
 
 export type HeaderAction = {
   label: string;
@@ -155,6 +156,7 @@ const s = StyleSheet.create({
     borderColor: 'rgba(130,112,162,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   headText: { alignItems: 'center', gap: 2 },
   title: { fontWeight: '600', color: surface.ink, textAlign: 'center' },
@@ -174,7 +176,7 @@ const s = StyleSheet.create({
   /* הגרסה העגולה של הכפתור הרגיל · אפור רך, בלי מסגרת, כמו בקנבס */
   actionGhostRound: { backgroundColor: 'rgba(130,112,162,0.09)', borderWidth: 0 },
   /* ⚠ כפתור אייקון · **עיגול** 38×38, בדיוק כמו בקנבס של הקניות */
-  actionIcon: { width: 38, height: 38, borderRadius: 19, paddingHorizontal: 0 },
+  actionIcon: { width: 38, height: 38, borderRadius: 19, paddingHorizontal: 0, boxShadow: iconOrbShadow('130,112,162')},
   actionPrimary: { backgroundColor: '#C6B3EC' },
   actionOff: { opacity: 0.4 },
   /* גלולת האייקון-והמילה של הקנבס · עלויות ייצור */

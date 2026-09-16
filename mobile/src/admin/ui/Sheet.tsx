@@ -2,6 +2,7 @@ import React from 'react';
 import { S } from '../../components/Sym';
 import { Modal, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { surface } from '../../theme/tokens';
+import { iconOrbShadow } from '../../theme/glass';
 type Props = {
   title: string;
   sub?: string;
@@ -79,6 +80,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(130,112,162,0.09)',
     alignItems: 'center',
     justifyContent: 'center',
+  boxShadow: iconOrbShadow('130,112,162'),
   },
   closeGlyph: { fontSize: 13, color: '#6E6478', lineHeight: 16 },
 });
