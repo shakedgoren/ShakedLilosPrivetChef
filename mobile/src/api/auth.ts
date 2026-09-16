@@ -13,6 +13,16 @@ export const forgotPassword = (who: string) =>
 export const requestOtp = (who: string) =>
   api<{ ok: true; code?: string }>('/auth/otp/request', { body: { who }, auth: false });
 
+/**
+ * אימות טלפון **לפני** שיש חשבון · להרשמה.
+ * ⚠ לא `otp/request` · הוא מחפש משתמש קיים, ובהרשמה עדיין אין כזה.
+ */
+export const registerPhone = (phone: string) =>
+  api<{ ok: true; code?: string }>('/auth/register/phone', { body: { phone }, auth: false });
+
+export const registerVerify = (phone: string, code: string) =>
+  api<{ ok: true }>('/auth/register/verify', { body: { phone, code }, auth: false });
+
 export const verifyOtp = (who: string, code: string) =>
   api<Session>('/auth/otp/verify', { body: { who, code }, auth: false });
 

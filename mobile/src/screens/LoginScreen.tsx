@@ -12,7 +12,16 @@ import {
 import { radius, space, surface } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import { apiEnabled } from '../api/config';
-import { forgotPassword, googleStub, login, me, register, requestOtp, updateMe, verifyOtp } from '../api/auth';
+import {
+  forgotPassword,
+  googleStub,
+  login,
+  me,
+  register,
+  registerPhone,
+  registerVerify,
+  updateMe,
+} from '../api/auth';
 import { authError, COPY } from '../api/copy';
 import { ApiError, type Session } from '../api/types';
 import { BlobField } from '../components/BlobField';
@@ -179,7 +188,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
   const isUp = step === 'up1' || step === 'up2' || step === 'up3';
   const fail = (e: unknown, fallback = COPY.net) =>
-    setErr(e instanceof ApiError ? authError(e.code) : fallback);
+    setErr(e instanceof ApiError ? authError(e.code, e.message) : fallback);
 
   /** אחרי כניסה מוצלחת · מציעים זיהוי פנים רק אם יש חומרה וטרם הוגדר */
   const afterLogin = useCallback(
@@ -256,14 +265,14 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
   const onSendCode = () =>
     run(async () => {
-      if (apiEnabled) await requestOtp(phone.trim());
+      if (apiEnabled) await registerPhone(phone.trim());
       setCode('');
       setStep('up2');
     });
 
   const onVerify = () =>
     run(async () => {
-      if (apiEnabled) await verifyOtp(phone.trim(), code.trim());
+      if (apiEnabled) await registerVerify(phone.trim(), code.trim());
       setStep('up3');
     });
 

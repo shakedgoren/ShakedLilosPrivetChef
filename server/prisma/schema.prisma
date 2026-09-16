@@ -49,6 +49,29 @@ model SaleReminder {
   @@unique([userId, category])
 }
 
+/// אימות טלפון **לפני** שיש חשבון.
+///
+/// ⚠ מוצמד למספר הטלפון ולא ל-`User`, וזו כל הסיבה שהטבלה הזו קיימת:
+/// `PasswordReset` מחייבת `userId`, ובהרשמה עדיין אין משתמש לקשור
+/// אליו. החוקים — תוקף, קירור וניסיונות — ב-`src/auth/phoneVerify.ts`.
+model PhoneVerification {
+  id         String    @id @default(cuid())
+  /// בפורמט הבינלאומי · 972501234567
+  phone      String    @unique
+  code       String
+  sentAt     DateTime  @default(now())
+  expiresAt  DateTime
+  /// ניסיונות הקלדה שנכשלו · נועל אחרי חמישה
+  attempts   Int       @default(0)
+  /// מתי הקוד אומת · זה מה שמתיר להשלים הרשמה
+  verifiedAt DateTime?
+  /// מתי האימות נוצל בפועל ליצירת חשבון
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([expiresAt])
+}
+
 model PasswordReset {
   id        String    @id @default(cuid())
   userId    String

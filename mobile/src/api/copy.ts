@@ -28,7 +28,22 @@ export const COPY = {
   otpInvalid: 'הקוד לא תקין או שפג תוקפו',
 };
 
-export function authError(code: string): string {
+/**
+ * ⚠ **קודי האימות הטלפוני נושאים הודעה מהשרת** · ״נשארו 4 ניסיונות״,
+ * ״אפשר לשלוח שוב בעוד 30 שניות״. הודעה גנרית כאן הייתה מוחקת בדיוק
+ * את המידע שהמשתמשת צריכה, ולכן היא מועברת כמו שהיא.
+ */
+const SERVER_SAYS = new Set([
+  'too_soon',
+  'otp_expired',
+  'otp_locked',
+  'phone_unverified',
+  'invalid_phone',
+]);
+
+export function authError(code: string, serverMessage?: string): string {
+  if (SERVER_SAYS.has(code) && serverMessage) return serverMessage;
+  if (code === 'otp_invalid' && serverMessage) return serverMessage;
   if (code === 'invalid_credentials' || code === 'unauthorized') return COPY.authFail;
   if (code === 'email_taken' || code === 'phone_taken') return COPY.taken;
   if (code === 'invalid_who') return COPY.whoInvalid;

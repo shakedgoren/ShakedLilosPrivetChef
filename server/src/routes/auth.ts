@@ -13,6 +13,13 @@ import { buildResetEmail, RESET_TTL_MINUTES } from '../mail/resetEmail.ts';
 import { sendMail } from '../mail/mailer.ts';
 import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
 import { notifyOtp } from '../whatsapp/notify.ts';
+import {
+  canSend,
+  checkCode,
+  MAX_ATTEMPTS,
+  verifiedRecently,
+  VERIFY_TTL_MS,
+} from '../auth/phoneVerify.ts';
 
 export const authRouter = Router();
 
@@ -39,6 +46,22 @@ authRouter.post('/register', async (req, res, next) => {
         : await prisma.user.findUnique({ where: { phone: who.phone } });
     if (existing) throw badRequest(who.kind === 'email' ? 'email_taken' : 'phone_taken');
 
+    /**
+     * ⚠ **הרשמה בטלפון דורשת אימות טרי** · בלי זה כל אחד יכול לפתוח
+     * חשבון על מספר שאינו שלו, והשלב שקדם לו היה קישוט בלבד.
+     *
+     * ⚠ הרשמה באימייל אינה נבדקת כאן · היא משמשת את הזריעה ואת חשבון
+     * הניהול. האפליקציה נרשמת בטלפון בלבד.
+     */
+    let verifiedPhone: string | null = null;
+    if (who.kind === 'phone') {
+      const row = await prisma.phoneVerification.findUnique({ where: { phone: who.phone } });
+      if (!verifiedRecently(row, Date.now())) {
+        throw badRequest('phone_unverified', 'צריך לאמת את הטלפון קודם');
+      }
+      verifiedPhone = who.phone;
+    }
+
     const user = await prisma.user.create({
       data: {
         email: who.kind === 'email' ? who.email : null,
@@ -48,7 +71,101 @@ authRouter.post('/register', async (req, res, next) => {
         role: 'customer',
       },
     });
+    /* האימות נוצל · לא ניתן לפתוח איתו חשבון שני */
+    if (verifiedPhone) {
+      await prisma.phoneVerification.update({
+        where: { phone: verifiedPhone },
+        data: { usedAt: new Date() },
+      });
+    }
+
     res.status(201).json(sessionOf(user));
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * ─────────── אימות טלפון לפני הרשמה ───────────
+ *
+ * ⚠ **לא `/auth/otp/*`** · אלה מחפשים משתמש קיים, ובהרשמה עדיין
+ * אין כזה. הקודים כאן מוצמדים למספר הטלפון, ראו `auth/phoneVerify.ts`.
+ *
+ * ⚠ **כאן כן מגלים שהמספר תפוס** · בניגוד לאיפוס סיסמה. מי שנרשמת
+ * חייבת לדעת שכבר יש לה חשבון, אחרת היא תנסה שוב ושוב בלי להבין.
+ */
+authRouter.post('/register/phone', async (req, res, next) => {
+  try {
+    const body = z.object({ phone: z.string().min(3) }).parse(req.body);
+    const who = parseWho(body.phone);
+    if (!who || who.kind !== 'phone') throw badRequest('invalid_phone', 'מספר טלפון לא תקין');
+    const phone = who.phone;
+
+    const taken = await prisma.user.findUnique({ where: { phone } });
+    if (taken) throw badRequest('phone_taken', 'כבר יש חשבון עם המספר הזה');
+
+    const now = Date.now();
+    const existing = await prisma.phoneVerification.findUnique({ where: { phone } });
+    const gate = canSend(existing, now);
+    if (!gate.ok) {
+      throw badRequest('too_soon', `אפשר לשלוח שוב בעוד ${Math.ceil(gate.waitMs / 1000)} שניות`);
+    }
+
+    const code = generateOtp();
+    const data = {
+      code,
+      sentAt: new Date(now),
+      expiresAt: new Date(now + VERIFY_TTL_MS),
+      attempts: 0,
+      verifiedAt: null,
+      usedAt: null,
+    };
+    await prisma.phoneVerification.upsert({ where: { phone }, create: { phone, ...data }, update: data });
+
+    /* ⚠ הקוד לעולם לא ביומן · רק ב-RESET_DEBUG, לפיתוח */
+    try {
+      await notifyOtp(phone, code);
+    } catch (err) {
+      console.error('[אימות טלפון] שליחת וואטסאפ נכשלה', err);
+    }
+
+    res.json(env.resetDebug ? { ok: true, code } : { ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+authRouter.post('/register/verify', async (req, res, next) => {
+  try {
+    const body = z.object({ phone: z.string().min(3), code: z.string().min(4).max(8) }).parse(req.body);
+    const who = parseWho(body.phone);
+    if (!who || who.kind !== 'phone') throw badRequest('invalid_phone', 'מספר טלפון לא תקין');
+    const phone = who.phone;
+
+    const row = await prisma.phoneVerification.findUnique({ where: { phone } });
+    const verdict = checkCode(row, body.code, Date.now());
+
+    if (verdict === 'ok') {
+      await prisma.phoneVerification.update({
+        where: { phone },
+        data: { verifiedAt: new Date(), attempts: 0 },
+      });
+      res.json({ ok: true });
+      return;
+    }
+
+    /* ⚠ כל ניסיון שגוי נספר · חמישה נועלים את הקוד */
+    if (verdict === 'wrong' && row) {
+      await prisma.phoneVerification.update({
+        where: { phone },
+        data: { attempts: row.attempts + 1 },
+      });
+      const left = MAX_ATTEMPTS - (row.attempts + 1);
+      throw badRequest('otp_invalid', left > 0 ? `הקוד לא נכון · נשארו ${left} ניסיונות` : 'הקוד ננעל');
+    }
+    if (verdict === 'expired') throw badRequest('otp_expired', 'הקוד פג · אפשר לשלוח חדש');
+    if (verdict === 'locked') throw badRequest('otp_locked', 'הקוד ננעל · אפשר לשלוח חדש');
+    throw badRequest('otp_invalid', 'הקוד לא תקין או שפג תוקפו');
   } catch (err) {
     next(err);
   }
