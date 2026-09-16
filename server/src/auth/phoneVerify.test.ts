@@ -27,8 +27,8 @@ const row = (over: Partial<VerifyRow> = {}): VerifyRow => ({
   ...over,
 });
 
-test('תוקף הקוד הוא דקה אחת · ההחלטה של שקד', () => {
-  assert.equal(VERIFY_TTL_MS, 60_000);
+test('תוקף הקוד הוא שתי דקות · ההחלטה של שקד', () => {
+  assert.equal(VERIFY_TTL_MS, 120_000);
 });
 
 test('אפשר לשלוח כשאין עדיין קוד', () => {
