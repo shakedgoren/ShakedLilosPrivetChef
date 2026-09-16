@@ -36,10 +36,10 @@ function enableWhatsApp() {
   process.env.WHATSAPP_TOKEN = 'test-token';
   process.env.WHATSAPP_PHONE_NUMBER_ID = '123456789';
   process.env.WHATSAPP_TEMPLATE_OTP = 'bite_otp';
-  process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP = 'bite_order_confirmed_pickup';
-  process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY = 'bite_order_confirmed_delivery';
-  process.env.WHATSAPP_TEMPLATE_ORDER_READY_PICKUP = 'bite_order_ready_pickup';
-  process.env.WHATSAPP_TEMPLATE_ORDER_DELIVERED = 'bite_order_delivered';
+  delete process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP;
+  delete process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY;
+  delete process.env.WHATSAPP_TEMPLATE_ORDER_READY_PICKUP;
+  delete process.env.WHATSAPP_TEMPLATE_ORDER_DELIVERED;
   process.env.WHATSAPP_TEMPLATE_LANG = 'he';
   process.env.WHATSAPP_GRAPH_VERSION = 'v21.0';
 }
@@ -148,9 +148,9 @@ test('אישור הזמנה · איסוף מול משלוח לפי ship', async 
   const delivery = await notifyOrderConfirmed(deliveryOrder);
   assert.equal(pickup.ok, true);
   assert.equal(delivery.ok, true);
-  assert.deepEqual(names, ['bite_order_confirmed_pickup', 'bite_order_confirmed_delivery']);
-  assert.deepEqual(bodies[0], ['דנה כהן', 'ord_99', '145', '12:30']);
-  assert.deepEqual(bodies[1], ['דנה כהן', 'ord_99', '145', 'הרצל 5, יבנה · 13:00']);
+  assert.deepEqual(names, ['order_pickup_confirmed', 'order_delivary_confirmed']);
+  assert.deepEqual(bodies[0], ['דנה כהן']);
+  assert.deepEqual(bodies[1], ['דנה כהן']);
 });
 
 test('סטטוס · מוכנה לאיסוף ונמסרה במשלוח בלבד', async () => {
@@ -172,7 +172,7 @@ test('סטטוס · מוכנה לאיסוף ונמסרה במשלוח בלבד',
   assert.equal(deliveredDelivery.ok, true);
   assert.deepEqual(deliveredPickup, { ok: false, skipped: 'no_template' });
   assert.deepEqual(confirmed, { ok: false, skipped: 'no_template' });
-  assert.deepEqual(names, ['bite_order_ready_pickup', 'bite_order_delivered']);
+  assert.deepEqual(names, ['order_pick_up', 'order_dalivery']);
 });
 
 test('תבנית סטטוס כבויה במחרוזת ריקה', async () => {
@@ -190,7 +190,7 @@ test('תבנית סטטוס כבויה במחרוזת ריקה', async () => {
 test('שגיאת Meta לא זורקת', async () => {
   enableWhatsApp();
   mockFetch(() => {}, false);
-  const result = await sendUtility('0501234567', 'bite_order_confirmed_pickup', ['a', 'b', 'c', 'd']);
+  const result = await sendUtility('0501234567', 'order_pickup_confirmed', ['דנה']);
   assert.equal(result.ok, false);
   if (!result.ok && 'error' in result) {
     assert.equal(result.error, 'template not found');

@@ -1,14 +1,24 @@
 /**
- * פרמטרי תבניות Utility · סדר {{n}} זמני עד שקד תשלח את הרשימה מ-Meta.
- *
- * לשנות סדר: רק את המערך `UTILITY_BODY_KEYS`.
- * {{1}} name · {{2}} orderId · {{3}} total · {{4}} timeOrAddress
- *   timeOrAddress באיסוף = שעה; במשלוח = כתובת, עיר · שעה
+ * תבניות Utility אצל שקד · השמות כפי שנוצרו ב-Meta, כולל שגיאות הכתיב.
+ * לא לתקן ל-delivery.
  */
+export const META_UTILITY_TEMPLATES = {
+  confirmPickup: 'order_pickup_confirmed',
+  confirmDelivery: 'order_delivary_confirmed',
+  readyPickup: 'order_pick_up',
+  delivered: 'order_dalivery',
+} as const;
 
-export const UTILITY_BODY_KEYS = ['name', 'orderId', 'total', 'timeOrAddress'] as const;
+/**
+ * פרמטרי גוף · מה שידוע: {{1}} = שם הלקוחה.
+ *
+ * {{2}}… עדיין לא ידועים. אם Meta דוחה בגלל מספר פרמטרים,
+ * להוסיף מפתחות ל-`UTILITY_BODY_KEYS` מהרשימה ב-`orderUtilitySlots`
+ * (orderId, total, timeOrAddress) — בלי לגעת בנתיבי השליחה.
+ */
+export const UTILITY_BODY_KEYS = ['name'] as const;
 
-export type UtilitySlot = (typeof UTILITY_BODY_KEYS)[number];
+export type UtilitySlot = 'name' | 'orderId' | 'total' | 'timeOrAddress';
 
 export type OrderTemplateSlots = {
   name: string;
@@ -59,7 +69,7 @@ export function confirmTemplateKind(ship: string): Extract<UtilityKind, 'confirm
   return isDeliveryShip(ship) ? 'confirmDelivery' : 'confirmPickup';
 }
 
-/** מוכנה + איסוף → מוכנה לאיסוף · נמסרה + משלוח → המשלוח הגיע. אחרת אין תבנית. */
+/** מוכנה + איסוף → order_pick_up · נמסרה + משלוח → order_dalivery. אחרת אין תבנית. */
 export function statusTemplateKind(status: string, ship: string): Extract<UtilityKind, 'readyPickup' | 'delivered'> | null {
   if (status === 'מוכנה' && !isDeliveryShip(ship)) return 'readyPickup';
   if (status === 'נמסרה' && isDeliveryShip(ship)) return 'delivered';

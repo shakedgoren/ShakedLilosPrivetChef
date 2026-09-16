@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { META_UTILITY_TEMPLATES } from './whatsapp/vars.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(here, '../.env') });
@@ -58,17 +59,20 @@ export const env = {
       templateOtp: (process.env.WHATSAPP_TEMPLATE_OTP ?? 'bite_otp').trim() || 'bite_otp',
       templateOrderConfirmedPickup: optionalTemplate(
         'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP',
-        'bite_order_confirmed_pickup',
+        META_UTILITY_TEMPLATES.confirmPickup,
       ),
       templateOrderConfirmedDelivery: optionalTemplate(
         'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY',
-        'bite_order_confirmed_delivery',
+        META_UTILITY_TEMPLATES.confirmDelivery,
       ),
       templateOrderReadyPickup: optionalTemplate(
         'WHATSAPP_TEMPLATE_ORDER_READY_PICKUP',
-        'bite_order_ready_pickup',
+        META_UTILITY_TEMPLATES.readyPickup,
       ),
-      templateOrderDelivered: optionalTemplate('WHATSAPP_TEMPLATE_ORDER_DELIVERED', 'bite_order_delivered'),
+      templateOrderDelivered: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_DELIVERED',
+        META_UTILITY_TEMPLATES.delivered,
+      ),
       templateLang: (process.env.WHATSAPP_TEMPLATE_LANG ?? 'he').trim() || 'he',
       webhookVerifyToken: (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '').trim(),
       enabled: Boolean(token && phoneNumberId),

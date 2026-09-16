@@ -5,6 +5,7 @@ import { isWhatsAppPhone, toWhatsAppPhone } from './phone.ts';
 import { verifyWebhookChallenge } from './webhook.ts';
 import {
   confirmTemplateKind,
+  META_UTILITY_TEMPLATES,
   orderUtilityBodyParams,
   statusTemplateKind,
   timeOrAddress,
@@ -34,18 +35,12 @@ test('תבנית Authentication · הקוד בגוף ובכפתור copy-code', 
   ]);
 });
 
-test('תבנית Utility · פרמטרים לפי סדר ה-keys', () => {
-  const payload = utilityTemplatePayload('972501234567', 'bite_order_confirmed_pickup', 'he', [
-    'דנה',
-    'clxyz',
-    '145',
-    '12:30',
-  ]);
+test('תבנית Utility · {{1}} שם', () => {
+  const payload = utilityTemplatePayload('972501234567', 'order_pickup_confirmed', 'he', ['דנה']);
   const body = payload.template.components[0];
   assert.equal(body.type, 'body');
   if (body.type !== 'body') throw new Error('expected body');
   assert.equal(body.parameters[0].text, 'דנה');
-  assert.equal(body.parameters[3].text, '12:30');
 });
 
 test('פרמטר תבנית בלי ירידות שורה', () => {
@@ -53,8 +48,15 @@ test('פרמטר תבנית בלי ירידות שורה', () => {
   assert.equal(sanitizeTemplateParam(''), '—');
 });
 
-test('סדר {{n}} הזמני · name, orderId, total, timeOrAddress', () => {
-  assert.deepEqual([...UTILITY_BODY_KEYS], ['name', 'orderId', 'total', 'timeOrAddress']);
+test('שמות Meta · כולל שגיאות הכתיב', () => {
+  assert.equal(META_UTILITY_TEMPLATES.confirmPickup, 'order_pickup_confirmed');
+  assert.equal(META_UTILITY_TEMPLATES.confirmDelivery, 'order_delivary_confirmed');
+  assert.equal(META_UTILITY_TEMPLATES.readyPickup, 'order_pick_up');
+  assert.equal(META_UTILITY_TEMPLATES.delivered, 'order_dalivery');
+});
+
+test('{{1}} שם · מפתחות נוספים מוכנים אם Meta ידרוש', () => {
+  assert.deepEqual([...UTILITY_BODY_KEYS], ['name']);
   const pickup = {
     name: 'דנה כהן',
     id: 'ord_99',
@@ -64,7 +66,7 @@ test('סדר {{n}} הזמני · name, orderId, total, timeOrAddress', () => {
     city: '',
     address: '',
   };
-  assert.deepEqual(orderUtilityBodyParams(pickup), ['דנה כהן', 'ord_99', '145', '12:30']);
+  assert.deepEqual(orderUtilityBodyParams(pickup), ['דנה כהן']);
   assert.equal(timeOrAddress(pickup), '12:30');
   assert.equal(
     timeOrAddress({ ship: 'deliv', time: '13:00', city: 'יבנה', address: 'הרצל 5' }),
