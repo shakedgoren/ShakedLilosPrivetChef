@@ -139,6 +139,23 @@ function LoginOverlay() {
   );
 }
 
+/**
+ * המסכים שמוותרים על הריפוד העליון.
+ *
+ * ⚠ **בקשה של שקד · 16 בספטמבר 2026** · ״Safe area מלמעלה בדף של
+ * ההתחברות״ ו״בצד הניהולי צריך להסיר Safe area מלמעלה״. בשני
+ * המסכים האלה התוכן העליון הוא רקע מלא — הכוכבים בניהול, והשטיפה
+ * במסך ההתחברות — ולכן הריפוד יצר שם פס בהיר.
+ *
+ * ⚠ **דף הבית של הלקוחה אינו ברשימה** · נמדד בסימולטור ב-16
+ * בספטמבר: בלעדיו הכותרת נכנסת מתחת למגרעת וחופפת לשעון.
+ */
+const NO_TOP_INSET = (screen: string) => screen === 'login' || screen.startsWith('admin');
+
+/* ⚠ קבועים ולא מערך חדש בכל רינדור · `SafeAreaView` משווה הפניות */
+const EDGES_TOP = ['top'] as const;
+const EDGES_NONE = [] as const;
+
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
   /**
@@ -164,6 +181,22 @@ export default function App() {
           * ⚠ נמדד בסימולטור · לפני התיקון נשאר פס אחיד של 102
           * פיקסלים בתחתית (‎34 נקודות ב-@3x), בדיוק מידת פס הבית.
           */}
+        <Shell />
+      </LightboxProvider>
+      </NavProvider>
+    </SafeAreaProvider>
+  );
+}
+
+/**
+ * גוף האפליקציה · **בתוך** `NavProvider`, כי הריפוד העליון תלוי
+ * במסך הפעיל. ראו `NO_TOP_INSET`.
+ */
+function Shell() {
+  const { screen } = useNav();
+  const topEdges = NO_TOP_INSET(screen) ? EDGES_NONE : EDGES_TOP;
+
+  return (
         <View style={s.root}>
           <StatusBar style="dark" />
           <Wash />
@@ -178,7 +211,7 @@ export default function App() {
             * מקצה לקצה, כולל מתחת למגרעת. לכן הצבע רץ עד הקצה
             * **והכותרת נשארת קריאה**.
             */}
-          <SafeAreaView style={s.safe} edges={['top']}>
+          <SafeAreaView style={s.safe} edges={topEdges}>
             {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
             <BackSwipe>
               <Router />
@@ -200,9 +233,6 @@ export default function App() {
               מחוץ לו הוא יושב בדיוק היכן שהקנבס אומר. */}
           <Chrome />
         </View>
-      </LightboxProvider>
-      </NavProvider>
-    </SafeAreaProvider>
   );
 }
 

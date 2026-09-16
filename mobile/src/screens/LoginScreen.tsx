@@ -7,7 +7,7 @@ import { useNav } from '../navigation/store';
 import { apiEnabled } from '../api/config';
 import {
   forgotPassword,
-  googleStub,
+  googleSignIn,
   login,
   me,
   register,
@@ -25,6 +25,7 @@ import { S } from '../components/Sym';
 import { User } from '../icons';
 import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
 import { maskPhone, normalizePhone } from '../lib/phone';
+import { useGoogleIdToken } from '../lib/googleAuth';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
 import { iconOrbShadow } from '../theme/glass';
@@ -156,6 +157,8 @@ function Dots({ at }: { at: number }) {
 
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const { go, signIn, closeLogin, loginOverlay } = useNav();
+  /* ⚠ חייב להיקרא בראש הרכיב · זה הוק · ראו `lib/googleAuth.ts` */
+  const google = useGoogleIdToken();
   const [step, setStep] = useState<Step>(mode === 'up' ? 'up1' : 'in');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -235,11 +238,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       await afterLogin(await login(phone.trim(), pass));
     });
 
+  /**
+   * ⚠ **התחברות אמיתית · 16 בספטמבר 2026** · בקשה של שקד. קודם
+   * נשלח טוקן ריק (`googleStub`) והשרת החזיר 501 — הכפתור נראה
+   * ולא עבד. ראו `lib/googleAuth.ts` למזהים שצריך להגדיר.
+   * ⚠ בלי מזהים הכפתור מושבת, במקום להיכשל בשקט.
+   */
   const onGoogle = () =>
     run(async () => {
       if (!apiEnabled) return signIn();
       try {
-        await afterLogin(await googleStub());
+        const idToken = await google.signIn();
+        /* ביטול · הלקוחה סגרה את חלון גוגל */
+        if (!idToken) return;
+        await afterLogin(await googleSignIn(idToken));
       } catch (e) {
         fail(e, COPY.google);
       }
@@ -510,7 +522,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                   <Text style={s.orText}>{OR_LABEL}</Text>
                   <View style={s.orLine} />
                 </View>
-                <Pressable onPress={onGoogle} disabled={busy} style={s.ghost}>
+                <Pressable
+                  onPress={onGoogle}
+                  disabled={busy || (apiEnabled && !google.ready)}
+                  style={[s.ghost, apiEnabled && !google.ready && s.ghostOff]}
+                >
                   <Text style={s.ghostText}>{GOOGLE_LABEL}</Text>
                 </Pressable>
               </>
@@ -561,10 +577,17 @@ const s = StyleSheet.create({
   flex: { flex: 1 },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: space.xl, paddingVertical: 40 },
 
+  /**
+   * ⚠ **הוגדל והוכהה · 16 בספטמבר 2026** · שקד דיווחה על ״בעיה
+   * בנראות של הדף״. נמדד בסימולטור: גוש השם יושב **על הכתם הסגול**,
+   * והכיתוב שמתחתיו היה `surface.faint` במשקל 300 — אפור בהיר על
+   * סגול, כמעט בלתי קריא.
+   * השם 21 → 26, והכיתוב עבר לדיו הרך במשקל 400.
+   */
   brandBlock: { alignItems: 'center', marginBottom: 14 },
   /* ⚠ שם המשפחה ולא 'Anton' · ב-React Native כל משקל הוא משפחה נפרדת */
-  brand: { fontFamily: DISPLAY_FAMILY, fontSize: 21, letterSpacing: 1.3, color: surface.ink },
-  brandSub: { fontSize: 12.5, fontWeight: '300', color: surface.faint, marginTop: 2 },
+  brand: { fontFamily: DISPLAY_FAMILY, fontSize: 26, letterSpacing: 1.3, color: surface.ink },
+  brandSub: { fontSize: 13, fontWeight: '400', color: surface.inkSoft, marginTop: 3 },
 
   /* ⚠ כרטיס אטום · הכתם עובר ממש מאחוריו וזכוכית שקופה הופכת את הטקסט לבלתי קריא */
   card: {
@@ -709,6 +732,8 @@ const s = StyleSheet.create({
   orRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 12 },
   orLine: { flex: 1, height: 1, backgroundColor: 'rgba(130,112,162,0.16)' },
   orText: { fontSize: 11.5, color: surface.faint },
+  /* ⚠ מושבת כשאין מזהי גוגל · ראו `lib/googleAuth.ts` */
+  ghostOff: { opacity: 0.45 },
   ghost: {
     height: 46,
     borderRadius: radius.pill,

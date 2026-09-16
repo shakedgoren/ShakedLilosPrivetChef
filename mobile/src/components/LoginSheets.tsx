@@ -1,7 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
 import { INPUT_START } from '../theme/rtl';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
@@ -16,14 +16,26 @@ import { NO_TOUCH } from '../theme/pointerEvents';
 const LAV = '#BCA7E6';
 const DEEP = '#43307A';
 
+/**
+ * ⚠ **המקלדת הסתירה את השדה · תוקן ב-16 בספטמבר 2026** · שקד
+ * דיווחה: ״כשמקלידים מייל בשכחתי סיסמא המקלדת מסתירה את האיזור של
+ * ההקלדה״. היריעה נעוצה לתחתית המסך (`justifyContent: flex-end`),
+ * והמקלדת נפתחת בדיוק שם — כלומר היא כיסתה אותה במלואה.
+ *
+ * `KeyboardAvoidingView` מרים את היריעה בדיוק בגובה המקלדת.
+ * ⚠ `padding` ב-iOS ו-`height` באנדרואיד · זו ההתנהגות הנכונה
+ * לכל פלטפורמה, ו-`behavior` יחיד שובר את השנייה.
+ */
 function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <View style={s.layer}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <View style={s.sheet}>
-        <View style={s.grab} />
-        {children}
-      </View>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={s.sheet}>
+          <View style={s.grab} />
+          {children}
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
