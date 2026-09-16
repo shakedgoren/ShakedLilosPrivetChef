@@ -15,8 +15,12 @@ import { DateCalendar } from '../../components/DateCalendar';
 import { dayPartOpen } from '../../data/calendar';
 import { AddressField, type AddressValue } from '../../components/AddressField';
 import { formatAddress } from '../../data/israelAddresses';
+import { detailFilled, detailRequired } from './useChefOrder';
 
 const ACCENT = hues.chef;
+/** האדום של השגיאות באפליקציה · אותו גוון של `err` במסכי ההתחברות */
+const MISSING = '#B95349';
+const MISSING_HINT = 'rgba(185,83,73,0.6)';
 
 /* גווני הסטפר · המינוס אפור והפלוס בגוון הקטגוריה, כמו בקנבס */
 const STEP_TONE = {
@@ -156,17 +160,21 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
     case 'gap':
       return <View style={st.gap} />;
 
-    case 'text':
+    case 'text': {
+      /* ⚠ ״חסר משהו״ · כל עוד לא כתבו מה חסר, השדה מסומן באדום
+         ו״המשך״ נעול. בקשה של שקד (16 בספטמבר 2026). */
+      const mustFill = detailRequired(api.picks, s.id) && !detailFilled(api.picks, s.id);
       return (
         <TextInput
           value={api.picks[s.id] ?? ''}
           onChangeText={(v) => api.setValue(s.id, v)}
           placeholder={s.ph}
-          placeholderTextColor="#B3ABBD"
+          placeholderTextColor={mustFill ? MISSING_HINT : '#B3ABBD'}
           multiline
-          style={st.field}
+          style={[st.field, mustFill && st.fieldMissing]}
         />
       );
+    }
 
     case 'addr':
       /* ⚠ היה שדה טקסט חופשי · שקד ביקשה שהכתובת תושלם מרשימת
@@ -269,6 +277,13 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
        */
       const byDate = s.id === 'daypart' ? (n: string) => !dayPartOpen(api.picks.date, n) : null;
       const boxy = s.kind !== 'pair';
+      /**
+       * ⚠ **בוקר · צהריים · ערב** · שקד ביקשה (16 בספטמבר 2026) שהשלושה
+       * יהיו ״בגודל אחיד ופחות מעוגלות״. `minHeight` לבדו נתן להם
+       * גבהים שונים ברגע שמילה אחת נשברה לשתי שורות, ו-`boxy` הגדיל
+       * את הפינה ל-18 — יותר מהגלולה הרגילה ולא פחות.
+       */
+      const uniform = s.id === 'daypart';
       return (
         <OptionGrid cols={colsFor(s, opts.length)} maxWidth={maxWidthFor(s)}>
           {opts.map((o) => {
@@ -287,6 +302,8 @@ export function ChefSectionRenderer({ s, api }: { s: ChefSection; api: Api }) {
                   st.grow,
                   boxy ? st.chip : st.card,
                   s.boxy && st.boxy,
+                  /* ⚠ אחרי `boxy` · הוא זה שמחזיר את הפינה ל-12 */
+                  uniform && st.uniform,
                   on && !off && st.on,
                   off && st.off,
                 ]}
@@ -473,6 +490,8 @@ const st = StyleSheet.create({
     color: surface.ink,
   },
   oneLine: { minHeight: 46, paddingVertical: 12 },
+  /* ⚠ חובה שלא מולאה · ״חסר משהו״ בלי פירוט */
+  fieldMissing: { borderColor: MISSING, backgroundColor: 'rgba(185,83,73,0.05)' },
   pairText: { flexDirection: 'row', gap: space.sm },
   smallLabel: { fontSize: 11.5, color: surface.faint, marginBottom: 4, textAlign: 'center' },
   grow: { flex: 1 },
@@ -511,6 +530,8 @@ const st = StyleSheet.create({
   chipText: { fontSize: 12.5, color: surface.inkSoft, textAlign: 'center' },
   /* `boxy: true` בקנבס · פינה 18 במקום גלולה */
   boxy: { borderRadius: 18 },
+  /* בוקר · צהריים · ערב · גובה אחיד ופינה מרובעת יותר */
+  uniform: { height: 46, borderRadius: 12 },
 
   /* שורות בחירה · פינה 16, ריפוד 9/12, הכל ממורכז · מהקנבס */
   cards: { gap: 7 },

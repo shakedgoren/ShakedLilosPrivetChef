@@ -21,7 +21,16 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  * ב-React Native. המדרג עצמו זהה לקנבס.
  */
 
-/* גובה הכרטיס · `cardH` בקנבס */
+/**
+ * גובה הכרטיס · `cardH` בקנבס.
+ * ⚠ **מינימום ולא גובה קבוע · תוקן ב-16 בספטמבר 2026** · שקד דיווחה
+ * שבעמוד ״אפשר גם להעלות הילוך״ ״לא רואים את מה שאמור להיות שם״.
+ * הסיבה: הכרטיס היה בגובה קבוע עם `overflow: hidden`, והכיתוב ישב
+ * בשכבה **מוחלטת** שנעוצה לתחתית. תיאורי השדרוגים ארוכים — ״סכו״ם,
+ * צלחות, כוסות, מפיות וקשים, כולל תפריט מעוצב ומודפס לכל סועד״ ועוד
+ * משפט מחיר — ולכן הם גלשו מעל גבול הכרטיס **ונחתכו**. עכשיו הכיתוב
+ * בזרימה רגילה והכרטיס גדל לפיו.
+ */
 const CARD_H = { one: 250, pair: 208 } as const;
 /* גדלי הטיפוגרפיה · `nameSize` ו-`descSize` בקנבס */
 const NAME_SIZE = { one: 14.5, pair: 12.5 } as const;
@@ -67,7 +76,7 @@ export function ChefExtraCard({ name, desc, badge, on, one = false, onPress }: P
   return (
     <Pressable
       onPress={onPress}
-      style={[s.card, { height: CARD_H[k], borderColor: on ? SEL_BD : IDLE_BD }]}
+      style={[s.card, { minHeight: CARD_H[k], borderColor: on ? SEL_BD : IDLE_BD }]}
     >
       {/* ⚠ `zoom={false}` · הלחיצה חייבת לבחור את השדרוג, לא להגדיל */}
       <Photo name={extraPhoto(name)} rgb={hues.chef.rgb} zoom={false} style={s.shot} />
@@ -124,6 +133,8 @@ const s = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 2,
     backgroundColor: 'rgba(255,255,255,0.6)',
+    /* הכיתוב נצמד לתחתית · והכרטיס גדל כשהוא ארוך */
+    justifyContent: 'flex-end',
   },
   /* התמונה ממלאת את הכרטיס · מציין המקום של הקנבס נשאר כשאין תמונה */
   /**
@@ -144,11 +155,9 @@ const s = StyleSheet.create({
     borderRadius: 18,
   },
   /* `padding: 26px 10px 11px` · המרווח העליון נותן למדרג להתחיל רך */
+  /* ⚠ **בזרימה ולא מוחלט** · ראו את ההערה ב-`CARD_H`. */
   veil: {
-    position: 'absolute',
-    right: 0,
-    left: 0,
-    bottom: 0,
+    width: '100%',
     paddingTop: 26,
     paddingHorizontal: 10,
     paddingBottom: 11,

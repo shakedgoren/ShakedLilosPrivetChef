@@ -22,7 +22,28 @@ const SINGLE = ['grid', 'tiers', 'pair'];
 /** בחירה מרובה */
 const MULTI = ['multi', 'multicap', 'sauces', 'cards'];
 
+/**
+ * ⚠ **״חסר משהו״ מחייב פירוט** · שקד ביקשה (16 בספטמבר 2026): ״אם
+ * סימנו את ׳חסר משהו׳ שלא יתנו ללקוח להמשיך הלאה — שהוא יהיה חייב
+ * לכתוב מה חסר, ושהכרטיסייה תסומן במסגרת אדומה״.
+ *
+ * ⚠ **הכלל יושב כאן ולא ב-`chef.ts`** · אותו קובץ נוצר אוטומטית
+ * מהקנבס ואין לערוך אותו ביד. לכן התלות מוגדרת בקוד, במקום אחד.
+ */
+const DETAIL = { pick: 'kitchen', value: 'חסר משהו', field: 'kitchenTxt' } as const;
+
+/** האם השדה הזה חייב להתמלא כרגע · משמש גם את המסגרת האדומה */
+export const detailRequired = (picks: Picks, id?: string): boolean =>
+  id === DETAIL.field && picks[DETAIL.pick] === DETAIL.value;
+
+/** מולא? */
+export const detailFilled = (picks: Picks, id?: string): boolean =>
+  !!String(picks[id ?? ''] ?? '').trim();
+
 const sectionReady = (s: ChefSection, picks: Picks): boolean => {
+  /* ⚠ לפני `s.req` · השדה הזה אינו מסומן כחובה בקנבס, והחובה שלו
+     נולדת רק מהבחירה ״חסר משהו״ */
+  if (s.kind === 'text' && detailRequired(picks, s.id)) return detailFilled(picks, s.id);
   if (!s.req || isDormant(s, picks)) return true;
   const v = picks[s.id];
   if (SINGLE.includes(s.kind)) return !!v;
