@@ -55,7 +55,15 @@ type Props = {
 export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }: Props) {
   const size = tone?.key ?? KEY;
   const glyph = tone?.glyph ?? GLYPH;
-  const round = { width: size, height: size, borderRadius: size / 2 };
+  /**
+   * ⚠ **הסמל מחליף גם את העיגול** · בקשה של שקד (16 בספטמבר 2026).
+   * `plus.arrow.trianglehead.counterclockwise` ו-
+   * `minus.arrow.trianglehead.clockwise` מגיעים עם טבעת משלהם, ולכן
+   * עיגול רקע מאחוריהם יצר **שני** עיגולים מקוננים. הרקע ירד והסמל
+   * גדל לקוטר שהעיגול תפס. גוון הקטגוריה עבר מהעיגול אל הסמל עצמו,
+   * כדי שהשפה הצבעונית של המסכים תישמר.
+   */
+  const round = { width: size, height: size };
   const atMin = value <= min;
 
   return (
@@ -63,11 +71,11 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(value + 1)}
         disabled={maxed}
-        style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG }, maxed && s.keyOff]}
+        style={[s.key, round, maxed && s.keyOff]}
         hitSlop={8}
       >
         {/* ⚠ SF Symbols · הסמלים שבחרה שקד ל-+ ול-‎- */}
-        <S k="plus" size={glyph} color={tone?.plusInk ?? PLUS_INK} />
+        <S k="plus" size={size} color={tone?.plusInk ?? PLUS_INK} />
       </Pressable>
 
       {center ?? (
@@ -77,10 +85,10 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
       <Pressable
         onPress={() => onChange(Math.max(min, value - 1))}
         disabled={atMin}
-        style={[s.key, round, { backgroundColor: tone?.minusBg ?? KEY_BG }, atMin && s.keyOff]}
+        style={[s.key, round, atMin && s.keyOff]}
         hitSlop={8}
       >
-        <S k="minus" size={glyph} color={atMin ? OFF : (tone?.minusInk ?? ON)} />
+        <S k="minus" size={size} color={atMin ? OFF : (tone?.minusInk ?? ON)} />
       </Pressable>
     </View>
   );

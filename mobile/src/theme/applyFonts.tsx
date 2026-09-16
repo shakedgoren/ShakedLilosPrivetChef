@@ -19,6 +19,14 @@ import { IS_RTL } from './rtl';
  * הטקסט מיושר ימינה. המחיר בקוסקוס נראה תלוי באוויר בגלל זה.
  * `writingDirection` נכפה כאן פעם אחת על כל Text, ולכן אף מחרוזת
  * מספרית באפליקציה לא תיפול שוב לכיוון ההפוך.
+ *
+ * ⚠ **וגם היישור** · שקד דיווחה (16 בספטמבר 2026) על כיתוב שיושב
+ * בשמאל במקום בימין, למשל ״* כל מנה מגיעה לצד סלט חמוצים אישי.״
+ * בקוסקוס. `writingDirection` לבדו אינו מיישר — הוא רק קובע את
+ * סדר התווים. מחרוזת שמתחילה בתו ניטרלי (כוכבית, מקף, ספרה) נפלה
+ * ליישור שמאלה. האפליקציה בעברית בלבד, ולכן ימין הוא ברירת המחדל
+ * הנכונה; כל סגנון שמגדיר `textAlign` בעצמו עדיין גובר, כי הבסיס
+ * נכנס **ראשון** במערך.
  */
 type Renderable = { render?: (props: { style?: unknown }, ref: unknown) => unknown };
 
@@ -37,6 +45,7 @@ export function applyFonts() {
       const base = {
         fontFamily: fontFor(flat?.fontWeight),
         writingDirection: IS_RTL ? ('rtl' as const) : ('ltr' as const),
+        textAlign: IS_RTL ? ('right' as const) : ('left' as const),
       };
       const withFont = { ...props, style: [base, props.style] };
       return original.call(this, withFont, ref);

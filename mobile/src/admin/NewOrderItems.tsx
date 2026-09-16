@@ -1,4 +1,7 @@
 import React from 'react';
+
+/** קוטר העיגול שהיה מאחורי ה-+ · הסמל תופס אותו עכשיו */
+const ROUND = 32;
 import { S } from '../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
@@ -31,9 +34,10 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
             <View style={s.stepper}>
               <Pressable
                 onPress={() => onBump(it.id, 1)}
-                style={[s.round, { backgroundColor: `rgba(${hue.rgb},0.13)` }]}
+                style={s.round}
               >
-                <S k="plus" size={13} color={hue.deep} />
+                {/* ⚠ הסמל מגיע עם טבעת משלו · עיגול רקע היה יוצר שני עיגולים */}
+                <S k="plus" size={ROUND} color={hue.deep} />
               </Pressable>
               <Text
                 style={[
@@ -45,9 +49,9 @@ export function MenuCounters({ draft, onBump }: ItemsProps) {
               </Text>
               <Pressable
                 onPress={() => onBump(it.id, -1)}
-                style={[s.round, s.minus, { opacity: n > 0 ? 1 : 0.35 }]}
+                style={[s.round, { opacity: n > 0 ? 1 : 0.35 }]}
               >
-                <S k="minus" size={13} color="#2A2430" />
+                <S k="minus" size={ROUND} color="#2A2430" />
               </Pressable>
             </View>
           </View>
@@ -100,8 +104,8 @@ const s = StyleSheet.create({
   itemName: { fontSize: 13, fontWeight: '500', color: surface.ink },
   itemPrice: { fontSize: 11, fontWeight: '300', color: '#A79FB2' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  round: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  minus: { backgroundColor: 'rgba(130,112,162,0.09)' },
+  /* ⚠ בלי רקע ובלי רדיוס · הטבעת מגיעה מהסמל עצמו */
+  round: { width: ROUND, height: ROUND, alignItems: 'center', justifyContent: 'center' },
   sign: { fontSize: 17, fontWeight: '700', color: '#6E6478', lineHeight: 20 },
   count: { minWidth: 20, textAlign: 'center', fontSize: 15.5 },
 
