@@ -13,6 +13,13 @@ const required = (key: string, fallback?: string): string => {
   return v;
 };
 
+/** תבנית אופציונלית · לא מוגדר = ברירת מחדל · מחרוזת ריקה = כבוי */
+function optionalTemplate(key: string, fallback: string): string {
+  const raw = process.env[key];
+  if (raw === undefined) return fallback;
+  return raw.trim();
+}
+
 const node = process.env.NODE_ENV ?? 'development';
 const isProd = node === 'production';
 
@@ -49,10 +56,19 @@ export const env = {
       wabaId: (process.env.WHATSAPP_WABA_ID ?? '').trim(),
       graphVersion,
       templateOtp: (process.env.WHATSAPP_TEMPLATE_OTP ?? 'bite_otp').trim() || 'bite_otp',
-      templateOrderConfirmed:
-        (process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED ?? 'bite_order_confirmed').trim() ||
-        'bite_order_confirmed',
-      templateOrderStatus: (process.env.WHATSAPP_TEMPLATE_ORDER_STATUS ?? '').trim(),
+      templateOrderConfirmedPickup: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP',
+        'bite_order_confirmed_pickup',
+      ),
+      templateOrderConfirmedDelivery: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY',
+        'bite_order_confirmed_delivery',
+      ),
+      templateOrderReadyPickup: optionalTemplate(
+        'WHATSAPP_TEMPLATE_ORDER_READY_PICKUP',
+        'bite_order_ready_pickup',
+      ),
+      templateOrderDelivered: optionalTemplate('WHATSAPP_TEMPLATE_ORDER_DELIVERED', 'bite_order_delivered'),
       templateLang: (process.env.WHATSAPP_TEMPLATE_LANG ?? 'he').trim() || 'he',
       webhookVerifyToken: (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '').trim(),
       enabled: Boolean(token && phoneNumberId),

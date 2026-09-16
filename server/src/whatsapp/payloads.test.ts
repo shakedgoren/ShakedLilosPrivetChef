@@ -2,8 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { authOtpPayload, sanitizeTemplateParam, utilityTemplatePayload } from './payloads.ts';
 import { isWhatsAppPhone, toWhatsAppPhone } from './phone.ts';
-import { fulfillmentSummary } from './notify.ts';
 import { verifyWebhookChallenge } from './webhook.ts';
+import {
+  confirmTemplateKind,
+  orderUtilityBodyParams,
+  statusTemplateKind,
+  timeOrAddress,
+  UTILITY_BODY_KEYS,
+} from './vars.ts';
 
 test('מספר ישראלי מומר ל-E.164 בלי פלוס', () => {
   assert.equal(toWhatsAppPhone('050-1234567'), '972501234567');
@@ -28,18 +34,18 @@ test('תבנית Authentication · הקוד בגוף ובכפתור copy-code', 
   ]);
 });
 
-test('תבנית Utility · מזהה הזמנה, סה״כ וסיכום מסירה', () => {
-  const payload = utilityTemplatePayload('972501234567', 'bite_order_confirmed', 'he', [
+test('תבנית Utility · פרמטרים לפי סדר ה-keys', () => {
+  const payload = utilityTemplatePayload('972501234567', 'bite_order_confirmed_pickup', 'he', [
+    'דנה',
     'clxyz',
     '145',
-    'איסוף עצמי · 12:30',
+    '12:30',
   ]);
   const body = payload.template.components[0];
   assert.equal(body.type, 'body');
   if (body.type !== 'body') throw new Error('expected body');
-  assert.equal(body.parameters[0].text, 'clxyz');
-  assert.equal(body.parameters[1].text, '145');
-  assert.equal(body.parameters[2].text, 'איסוף עצמי · 12:30');
+  assert.equal(body.parameters[0].text, 'דנה');
+  assert.equal(body.parameters[3].text, '12:30');
 });
 
 test('פרמטר תבנית בלי ירידות שורה', () => {
@@ -47,15 +53,30 @@ test('פרמטר תבנית בלי ירידות שורה', () => {
   assert.equal(sanitizeTemplateParam(''), '—');
 });
 
-test('סיכום מסירה להזמנה', () => {
+test('סדר {{n}} הזמני · name, orderId, total, timeOrAddress', () => {
+  assert.deepEqual([...UTILITY_BODY_KEYS], ['name', 'orderId', 'total', 'timeOrAddress']);
+  const pickup = {
+    name: 'דנה כהן',
+    id: 'ord_99',
+    total: 145,
+    ship: 'self',
+    time: '12:30',
+    city: '',
+    address: '',
+  };
+  assert.deepEqual(orderUtilityBodyParams(pickup), ['דנה כהן', 'ord_99', '145', '12:30']);
+  assert.equal(timeOrAddress(pickup), '12:30');
   assert.equal(
-    fulfillmentSummary({ ship: 'self', time: '12:30', city: '', address: '' }),
-    'איסוף עצמי · 12:30',
+    timeOrAddress({ ship: 'deliv', time: '13:00', city: 'יבנה', address: 'הרצל 5' }),
+    'הרצל 5, יבנה · 13:00',
   );
-  assert.equal(
-    fulfillmentSummary({ ship: 'deliv', time: '13:00', city: 'יבנה', address: 'הרצל 5' }),
-    'משלוח · הרצל 5, יבנה · 13:00',
-  );
+  assert.equal(confirmTemplateKind('self'), 'confirmPickup');
+  assert.equal(confirmTemplateKind('deliv'), 'confirmDelivery');
+  assert.equal(statusTemplateKind('מוכנה', 'self'), 'readyPickup');
+  assert.equal(statusTemplateKind('מוכנה', 'deliv'), null);
+  assert.equal(statusTemplateKind('נמסרה', 'deliv'), 'delivered');
+  assert.equal(statusTemplateKind('נמסרה', 'self'), null);
+  assert.equal(statusTemplateKind('מאושרת', 'self'), null);
 });
 
 test('webhook · בלי token מוגדר מחזיר 404', () => {

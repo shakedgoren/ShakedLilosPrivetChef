@@ -7,8 +7,10 @@ const saved = {
   token: process.env.WHATSAPP_TOKEN,
   phone: process.env.WHATSAPP_PHONE_NUMBER_ID,
   otp: process.env.WHATSAPP_TEMPLATE_OTP,
-  confirmed: process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED,
-  status: process.env.WHATSAPP_TEMPLATE_ORDER_STATUS,
+  pickup: process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP,
+  delivery: process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY,
+  ready: process.env.WHATSAPP_TEMPLATE_ORDER_READY_PICKUP,
+  delivered: process.env.WHATSAPP_TEMPLATE_ORDER_DELIVERED,
   lang: process.env.WHATSAPP_TEMPLATE_LANG,
   version: process.env.WHATSAPP_GRAPH_VERSION,
 };
@@ -22,8 +24,10 @@ afterEach(() => {
   restore('WHATSAPP_TOKEN', saved.token);
   restore('WHATSAPP_PHONE_NUMBER_ID', saved.phone);
   restore('WHATSAPP_TEMPLATE_OTP', saved.otp);
-  restore('WHATSAPP_TEMPLATE_ORDER_CONFIRMED', saved.confirmed);
-  restore('WHATSAPP_TEMPLATE_ORDER_STATUS', saved.status);
+  restore('WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP', saved.pickup);
+  restore('WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY', saved.delivery);
+  restore('WHATSAPP_TEMPLATE_ORDER_READY_PICKUP', saved.ready);
+  restore('WHATSAPP_TEMPLATE_ORDER_DELIVERED', saved.delivered);
   restore('WHATSAPP_TEMPLATE_LANG', saved.lang);
   restore('WHATSAPP_GRAPH_VERSION', saved.version);
 });
@@ -32,8 +36,10 @@ function enableWhatsApp() {
   process.env.WHATSAPP_TOKEN = 'test-token';
   process.env.WHATSAPP_PHONE_NUMBER_ID = '123456789';
   process.env.WHATSAPP_TEMPLATE_OTP = 'bite_otp';
-  process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED = 'bite_order_confirmed';
-  process.env.WHATSAPP_TEMPLATE_ORDER_STATUS = 'bite_order_status';
+  process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP = 'bite_order_confirmed_pickup';
+  process.env.WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY = 'bite_order_confirmed_delivery';
+  process.env.WHATSAPP_TEMPLATE_ORDER_READY_PICKUP = 'bite_order_ready_pickup';
+  process.env.WHATSAPP_TEMPLATE_ORDER_DELIVERED = 'bite_order_delivered';
   process.env.WHATSAPP_TEMPLATE_LANG = 'he';
   process.env.WHATSAPP_GRAPH_VERSION = 'v21.0';
 }
@@ -53,6 +59,26 @@ function mockFetch(onCall: (url: string, init: RequestInit) => void, ok = true) 
   });
 }
 
+const pickupOrder = {
+  id: 'ord_99',
+  name: 'דנה כהן',
+  phone: '0501234567',
+  total: 145,
+  status: 'חדשה',
+  ship: 'self',
+  time: '12:30',
+  city: '',
+  address: '',
+};
+
+const deliveryOrder = {
+  ...pickupOrder,
+  ship: 'deliv',
+  time: '13:00',
+  city: 'יבנה',
+  address: 'הרצל 5',
+};
+
 test('בלי env לא קוראים ל-Meta ב-OTP', async () => {
   disableWhatsApp();
   let called = 0;
@@ -70,16 +96,7 @@ test('בלי env לא קוראים ל-Meta באישור הזמנה', async () =>
   mockFetch(() => {
     called += 1;
   });
-  const result = await notifyOrderConfirmed({
-    id: 'ord_1',
-    phone: '0501234567',
-    total: 145,
-    status: 'חדשה',
-    ship: 'self',
-    time: '12:30',
-    city: '',
-    address: '',
-  });
+  const result = await notifyOrderConfirmed(pickupOrder);
   assert.deepEqual(result, { ok: false, skipped: 'disabled' });
   assert.equal(called, 0);
 });
@@ -115,71 +132,65 @@ test('עם env נשלח OTP עם גוף וכפתור copy-code', async () => {
   ]);
 });
 
-test('עם env נשלח אישור הזמנה עם מזהה, סה״כ וסיכום', async () => {
+test('אישור הזמנה · איסוף מול משלוח לפי ship', async () => {
   enableWhatsApp();
-  const calls: Record<string, unknown>[] = [];
+  const names: string[] = [];
+  const bodies: string[][] = [];
   mockFetch((_url, init) => {
-    calls.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+    const parsed = JSON.parse(String(init.body)) as {
+      template: { name: string; components: { parameters: { text: string }[] }[] };
+    };
+    names.push(parsed.template.name);
+    bodies.push(parsed.template.components[0].parameters.map((p) => p.text));
   });
 
-  const result = await notifyOrderConfirmed({
-    id: 'ord_99',
-    phone: '0521112233',
-    total: 145,
-    status: 'חדשה',
-    ship: 'self',
-    time: '12:30',
-    city: '',
-    address: '',
-  });
-  assert.equal(result.ok, true);
-  assert.equal(calls.length, 1);
-  const template = calls[0].template as { name: string; components: { parameters: { text: string }[] }[] };
-  assert.equal(template.name, 'bite_order_confirmed');
-  assert.equal(template.components[0].parameters[0].text, 'ord_99');
-  assert.equal(template.components[0].parameters[1].text, '145');
-  assert.equal(template.components[0].parameters[2].text, 'איסוף עצמי · 12:30');
+  const pickup = await notifyOrderConfirmed(pickupOrder);
+  const delivery = await notifyOrderConfirmed(deliveryOrder);
+  assert.equal(pickup.ok, true);
+  assert.equal(delivery.ok, true);
+  assert.deepEqual(names, ['bite_order_confirmed_pickup', 'bite_order_confirmed_delivery']);
+  assert.deepEqual(bodies[0], ['דנה כהן', 'ord_99', '145', '12:30']);
+  assert.deepEqual(bodies[1], ['דנה כהן', 'ord_99', '145', 'הרצל 5, יבנה · 13:00']);
 });
 
-test('עדכון סטטוס נשלח רק כשהתבנית מוגדרת', async () => {
+test('סטטוס · מוכנה לאיסוף ונמסרה במשלוח בלבד', async () => {
   enableWhatsApp();
-  delete process.env.WHATSAPP_TEMPLATE_ORDER_STATUS;
+  const names: string[] = [];
+  mockFetch((_url, init) => {
+    const parsed = JSON.parse(String(init.body)) as { template: { name: string } };
+    names.push(parsed.template.name);
+  });
+
+  const readyPickup = await notifyOrderStatus({ ...pickupOrder, status: 'מוכנה' });
+  const readyDelivery = await notifyOrderStatus({ ...deliveryOrder, status: 'מוכנה' });
+  const deliveredDelivery = await notifyOrderStatus({ ...deliveryOrder, status: 'נמסרה' });
+  const deliveredPickup = await notifyOrderStatus({ ...pickupOrder, status: 'נמסרה' });
+  const confirmed = await notifyOrderStatus({ ...pickupOrder, status: 'מאושרת' });
+
+  assert.equal(readyPickup.ok, true);
+  assert.deepEqual(readyDelivery, { ok: false, skipped: 'no_template' });
+  assert.equal(deliveredDelivery.ok, true);
+  assert.deepEqual(deliveredPickup, { ok: false, skipped: 'no_template' });
+  assert.deepEqual(confirmed, { ok: false, skipped: 'no_template' });
+  assert.deepEqual(names, ['bite_order_ready_pickup', 'bite_order_delivered']);
+});
+
+test('תבנית סטטוס כבויה במחרוזת ריקה', async () => {
+  enableWhatsApp();
+  process.env.WHATSAPP_TEMPLATE_ORDER_READY_PICKUP = '';
   let called = 0;
   mockFetch(() => {
     called += 1;
   });
-  const skipped = await notifyOrderStatus({
-    id: 'ord_99',
-    phone: '0501234567',
-    total: 145,
-    status: 'מאושרת',
-    ship: 'self',
-    time: '12:30',
-    city: '',
-    address: '',
-  });
+  const skipped = await notifyOrderStatus({ ...pickupOrder, status: 'מוכנה' });
   assert.deepEqual(skipped, { ok: false, skipped: 'no_template' });
   assert.equal(called, 0);
-
-  process.env.WHATSAPP_TEMPLATE_ORDER_STATUS = 'bite_order_status';
-  const sent = await notifyOrderStatus({
-    id: 'ord_99',
-    phone: '0501234567',
-    total: 145,
-    status: 'מאושרת',
-    ship: 'self',
-    time: '12:30',
-    city: '',
-    address: '',
-  });
-  assert.equal(sent.ok, true);
-  assert.equal(called, 1);
 });
 
 test('שגיאת Meta לא זורקת', async () => {
   enableWhatsApp();
   mockFetch(() => {}, false);
-  const result = await sendUtility('0501234567', 'bite_order_confirmed', ['a', 'b', 'c']);
+  const result = await sendUtility('0501234567', 'bite_order_confirmed_pickup', ['a', 'b', 'c', 'd']);
   assert.equal(result.ok, false);
   if (!result.ok && 'error' in result) {
     assert.equal(result.error, 'template not found');

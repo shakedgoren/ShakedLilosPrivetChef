@@ -182,13 +182,22 @@ Authorization: Bearer <token>
 4. מזהה WABA (WhatsApp Business Account ID) — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
 5. יוצרים ומאשרים תבניות בעברית (`he`):
 
-| משתנה | שם לדוגמה | קטגוריה | תוכן |
+| משתנה | שם לדוגמה | קטגוריה | מתי נשלח |
 |---|---|---|---|
-| `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · כפתור Copy code | גוף קבוע של Meta; הקוד בפרמטר הגוף ובכפתור |
-| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED` | `bite_order_confirmed` | Utility | למשל: `הזמנה {{1}} התקבלה · סה״כ {{2}} ₪ · {{3}}` |
-| `WHATSAPP_TEMPLATE_ORDER_STATUS` | `bite_order_status` | Utility (אופציונלי) | למשל: `הזמנה {{1}} · סטטוס: {{2}} · {{3}}` |
+| `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `bite_order_confirmed_pickup` | Utility | יצירת הזמנת איסוף (`ship=self`) |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `bite_order_confirmed_delivery` | Utility | יצירת הזמנת משלוח (`ship=deliv`) |
+| `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `bite_order_ready_pickup` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
+| `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `bite_order_delivered` | Utility | סטטוס **נמסרה** בהזמנת משלוח |
 
-`{{1}}` = מזהה הזמנה, `{{2}}` = סה״כ או סטטוס, `{{3}}` = איסוף/משלוח + שעה.
+מחרוזת ריקה במשתנה מכבה רק את התבנית הזו. בלי TOKEN לא נשלח כלום.
+
+**סדר `{{n}}` זמני** (שקד עדיין לא שלחה את הרשימה מ-Meta). מוגדר ב-`server/src/whatsapp/vars.ts` במערך `UTILITY_BODY_KEYS` — לשנות רק שם:
+
+1. `name` — שם הלקוחה
+2. `orderId` — מזהה הזמנה
+3. `total` — סה״כ בשקלים
+4. `timeOrAddress` — באיסוף השעה; במשלוח `כתובת, עיר · שעה`
 
 6. Webhook (להמשך, סטטוסי מסירה): כתובת `https://<שרת>/webhooks/whatsapp`, verify token = `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. בדיקת חתימה עדיין לא מיושמת.
 
@@ -199,17 +208,20 @@ WHATSAPP_TOKEN="EAAG..."
 WHATSAPP_PHONE_NUMBER_ID="123456789012345"
 WHATSAPP_WABA_ID="123456789012345"
 WHATSAPP_TEMPLATE_OTP="bite_otp"
-WHATSAPP_TEMPLATE_ORDER_CONFIRMED="bite_order_confirmed"
-WHATSAPP_TEMPLATE_ORDER_STATUS="bite_order_status"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="bite_order_confirmed_pickup"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="bite_order_confirmed_delivery"
+WHATSAPP_TEMPLATE_ORDER_READY_PICKUP="bite_order_ready_pickup"
+WHATSAPP_TEMPLATE_ORDER_DELIVERED="bite_order_delivered"
 WHATSAPP_TEMPLATE_LANG="he"
 WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
 ```
 
 #### מתי נשלח
 
-- **OTP** — `POST /auth/otp/request` וגם `POST /auth/forgot-password` כשיש טלפון בחשבון. תבנית Authentication עם copy-code. הקוד בן 6 ספרות, 10 דקות. `POST /auth/otp/verify` מחזיר סשן.
-- **אישור הזמנה** — אחרי `POST /orders` (לקוחה, כולל שכפול) ואחרי `POST /admin/orders`.
-- **סטטוס** — אחרי `PATCH /admin/orders/:id/status` רק אם `WHATSAPP_TEMPLATE_ORDER_STATUS` מוגדר.
+- **OTP** — `POST /auth/otp/request` וגם `POST /auth/forgot-password` כשיש טלפון בחשבון. תבנית Authentication עם copy-code (תבנית Meta עדיין חסרה). הקוד בן 6 ספרות, 10 דקות. `POST /auth/otp/verify` מחזיר סשן.
+- **אישור הזמנה** — אחרי `POST /orders` (לקוחה, כולל שכפול) ואחרי `POST /admin/orders`. איסוף מול משלוח לפי `ship`.
+- **מוכנה לאיסוף** — `PATCH /admin/orders/:id/status` ל-`מוכנה` (או `ready`) בהזמנת איסוף.
+- **המשלוח הגיע** — אותו PATCH ל-`נמסרה` (או `delivered`) בהזמנת משלוח.
 
 כישלון Meta **לא** מפיל הזמנה או איפוס סיסמה; נרשם ללוג.
 
