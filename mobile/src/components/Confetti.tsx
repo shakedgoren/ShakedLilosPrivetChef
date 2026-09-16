@@ -85,7 +85,20 @@ function Flake({ f }: { f: Flake }) {
   );
 }
 
-export function Confetti() {
+/**
+ * ⚠ `onDone` נוסף ב-16 בספטמבר 2026 · שקד ביקשה שהרשמה לתזכורת
+ * תעשה קונפטי במקום עוד חלונית ״נרשמת״, ולכן צריך לדעת מתי לפרק
+ * את השכבה. הערכים והעיצוב לא נגעו — הם של הקנבס.
+ */
+export function Confetti({ onDone }: { onDone?: () => void } = {}) {
+  React.useEffect(() => {
+    if (!onDone) return;
+    /* הפתית האחרון מתחיל באיחור הגדול ביותר · מחכים גם לו */
+    const total = FALL_MS + FLAKES[FLAKES.length - 1].delay + 200;
+    const id = setTimeout(onDone, total);
+    return () => clearTimeout(id);
+  }, [onDone]);
+
   return (
     <View style={s.layer} pointerEvents="none">
       {FLAKES.map((f, i) => (

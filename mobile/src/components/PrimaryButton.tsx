@@ -16,6 +16,7 @@ import {
   CTA_GLOW_RGB,
   CTA_GLOW_SPREAD,
   CTA_KNOB_SHADOW,
+  CTA_DROP,
   CTA_SHADOW,
   CTA_STOPS,
 } from '../theme/glass';
@@ -206,15 +207,19 @@ export function PrimaryButton({ label, onPress }: Props) {
         </Svg>
       </View>
 
-      <View
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityHint="גוררים את החץ שמאלה, או לוחצים"
-        onAccessibilityTap={complete}
-        style={s.button}
-        {...pan.panHandlers}
-      >
+      {/* ⚠ שכבת הצל · **לא** חותכת. ראו את ההערה ב-`CTA_SHADOW`:
+          `overflow: 'hidden'` ב-iOS חותך גם את הצל החיצוני, וזה מה
+          שנראה כצל שחור מתחת לכפתור. */}
+      <View style={s.shade}>
+        <View
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          accessibilityHint="גוררים את החץ שמאלה, או לוחצים"
+          onAccessibilityTap={complete}
+          style={s.button}
+          {...pan.panHandlers}
+        >
         <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
           <Defs>
             {/* 104 מעלות ב-CSS · הווקטור (sin104, ‎-cos104) = (0.97, 0.24) */}
@@ -235,9 +240,10 @@ export function PrimaryButton({ label, onPress }: Props) {
 
         <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>
 
-        <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
-          <S k="arrowLeft" size={ARROW} />
-        </Animated.View>
+          <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
+            <S k="arrowLeft" size={ARROW} />
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -254,6 +260,8 @@ const s = StyleSheet.create({
     borderRadius: 999,
     filter: `blur(${CTA_GLOW_BLUR}px)`,
   },
+  /** נושאת את הצל החיצוני · בלי חיתוך */
+  shade: { width: W, height: H, borderRadius: radius.pill, boxShadow: CTA_DROP },
   button: {
     width: W,
     height: H,

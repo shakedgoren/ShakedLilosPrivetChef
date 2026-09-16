@@ -442,13 +442,18 @@ const st = StyleSheet.create({
   /* ⚠ הריפוד העליון חסר היה באפליקציה · בקנבס `padding: 12px 2px 0`
      (Boxes.dc.html:101). שקד ביקשה מרווח מעל ״ציפוי החלה״,
      ״סוג האירוע״ ו״מיתוג/הקדשה אישית״ — שלושתם כותרות. */
+  /**
+   * ⚠ **בלי `paddingTop` משלה** · שקד דיווחה (16 בספטמבר 2026) ש״0
+   * מתוך 2״ אינו באותה שורה עם הכותרת. הריפוד של 12 היה גם על
+   * `titleRow` וגם כאן, ולכן הכותרת ירדה 12 פיקסלים מתחת למונה
+   * בזמן ששניהם יושבים על אותו `baseline`. הריפוד שייך לשורה בלבד —
+   * בדיוק כמו ב-`ChefSectionRenderer`, שם זה מעולם לא נשבר.
+   */
   title: {
     fontSize: 15.5,
     fontWeight: '600',
     color: surface.ink,
     textAlign: 'center',
-    paddingTop: 12,
-    paddingHorizontal: 2,
   },
   hint: { fontSize: 11.5, fontWeight: '400', color: ACCENT.hue },
 

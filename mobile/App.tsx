@@ -19,6 +19,7 @@ import { LogoutButton } from './src/components/LogoutButton';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { BackSwipe } from './src/components/BackSwipe';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
 import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
@@ -167,7 +168,10 @@ export default function App() {
           <StatusBar style="dark" />
           <Wash />
           <SafeAreaView style={s.safe} edges={['top']}>
-            <Router />
+            {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
+            <BackSwipe>
+              <Router />
+            </BackSwipe>
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו
                 בקנבס. חייב להיות **לפני** שכבת ההתחברות, שאחרת הוא

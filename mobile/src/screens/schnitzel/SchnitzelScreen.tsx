@@ -3,6 +3,7 @@ import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { Confetti } from '../../components/Confetti';
 import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
@@ -232,8 +233,6 @@ export function SchnitzelScreen() {
 
         note={saleGate.note}
 
-        done={saleGate.done}
-
         busy={saleGate.busy}
 
         err={saleGate.err}
@@ -243,6 +242,9 @@ export function SchnitzelScreen() {
         onClose={saleGate.close}
 
       />
+
+      {/* ⚠ קונפטי במקום חלונית ״נרשמת״ · בקשה של שקד */}
+      {saleGate.celebrate && <Confetti onDone={saleGate.endCelebrate} />}
 
 
       <FulfillmentFlow

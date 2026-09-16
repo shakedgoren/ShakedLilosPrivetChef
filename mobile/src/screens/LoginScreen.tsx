@@ -24,6 +24,7 @@ import { Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
 import { User } from '../icons';
 import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
+import { maskPhone, normalizePhone } from '../lib/phone';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
 import { iconOrbShadow } from '../theme/glass';
@@ -96,6 +97,7 @@ function Field({
   onPress,
   showPass,
   onEye,
+  onBlur,
 }: {
   label: string;
   value: string;
@@ -110,6 +112,7 @@ function Field({
   onPress?: () => void;
   showPass: boolean;
   onEye: () => void;
+  onBlur?: () => void;
 }) {
   return (
     <View style={s.fieldBlock}>
@@ -118,6 +121,7 @@ function Field({
         <TextInput
           value={value}
           onChangeText={onChange}
+          onBlur={onBlur}
           editable={!locked && !onPress}
           placeholder={placeholder}
           placeholderTextColor="#B3ABBD"
@@ -183,6 +187,14 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       alive = false;
     };
   }, []);
+
+  /**
+   * ⚠ **הטלפון מתוקן לפורמט אחד** · בקשה של שקד (16 בספטמבר 2026).
+   * המסכה רצה בכל תו ורק מכניסה מקף; הנרמול המלא — קידומת ‎+972
+   * ואפס חסר — רץ כשיוצאים מהשדה, כדי לא להזיז ספרות תוך כדי הקלדה.
+   */
+  const onPhone = (v: string) => setPhone(maskPhone(v));
+  const onPhoneDone = () => setPhone((v) => normalizePhone(v));
 
   const isUp = step === 'up1' || step === 'up2' || step === 'up3';
   const fail = (e: unknown, fallback = COPY.net) =>
@@ -302,7 +314,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   if (step === 'in') {
     body = (
       <>
-        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="טלפון" value={phone} onChange={onPhone} onBlur={onPhoneDone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field
           label="סיסמה"
           value={pass}
@@ -329,11 +341,17 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           <S k="faceId" size={40} />
         </View>
         <Text style={s.askTitle}>{T.faceAsk}</Text>
-        <Pressable onPress={() => onArm(true)} style={s.cta}>
+        {/* ⚠ **רחב על פני כל הרוחב** · שקד ביקשה (16 בספטמבר 2026)
+            להרחיב את ״כן להגדיר״. המכל ממורכז, ולכן הכפתור התכווץ
+            לרוחב הכיתוב בלבד. */}
+        <Pressable onPress={() => onArm(true)} style={[s.cta, s.askCta]}>
           <S k="check" size={18} color="#FFFFFF" />
           <Text style={s.ctaText}>{T.faceYes}</Text>
         </Pressable>
-        <Pressable onPress={() => onArm(false)} style={s.ghost}>
+        {/* ⚠ **בלי מסגרת** · שקד ביקשה ש״לא עכשיו״ יהיה ״פשוט כתוב
+            וניתן ללחיצה״. הוסרו הרקע הלבן והמסגרת. האייקון נשאר —
+            היא ביקשה אייקונים ליד כן ולא, וזו בקשה קודמת שלה. */}
+        <Pressable onPress={() => onArm(false)} style={s.askGhost}>
           <S k="clock" size={17} color="#6E6480" />
           <Text style={s.ghostText}>{T.faceNo}</Text>
         </Pressable>
@@ -344,7 +362,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       <>
         <Dots at={0} />
         <Text style={s.stepTitle}>{T.verifyTitle}</Text>
-        <Field label="טלפון" value={phone} onChange={setPhone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="טלפון" value={phone} onChange={onPhone} onBlur={onPhoneDone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <View style={s.waRow}>
           <View style={s.waPill}>
             <WhatsApp size={13} color="#127A3E" strokeWidth={1.8} />
@@ -627,6 +645,16 @@ const s = StyleSheet.create({
   boxShadow: iconOrbShadow('212,175,55'),
   },
   askTitle: { fontSize: 16, fontWeight: '700', color: surface.ink, textAlign: 'center' },
+  /* הצעת זיהוי הפנים · הכפתור על כל הרוחב, והסירוב בלי מסגרת */
+  askCta: { alignSelf: 'stretch', paddingHorizontal: 24 },
+  askGhost: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
 
   genders: { flexDirection: 'row', gap: 8, marginBottom: 6 },
   gender: {

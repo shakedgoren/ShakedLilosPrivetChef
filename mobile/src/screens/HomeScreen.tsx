@@ -16,8 +16,11 @@ import { SaleAlert } from '../components/SaleAlert';
 import { apiEnabled } from '../api/config';
 import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
 
-/** הכיתוב על כפתור הכניסה · שקד ביקשה את הנוסח הזה */
-const CTA_LABEL = 'להתחברות והזמנה';
+/**
+ * הכיתוב על כפתור הכניסה · שקד ביקשה את הנוסח הזה.
+ * ⚠ **היה ״להתחברות והזמנה״** · קוצר ל״להתחברות״ לבקשתה, 16.9.2026.
+ */
+const CTA_LABEL = 'להתחברות';
 
 /**
  * המכירה הקרובה · הכיתוב מוטבע בקנבס (`Main.dc.html`, שורה 57).

@@ -20,8 +20,13 @@ export function useSaleGate(category: string) {
   const [closed, setClosed] = useState<{ note: string } | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
   const [err, setErr] = useState('');
+  /**
+   * ⚠ **קונפטי במקום חלונית שנייה** · שקד ביקשה (16 בספטמבר 2026)
+   * שהרשמה לתזכורת ״לא תקפיץ עוד פופאפ עם נרשמת״ אלא תעשה קונפטי.
+   * לכן ההצלחה **סוגרת** את חלונית הפעמון ומדליקה את החגיגה.
+   */
+  const [celebrate, setCelebrate] = useState(false);
 
   /**
    * מריץ את `onOpen` אם אפשר להזמין, ואחרת פותח את חלונית הפעמון.
@@ -42,7 +47,6 @@ export function useSaleGate(category: string) {
           onOpen();
           return;
         }
-        setDone(false);
         setClosed({ note: day.message });
       } catch {
         /* כשל רשת · לא חוסמים את הלקוחה בגלל בדיקה שנכשלה */
@@ -59,7 +63,8 @@ export function useSaleGate(category: string) {
     setErr('');
     try {
       await requestSaleReminder(category);
-      setDone(true);
+      setClosed(null);
+      setCelebrate(true);
     } catch (e) {
       setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
     } finally {
@@ -76,8 +81,10 @@ export function useSaleGate(category: string) {
     close: useCallback(() => setClosed(null), []),
     remind,
     busy,
-    done,
     err,
+    /** הקונפטי רץ · מוצג במסך שמארח את השער */
+    celebrate,
+    endCelebrate: useCallback(() => setCelebrate(false), []),
   };
 }
 

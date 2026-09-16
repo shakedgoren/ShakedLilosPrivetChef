@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
+import { Confetti } from '../../components/Confetti';
 import { OrderTracker } from '../../components/OrderTracker';
 import { StepIn } from '../../components/StepIn';
 import { apiEnabled } from '../../api/config';
@@ -110,6 +111,9 @@ export function MyOrdersScreen() {
     setRemindErr('');
     try {
       await requestSaleReminder(closed.order.category);
+      /* ⚠ סוגר את החלונית ומריץ קונפטי · שקד ביקשה שלא תקפוץ
+         חלונית שנייה עם ״נרשמת״ (16 בספטמבר 2026) */
+      setClosed(null);
       setRemindDone(true);
     } catch (e) {
       setRemindErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
@@ -174,12 +178,14 @@ export function MyOrdersScreen() {
         categoryName={closed ? categoryName(closed.order.category) : ''}
         accent={hues[categoryKey(closed?.order.category ?? 'cous')]}
         note={closed?.note}
-        done={remindDone}
         busy={remindBusy}
         err={remindErr}
         onRemind={() => void onRemind()}
         onClose={() => setClosed(null)}
       />
+
+      {/* ⚠ קונפטי במקום חלונית ״נרשמת״ · בקשה של שקד */}
+      {remindDone && <Confetti onDone={() => setRemindDone(false)} />}
     </View>
   );
 }

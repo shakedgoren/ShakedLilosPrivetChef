@@ -30,8 +30,6 @@ type Props = {
   accent: { hue: string; deep: string; rgb: string };
   /** ההודעה מהשרת · ״אין יום מכירה בתאריך הזה״ וכדומה */
   note?: string;
-  /** נשמר כבר · החלונית מודה ומציעה לסגור */
-  done: boolean;
   busy?: boolean;
   err?: string;
   onRemind: () => void;
@@ -43,7 +41,6 @@ export function SaleClosedSheet({
   categoryName,
   accent,
   note,
-  done,
   busy = false,
   err,
   onRemind,
@@ -63,34 +60,20 @@ export function SaleClosedSheet({
             <Bell size={BELL} color={accent.deep} strokeWidth={1.7} />
           </View>
 
-          <Text style={s.title}>
-            {done ? 'נרשמת לתזכורת' : 'יום המכירה עדיין לא נפתח'}
-          </Text>
-          <Text style={s.body}>
-            {done
-              ? `נעדכן אותך ברגע ש${categoryName} ייפתח להזמנות.`
-              : note || `${categoryName} עדיין לא פתוח להזמנות.`}
-          </Text>
-
-          {!done ? (
-            <Text style={s.ask}>רוצה שנזכיר לך כשהמכירה נפתחת?</Text>
-          ) : null}
+          {/* ⚠ **אין יותר מצב ״נרשמת״** · שקד ביקשה (16.9.2026) שההרשמה
+              לא תקפיץ חלונית שנייה. ההצלחה סוגרת את החלונית ומריצה
+              קונפטי במסך שמאחוריה. */}
+          <Text style={s.title}>יום המכירה עדיין לא נפתח</Text>
+          <Text style={s.body}>{note || `${categoryName} עדיין לא פתוח להזמנות.`}</Text>
+          <Text style={s.ask}>רוצה שנזכיר לך כשהמכירה נפתחת?</Text>
 
           {err ? <Text style={s.err}>{err}</Text> : null}
 
-          <ContinueButton
-            onPress={done ? onClose : onRemind}
-            accent={accent}
-            disabled={busy}
-            label={done ? 'סגירה' : 'כן, תזכירו לי'}
-            wide
-          />
+          <ContinueButton onPress={onRemind} accent={accent} disabled={busy} label="כן, תזכירו לי" wide />
 
-          {!done ? (
-            <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
-              <Text style={s.skipText}>לא תודה</Text>
-            </Pressable>
-          ) : null}
+          <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
+            <Text style={s.skipText}>לא תודה</Text>
+          </Pressable>
         </View>
       </View>
     </Modal>
