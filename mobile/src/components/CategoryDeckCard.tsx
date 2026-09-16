@@ -19,7 +19,12 @@ import type { Category } from '../data/categories';
  */
 
 /** מידות הכרטיס · העומד שהחליף את השוכב */
-export const CARD = { width: 214, height: 338, gap: 12 } as const;
+/**
+ * ⚠ **הוגדל** · שקד ביקשה (16 בספטמבר 2026) יותר נוכחות לכרטיס
+ * הראשי — במכשיר הוא נראה קטן ונשאר מקום פנוי בצדדים. היחס
+ * המקורי (‎338/214 = 1.579) נשמר, כך שהתמונה לא נמתחת.
+ */
+export const CARD = { width: 258, height: 407, gap: 12 } as const;
 
 /** התמונה לכל קטגוריה · שמות הקבצים מהטבלה של שקד */
 const PHOTO_BY_CATEGORY: Record<string, string> = {

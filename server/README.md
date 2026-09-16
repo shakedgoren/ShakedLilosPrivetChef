@@ -78,7 +78,7 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 | GET | `/health` | כולם | חי |
 | POST | `/auth/register` | | `{ who, password, name? }` · who = אימייל או טלפון |
 | POST | `/auth/login` | | `{ who, password }` |
-| POST | `/auth/forgot-password` | | `{ who }` · תמיד `{ ok: true }`. עם טלפון בחשבון נוצר קוד 6 ספרות ונשלח בוואטסאפ (אם מוגדר). עם `RESET_DEBUG=1` מוחזר גם `resetToken` |
+| POST | `/auth/forgot-password` | | `{ who }` · תמיד `{ ok: true }`. קישור איפוס נשלח למייל אם יש כתובת; קוד OTP בוואטסאפ אם יש טלפון. עם `RESET_DEBUG=1` מוחזר גם `resetToken` |
 | POST | `/auth/reset-password` | | `{ token, password }` · `token` יכול להיות קוד OTP או טוקן ארוך |
 | POST | `/auth/otp/request` | | `{ who }` · תמיד `{ ok: true }`. שולח תבנית Authentication אם יש טלפון ו-WhatsApp מוגדר. עם `RESET_DEBUG=1` מוחזר `code` |
 | POST | `/auth/otp/verify` | | `{ who, code }` · מאמת את הקוד ומחזיר `{ token, user }` כמו login |
@@ -213,7 +213,7 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
 
 #### מתי נשלח
 
-- **OTP** — `POST /auth/otp/request` וגם `POST /auth/forgot-password` כשיש טלפון בחשבון. תבנית Authentication עם copy-code (תבנית Meta עדיין חסרה). הקוד בן 6 ספרות, 10 דקות. `POST /auth/otp/verify` מחזיר סשן.
+- **OTP** — `POST /auth/otp/request` (וואטסאפ) וגם `POST /auth/forgot-password` כשיש טלפון בחשבון. קישור איפוס למייל נשלח בנפרד כשיש כתובת. תבנית Authentication עם copy-code (תבנית Meta עדיין חסרה). הקוד בן 6 ספרות, 10 דקות. `POST /auth/otp/verify` מחזיר סשן.
 - **אישור הזמנה** — אחרי `POST /orders` (לקוחה, כולל שכפול) ואחרי `POST /admin/orders`. איסוף מול משלוח לפי `ship`.
 - **מוכנה לאיסוף** — `PATCH /admin/orders/:id/status` ל-`מוכנה` (או `ready`) בהזמנת איסוף.
 - **המשלוח הגיע** — אותו PATCH ל-`נמסרה` (או `delivered`) בהזמנת משלוח.

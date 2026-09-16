@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Image, Modal, Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Close } from '../icons';
 import { Photo } from './Photo';
 import { photo } from '../data/photos';
@@ -61,6 +62,28 @@ const WEB_BLUR: ViewStyle =
     ? ({ backdropFilter: 'blur(7px) saturate(120%)' } as ViewStyle)
     : {};
 
+/**
+ * מסך הטשטוש · `backdrop-filter` קיים רק בדפדפן.
+ *
+ * ⚠ **באפליקציה הרקע נשאר חד** · שקד דיווחה (16 בספטמבר 2026)
+ * שכשלוחצים על תמונה בקרוסלה ״כל המאחורה לא נהיה מטושטש״.
+ * `BlurView` של `expo-blur` עושה את זה ילידית (כלולה ב-Expo Go),
+ * ומעליה נשאר אותו מסך כהה של הקנבס כדי שהגוון יישאר זהה
+ * בשתי הפלטפורמות.
+ */
+function Scrim({ onPress }: { onPress: () => void }) {
+  if (Platform.OS === 'web') {
+    return <Pressable style={[s.scrim, WEB_BLUR]} onPress={onPress} />;
+  }
+  return (
+    <>
+      {/* ⚠ 7px בקנבס · `intensity` של expo-blur הוא 0–100 */}
+      <BlurView intensity={28} tint="dark" style={s.scrimFill} pointerEvents="none" />
+      <Pressable style={s.scrim} onPress={onPress} />
+    </>
+  );
+}
+
 type Shot = { name: string; title?: string };
 type Ctx = { open: (name: string, title?: string) => void };
 
@@ -90,7 +113,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
             ולכן הטשטוש נבנה בהדרגה. בלי האנימציה הכל מופיע בפריים אחד. */}
         {shot && (
           <Modal visible transparent animationType="none" onRequestClose={close}>
-            <Pressable style={[s.scrim, WEB_BLUR]} onPress={close} />
+            <Scrim onPress={close} />
             <View style={s.stage} pointerEvents="box-none">
               {/* שם התמונה · מעל התמונה במרכז, כמו `shotName` בקנבס.
                   מוצג רק כשיש שם ב-`photoTitles.ts`. */}
@@ -127,6 +150,8 @@ export function useLightboxOpen(): boolean {
 
 const s = StyleSheet.create({
   scrim: { position: 'absolute', inset: 0, backgroundColor: SCRIM },
+  /* שכבת הטשטוש הילידית · מתחת למסך הכהה */
+  scrimFill: { position: 'absolute', inset: 0 },
   stage: {
     position: 'absolute',
     inset: 0,

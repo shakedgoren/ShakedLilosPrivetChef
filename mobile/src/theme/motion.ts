@@ -10,7 +10,14 @@ import { AccessibilityInfo, Easing } from 'react-native';
  */
 
 /** כניסה במדרגות · 320ms לשורה, הפרש 60ms, עלייה 10px */
-export const STEP_IN = { ms: 320, stagger: 60, rise: 10, maxSteps: 8 } as const;
+/**
+ * ⚠ **הואטה והודגשה** · שקד ביקשה (16 בספטמבר 2026): ״זה עולה
+ * נורא מהר... שיעלה יותר באיטיות אחד אחרי השני״. השורה עצמה
+ * 480ms במקום 320, ההפרש בין שורות 100ms במקום 60, והעלייה 16
+ * פיקסלים במקום 10 — כך שכל שורה נראית עולה בנפרד ולא כולן יחד.
+ * עם התקרה של שמונה שורות, האחרונה מסיימת אחרי 1.28 שניות.
+ */
+export const STEP_IN = { ms: 480, stagger: 100, rise: 16, maxSteps: 8 } as const;
 
 /** סה״כ שמתגלגל · 400ms */
 export const ROLL = { ms: 400 } as const;
