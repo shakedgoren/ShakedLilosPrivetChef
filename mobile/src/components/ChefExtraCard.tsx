@@ -1,8 +1,8 @@
 import React from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Photo } from './Photo';
-import { Check } from '../icons';
 import { extraPhoto } from '../data/extraPhotos';
 import { hues } from '../theme/tokens';
 
@@ -108,7 +108,7 @@ export function ChefExtraCard({ name, desc, badge, on, one = false, onPress }: P
 
       {on ? (
         <View style={s.tick}>
-          <Check size={TICK_GLYPH} color="#FFFFFF" strokeWidth={TICK_STROKE} />
+          <S k="check" size={TICK_GLYPH} color="#FFFFFF" />
         </View>
       ) : null}
     </Pressable>

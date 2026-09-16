@@ -30,7 +30,7 @@ import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
 import { Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
-import { Check, Clock, User } from '../icons';
+import { User } from '../icons';
 import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
@@ -337,11 +337,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         </View>
         <Text style={s.askTitle}>{T.faceAsk}</Text>
         <Pressable onPress={() => onArm(true)} style={s.cta}>
-          <Check size={18} color="#FFFFFF" strokeWidth={2.6} />
+          <S k="check" size={18} color="#FFFFFF" />
           <Text style={s.ctaText}>{T.faceYes}</Text>
         </Pressable>
         <Pressable onPress={() => onArm(false)} style={s.ghost}>
-          <Clock size={17} color="#6E6480" strokeWidth={1.8} />
+          <S k="clock" size={17} color="#6E6480" />
           <Text style={s.ghostText}>{T.faceNo}</Text>
         </Pressable>
       </View>
@@ -425,7 +425,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           style={[s.terms, !read && s.termsLocked]}
         >
           <View style={[s.box, terms && s.boxOn]}>
-            {terms ? <Check size={12} color="#FFFFFF" strokeWidth={3} /> : null}
+            {terms ? <S k="check" size={12} color="#FFFFFF" /> : null}
           </View>
           <View style={s.grow}>
             <Text style={s.termsText}>

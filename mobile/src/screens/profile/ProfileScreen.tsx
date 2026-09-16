@@ -14,7 +14,6 @@ import { PLACES } from '../../data/profile';
 const MAX_SUGGESTIONS = 4;
 import { useNav } from '../../navigation/store';
 import { a, radius, space, surface } from '../../theme/tokens';
-import { ChevronLeft, Close } from '../../icons';
 import { S } from '../../components/Sym';
 
 const IDLE_BD = 'rgba(130,112,162,0.18)';
@@ -376,7 +375,7 @@ export function ProfileScreen() {
               <Text style={s.passTitle}>שינוי סיסמה</Text>
               <Text style={s.passSub}>מומלץ להחליף מדי כמה חודשים</Text>
             </View>
-            <ChevronLeft size={13} color="#C1BBCB" strokeWidth={2.4} />
+            <S k="chevronLeft" size={13} color="#C1BBCB" />
           </Pressable>
         </View>
 
@@ -405,7 +404,7 @@ export function ProfileScreen() {
                 <Text style={s.passRule}>לפחות {PASS_MIN} תווים</Text>
               </View>
               <Pressable onPress={() => setPassOpen(false)} style={s.close}>
-                <Close size={13} color="#6E6478" strokeWidth={2.6} />
+                <S k="close" size={13} color="#6E6478" />
               </Pressable>
             </View>
             <Field

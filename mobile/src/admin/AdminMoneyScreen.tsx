@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { S, SymBoard, SymFileText, SymPackage } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import {
@@ -15,7 +16,7 @@ import {
 } from '../data/adminMoney';
 import { AdminShell } from './ui/AdminShell';
 import { MoneyWave, type WavePoint } from './money/MoneyWave';
-import { Bag, BarChart, Board, Bowl, BoxMeal, Camera, Cart, ChefHat, FileText, Package, PayCash, SchnitzelDish, Truck } from '../icons';
+import { Bag, Bowl, BoxMeal, Camera, Cart, ChefHat, PayCash, SchnitzelDish, Truck } from '../icons';
 import { Chip } from './ui/Chip';
 import { apiEnabled } from '../api/config';
 import { adminMoney } from '../api/admin';
@@ -43,9 +44,9 @@ const CAT_ICON: Record<string, typeof Bowl> = {
  */
 const EXP_LOOK: Record<string, { Icon: typeof Bowl; hue: string; deep: string }> = {
   'חומרי גלם': { Icon: Bag, hue: '#C98A5B', deep: '#A65E2A' },
-  'אריזות וכלים': { Icon: Package, hue: '#8E6FD0', deep: '#43307A' },
+  'אריזות וכלים': { Icon: SymPackage, hue: '#8E6FD0', deep: '#43307A' },
   'דלק ומשלוחים': { Icon: Truck, hue: '#8FBFD8', deep: '#2B4A6E' },
-  'ציוד ותחזוקה': { Icon: Board, hue: '#9FC9AE', deep: '#2C5A3E' },
+  'ציוד ותחזוקה': { Icon: SymBoard, hue: '#9FC9AE', deep: '#2C5A3E' },
   'שיווק': { Icon: Camera, hue: '#E8B48F', deep: '#7A3D18' },
 };
 
@@ -129,7 +130,7 @@ export function AdminMoneyScreen() {
       title={MONEY_TITLE}
       sub={view.label}
       actions={[
-        { label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: FileText },
+        { label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: SymFileText },
         { label: 'פנקס ההכנסות', onPress: () => go('adminIncome'), icon: PayCash },
       ]}
     >
@@ -173,7 +174,7 @@ export function AdminMoneyScreen() {
           </Pressable>
           <View style={s.tile}>
             <View style={s.tileHead}>
-              <BarChart size={13} color="#4E8A64" strokeWidth={1.9} />
+              <S k="barChart" size={13} color="#4E8A64" />
               <Text style={s.tileK}>{TILE_PROFIT}</Text>
             </View>
             <Text style={[s.tileV, { color: '#4E8A64' }]}>{nf(view.profit)}</Text>

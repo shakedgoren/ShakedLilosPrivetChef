@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { EXPENSES } from '../data/adminMoney';
@@ -8,7 +9,7 @@ import { Chip } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
 import { Field } from './ui/Field';
 import { Sheet } from './ui/Sheet';
-import { Cart, Plus, Close } from '../icons';
+import { Cart, Plus } from '../icons';
 import { apiEnabled } from '../api/config';
 import { adminAddExpense, adminDeleteExpense, adminExpenses, type ExpenseRow } from '../api/admin';
 import { useNav } from '../navigation/store';
@@ -176,7 +177,7 @@ export function AdminExpensesScreen() {
                     <Text style={s.rowVal}>{`${nf(r.amount)} ₪`}</Text>
                     {/* ⚠ מחיקה בשני שלבים · הסכום נכנס לדוח הכספים */}
                     <Pressable onPress={() => setKilling(r.id)} style={s.kill} hitSlop={8}>
-                      <Close size={12} color="#A79FB2" strokeWidth={2.4} />
+                      <S k="close" size={12} color="#A79FB2" />
                     </Pressable>
                   </>
                 )}

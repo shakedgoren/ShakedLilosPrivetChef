@@ -1,11 +1,10 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { TEXT_END } from '../../theme/rtl';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import { COLS, EMPTY_LABEL, EMPTY_SUB } from '../../data/adminShopping';
 import { lineSum, nf, type ShopRow } from './useAdminShopping';
-import { Close } from '../../icons';
-
 /* רוחבי העמודות · הועתקו מהקנבס */
 const W_BOX = 18;
 const W_PRICE = 40;
@@ -92,7 +91,7 @@ export function ShopTable({ groups, onToggle, onDrop }: Props) {
               <Text style={[s.sum, s.colSum]}>{nf(lineSum(x))}</Text>
 
               <Pressable onPress={() => onDrop(x.id)} style={s.dropSlot} hitSlop={6}>
-                <Close size={12} color="#B95349" strokeWidth={2.4} />
+                <S k="close" size={12} color="#B95349" />
               </Pressable>
             </View>
           ))}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { S } from '../../components/Sym';
 import { TEXT_END } from '../../theme/rtl';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
@@ -14,7 +15,6 @@ import { Photo } from '../../components/Photo';
 import { BOX_PHOTOS } from '../../data/photos';
 import { BOXES_TITLE, INTRO_BODY, INTRO_CTA, INTRO_TITLE } from '../../data/boxesCopy';
 import { LoginGate } from '../../components/LoginGate';
-import { ChevronLeft } from '../../icons';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
@@ -143,7 +143,7 @@ export function BoxesScreen() {
                   <Text style={s.price}>{b.price}</Text>
                 </View>
                 {/* החץ הקטן בקצה השורה · 15 פיקסלים, בדיוק כמו בקנבס */}
-                  <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
+                  <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
                 </Pressable>
               </StepIn>
             ))}

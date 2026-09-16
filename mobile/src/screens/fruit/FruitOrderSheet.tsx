@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { TEXT_START } from '../../theme/rtl';
 import {
   Modal,
@@ -12,7 +13,7 @@ import {
 } from 'react-native';
 import { DateCalendar } from '../../components/DateCalendar';
 import { ContinueButton } from '../../components/ContinueButton';
-import { Bag, Close, Truck } from '../../icons';
+import { Bag, Truck } from '../../icons';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
 import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
 import { shippingFee } from './whatsappOrder';
@@ -130,7 +131,7 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
           <View style={s.head}>
             <Text style={s.title}>פרטי ההזמנה</Text>
             <Pressable onPress={onClose} style={s.close} hitSlop={8}>
-              <Close size={CLOSE_GLYPH} color="#6E6478" strokeWidth={2.6} />
+              <S k="close" size={CLOSE_GLYPH} color="#6E6478" />
             </Pressable>
           </View>
 
@@ -284,7 +285,7 @@ function AddressPopup({
           <View style={s.head}>
             <Text style={s.title}>כתובת למשלוח</Text>
             <Pressable onPress={onCancel} style={s.close} hitSlop={8}>
-              <Close size={CLOSE_GLYPH} color="#6E6478" strokeWidth={2.6} />
+              <S k="close" size={CLOSE_GLYPH} color="#6E6478" />
             </Pressable>
           </View>
 

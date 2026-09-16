@@ -1,6 +1,5 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight } from '../icons';
 import { surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import { BackButton } from './BackButton';

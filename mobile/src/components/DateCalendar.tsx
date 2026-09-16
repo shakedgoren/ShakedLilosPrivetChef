@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronLeft, ChevronRight } from '../icons';
 import { CAL_HINT, DOWS, MONTHS, dateOpen, dayKey } from '../data/calendar';
 import { IS_RTL } from '../theme/rtl';
 import { a, hues } from '../theme/tokens';
@@ -103,7 +103,7 @@ export function DateCalendar({
       {/* ⚠ `direction: ltr` בקנבס · החץ קדימה בשמאל והחץ אחורה בימין */}
       <View style={st.head}>
         <Pressable onPress={() => stepMonth(1)} style={[st.nav, { backgroundColor: NAV_BG }]} hitSlop={6}>
-          <ChevronLeft size={NAV_GLYPH} color={MARK_INK} strokeWidth={NAV_STROKE} />
+          <S k="chevronLeft" size={NAV_GLYPH} color={MARK_INK} />
         </Pressable>
         <Text style={st.month}>
           {MONTHS[m]} {y}
@@ -114,7 +114,7 @@ export function DateCalendar({
           style={[st.nav, { backgroundColor: NAV_BG }, atNow && { opacity: PAST_OPACITY }]}
           hitSlop={6}
         >
-          <ChevronRight size={NAV_GLYPH} color={MARK_INK} strokeWidth={NAV_STROKE} />
+          <S k="chevronRight" size={NAV_GLYPH} color={MARK_INK} />
         </Pressable>
       </View>
 

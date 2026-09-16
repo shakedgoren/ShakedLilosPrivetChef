@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { S, SymDownload } from '../components/Sym';
 import { TEXT_START, TEXT_END } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { surface } from '../theme/tokens';
@@ -30,7 +31,6 @@ import {
   type CostPart,
 } from '../data/adminCosts';
 import { AdminShell } from './ui/AdminShell';
-import { ChevronDown, Download } from '../icons';
 import { Chip } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
 import { Sheet } from './ui/Sheet';
@@ -192,7 +192,7 @@ export function AdminCostsScreen() {
       sub={`עדכון חודשי · ${COST_MONTHS[today.getMonth()]} ${today.getFullYear()}`}
       /* ⚠ **האייקון שהיה חסר** · בקנבס ״ייבוא״ הוא גלולה סגולה
          רכה עם חץ הורדה, ולא כפתור לבן עם מסגרת. */
-      actions={[{ label: COSTS_IMPORT, onPress: () => setImpOpen(true), icon: Download, tint: true }]}
+      actions={[{ label: COSTS_IMPORT, onPress: () => setImpOpen(true), icon: SymDownload, tint: true }]}
     >
       {due ? (
         <Pressable onPress={() => setSeen(true)} style={s.due}>
@@ -246,7 +246,7 @@ export function AdminCostsScreen() {
                   </Text>
                 </View>
                 <View style={isOpen ? s.chevOpen : undefined}>
-                  <ChevronDown size={14} color="#A79FB2" strokeWidth={2.2} />
+                  <S k="chevronDown" size={14} color="#A79FB2" />
                 </View>
               </Pressable>
               {isOpen ? (

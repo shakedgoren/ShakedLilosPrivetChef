@@ -1,9 +1,9 @@
 import React from 'react';
+import { S } from './Sym';
 import { TEXT_START } from '../theme/rtl';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
-import { Clock } from '../icons';
 import { Mail, Send } from './LoginIcons';
 
 /**
@@ -105,7 +105,7 @@ export function ForgotSheet({
       </Pressable>
 
       <View style={s.ttl}>
-        <Clock size={13} color={surface.faint} strokeWidth={1.8} />
+        <S k="clock" size={13} color={surface.faint} />
         <Text style={s.ttlText}>{sent ? `${T.forgotTtl} · נשלח` : T.forgotTtl}</Text>
       </View>
 

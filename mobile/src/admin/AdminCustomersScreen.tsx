@@ -24,7 +24,7 @@ import {
 } from '../data/adminCustomers';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
-import { Clock, PhoneCall, Plus } from '../icons';
+import { PhoneCall, Plus } from '../icons';
 import { Sheet } from './ui/Sheet';
 import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';
@@ -259,7 +259,7 @@ export function AdminCustomersScreen() {
                         accessibilityLabel={HIST_LABEL}
                         style={s.act}
                       >
-                        <Clock size={17} color="#6E6478" strokeWidth={1.9} />
+                        <S k="clock" size={17} color="#6E6478" />
                       </Pressable>
                       <Pressable
                         onPress={() => callPhone(p.phone)}

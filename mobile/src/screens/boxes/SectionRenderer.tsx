@@ -1,9 +1,9 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { TEXT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Section } from '../../data/boxes';
 import { Stepper } from '../../components/Stepper';
-import { Check } from '../../icons';
 import { a, hues, radius, space, surface } from '../../theme/tokens';
 import { sumOf, type Picks } from './useBoxesOrder';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
@@ -287,7 +287,7 @@ function Cards({ s, api }: { s: Section; api: Api }) {
             </View>
             {on ? (
               <View style={st.checkBadge}>
-                <Check size={14} color="#FFFFFF" strokeWidth={3} />
+                <S k="check" size={14} color="#FFFFFF" />
               </View>
             ) : null}
           </Pressable>

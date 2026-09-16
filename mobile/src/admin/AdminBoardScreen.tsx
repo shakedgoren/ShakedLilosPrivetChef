@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import {
@@ -24,7 +25,6 @@ import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
 import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import type { CancelNote } from './useAdminOrders';
-import { ChevronRight, Close } from '../icons';
 import Svg, { Path } from 'react-native-svg';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -237,7 +237,7 @@ export function AdminBoardScreen() {
         </View>
         <View style={s.backWrap}>
           <Pressable onPress={back} style={s.back}>
-            <ChevronRight size={19} color="#6E6478" strokeWidth={2} />
+            <S k="chevronRight" size={19} color="#6E6478" />
           </Pressable>
         </View>
       </View>
@@ -360,7 +360,7 @@ export function AdminBoardScreen() {
                       );
                     })}
                     <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
-                      <Close size={13} color="#B95349" strokeWidth={2.4} />
+                      <S k="close" size={13} color="#B95349" />
                     </Pressable>
                   </View>
                 </View>
@@ -460,7 +460,7 @@ export function AdminBoardScreen() {
                         style={[s.step, s.stepOff, s.cancelBox]}
                         hitSlop={6}
                       >
-                        <Close size={13} color="#B95349" strokeWidth={2.6} />
+                        <S k="close" size={13} color="#B95349" />
                       </Pressable>
                     </View>
                   </View>

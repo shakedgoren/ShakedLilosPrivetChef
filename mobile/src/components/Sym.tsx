@@ -150,7 +150,47 @@ export const SYM = {
   saleDays: { ios: 'calendar.and.person', other: 'event', motion: 'wiggle' },
   /* ⚠ appear אינו בגשר · קירוב */
   money: { ios: 'chart.bar.xaxis', other: 'bar_chart', motion: 'appear' },
+  /* --- הסבב השני · שקד שלחה שמות ואפקטים ב-16.9.2026 --- */
+  /* ⚠ `drawOn` אינו קיים בגשר של אקספו · התנועה לכולם כאן נכתבה ב-Animated */
+  close: { ios: 'xmark', other: 'close', motion: 'drawOn' },
+  /* ⚠ `chevron.right/left` הם **פיזיים** · שקד בחרה אותם במפורש,
+     ולא את `forward/backward` שמתהפכים לפי כיוון הפריסה. ההחלפה
+     היא אחד-לאחד מול האייקונים הקיימים, ולכן המראה לא משתנה. */
+  chevronRight: { ios: 'chevron.right', other: 'chevron_right', motion: 'drawOn' },
+  chevronLeft: { ios: 'chevron.left', other: 'chevron_left', motion: 'drawOn' },
+  chevronDown: { ios: 'chevron.down', other: 'expand_more', motion: 'drawOn' },
+  arrowLeft: { ios: 'arrow.left', other: 'arrow_back', motion: 'drawOn' },
+  image: { ios: 'camera.fill', other: 'photo_camera', motion: 'drawOn' },
+  check: { ios: 'checkmark', other: 'check', motion: 'drawOn' },
+  clock: { ios: 'clock', other: 'schedule', motion: 'drawOn' },
+  barChart: { ios: 'chart.bar.xaxis', other: 'bar_chart', motion: 'drawOn' },
+  board: { ios: 'calendar.and.person', other: 'event', motion: 'wiggle' },
+  refresh: { ios: 'arrow.trianglehead.2.counterclockwise.rotate.90', other: 'refresh', motion: 'drawOn' },
+  map: { ios: 'map.fill', other: 'map', motion: 'drawOn' },
+  download: { ios: 'tray.and.arrow.down', other: 'download', motion: 'drawOn' },
+  fileText: { ios: 'text.document.fill', other: 'description', motion: 'drawOn' },
+  package: { ios: 'shippingbox.fill', other: 'inventory_2', motion: 'drawOn' },
 } as const satisfies Record<string, { ios: SFSymbol; other: string; motion: Motion }>;
+
+/**
+ * גרסת **רכיב** · למקומות שמעבירים אייקון כערך ולא ככתיב תגית,
+ * למשל `icon: SymDownload` בשורת הפעולות של מסכי הניהול.
+ * ⚠ נוצרים פעם אחת ברמת המודול · יצירה בתוך רינדור הייתה מייצרת
+ * טיפוס רכיב חדש בכל פעם ומפרקת את העץ.
+ */
+type IconLike = { size?: number; color?: string; strokeWidth?: number };
+const asIcon = (k: keyof typeof SYM) => {
+  const C = (p: IconLike) => <S k={k} size={p.size} color={p.color} />;
+  C.displayName = `Sym(${k})`;
+  return C;
+};
+export const SymDownload = asIcon('download');
+export const SymPackage = asIcon('package');
+export const SymFileText = asIcon('fileText');
+export const SymClock = asIcon('clock');
+export const SymRefresh = asIcon('refresh');
+export const SymBoard = asIcon('board');
+export const SymBarChart = asIcon('barChart');
 
 /** קיצור · <S k="home" size={22} /> */
 export function S({ k, size, color }: { k: keyof typeof SYM; size?: number; color?: string }) {

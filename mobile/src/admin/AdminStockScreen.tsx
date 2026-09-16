@@ -1,11 +1,12 @@
 import React from 'react';
+import { SymRefresh } from '../components/Sym';
 import { ScrollView, StyleSheet } from 'react-native';
 import { STOCK_SUB, STOCK_TITLE } from '../data/adminStock';
 import { AdminShell } from './ui/AdminShell';
 import { SupplyStock } from './stock/SupplyStock';
 import { AddItemSheet } from './stock/AddItemSheet';
 import { useAdminStock } from './stock/useAdminStock';
-import { Plus, Refresh } from '../icons';
+import { Plus } from '../icons';
 
 /**
  * מלאי · **לוגיסטי בלבד**.
@@ -25,7 +26,7 @@ export function AdminStockScreen() {
       /* ⚠ אייקונים ולא מילים · ״+״ להוספה ואייקון ביטול להחזרת
          פריט שנמחק בטעות. בקשה של שקד (15 בספטמבר 2026). */
       actions={[
-        { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: Refresh, off: !admin.canUndo },
+        { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: SymRefresh, off: !admin.canUndo },
         { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
       ]}
     >

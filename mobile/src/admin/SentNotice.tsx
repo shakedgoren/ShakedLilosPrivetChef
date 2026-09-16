@@ -1,6 +1,6 @@
 import React from 'react';
+import { S } from '../components/Sym';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Check } from '../icons';
 import { surface } from '../theme/tokens';
 
 /**
@@ -28,7 +28,7 @@ export function SentNotice({ who, onClose }: Props) {
       <Pressable style={s.scrim} onPress={onClose} />
       <View style={s.card} pointerEvents="box-none">
         <View style={s.disc}>
-          <Check size={28} color="#FFFFFF" strokeWidth={3} />
+          <S k="check" size={28} color="#FFFFFF" />
         </View>
         <Text style={s.title}>אישור נשלח ללקוח</Text>
         <Text style={s.body}>{`פרטי ההזמנה נשלחו ל${who} בוואטסאפ.`}</Text>

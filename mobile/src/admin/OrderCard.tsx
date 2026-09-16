@@ -1,10 +1,9 @@
 import React from 'react';
+import { S } from '../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../theme/tokens';
 import { CANCELLED, FLOW, HUES, LATE_FEE, LATE_HOURS, TONE, type AdminOrder } from '../data/adminOrders';
 import type { CancelNote } from './useAdminOrders';
-import { Close } from '../icons';
-
 type Props = {
   order: AdminOrder;
   status: string;
@@ -89,7 +88,7 @@ export function OrderCard({ order, status, isOpen, note, flow = FLOW, onToggle, 
                   </Text>
                 </Pressable>
                 <Pressable onPress={onCancel} style={s.kill} hitSlop={6}>
-                  <Close size={12} color="#B95349" strokeWidth={2.4} />
+                  <S k="close" size={12} color="#B95349" />
                 </Pressable>
               </>
             )}

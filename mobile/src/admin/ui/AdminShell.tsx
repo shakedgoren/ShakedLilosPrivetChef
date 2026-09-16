@@ -1,7 +1,8 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { radius, surface } from '../../theme/tokens';
-import { ChevronRight, type IconProps } from '../../icons';
+import { type IconProps } from '../../icons';
 import { useNav } from '../../navigation/store';
 
 export type HeaderAction = {
@@ -64,7 +65,7 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
         </View>
         <View style={s.backWrap}>
           <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
-            <ChevronRight size={16} color="#6E6478" strokeWidth={2} />
+            <S k="chevronRight" size={16} color="#6E6478" />
           </Pressable>
         </View>
         <View style={s.actions}>

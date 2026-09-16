@@ -1,11 +1,10 @@
 import React from 'react';
+import { S } from '../../components/Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { surface } from '../../theme/tokens';
 import { CATS, DOWS, LEGEND, MONTHS, type DayRecord } from '../../data/adminDays';
 import { dayKey } from './useAdminDays';
 import { LTR_ROW } from '../ui/ltrRow';
-import { ChevronLeft, ChevronRight } from '../../icons';
-
 const CELL_GAP = 4;
 const PLUM = '#43307A';
 
@@ -57,11 +56,11 @@ export function MonthGrid({ year, month, selected, days, onStep, onSelect }: Pro
     <View>
       <View style={s.nav}>
         <Pressable onPress={() => onStep(1)} style={s.arrow} hitSlop={6}>
-          <ChevronLeft size={13} color="#6E6478" strokeWidth={2.4} />
+          <S k="chevronLeft" size={13} color="#6E6478" />
         </Pressable>
         <Text style={s.month}>{`${MONTHS[month]} ${year}`}</Text>
         <Pressable onPress={() => onStep(-1)} style={s.arrow} hitSlop={6}>
-          <ChevronRight size={13} color="#6E6478" strokeWidth={2.4} />
+          <S k="chevronRight" size={13} color="#6E6478" />
         </Pressable>
       </View>
 

@@ -1,6 +1,7 @@
 import React from 'react';
+import { S } from './Sym';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Bell, Close } from '../icons';
+import { Bell } from '../icons';
 import { ContinueButton } from './ContinueButton';
 import { a, radius, space, surface } from '../theme/tokens';
 
@@ -53,7 +54,7 @@ export function SaleClosedSheet({
       <View style={s.scrim}>
         <View style={s.sheet}>
           <Pressable onPress={onClose} style={s.close} hitSlop={8}>
-            <Close size={13} color="#6E6478" strokeWidth={2.6} />
+            <S k="close" size={13} color="#6E6478" />
           </Pressable>
 
           <View style={[s.ring, { backgroundColor: a(accent.rgb, 0.12) }]}>

@@ -4,7 +4,6 @@ import { CATEGORIES } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { useNav } from '../navigation/store';
 import type { CategoryKey } from '../theme/tokens';
-import { ChevronRight } from '../icons';
 import { ContinueButton } from '../components/ContinueButton';
 import { BackButton } from '../components/BackButton';
 

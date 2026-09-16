@@ -24,7 +24,6 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
 import { ChefSectionRenderer } from './ChefSectionRenderer';
-import { ChevronRight } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
 import { BackButton } from '../../components/BackButton';

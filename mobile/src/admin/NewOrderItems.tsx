@@ -8,7 +8,7 @@ import { surface } from '../theme/tokens';
 import { HUES, MENU, ROLL, SCH_ROLLS } from '../data/adminOrders';
 import { FieldLabel } from './ui/Field';
 import type { NewOrderDraft } from './orderMath';
-import { Close, Minus, Plus } from '../icons';
+import { Minus, Plus } from '../icons';
 
 const SCHN = HUES.schn;
 
@@ -80,7 +80,7 @@ export function RollPicker({ draft, onAdd, onEdit, onDrop }: RollsProps) {
           </Pressable>
           <Text style={s.rollPrice}>{`${ROLL[r.type].price} ₪`}</Text>
           <Pressable onPress={() => onDrop(i)} hitSlop={8}>
-            <Close size={12} color="#B95349" strokeWidth={2.4} />
+            <S k="close" size={12} color="#B95349" />
           </Pressable>
         </View>
       ))}

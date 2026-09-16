@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';
-import { ChevronLeft, ChevronRight } from '../icons';
-
 /**
  * מפות ההגעה לחנייה · הכתובת בגדול, הערת הוויז מתחתיה,
  * וארבע המפות עם כותרת הכיוון על התמונה מימין למעלה.
@@ -39,10 +38,10 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
             ⚠ הכיוון החוצה · ימינה בימין ושמאלה בשמאל, כפי ששקד
             ביקשה גם בקרוסלת פינת השף. */}
         <Pressable onPress={() => step(-1)} style={[s.arrow, s.arrowRight]} hitSlop={6}>
-          <ChevronRight size={ARROW_GLYPH} color={ink} strokeWidth={ARROW_STROKE} />
+          <S k="chevronRight" size={ARROW_GLYPH} color={ink} />
         </Pressable>
         <Pressable onPress={() => step(1)} style={[s.arrow, s.arrowLeft]} hitSlop={6}>
-          <ChevronLeft size={ARROW_GLYPH} color={ink} strokeWidth={ARROW_STROKE} />
+          <S k="chevronLeft" size={ARROW_GLYPH} color={ink} />
         </Pressable>
       </View>
 

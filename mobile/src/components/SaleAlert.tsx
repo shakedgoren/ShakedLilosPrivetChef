@@ -1,6 +1,5 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Close } from '../icons';
 import { S } from './Sym';
 import { BellSwing } from './BellSwing';
 import { a, hues, radius, space, surface, type CategoryKey } from '../theme/tokens';
@@ -53,7 +52,7 @@ export function SaleAlert({ category, onOpen, onDismiss }: Props) {
       {/* ⚠ `stopPropagation` דרך `onPress` נפרד · בלי זה סגירת
           ההתראה הייתה גם פותחת את הקטגוריה */}
       <Pressable onPress={onDismiss} hitSlop={10} style={s.close}>
-        <Close size={CLOSE} color={surface.faint} strokeWidth={2.6} />
+        <S k="close" size={CLOSE} color={surface.faint} />
       </Pressable>
     </Pressable>
   );

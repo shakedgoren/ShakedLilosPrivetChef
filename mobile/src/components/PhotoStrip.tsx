@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { S } from './Sym';
 import {
   Pressable,
   ScrollView,
@@ -8,7 +9,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Photo } from './Photo';
-import { ChevronLeft, ChevronRight } from '../icons';
 import { IS_RTL } from '../theme/rtl';
 import { radius } from '../theme/tokens';
 import { PhotoCaption } from './PhotoCaption';
@@ -148,14 +148,14 @@ export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: 
             style={[s.arrow, ARROW_BLUR, s.arrowRight, { top: shotH / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
-            <ChevronRight size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
+            <S k="chevronRight" size={ARROW_GLYPH} color={ARROW_INK} />
           </Pressable>
           <Pressable
             onPress={() => jump(iRef.current + 1)}
             style={[s.arrow, ARROW_BLUR, s.arrowLeft, { top: shotH / 2 - ARROW / 2 }]}
             hitSlop={6}
           >
-            <ChevronLeft size={ARROW_GLYPH} color={ARROW_INK} strokeWidth={ARROW_STROKE} />
+            <S k="chevronLeft" size={ARROW_GLYPH} color={ARROW_INK} />
           </Pressable>
         </>
       ) : null}

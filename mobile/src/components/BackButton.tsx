@@ -1,7 +1,6 @@
 import React from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet } from 'react-native';
-import { ChevronRight } from '../icons';
-
 /**
  * חץ החזרה של המסכים הפנימיים · מרחף בפינה הימנית העליונה.
  *
@@ -32,7 +31,7 @@ type Props = {
 export function BackButton({ onPress, tint, ink = INK }: Props) {
   return (
     <Pressable onPress={onPress} style={[s.back, { backgroundColor: tint }]} hitSlop={10}>
-      <ChevronRight size={GLYPH} color={ink} strokeWidth={STROKE} />
+      <S k="chevronRight" size={GLYPH} color={ink} />
     </Pressable>
   );
 }

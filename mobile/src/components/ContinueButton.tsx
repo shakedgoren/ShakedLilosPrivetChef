@@ -1,6 +1,6 @@
 import React from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ArrowLeft } from '../icons';
 import { a, radius } from '../theme/tokens';
 
 /**
@@ -80,7 +80,7 @@ export function ContinueButton({
       <Text style={[s.label, { color: accent.deep }]}>{label}</Text>
 
       <View style={s.knob}>
-        <ArrowLeft size={ARROW} color={accent.deep} strokeWidth={2.4} />
+        <S k="arrowLeft" size={ARROW} color={accent.deep} />
       </View>
     </Pressable>
   );

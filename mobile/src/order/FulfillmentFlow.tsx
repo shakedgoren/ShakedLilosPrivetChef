@@ -12,16 +12,8 @@ import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
-import {
-  Bag,
-  ChevronLeft,
-  Close,
-  PayCash,
-  PayContactless,
-  PayPhone,
-  PayWallet,
-  Truck,
-} from '../icons';
+import { Truck } from '../icons';
+import { PayLogo } from '../components/PayLogo';
 import { OptionGrid } from '../components/OptionGrid';
 import { TILE_SHADOW } from '../theme/glass';
 import { ContinueButton } from '../components/ContinueButton';
@@ -91,7 +83,7 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
           <View style={s.head}>
             <Text style={s.title}>{titleFor(f)}</Text>
             <Pressable onPress={f.reset} hitSlop={10}>
-              <Close size={13} color="#6E6478" strokeWidth={2.6} />
+              <S k="close" size={13} color="#6E6478" />
             </Pressable>
           </View>
 
@@ -143,7 +135,7 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
           <Text style={s.optionTitle}>איסוף עצמי</Text>
           <Text style={s.optionSub}>נופר 25, יבנה · {window(pickupFrom, pickupTo)}</Text>
         </View>
-        <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
+        <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
       </Pressable>
 
       <Pressable onPress={f.wantDelivery} style={[s.option, s.optionPlain]}>
@@ -161,7 +153,7 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
             {SHIP_NEAR} ₪ בתוך יבנה · {SHIP_FAR} ₪ מחוצה לה
           </Text>
         </View>
-        <ChevronLeft size={CHEV} color={CHEV_INK} strokeWidth={CHEV_STROKE} />
+        <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
       </Pressable>
 
       {f.toast && (
@@ -239,15 +231,10 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
  * ⚠ **אינו מהקנבס** · שם כל אמצעי תשלום הוא שורה ברוחב מלא עם
  * נקודה, שם וחץ. שקד ביקשה אייקון מעל השם, שניים בשורה, ומסגרת
  * בהירה יותר.
- * ⚠ האייקונים **אינם לוגואים** של ביט, פייבוקס או אפל פיי —
- * אלה סימנים מסחריים. הם אייקוני קו ניטרליים לסוג התשלום.
+ * ⚠ **עכשיו אלה הלוגואים האמיתיים** · שקד שלחה את ארבעת הקבצים
+ * (16 בספטמבר 2026). קודם היו כאן אייקוני קו ניטרליים דווקא מפני
+ * שאלה סימני מסחר; היא ביקשה את הלוגואים עצמם. ראו `PayLogo.tsx`.
  */
-const PAY_ICON: Record<string, React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>> = {
-  'ביט': PayPhone,
-  'פייבוקס': PayWallet,
-  'אפל פיי': PayContactless,
-  'מזומן': PayCash,
-};
 
 const PAY_GLYPH = 24;
 const PAY_COLS = 2;
@@ -270,7 +257,7 @@ function PayStep({
     <View style={s.stack}>
       <OptionGrid cols={PAY_COLS} gap={9}>
         {PAYMENTS.map((p) => {
-          const Icon = PAY_ICON[p];
+          const payLogo = p;
           return (
             <Pressable
               key={p}
@@ -278,7 +265,7 @@ function PayStep({
               onPress={() => onPay(p)}
               style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
             >
-              {Icon ? <Icon size={PAY_GLYPH} color={accent.deep} strokeWidth={1.7} /> : null}
+              <PayLogo method={payLogo} size={PAY_GLYPH} />
               <Text style={s.payLabel}>{p}</Text>
             </Pressable>
           );

@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { S } from './Sym';
 import { Image, Modal, Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Close } from '../icons';
 import { Photo } from './Photo';
 import { photo } from '../data/photos';
 
@@ -129,7 +129,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
               </Pressable>
             </View>
             <Pressable onPress={close} style={s.close} hitSlop={10}>
-              <Close size={15} color="#FFFFFF" strokeWidth={2.4} />
+              <S k="close" size={15} color="#FFFFFF" />
             </Pressable>
           </Modal>
         )}

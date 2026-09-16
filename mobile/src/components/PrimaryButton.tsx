@@ -1,4 +1,5 @@
 import React from 'react';
+import { S } from './Sym';
 import {
   AccessibilityInfo,
   Animated,
@@ -19,8 +20,6 @@ import {
   CTA_STOPS,
 } from '../theme/glass';
 import { a, radius, stopOf } from '../theme/tokens';
-import { ArrowLeft } from '../icons';
-
 /**
  * הכפתור הסגול הראשי · הגרדיאנט, ערימת הצללים ועיגול החץ
  * מגיעים אחד לאחד מכפתור ״מתחילים את המסע״ ב-Guest.dc.html.
@@ -237,7 +236,7 @@ export function PrimaryButton({ label, onPress }: Props) {
         <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>
 
         <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
-          <ArrowLeft size={ARROW} />
+          <S k="arrowLeft" size={ARROW} />
         </Animated.View>
       </View>
     </View>
