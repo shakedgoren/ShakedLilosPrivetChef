@@ -65,6 +65,23 @@ const BREATH = 0.07;
 /** רזולוציית הנתיב · 132 נקודות נראה חלק ולא עולה כלום, כי זה חד-פעמי */
 const STEPS = 132;
 
+/**
+ * ⚠ **עודף בד מסביב למסך · 17 בספטמבר 2026** · שקד דיווחה שכשהכתמים
+ * זזים ״זה נראה כאילו הדף נחתך״, והציעה בדיוק את הפתרון הזה:
+ * שהרקע יהיה מקובע ורק הכתמים יזוזו.
+ *
+ * הסיבה: כל שכבה ציירה `Svg` **בדיוק בגודל המסך** ואז הזיזה
+ * והקטינה אותו. ברגע שהיא נעה 26 פיקסלים או מתכווצת ב-7%, הבד
+ * עצמו יוצא מהמסגרת — ובקצה נחשף פס ריק.
+ *
+ * עכשיו הבד גדול מהמסך מכל צד, והמסגרת חותכת אותו. התנועה
+ * מתרחשת **בתוך** עודף הבד ולכן לעולם אינה מגלה קצה.
+ *
+ * הערך מכסה את שני המקורות: מסלול (26 פיקסלים) והתכווצות של 7%
+ * ממסך גבוה.
+ */
+const BLEED = 72;
+
 /** נתיב סגור של כתם · r(θ) = R·(1 + Σ aᵢ·sin(kᵢθ + φᵢ)) */
 function blobPath(cx: number, cy: number, R: number, harm: Harm[]): string {
   let d = '';
@@ -128,14 +145,15 @@ function LayerView({ layer, w, h }: { layer: Layer; w: number; h: number }) {
       };
 
   const side = Math.min(w, h);
-  const cx = layer.cx * w;
-  const cy = layer.cy * h;
+  /* ⚠ הכתם ממוקם ביחס למסך, והבד מוזז כדי לפצות · ראו `BLEED` */
+  const cx = layer.cx * w + BLEED;
+  const cy = layer.cy * h + BLEED;
   const R = layer.r * side;
   const id = `g${layer.key}`;
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, style, NO_TOUCH]}>
-      <Svg width={w} height={h}>
+    <Animated.View style={[s.canvas, style, NO_TOUCH]}>
+      <Svg width={w + BLEED * 2} height={h + BLEED * 2}>
         <Defs>
           {GLOW_PASSES.map((g, i) => (
             <Filter key={i} id={`${id}${i}`} x="-60%" y="-60%" width="220%" height="220%">
@@ -179,4 +197,12 @@ export function BlobField() {
 const s = StyleSheet.create({
   /* ⚠ `overflow: hidden` · הכתמים יושבים חלקית מחוץ למסך בכוונה */
   field: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), overflow: 'hidden', backgroundColor: '#FFFFFF' },
+  /* ⚠ הבד גדול מהמסך מכל צד · ראו `BLEED` */
+  canvas: {
+    position: 'absolute',
+    top: -BLEED,
+    left: -BLEED,
+    right: -BLEED,
+    bottom: -BLEED,
+  },
 });

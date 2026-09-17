@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { Appear } from '../components/Appear';
 import { Masthead } from '../components/Masthead';
 import { CategoryCarousel } from '../components/CategoryCarousel';
 import { CategoryRail } from '../components/CategoryRail';
@@ -77,7 +78,12 @@ export function HomeScreen() {
       contentContainerStyle={[s.content, { paddingBottom: loggedIn ? HOME_PAD_NAV : 0 }]}
       showsVerticalScrollIndicator={false}
     >
-      <Masthead />
+      {/* ⚠ **כניסה מדורגת · בקשת שקד (17 בספטמבר 2026)** · ״כל
+          האובייקטים מופיעים על המסך אחד אחד״. רץ פעם אחת בפתיחת
+          האפליקציה בלבד · ראו `Appear`. */}
+      <Appear index={0}>
+        <Masthead />
+      </Appear>
 
       {/* ההתראות · ״המכירה נפתחה״ למי שביקשה שנזכיר */}
       {alerts.map((n) => (
@@ -92,21 +98,31 @@ export function HomeScreen() {
         />
       ))}
 
-      {loggedIn ? <SaleDayRow onOpen={(key) => go(key as Screen)} /> : null}
+      {loggedIn ? (
+        <Appear index={1}>
+          <SaleDayRow onOpen={(key) => go(key as Screen)} />
+        </Appear>
+      ) : null}
 
-      <CategoryCarousel
-        items={CATEGORIES}
-        active={active}
-        onActiveChange={setActive}
-        onOpen={(key) => go(key as Screen)}
-      />
+      <Appear index={2}>
+        <CategoryCarousel
+          items={CATEGORIES}
+          active={active}
+          onActiveChange={setActive}
+          onOpen={(key) => go(key as Screen)}
+        />
+      </Appear>
 
-      <CategoryRail items={CATEGORIES} active={active} onActiveChange={setActive} />
+      <Appear index={3}>
+        <CategoryRail items={CATEGORIES} active={active} onActiveChange={setActive} />
+      </Appear>
 
       {!loggedIn && (
-        <View style={s.cta}>
-          <PrimaryButton label={CTA_LABEL} onPress={() => go('login')} />
-        </View>
+        <Appear index={4}>
+          <View style={s.cta}>
+            <PrimaryButton label={CTA_LABEL} onPress={() => go('login')} />
+          </View>
+        </Appear>
       )}
 
       {/* ⚠ לפני התחברות גוש הכפתור מפריד בין הקטגוריות לרצועה.
@@ -114,7 +130,9 @@ export function HomeScreen() {
       {loggedIn && <View style={s.railGap} />}
 
       {/* רצועת התמונות · בקנבס היא יושבת מתחת לכפתורים */}
-      <PhotoReel />
+      <Appear index={5}>
+        <PhotoReel />
+      </Appear>
     </ScrollView>
   );
 }

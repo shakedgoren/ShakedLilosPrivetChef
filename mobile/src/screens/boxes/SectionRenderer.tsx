@@ -1,4 +1,5 @@
 import React from 'react';
+import { BlurView } from 'expo-blur';
 import { S } from '../../components/Sym';
 import { INPUT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -271,6 +272,12 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                   ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
                   ב-SVG מתחת לטקסט. */}
               <View style={[st.footFill, NO_TOUCH]}>
+                {/* ⚠ הטשטוש מתחת לגרדיאנט · ראו `FADE_BLUR` */}
+                <BlurView
+                  intensity={FADE_BLUR}
+                  tint="light"
+                  style={StyleSheet.absoluteFill}
+                />
                 <Svg width="100%" height={FADE_H}>
                   <Defs>
                     <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">
@@ -404,8 +411,16 @@ const ROW_GAP = 8;
 /** רוחב מרבי לסעיף narrow · 272 בקנבס */
 const NARROW = 272;
 
-/* כרטיס אירוע · 208 בקנבס, מסגרת 2 */
-const CARD_H = 208;
+/**
+ * כרטיס אירוע · 208 בקנבס, מסגרת 2.
+ *
+ * ⚠ **הוגבה · 17 בספטמבר 2026** · בקשה של שקד: ״צריך לעשות את
+ * הכרטיסיות יותר גבוהות כדי שהתמונה לא תיחתך״. התמונה ריבועית
+ * בראש הכרטיס (כרוחב התא, בערך 168), והכף תפסה ממנה כ-90 —
+ * כלומר כשני חמישים מהתמונה נעלמו מתחת לירוק. בגובה הזה הכף
+ * נוגעת רק בשוליה התחתונים.
+ */
+const CARD_H = 252;
 const CARD_BORDER = 2;
 /**
  * ⚠ הריפוד העליון של הכף · 26 בקנבס, וצומצם ל-12 לבקשת שקד,
@@ -427,7 +442,14 @@ const FOOT_RGB = 'rgb(198,228,211)';
  * קבוע **מעליה**.
  */
 const FOOT_FILL = 'rgba(198,228,211,0.96)';
-const FADE_H = 28;
+/**
+ * ⚠ **רצועת המעבר · הוגדלה וקיבלה טשטוש ב-17 בספטמבר 2026** ·
+ * בקשה של שקד: ״להוסיף טיפה אפקט של טשטוש בין התמונה לבין הפס
+ * הירוק״. הרצועה מטשטשת את התמונה שמאחוריה, והגרדיאנט מונח מעליה.
+ */
+const FADE_H = 36;
+/** ⚠ עדין בכוונה · ״טיפה״, לא מסך חלבי */
+const FADE_BLUR = 16;
 /** עצירות רצועת המעבר בלבד · מלמטה (אטום) למעלה (שקוף) */
 const FOOT_STOPS: [number, number][] = [
   [0, 0.96],

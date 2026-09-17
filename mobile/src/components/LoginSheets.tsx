@@ -26,13 +26,28 @@ const DEEP = '#43307A';
  * ⚠ `padding` ב-iOS ו-`height` באנדרואיד · זו ההתנהגות הנכונה
  * לכל פלטפורמה, ו-`behavior` יחיד שובר את השנייה.
  */
-function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+function Sheet({
+  children,
+  onClose,
+  raised = false,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+  /**
+   * נפתחת באמצע המסך ולא בתחתיתו.
+   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״הכרטיסייה חתוכה מלמטה
+   * ואני לא אוהבת שזה נפתח למטה ואז עולה — שייפתח כבר אוטומטית
+   * במעלה״. יריעה נמוכה נפתחת מתחת למקלדת ואז מזנקת מעליה; מהאמצע
+   * היא פשוט שם מלכתחילה.
+   */
+  raised?: boolean;
+}) {
   return (
-    <View style={s.layer}>
+    <View style={[s.layer, raised && s.layerMid]}>
       <Pressable style={s.scrim} onPress={onClose} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={s.sheet}>
-          <View style={s.grab} />
+        <View style={[s.sheet, raised && s.sheetMid]}>
+          {raised ? null : <View style={s.grab} />}
           {children}
         </View>
       </KeyboardAvoidingView>
@@ -94,7 +109,8 @@ export function ForgotSheet({
   busy: boolean;
 }) {
   return (
-    <Sheet onClose={onClose}>
+    /* ⚠ נפתחת באמצע · ראו `raised` */
+    <Sheet onClose={onClose} raised>
       <Text style={s.title}>{T.forgotTitle}</Text>
       <Text style={s.sub}>{T.forgotBody}</Text>
 
@@ -132,6 +148,8 @@ export function ForgotSheet({
 
 const s = StyleSheet.create({
   layer: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), zIndex: 20, justifyContent: 'flex-end' },
+  /* ⚠ באמצע · ראו `raised` */
+  layerMid: { justifyContent: 'center', paddingHorizontal: 16 },
   scrim: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), backgroundColor: 'rgba(36,28,48,0.34)' },
   sheet: {
     maxHeight: '78%',
@@ -143,6 +161,8 @@ const s = StyleSheet.create({
     paddingBottom: 22,
     boxShadow: '0 -20px 50px -24px rgba(60,44,96,0.5)',
   } as never,
+  /* ⚠ באמצע · פינות עגולות מכל הצדדים, והידית מיותרת */
+  sheetMid: { borderRadius: 26, paddingTop: 22 },
   grab: {
     width: 40,
     height: 4,

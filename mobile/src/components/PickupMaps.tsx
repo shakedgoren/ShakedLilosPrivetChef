@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
-import { Image, Linking, PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  Image,
+  Linking,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { Text } from '../ui/text';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
@@ -39,6 +49,14 @@ const openWaze = () => {
 
 /** מרחק אצבע מינימלי שנחשב החלקה · מתחת לזה זו לחיצה */
 const SWIPE_PX = 28;
+
+/**
+ * ⚠ **מעבר בין המפות · 17 בספטמבר 2026** · בקשה של שקד שיהיה אפקט
+ * מעבר בהחלקה ובחצים. אותה ״דהייה וקנה מידה״ שהיא בחרה לפתיחת
+ * התמונות, כדי שכל האפליקציה תדבר באותה שפה.
+ */
+const SWAP_MS = 220;
+const SWAP_FROM = 0.94;
 
 export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const [i, setI] = useState(0);
@@ -94,7 +112,9 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
 
       <View style={s.frame} {...pan.panHandlers}>
         {/* ⚠ `zoom` דלוק · לחיצה מגדילה את המפה במסך מלא · בקשת שקד */}
-        <Photo name={cur.file} rgb={rgb} style={s.map} />
+        <Swap index={i}>
+          <Photo name={cur.file} rgb={rgb} style={s.map} />
+        </Swap>
 
         <View style={s.badge}>
           <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
@@ -127,6 +147,44 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
         ))}
       </View>
     </View>
+  );
+}
+
+/** התמונה המתחלפת · דהייה וקנה מידה · ראו `SWAP_MS` */
+function Swap({ index, children }: { index: number; children: React.ReactNode }) {
+  /* ⚠ ערך חדש לכל מפה · אסור `setValue` על ערך מחובר לדרייבר הילידי */
+  const t = React.useMemo(() => new Animated.Value(0), [index]);
+  const [reduce, setReduce] = React.useState(false);
+
+  React.useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((v) => alive && setReduce(v))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (reduce) {
+      t.setValue(1);
+      return;
+    }
+    Animated.timing(t, {
+      toValue: 1,
+      duration: SWAP_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [reduce, t]);
+
+  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [SWAP_FROM, 1] });
+
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, { opacity: t, transform: [{ scale }] }]}>
+      {children}
+    </Animated.View>
   );
 }
 
