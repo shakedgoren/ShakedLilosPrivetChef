@@ -19,7 +19,6 @@ import { LogoutButton } from './src/components/LogoutButton';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
-import { BackSwipe } from './src/components/BackSwipe';
 import { ScreenStage } from './src/navigation/ScreenStage';
 import { CheerProvider } from './src/components/Cheer';
 import { CategoryScreen } from './src/screens/CategoryScreen';
@@ -222,14 +221,15 @@ function Shell() {
             * **והכותרת נשארת קריאה**.
             */}
           <SafeAreaView style={s.safe} edges={topEdges}>
-            {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
-            <BackSwipe>
-              {/* ⚠ ההנפשה שבחרה · ״צניחה למעלה״ קדימה ו״החלקה
-                  אופקית״ אחורה · ראו `ScreenStage`.
-                  ⚠ פונקציה ולא ילדים · בזמן מעבר מרונדרים **שני**
-                  מסכים, ולכן השכבה חייבת לבקש מסך לפי שם. */}
-              <ScreenStage render={(scr) => <Router screen={scr} />} />
-            </BackSwipe>
+            {/* ⚠ ההנפשה שבחרה · ״צניחה למעלה״ קדימה ו״החלקה
+                אופקית״ אחורה · ראו `ScreenStage`.
+                ⚠ פונקציה ולא ילדים · בזמן מעבר מרונדרים **שני**
+                מסכים, ולכן השכבה חייבת לבקש מסך לפי שם.
+                ⚠ **מחוות החזרה עברה לשם · 17 בספטמבר 2026** · היא
+                מזיזה את שני המסכים בזמן אמת עם האצבע, ולכן היא
+                חייבת לשבת באותו רכיב שמחזיק אותם. `BackSwipe`,
+                שרק ירה חזרה אחרי 60 נקודות, ירד.*/}
+            <ScreenStage render={(scr) => <Router screen={scr} />} />
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו
                 בקנבס. חייב להיות **לפני** שכבת ההתחברות, שאחרת הוא

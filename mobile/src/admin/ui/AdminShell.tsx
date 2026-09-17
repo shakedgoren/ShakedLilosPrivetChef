@@ -77,7 +77,7 @@ export function AdminShell({ title, titleSize = 21, sub, actions = [], children 
           {sub ? <Text style={s.sub}>{sub}</Text> : null}
         </View>
         <View style={s.backWrap}>
-          <Pressable onPress={canBack ? back : () => go('admin')} style={s.back} hitSlop={10}>
+          <Pressable onPress={canBack ? () => back() : () => go("admin")} style={s.back} hitSlop={10}>
             <S k="chevronRight" size={16} color="#6E6478" />
           </Pressable>
         </View>

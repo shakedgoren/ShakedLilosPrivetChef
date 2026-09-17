@@ -259,7 +259,7 @@ export function AdminBoardScreen() {
           <Text style={s.sub}>{BOARD_LIVE}</Text>
         </View>
         <View style={s.backWrap}>
-          <Pressable onPress={back} style={s.back}>
+          <Pressable onPress={() => back()} style={s.back}>
             <S k="chevronRight" size={19} color="#6E6478" />
           </Pressable>
         </View>

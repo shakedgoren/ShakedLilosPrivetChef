@@ -64,12 +64,23 @@ type Nav = {
   closeLogin: () => void;
   /** האם שכבת ההתחברות פתוחה כרגע */
   loginOverlay: boolean;
-  back: () => void;
+  back: (opts?: { settled?: boolean }) => void;
+  /**
+   * המסך שחזרה אחורה תגיע אליו · `null` כשאין, או כשהחזרה היא
+   * **בתוך** המסך (שלב בשאלון) ולכן אי אפשר להציג אותו מראש.
+   * ⚠ ראו `ScreenStage` · זה מה שמאפשר לגרור את המסך עם האצבע.
+   */
+  peekBack: Screen | null;
   /** רישום מטפל חזרה פנימי · ראו `back` */
   registerBack: (fn: (() => boolean) | null) => void;
   /** כיוון המעבר האחרון ומונה שלו · ראו `ScreenStage` */
   navDir: 'fwd' | 'back';
   navTick: number;
+  /**
+   * המעבר כבר הושלם על המסך · האצבע הביאה אותו עד הסוף.
+   * ⚠ בלי זה השכבה הייתה מנפישה שוב את מה שכבר במקום · ראו שם.
+   */
+  navSettled: boolean;
   signIn: (session?: Session) => void;
   signOut: () => void;
   setUser: (user: PublicUser) => void;
@@ -135,9 +146,10 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
    * בלעדיו. ראו `ScreenStage`.
    * ⚠ **חייב להיות לפני `go`** · הוא קורא ל-`setNav`.
    */
-  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number }>({
+  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number; settled: boolean }>({
     dir: 'fwd',
     tick: 0,
+    settled: false,
   });
 
 
@@ -146,7 +158,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       prefill.current = load ?? null;
       setLoginOverlay(false);
       setStack((s) => [...s, screen]);
-      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1 }));
+      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1, settled: false }));
       setScreen(to);
     },
     [screen],
@@ -188,13 +200,24 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
    * נמדד: אחרי מחוות חזרה רצה דווקא **הנפשת הכניסה** — כלומר
    * `navDir` מעולם לא התהפך ל-`back`.
    */
-  const back = useCallback(() => {
-    if (trap?.()) return;
-    if (stack.length === 0) return;
-    setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
-    setScreen(stack[stack.length - 1]);
-    setStack((s) => s.slice(0, -1));
-  }, [trap, stack]);
+  const back = useCallback(
+    (opts?: { settled?: boolean }) => {
+      if (trap?.()) return;
+      if (stack.length === 0) return;
+      /**
+       * ⚠ **`settled` · המחווה כבר סיימה** · כשהאצבע גררה את המסך עד
+       * הסוף, הוא כבר נמצא במקומו על המסך. בלי הדגל הזה שכבת
+       * ההנפשה הייתה מריצה עליו מעבר שני מאפס · ראו `ScreenStage`.
+       * ⚠ **חייב להיות `=== true`** · `onPress={back}` מעביר אירוע
+       * לחיצה כארגומנט ראשון, ואובייקט אירוע אינו נושא את השדה הזה.
+       */
+      const settled = opts?.settled === true;
+      setNav((n) => ({ dir: 'back', tick: n.tick + 1, settled }));
+      setScreen(stack[stack.length - 1]);
+      setStack((s) => s.slice(0, -1));
+    },
+    [trap, stack],
+  );
 
   /**
    * התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה,
@@ -216,7 +239,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       setStack([]);
       /* ⚠ **גם התחברות היא מעבר** · בלי המונה שכבת ההנפשה לא יודעת
          שהמסך התחלף · ראו `ScreenStage` */
-      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1 }));
+      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1, settled: false }));
       /* ⚠ המנהלת נכנסת לניהול · הגישה לניהול היא רק דרך ההתחברות שלה
          (החלטה 12), ולכן כניסה עם חשבון מנהלת לא נוחתת בבית של לקוחה. */
       setScreen(session?.user.role === 'admin' ? 'admin' : 'main');
@@ -231,7 +254,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     setStack([]);
     setLoginOverlay(false);
     /* ⚠ גם התנתקות · ראו ההערה ב-`signIn` */
-    setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
+    setNav((n) => ({ dir: 'back', tick: n.tick + 1, settled: false }));
     setScreen('guest');
   }, []);
 
@@ -254,6 +277,9 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       registerBack,
       navDir: nav.dir,
       navTick: nav.tick,
+      navSettled: nav.settled,
+      /* ⚠ מסך פנימי (`trap`) אינו ניתן להצגה מראש · ראו `peekBack` */
+      peekBack: trap === null && stack.length > 0 ? stack[stack.length - 1] : null,
       signIn,
       signOut,
       setUser: applyUser,

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   Image,
@@ -14,6 +13,7 @@ import {
 } from 'react-native';
 import { Text } from '../ui/text';
 import { PICKUP } from '../data/categories';
+import { useReducedMotion } from '../theme/motion';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';
 import { iconOrbShadow } from '../theme/glass';
@@ -49,8 +49,6 @@ const openWaze = () => {
   void Linking.openURL(WAZE_URL).catch(() => undefined);
 };
 
-/** מרחק אצבע מינימלי שנחשב החלקה · מתחת לזה זו לחיצה */
-const SWIPE_PX = 28;
 
 /**
  * ⚠ **מעבר בין המפות · נכתב מחדש ב-17 בספטמבר 2026** · שקד ביקשה
@@ -62,6 +60,14 @@ const SWIPE_PX = 28;
  * נכנסת מהצד ההפוך**, לכיוון שאליו האצבע משכה. בדיוק כמו בגלריה.
  */
 const SWAP_MS = 320;
+/** תזוזה קטנה מזו היא רעד אצבע ולא גרירה */
+const SLOP = 6;
+/** מאיזה חלק מהמסגרת ההרפיה משלימה את המעבר */
+const COMMIT_AT = 0.32;
+/** ומאיזו מהירות היא משלימה גם בלי המרחק */
+const COMMIT_VX = 0.4;
+const SETTLE_MIN = 110;
+const SETTLE_MAX = 340;
 /** ⚠ עקום שמאט לקראת הסוף · אותו של שאר התנועות באפליקציה */
 const SWAP_EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
 
@@ -72,6 +78,30 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
    * `step` הוא **הפרש האינדקס** · ‎+1 קדימה, ‎-1 אחורה.
    */
   const [at, setAt] = useState({ i: 0, from: -1, step: -1, seq: 0 });
+  /**
+   * התקדמות המעבר · 0 = המפה הנוכחית במקומה, 1 = החדשה הגיעה.
+   *
+   * ⚠ **יושב כאן ולא בתוך `Swap` · 17 בספטמבר 2026** · בקשה של שקד
+   * שגם המפות יילכו אחרי האצבע ״כמו ב-iOS״. כשהאצבע מזיזה אותן,
+   * **היא** מזיזה את הערך הזה; כשלוחצים על חץ או על נקודה, הוא
+   * מונפש לבד. אותו ערך בשני המקרים, ולכן גרירה שנעצרת באמצע
+   * ממשיכה מאותה נקודה בדיוק ולא קופצת.
+   *
+   * ⚠ **בלי הדרייבר הילידי** · אסור `setValue` על ערך שמחובר אליו,
+   * והמחווה מעדכנת בכל תזוזת אצבע · אותו שיקול כמו ב-`ScreenStage`.
+   */
+  const t = React.useRef(new Animated.Value(1)).current;
+  /** המפה שהאצבע חושפת כרגע · `null` כשאין גרירה */
+  const [preview, setPreview] = useState<{ to: number; step: number } | null>(null);
+  /**
+   * ⚠ **גם ב-`ref`** · ה-`PanResponder` נבנה פעם אחת, והמטפלים שלו
+   * סוגרים על הערכים שהיו באותו רגע. בלי זה `onPanResponderRelease`
+   * היה קורא `preview` ריק — כי הגרירה **התחילה** כשהוא היה ריק.
+   */
+  const previewRef = React.useRef<{ to: number; step: number } | null>(null);
+  const dragging = React.useRef(false);
+  /** ⚠ נגישות · מי שכיבתה תנועה מקבלת החלפה מיידית, בלי גרירה */
+  const still = useReducedMotion();
   /**
    * מרחק ההחלקה · רוחב המסך.
    *
@@ -90,10 +120,23 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const i = at.i;
   const cur = maps[i];
 
-  const go = (d: number) =>
-    setAt((p) => ({ i: (p.i + d + maps.length) % maps.length, from: p.i, step: d, seq: p.seq + 1 }));
-  const jump = (k: number) =>
-    setAt((p) => (k === p.i ? p : { i: k, from: p.i, step: k > p.i ? 1 : -1, seq: p.seq + 1 }));
+  /** מעבר מונפש · חץ או נקודה. הגרירה עוברת דרך `settle` */
+  const run = React.useCallback(
+    (to: number, step: number) => {
+      setAt((p) => (to === p.i ? p : { i: to, from: p.i, step, seq: p.seq + 1 }));
+      t.setValue(0);
+      Animated.timing(t, {
+        toValue: 1,
+        duration: SWAP_MS,
+        easing: SWAP_EASE,
+        useNativeDriver: false,
+      }).start();
+    },
+    [t],
+  );
+
+  const go = (d: number) => run((at.i + d + maps.length) % maps.length, d);
+  const jump = (k: number) => run(k, k > at.i ? 1 : -1);
 
   /**
    * ⚠ **החלקה בין המפות · בקשה של שקד** · ״צריך לאפשר לעבור בין
@@ -109,17 +152,63 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
    * את הרצועה שמאלה ומגלה את מה שנמצא מימינה — כלומר את המפה
    * ה**קודמת**. עכשיו האצבע והמפות הולכות יחד עם הנקודות.
    */
+  /* ⚠ המחווה נבנית פעם אחת · הערכים המשתנים נקראים דרך `ref` */
+  const live = React.useRef({ i: at.i, n: maps.length, travel, still });
+  live.current = { i: at.i, n: maps.length, travel, still };
+
   const pan = React.useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_e, g) =>
-          Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 6,
-        onPanResponderRelease: (_e, g) => {
-          if (Math.abs(g.dx) < SWIPE_PX) return;
-          go(g.dx < 0 ? -1 : 1);
+          !live.current.still && Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > SLOP,
+        onPanResponderGrant: () => {
+          dragging.current = false;
         },
+        onPanResponderMove: (_e, g) => {
+          const { i: cur0, n, travel: w } = live.current;
+          if (!dragging.current) {
+            if (Math.abs(g.dx) < SLOP) return;
+            /* ⚠ הכיוון נקבע בתזוזה הראשונה ולא משתנה באמצע · אחרת
+               המפה שמתחת הייתה מתחלפת תוך כדי גרירה */
+            const step = g.dx < 0 ? -1 : 1;
+            dragging.current = true;
+            previewRef.current = { to: (cur0 + step + n) % n, step };
+            setPreview(previewRef.current);
+            t.setValue(0);
+            return;
+          }
+          t.setValue(Math.min(1, Math.max(0, Math.abs(g.dx) / w)));
+        },
+        onPanResponderRelease: (_e, g) => {
+          if (!dragging.current) return;
+          const { travel: w } = live.current;
+          const p = Math.min(1, Math.abs(g.dx) / w);
+          const commit = p > COMMIT_AT || Math.abs(g.vx) > COMMIT_VX;
+          /* ⚠ המשך נגזר מהמהירות של האצבע · ראו `ScreenStage` */
+          const rest = commit ? 1 - p : p;
+          const speed = Math.max(Math.abs(g.vx), 0.25) / w;
+          const ms = Math.min(SETTLE_MAX, Math.max(SETTLE_MIN, rest / speed));
+          Animated.timing(t, {
+            toValue: commit ? 1 : 0,
+            duration: ms,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: false,
+          }).start(({ finished }) => {
+            if (!finished) return;
+            dragging.current = false;
+            const p2 = previewRef.current;
+            if (commit && p2) {
+              /* ⚠ המפה כבר במקומה · `from: -1` משחרר את היוצאת
+                 ו-`t = 1` שומר עליה שם בלי לקפוץ */
+              setAt((prev) => ({ i: p2.to, from: -1, step: p2.step, seq: prev.seq + 1 }));
+            }
+            previewRef.current = null;
+            setPreview(null);
+          });
+        },
+        onPanResponderTerminationRequest: () => false,
       }),
-    [maps.length],
+    [t],
   );
 
   return (
@@ -152,27 +241,31 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
             המפה הישנה. זה חלק ממה ששקד קראה לו ״משהו שם באפקט לא
             מסתדר טוב״. */}
         <Swap
-          seq={at.seq}
-          step={at.step}
+          t={t}
+          /**
+           * ⚠ **מנוחה אינה מעבר · נמדד ב-17 בספטמבר 2026** · בלי
+           * הדגל הזה מסגרת המפה יצאה **ריקה** אחרי ביטול גרירה:
+           * המפה שבמנוחה צוירה לפי אותו ערך התקדמות, ולכן ערך 0
+           * הציב אותה מחוץ למסגרת. עכשיו מפה שאינה באמצע מעבר
+           * מצוירת פשוט במקומה.
+           */
+          moving={preview !== null || at.from >= 0}
+          step={preview ? preview.step : at.step}
           width={travel}
           leaving={
-            at.from >= 0 && at.from !== i ? (
-              <>
-                {/* ⚠ בלי `zoom` · היא בדרך החוצה, ואין מה ללחוץ עליה */}
-                <Photo name={maps[at.from].file} rgb={rgb} style={s.map} zoom={false} />
-                <View style={[s.badge, NO_TOUCH]}>
-                  <Text style={[s.badgeText, { color: ink }]}>{maps[at.from].title}</Text>
-                </View>
-              </>
+            /* ⚠ בגרירה **הנוכחית** היא היוצאת, ומתחתיה זו שנחשפת */
+            preview ? (
+              <MapLayer map={cur} rgb={rgb} ink={ink} />
+            ) : at.from >= 0 && at.from !== i ? (
+              <MapLayer map={maps[at.from]} rgb={rgb} ink={ink} zoom={false} />
             ) : null
           }
           entering={
-            <>
-              <Photo name={cur.file} rgb={rgb} style={s.map} />
-              <View style={[s.badge, NO_TOUCH]}>
-                <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
-              </View>
-            </>
+            preview ? (
+              <MapLayer map={maps[preview.to]} rgb={rgb} ink={ink} zoom={false} />
+            ) : (
+              <MapLayer map={cur} rgb={rgb} ink={ink} />
+            )
           }
         />
 
@@ -216,14 +309,40 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
  * אז היוצאת הולכת שמאלה והנכנסת מגיעה מימין. תחת RTL זו אותה
  * מוסכמה של כל הקרוסלות באפליקציה.
  */
+/** מפה אחת עם הכותרת שלה · שתיהן נוסעות יחד · ראו `Swap` */
+function MapLayer({
+  map,
+  rgb,
+  ink,
+  zoom = true,
+}: {
+  map: { file: string; title: string };
+  rgb: string;
+  ink: string;
+  zoom?: boolean;
+}) {
+  return (
+    <>
+      <Photo name={map.file} rgb={rgb} style={s.map} zoom={zoom} />
+      <View style={[s.badge, NO_TOUCH]}>
+        <Text style={[s.badgeText, { color: ink }]}>{map.title}</Text>
+      </View>
+    </>
+  );
+}
+
 function Swap({
-  seq,
+  t,
+  moving,
   step,
   width,
   leaving,
   entering,
 }: {
-  seq: number;
+  /** ההתקדמות · האצבע או ההנפשה · ראו `PickupMaps` */
+  t: Animated.Value;
+  /** יש מעבר באוויר · ראו ההערה במקום השימוש */
+  moving: boolean;
   /** הפרש האינדקס · ‎+1 קדימה (שמאלה ברצועה), ‎-1 אחורה (ימינה) */
   step: number;
   /** מרחק ההחלקה בנקודות · ראו `travel` */
@@ -232,35 +351,6 @@ function Swap({
   leaving: React.ReactNode;
   entering: React.ReactNode;
 }) {
-  /* ⚠ ערך חדש לכל מעבר · אסור `setValue` על ערך מחובר לדרייבר הילידי */
-  const t = React.useMemo(() => new Animated.Value(0), [seq]);
-  const [reduce, setReduce] = React.useState(false);
-
-  React.useEffect(() => {
-    let alive = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((v) => alive && setReduce(v))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (reduce) {
-      t.setValue(1);
-      return;
-    }
-    const anim = Animated.timing(t, {
-      toValue: 1,
-      duration: SWAP_MS,
-      easing: SWAP_EASE,
-      useNativeDriver: true,
-    });
-    anim.start();
-    return () => anim.stop();
-  }, [reduce, t]);
-
   /**
    * ⚠ **הצד נגזר מהפרש האינדקס ולא מהאצבע** · הנקודות מסודרות
    * מימין לשמאל, ולכן המפה ה**הבאה** יושבת משמאל לנוכחית: היא
@@ -268,6 +358,9 @@ function Swap({
    */
   const out = t.interpolate({ inputRange: [0, 1], outputRange: [0, step * width] });
   const into = t.interpolate({ inputRange: [0, 1], outputRange: [-step * width, 0] });
+
+  /* מפה במנוחה · במקומה, בלי תלות בערך ההתקדמות */
+  if (!moving) return <View style={StyleSheet.absoluteFill}>{entering}</View>;
 
   return (
     <>
