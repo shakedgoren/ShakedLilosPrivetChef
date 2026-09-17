@@ -21,6 +21,7 @@ import { LoginGate } from '../../components/LoginGate';
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
+import { headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useBoxesOrder } from './useBoxesOrder';
 import { SectionRenderer } from './SectionRenderer';
@@ -31,7 +32,7 @@ import { BackButton } from '../../components/BackButton';
 const ACCENT = hues.box;
 
 /** הכותרת נגמרת ב-54 ברשימה · ועוד 14 כמו בקוסקוס */
-const LIST_TOP = 70;
+const LIST_TOP = 70 + headRoom(0);
 /**
  * מסך המארז · כותרת בת שתי שורות, ולכן בקנבס חוזרים ל-88.
  *
@@ -45,7 +46,7 @@ const LIST_TOP = 70;
  * מידה — 80 + 16 = 96, בדיוק המקום שבו התיאור עמד קודם. כך
  * מתקבל רווח אמיתי מתחת למחיר בלי רווח כפול מעל התיאור.
  */
-const DETAIL_TOP = 80;
+const DETAIL_TOP = 80 + headRoom(1);
 const DETAIL_PAD = 16;
 
 /** החץ שבקצה כרטיס המארז · 15 פיקסלים בקנבס */

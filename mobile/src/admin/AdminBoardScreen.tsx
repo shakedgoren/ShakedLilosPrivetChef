@@ -21,32 +21,35 @@ import {
 } from '../data/adminBoard';
 import { CancelSheet } from './CancelSheet';
 import { CATS } from '../data/adminDays';
+import { upcomingSale } from '../data/saleWeek';
+import { boardCatOf, prepOf, type BoardItem } from './boardCat';
 import { apiEnabled } from '../api/config';
 import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
 import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCheer } from '../components/Cheer';
+import { statusToast } from './statusToast';
 import type { CancelNote } from './useAdminOrders';
 import Svg, { Path } from 'react-native-svg';
 import { iconOrbShadow } from '../theme/glass';
+import { FONT_BUMP } from '../theme/fontScale';
+
+/** ריפוד המסך · נגרע מרוחב הטבלה כשמקטינים · ראו `fit` */
+const ROOT_PAD = 14;
+/** הריפוד מעל הכותרת · מתווסף לאזור הבטוח */
+const ROOT_TOP = 10;
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-/** הקטגוריה היחידה בלוח כרגע · הקוסקוס, כמו בקנבס */
-const BOARD_CAT = BOARD_CATS.cous;
-
-/**
- * ⚠ **״סה״כ״ ולא ״סה״כ בטאב״** · בקנבס השורה נקראת `TOTAL_LABEL`
- * ובה כתוב ״סה״כ בטאב״. שקד ביקשה (15 בספטמבר 2026) שיהיה כתוב
- * ״סה״כ״ בלבד, ולכן הערך נדרס כאן ולא בקובץ המחולץ.
- */
 const TOTAL_LABEL = 'סה״כ';
 
 /**
  * מכסת ברירת המחדל של פריט · נפילה לאחור כשאין יום מכירה בשרת.
  * ⚠ המכסה האמיתית מגיעה מדף יום המכירה, ולא מכאן.
  */
-const dishQuota = (id: string) =>
-  CATS.cous.dishes.find((d) => d.id === id)?.q ?? 0;
+const dishQuota = (cat: string, id: string) =>
+  CATS[cat as keyof typeof CATS]?.dishes.find((d) => d.id === id)?.q ?? 0;
 
 
 /**
@@ -73,12 +76,27 @@ type Row = {
   hrs: number;
 };
 
-const sumOf = (q: Record<string, number>) =>
-  BOARD_CAT.items.reduce((s, it) => s + (q[it.id] || 0) * it.price, 0);
+const sumOf = (items: BoardItem[], q: Record<string, number>) =>
+  items.reduce((s, it) => s + (q[it.id] || 0) * it.price, 0);
 
 export function AdminBoardScreen() {
   const { back, user } = useNav();
+  /**
+   * ⚠ **האזור הבטוח ידנית · 17 בספטמבר 2026** · מסכי הניהול מוותרים
+   * על הריפוד העליון של האפליקציה (ראו `NO_TOP_INSET` ב-`App.tsx`),
+   * והמסך הזה אינו יושב ב-`AdminShell` שמפצה על כך. נמדד בסימולטור:
+   * הכותרת נכנסה מתחת למגרעת.
+   */
+  const insets = useSafeAreaInsets();
   const live = apiEnabled && user?.role === 'admin';
+  /**
+   * ⚠ **הקטגוריה נגזרת מהשעון · תוקן ב-17 בספטמבר 2026** · ראו
+   * `boardCat`. נקבע פעם אחת בכניסה למסך, כמו בשורת דף הבית.
+   */
+  const saleCat = React.useMemo(() => upcomingSale(new Date()).cat, []);
+  /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
+  const { toast } = useCheer();
+  const BOARD_CAT = React.useMemo(() => boardCatOf(saleCat), [saleCat]);
   const { width } = useWindowDimensions();
   const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
     START_MODE as 'all' | 'pickup' | 'deliv',
@@ -144,6 +162,8 @@ export function AdminBoardScreen() {
   };
 
   const setStatus = (i: number, name: string) => {
+    /* ⚠ הודעה צפה בכל שינוי סטטוס · בקשה של שקד · ראו `statusToast` */
+    toast(statusToast(name));
     setOrders((list) => list.map((o, n) => (n === i ? { ...o, status: name } : o)));
     const row = orders[i];
     if (live && row?.id) void adminSetBoardStatus(row.id, name).then(reload).catch(() => undefined);
@@ -152,6 +172,7 @@ export function AdminBoardScreen() {
   const doCancel = () => {
     if (!cx.reason) return;
     const i = cancelling;
+    toast(statusToast('בוטלה'));
     const row = orders[i];
     if (live && row?.id) {
       void adminSetStatus(row.id, 'בוטלה', { reason: cx.reason, note: cx.note }).then(reload).catch(() => undefined);
@@ -161,7 +182,7 @@ export function AdminBoardScreen() {
   };
 
   const colSums = BOARD_CAT.items.map((it) => shown.reduce((s, x) => s + (x.o.q[it.id] || 0), 0));
-  const grand = shown.reduce((s, x) => s + sumOf(x.o.q), 0);
+  const grand = shown.reduce((s, x) => s + sumOf(BOARD_CAT.items, x.o.q), 0);
   /**
    * מוני ההכנה · **לפי מצרך, לא לפי מנה**.
    *
@@ -177,20 +198,14 @@ export function AdminBoardScreen() {
    * המלאי של כל מונה הוא סכום המכסות של אותם פריטים, והמכסות
    * מגיעות מדף יום המכירה — לא ממספרים קבועים בקוד.
    */
-  const MEALS = ['veg', 'chick', 'mafr'] as const;
-  const PREP: { id: string; name: string; of: readonly string[] }[] = [
-    { id: 'cous', name: 'קוסקוס', of: MEALS },
-    { id: 'veg', name: 'ירקות', of: [...MEALS, 'aVeg'] },
-    { id: 'chick', name: 'עוף', of: ['chick', 'aChick'] },
-    { id: 'mafr', name: 'מפרום', of: ['mafr', 'aMafr'] },
-  ];
+  const PREP = prepOf(saleCat, BOARD_CAT.items);
 
   const stock = PREP.map((p) => {
     const used = p.of.reduce(
       (t, id) => t + liveRows.reduce((s2, o) => s2 + (o.q[id] || 0), 0),
       0,
     );
-    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(id)), 0);
+    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(saleCat, id)), 0);
     return { id: p.id, sub: p.name, used, quota, left: quota - used };
   });
 
@@ -212,7 +227,8 @@ export function AdminBoardScreen() {
    */
   const landscape = width >= 700;
   const pad = view === 'pad' || landscape;
-  const cards = view === 'phone' && !landscape;
+  /* גובה אזור הטבלה · נדרש כדי לפצות על ההקטנה · ראו `fit` */
+  const [fitH, setFitH] = useState(0);
   /**
    * ⚠ **רוחבי הקנבס הצטמצמו** · בקנבס העמודות הן 92/220/68/96/104/206
    * (1126 מתוך ארטבורד 1180), ושקד ביקשה (15 בספטמבר 2026) לצמצם
@@ -224,9 +240,14 @@ export function AdminBoardScreen() {
     ? { time: 54, who: 92, item: 50, sum: 62, pay: 62, status: 146 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
+  /**
+   * יחס ההקטנה · 1 באייפד, וקטן ממנו כשהטבלה רחבה מהמסך.
+   * ⚠ הריפוד של המסך (`root`) נגרע, אחרת הטבלה נוגעת בקצוות.
+   */
+  const fit = Math.min(1, (width - ROOT_PAD * 2) / tableW);
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { paddingTop: insets.top + ROOT_TOP }]}>
       {/* ⚠ **הכותרת בשורת החץ** · שקד ביקשה (15 בספטמבר 2026) להסיר
           את הרווח שהיה מעל הכותרת בכל מסכי הניהול. הכותרת ממורכזת
           וחץ החזרה מרחף בפינה הימנית, והפקדים יורדים לשורה שמתחת —
@@ -302,90 +323,41 @@ export function AdminBoardScreen() {
         })}
       </ScrollView>
 
-      {cards ? (
-        <ScrollView style={s.list} contentContainerStyle={s.cardPad} showsVerticalScrollIndicator={false}>
-          {shown.length === 0 ? <Text style={s.empty}>{BOARD_EMPTY}</Text> : null}
-          {shown.map((x) => {
-            const band = BOARD_BAND[x.o.status] ?? BOARD_BAND['חדשה'];
-            const picked = BOARD_CAT.items.filter((it) => (x.o.q[it.id] || 0) > 0);
-            return (
-              <View key={x.o.id ?? x.i} style={[s.oCard, { backgroundColor: band.row, borderColor: band.edge }]}>
-                <View style={s.oTop}>
-                  <Text style={[s.oTime, { color: band.ink }]}>{x.o.time}</Text>
-                  <View style={s.oWho}>
-                    <Text style={[s.who, { color: band.ink }]} numberOfLines={1}>{x.o.who}</Text>
-                    {x.o.note ? <Text style={s.note} numberOfLines={1}>{x.o.note}</Text> : null}
-                  </View>
-                  <Text style={[s.oSum, { color: band.ink }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
-                </View>
-
-                <View style={s.oItems}>
-                  {picked.length === 0 ? (
-                    <Text style={s.oNone}>אין פריטים</Text>
-                  ) : (
-                    picked.map((it) => (
-                      <View key={it.id} style={s.oChip}>
-                        <Text style={s.oChipName}>{it.sub}</Text>
-                        <TextInput
-                          value={String(x.o.q[it.id] || 0)}
-                          keyboardType="number-pad"
-                          onChangeText={(v) => setQ(x.i, it.id, v)}
-                          style={s.oChipQty}
-                        />
-                      </View>
-                    ))
-                  )}
-                </View>
-
-                <View style={s.oFoot}>
-                  <Text style={s.oPay}>{x.o.pay}</Text>
-                  <View style={s.oSteps}>
-                    {BOARD_STEPS.map((st) => {
-                      const on = x.o.status === st.id;
-                      return (
-                        <Pressable
-                          key={st.id}
-                          onPress={() => setStatus(x.i, st.id)}
-                          style={[
-                            s.step,
-                            { borderColor: on ? band.edge : 'rgba(130,112,162,0.22)' },
-                            on ? { backgroundColor: band.edge } : s.stepOff,
-                          ]}
-                        >
-                          <Svg width={17} height={17} viewBox="0 0 24 24">
-                            {st.paths.map((d) => (
-                              <Path key={d} d={d} fill="none" stroke={on ? '#FFFFFF' : '#A79FB2'}
-                                strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                            ))}
-                          </Svg>
-                        </Pressable>
-                      );
-                    })}
-                    <Pressable onPress={() => { setCancelling(x.i); setCx({ reason: '', note: '' }); }} hitSlop={6}>
-                      <S k="close" size={13} color="#B95349" />
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-            );
-          })}
-          <View style={s.oTotal}>
-            <Text style={s.oTotalK}>{TOTAL_LABEL}</Text>
-            <Text style={s.oTotalV}>{`${nf(grand)} ₪`}</Text>
-          </View>
-        </ScrollView>
-      ) : (
+      {/**
+        * ⚠ **אותה טבלה בשתי התצוגות · 17 בספטמבר 2026** · בקשה של
+        * שקד: ״התצוגת טלפון צריכה להראות בדיוק כמו התצוגת אייפד, רק
+        * שמה שמוצג שם צריך להיות לרוחב של הטלפון״.
+        *
+        * קודם תצוגת הטלפון בנתה **כרטיס לכל הזמנה** — מבנה אחר
+        * לגמרי. עכשיו זו אותה טבלה בדיוק, מוקטנת כדי להיכנס לרוחב
+        * המסך. ⚠ **`transform` אינו משנה פריסה**, ולכן המכל הפנימי
+        * מקבל גובה מחולק ביחס ההקטנה — אחרת הטבלה הייתה נגמרת
+        * באמצע המסך ומתחתיה שטח ריק.
+        */}
+      <View style={s.fitBox} onLayout={(e) => setFitH(e.nativeEvent.layout.height)}>
+        <View
+          style={
+            fit === 1
+              ? undefined
+              : {
+                  width: tableW,
+                  height: fitH > 0 ? fitH / fit : undefined,
+                  transform: [{ scale: fit }],
+                  transformOrigin: 'top right',
+                }
+          }
+        >
       <ScrollView horizontal>
         {/* ⚠ **הרוחב נגזר מהעמודות בפועל** · קודם הוא הוזמן לפי
             `tableWidth` של הקנבס (1126) בעוד שהעמודות הצטמצמו,
             ונשאר פס ריק של יותר מ-300 פיקסלים בקצה הטבלה. */}
-        <View style={{ minWidth: pad ? tableW : undefined }}>
+        <View style={{ minWidth: tableW }}>
           <View style={s.cols}>
             <Text style={[s.col, { width: w.time }]}>{HEAD_COLS.time}</Text>
             <Text style={[s.col, { width: w.who }]}>{HEAD_COLS.who}</Text>
             {BOARD_CAT.items.map((it) => (
               <View key={it.id} style={[s.cellBox, { width: w.item }]}>
-                <Text style={s.colIn}>{`${it.t}\n${it.sub}`}</Text>
+                <Text style={s.colIn} numberOfLines={2}>{`${it.t}\n${it.sub}`}</Text>
               </View>
             ))}
             <Text style={[s.col, { width: w.sum }]}>{TAIL_COLS.sum}</Text>
@@ -422,7 +394,7 @@ export function AdminBoardScreen() {
                         />
                       </View>
                     ))}
-                    <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(x.o.q))} ₪`}</Text>
+                    <Text style={[s.cell, { width: w.sum }]}>{`${nf(sumOf(BOARD_CAT.items, x.o.q))} ₪`}</Text>
                     <Text style={[s.cell, { width: w.pay }]}>{x.o.pay}</Text>
                     {/* ⚠ **שלושה אייקונים ולא כפתורי טקסט** · כך זה בקנבס:
                         `STEPS` נושא את הנתיבים, והפעיל נצבע בגוון השורה. */}
@@ -481,7 +453,8 @@ export function AdminBoardScreen() {
           </ScrollView>
         </View>
       </ScrollView>
-      )}
+        </View>
+      </View>
 
       {cancelling >= 0 && orders[cancelling] ? (
         <CancelSheet
@@ -492,7 +465,7 @@ export function AdminBoardScreen() {
             phone: '',
             time: orders[cancelling].time,
             items: '',
-            sum: sumOf(orders[cancelling].q),
+            sum: sumOf(BOARD_CAT.items, orders[cancelling].q),
             ship: orders[cancelling].ship,
             pay: orders[cancelling].pay,
             via: '',
@@ -510,7 +483,9 @@ export function AdminBoardScreen() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, paddingTop: 18, paddingHorizontal: 14, gap: 8, backgroundColor: surface.ground },
+  root: { flex: 1, paddingHorizontal: ROOT_PAD, gap: 8, backgroundColor: surface.ground },
+  /* ⚠ חותך את מה שגולש אחרי ההקטנה · ראו ההערה ליד הטבלה */
+  fitBox: { flex: 1, overflow: 'hidden' },
   tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   head: { justifyContent: 'center', minHeight: 44 },
   backWrap: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
@@ -565,13 +540,30 @@ const s = StyleSheet.create({
   modeCountOn: { backgroundColor: 'rgba(123,92,188,0.14)' },
   modeCountText: { fontSize: 13, fontWeight: '600', color: surface.muted },
   modeCountTextOn: { color: '#43307A' },
-  gone: { fontSize: 14.5, fontWeight: '600', color: '#B95349' },
+  /**
+   * ⚠ **רווח מעל · בקשה של שקד (17 בספטמבר 2026)** · ״צריך להוסיף
+   * רווח מעל הכיתוב נמחק״. הוא נדחק אל הבורר שמעליו כשהשורה
+   * גולשת, כי `flexWrap` אינו מוסיף רווח בין שורות.
+   */
+  gone: { fontSize: 14.5, fontWeight: '600', color: '#B95349', marginTop: 10 },
   stock: { flexGrow: 0 },
   stockChip: { marginEnd: 6, height: 28, paddingHorizontal: 10, borderRadius: 10, backgroundColor: 'rgba(123,92,188,0.1)', justifyContent: 'center' },
   stockText: { fontSize: 12.5, color: '#43307A' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
-  col: { fontSize: 11.5, fontWeight: '600', color: '#8A8194', textAlign: 'center' },
-  colIn: { width: '100%', fontSize: 11.5, fontWeight: '600', color: '#8A8194', textAlign: 'center' },
+  /**
+   * ⚠ **ההגדלה הגלובלית מנוטרלת כאן · 17 בספטמבר 2026** · בקשה של
+   * שקד: ״תקטין את הכותרות בטבלה כדי שיכנסו ב-2 שורות בלבד״. רוחב
+   * העמודה קבוע (44–50 נקודות), ולכן כל נקודה נוספת בגופן מוסיפה
+   * שורה. ראו `FONT_BUMP`.
+   */
+  col: { fontSize: 11.5 - FONT_BUMP, fontWeight: '600', color: '#8A8194', textAlign: 'center' },
+  colIn: {
+    width: '100%',
+    fontSize: 11.5 - FONT_BUMP,
+    fontWeight: '600',
+    color: '#8A8194',
+    textAlign: 'center',
+  },
   itemCol: { width: 68, textAlign: 'center' },
   list: { maxHeight: 560 },
   empty: { fontSize: 17, color: '#A79FB2', textAlign: 'center', padding: 70 },

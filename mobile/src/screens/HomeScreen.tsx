@@ -13,6 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { SaleAlert } from '../components/SaleAlert';
 import { SaleDayRow } from '../components/SaleDayRow';
 import { apiEnabled } from '../api/config';
+import { syncReminders } from '../order/reminders';
 import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
 
 /**
@@ -40,9 +41,38 @@ const HOME_PAD_NAV = BAR_BOTTOM_WITH_NAV - REEL_BOTTOM;
  * ההבדל היחיד: לפני התחברות מוצג כפתור הכניסה,
  * אחרי התחברות מוצגת תיבת המכירה הקרובה — כמו בקנבס.
  */
+/**
+ * הקטגוריה שהייתה במרכז · נשמרת ברמת המודול.
+ *
+ * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״כשאני חוזרת אחורה לדף
+ * הראשי במידה והייתי בתוך ספיישל — שיחזיר אותי למצב שהספיישל הוא
+ * זה שבקטגוריה הראשית, ולא אוטומטית לקטגוריה הראשונה״.
+ *
+ * דף הבית מורכב מחדש בכל חזרה אליו, ולכן מצב פנימי מתאפס. ברמת
+ * המודול הוא שורד את החזרה ומתאפס רק בהפעלה מחדש של האפליקציה —
+ * וזה בדיוק הטווח שהיא ביקשה.
+ */
+let lastActive = 0;
+
 export function HomeScreen() {
   const { loggedIn, go } = useNav();
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(lastActive);
+
+  /* ⚠ כל שינוי מרכז נשמר · גם גלילה בקרוסלה וגם לחיצה ברצועה */
+  const pick = useCallback((i: number) => {
+    lastActive = i;
+    setActive(i);
+  }, []);
+
+  /** פתיחת קטגוריה · זוכרת אותה בדרך החוצה */
+  const open = useCallback(
+    (key: string) => {
+      const i = CATEGORIES.findIndex((c) => c.key === key);
+      if (i >= 0) lastActive = i;
+      go(key as Screen);
+    },
+    [go],
+  );
 
   /**
    * ⚠ ההתראות של ״תזכירו לי״ · שקד החליטה שהתזכורת מגיעה כהתראה
@@ -55,6 +85,8 @@ export function HomeScreen() {
       setAlerts([]);
       return;
     }
+    /* ⚠ מצב התזכורות נטען כאן לכל הקטגוריות · ראו `syncReminders` */
+    void syncReminders();
     let live = true;
     listNotifications()
       .then(({ notifications }) => {
@@ -92,7 +124,7 @@ export function HomeScreen() {
           category={n.category}
           onOpen={() => {
             dismiss(n);
-            go(n.category as Screen);
+            open(n.category);
           }}
           onDismiss={() => dismiss(n)}
         />
@@ -100,7 +132,7 @@ export function HomeScreen() {
 
       {loggedIn ? (
         <Appear index={1}>
-          <SaleDayRow onOpen={(key) => go(key as Screen)} />
+          <SaleDayRow onOpen={open} />
         </Appear>
       ) : null}
 
@@ -108,13 +140,13 @@ export function HomeScreen() {
         <CategoryCarousel
           items={CATEGORIES}
           active={active}
-          onActiveChange={setActive}
-          onOpen={(key) => go(key as Screen)}
+          onActiveChange={pick}
+          onOpen={open}
         />
       </Appear>
 
       <Appear index={3}>
-        <CategoryRail items={CATEGORIES} active={active} onActiveChange={setActive} />
+        <CategoryRail items={CATEGORIES} active={active} onActiveChange={pick} />
       </Appear>
 
       {!loggedIn && (

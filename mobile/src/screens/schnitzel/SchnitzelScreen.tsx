@@ -35,6 +35,7 @@ import {
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
+import { headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { ToppingsSheet } from './ToppingsSheet';
@@ -350,7 +351,8 @@ const s = StyleSheet.create({
   /* ⚠ שקד ביקשה שהמחירים יובלטו · המשקל עלה מ-600 ל-700 */
   typePrice: { fontSize: 13, fontWeight: '700', color: ACCENT.deep },
 
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
+  /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(1) },
   modes: {
     flexDirection: 'row',
     alignSelf: 'center',

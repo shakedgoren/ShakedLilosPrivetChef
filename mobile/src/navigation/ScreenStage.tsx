@@ -65,6 +65,18 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
   if (pair.tick !== navTick) {
     const front = other(pair.front);
     setPair({ ...pair, [front]: screen, front, tick: navTick });
+  } else if (pair[pair.front] !== screen) {
+    /**
+     * ⚠ **החלפה במקום, בלי הנפשה · תוקן ב-17 בספטמבר 2026** · שקד
+     * דיווחה שאחרי ״לא עכשיו״ בזיהוי פנים המסך **לא נסגר ולא עובר
+     * לדף הבית**, ושאחרי ״כן״ הוא חוזר להתחברות.
+     *
+     * זו הייתה רגרסיה שלי: `signIn` ו-`signOut` מחליפים את המסך
+     * **בלי** להגדיל את מונה המעברים, ומאז שהשכבה הזו עובדת לפי
+     * המונה היא פשוט לא שמה לב. הענף הזה הוא רשת הביטחון — כל
+     * החלפת מסך שאינה מעבר מנווט נתפסת כאן.
+     */
+    setPair({ ...pair, [pair.front]: screen });
   }
 
   const t = React.useMemo(() => new Animated.Value(0), [navTick]);

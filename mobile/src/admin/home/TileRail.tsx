@@ -4,6 +4,7 @@ import { Text } from '../../ui/text';
 import Svg, { Path } from 'react-native-svg';
 import { LAV, SOFT_SHADOW } from './NightSky';
 import { AMBER, PLUM, STATE, TILES, type TileKey } from '../../data/adminHome';
+import { FONT_BUMP } from '../../theme/fontScale';
 
 /** ארבעה אריחים בשורה · שלושה רווחים של 10 ביניהם */
 const PER_ROW = 4;
@@ -17,6 +18,14 @@ const GAP = 10;
  */
 const GUESS_W = 360;
 const FALLBACK_W = `${100 / PER_ROW - (GAP * (PER_ROW - 1)) / (GUESS_W / 100) / PER_ROW}%`;
+
+/**
+ * ⚠ **אילו אריחים נושאים תג · 17 בספטמבר 2026** · בקשה של שקד:
+ * ״את המספר בעיגול שמופיע על תפריט ולקוחות אפשר להסיר, זה לא
+ * רלוונטי, רק את המספר של המלאי להשאיר״. מספר הפריטים בתפריט ומספר
+ * הלקוחות אינם דורשים פעולה — הם סתם ספירה; המלאי הנמוך כן.
+ */
+const WITH_BADGE: readonly TileKey[] = ['orders', 'days', 'stock', 'shop', 'costs', 'hist'];
 
 /** התג שעל האריח · ענבר לדבר שדורש טיפול, שזיף למספר שגרתי */
 const BADGES: Record<TileKey, { value: string | number; tone: typeof AMBER }> = {
@@ -74,7 +83,8 @@ export function TileRail({
               : 0
             : badges[t.key]
           : fallback.value;
-        const value = raw === true ? '!' : raw === false ? 0 : (raw ?? fallback.value);
+        const raw2 = WITH_BADGE.includes(t.key) ? raw : 0;
+        const value = raw2 === true ? '!' : raw2 === false ? 0 : (raw2 ?? fallback.value);
         const tone = fallback.tone;
         return (
           <Pressable
@@ -112,7 +122,12 @@ const s = StyleSheet.create({
   /* ⚠ ארבעה בשורה · הרוחב אחוזי כדי שהשורה תתמלא בכל מסך */
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingBottom: 2 },
   tile: {
-    height: 62,
+    /**
+     * ⚠ **הוגדל · 17 בספטמבר 2026** · בקשה של שקד: ״להגדיל לו מעט
+     * את הכרטיסייה כי הוא נחתך״. אחרי הגדלת הכתב הגלובלית שם
+     * האריח והתג כבר לא נכנסו בגובה 62.
+     */
+    height: 62 + FONT_BUMP * 2,
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
     boxShadow: SOFT_SHADOW,

@@ -26,6 +26,7 @@ import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
 import { Phone } from '../../icons';
 import { a, hues, radius, space, surface } from '../../theme/tokens';
+import { headRoom } from '../../theme/fontScale';
 import type { OrderLine } from '../../order/types';
 import { whatsappLink } from './whatsappOrder';
 import { FruitOrderSheet, type FruitDetails } from './FruitOrderSheet';
@@ -40,7 +41,17 @@ const ACCENT = hues.fruit;
  * מתחיל 14 פיקסלים אחרי שורת התאריך (74→88); כאן השורה השנייה
  * נגמרת ב-91, ולכן 91+14=105. ב-88 התיאור חפף את שורת הפעילות.
  */
-const FRUIT_SCROLL_TOP = 105;
+/**
+ * ⚠ **נמדד ולא מחושב · 17 בספטמבר 2026** · כאן ישב מספר קבוע, ואחרי
+ * הגדלת הכתב שורת השעות **נשברה לשתי שורות** — הכותרת גדלה בשורה
+ * שלמה ולא רק בגודל הגופן, והתוכן נכנס מתחתיה. הערך כאן הוא רק
+ * נקודת הפתיחה, עד שהכותרת מודדת את עצמה · ראו `onHeight`.
+ */
+const FRUIT_SCROLL_TOP = 105 + headRoom(2);
+/** המרחק בין תחתית הכותרת לתחילת התוכן · כמו בשאר הקטגוריות */
+const HEAD_GAP = 16;
+/** גוש הכותרת מרחף ב-`top: 30` · ראו `CategoryHeader` */
+const HEAD_TOP = 30;
 
 /** אייקון הטלפון לצד המספר · 13 פיקסלים, כמו שאר האייקונים הקטנים */
 const PHONE_GLYPH = 13;
@@ -52,6 +63,8 @@ export function FruitScreen() {
   /* אין כאן התחברות · המצב נדרש רק כדי לפנות מקום לנאב-בר */
   const { loggedIn } = useNav();
   const [qty, setQty] = useState<number[]>(() => FRUIT_TRAYS.map(() => 0));
+  /* גובה הכותרת הנמדד · ראו `FRUIT_SCROLL_TOP` */
+  const [headH, setHeadH] = useState(0);
   /* ⚠ ״להזמין שוב״ · המגשים של ההזמנה הקודמת כבר מסומנים */
   usePrefill('fruit', (d) => {
     const q = qtyFrom(d, FRUIT_TRAYS.length);
@@ -95,11 +108,15 @@ export function FruitScreen() {
   };
 
   return (
-    <View style={s.page}>
+    <View style={[s.page, { paddingTop: Math.max(FRUIT_SCROLL_TOP, HEAD_TOP + headH + HEAD_GAP) }]}>
       {/* ⚠ שורות הפעילות עברו אל תוך גוש הכותרת · שקד ביקשה שיישבו
           בדיוק במקום של ״שלישי · 25 באוגוסט״ במסך הקוסקוס, ושגוש
           התיאור יתחיל באותו גובה כמו התיאור שם. */}
-      <CategoryHeader title={FRUIT_TITLE} date={[FRUIT_HOURS, BY_APPOINTMENT]} />
+      <CategoryHeader
+        title={FRUIT_TITLE}
+        date={[FRUIT_HOURS, BY_APPOINTMENT]}
+        onHeight={setHeadH}
+      />
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         <Text style={s.introTitle}>{INTRO_TITLE}</Text>
@@ -162,7 +179,7 @@ export function FruitScreen() {
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: FRUIT_SCROLL_TOP },
+  page: { flex: 1, paddingHorizontal: space.lg },
   /* ⚠ היה paddingVertical · הריפוד העליון דחף את התיאור 18 פיקסלים
      מתחת למקום שלו בקוסקוס. */
   list: { paddingBottom: space.lg, gap: 6 },

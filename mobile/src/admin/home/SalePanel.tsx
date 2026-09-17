@@ -5,7 +5,9 @@ import Svg, { Circle } from 'react-native-svg';
 import { GlassCard } from './GlassCard';
 import { LAV, NightSky, SOFT_SHADOW } from './NightSky';
 import type { DishRow } from './useAdminHome';
+import { adminDishName } from '../dishNames';
 import { NO_TOUCH } from '../../theme/pointerEvents';
+import { FONT_BUMP } from '../../theme/fontScale';
 
 /**
  * לוח יום המכירה · ״גלקסיה״ עם דיאגרמת ״מסלולים״.
@@ -154,16 +156,9 @@ export function SalePanel({
                       transform={`rotate(-90 ${CX} ${CX})`}
                     />
                   ) : null}
-                  {frac > 0 ? (
-                    <Circle
-                      cx={CX + r * Math.cos(angle)}
-                      cy={CX + r * Math.sin(angle)}
-                      r={3.4}
-                      fill="#FFFFFF"
-                      stroke={hue}
-                      strokeWidth={2}
-                    />
-                  ) : null}
+                  {/* ⚠ **הלוויין ירד · 17 בספטמבר 2026** · בקשה של שקד:
+                      ״שלא יהיו את העיגולים הלבנים האלה״. עם שש מנות
+                      הם נערמו זה על זה בראש הטבעת ונראו כמו רעש. */}
                 </React.Fragment>
               );
             })}
@@ -182,7 +177,7 @@ export function SalePanel({
               <View key={d.id} style={s.row}>
                 <View style={[s.dot, { backgroundColor: hue }]} />
                 <Text style={s.name} numberOfLines={1}>
-                  {d.name}
+                  {adminDishName(d.name)}
                 </Text>
                 {/* ⚠ **המלאי מימין ל-/** · בקשה מפורשת של שקד
                     (15 בספטמבר 2026). המספר הזה הוא המלאי שהוגדר
@@ -239,8 +234,15 @@ const s = StyleSheet.create({
   body: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 },
   ringBox: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   ringText: { position: 'absolute', alignItems: 'center' },
-  ringPct: { fontSize: 24, fontWeight: '300', color: LAV.ink },
-  ringNote: { fontSize: 10.5, fontWeight: '600', letterSpacing: 1.1, color: LAV.faint },
+  /**
+   * ⚠ **הוקטן · 17 בספטמבר 2026** · בקשה של שקד: ״צריך להקטין את
+   * הכיתוב בפנים כי הוא נחתך״. הטבעת ברוחב 116 והחור שבמרכזה קטן
+   * ממנה בהרבה, ואחרי הגדלת הכתב הגלובלית ‏24 ו-10.5 כבר לא נכנסו.
+   * ⚠ **`FONT_BUMP` מנוטרל כאן** · זה כיתוב שיושב בתוך חור בקוטר
+   * קבוע, ולכן הוא היחיד באפליקציה שאסור לו לגדול איתו.
+   */
+  ringPct: { fontSize: 20 - FONT_BUMP, fontWeight: '300', color: LAV.ink },
+  ringNote: { fontSize: 9.5 - FONT_BUMP, fontWeight: '600', letterSpacing: 0.8, color: LAV.faint },
 
   rows: { flex: 1, gap: 9 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 5 },

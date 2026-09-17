@@ -214,6 +214,9 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       }
       setLoginOverlay(false);
       setStack([]);
+      /* ⚠ **גם התחברות היא מעבר** · בלי המונה שכבת ההנפשה לא יודעת
+         שהמסך התחלף · ראו `ScreenStage` */
+      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1 }));
       /* ⚠ המנהלת נכנסת לניהול · הגישה לניהול היא רק דרך ההתחברות שלה
          (החלטה 12), ולכן כניסה עם חשבון מנהלת לא נוחתת בבית של לקוחה. */
       setScreen(session?.user.role === 'admin' ? 'admin' : 'main');
@@ -227,6 +230,8 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     void tokenStore.clear();
     setStack([]);
     setLoginOverlay(false);
+    /* ⚠ גם התנתקות · ראו ההערה ב-`signIn` */
+    setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
     setScreen('guest');
   }, []);
 

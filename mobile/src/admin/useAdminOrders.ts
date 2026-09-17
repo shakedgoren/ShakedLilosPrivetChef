@@ -11,6 +11,8 @@ import {
 import { KITCHEN_FLOW } from '../api/status';
 import { apiEnabled } from '../api/config';
 import { adminCreateOrder, adminListOrders, adminSetStatus } from '../api/orders';
+import { useCheer } from '../components/Cheer';
+import { statusToast } from './statusToast';
 import { adminListCustomers } from '../api/admin';
 import { useNav } from '../navigation/store';
 import type { AdminCard } from '../api/types';
@@ -52,6 +54,8 @@ const cardToOrder = (c: AdminCard): AdminOrder => ({
 });
 
 export function useAdminOrders() {
+  /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
+  const { toast } = useCheer();
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
   const flow = live ? [...KITCHEN_FLOW] : FLOW;
@@ -131,6 +135,8 @@ export function useAdminOrders() {
       const k = flow.indexOf(cur);
       if (k < 0 || k >= flow.length - 1) return;
       const next = flow[k + 1];
+      /* ⚠ ההודעה קופצת מיד · לא מחכים לשרת · ראו `statusToast` */
+      toast(statusToast(next));
       if (live) {
         const id = allOrders[i].id;
         if (!id) return;
@@ -139,7 +145,7 @@ export function useAdminOrders() {
       }
       setMoved((m) => ({ ...m, [i]: next }));
     },
-    [statusOf, flow, live, allOrders, reload],
+    [statusOf, flow, live, allOrders, reload, toast],
   );
 
   /* ── ביטול ── */
@@ -157,6 +163,8 @@ export function useAdminOrders() {
   const doCancel = useCallback(() => {
     if (!cancelReady) return;
     const i = cancelling;
+    /* ⚠ גם ביטול הוא שינוי סטטוס · ראו `statusToast` */
+    toast(statusToast(CANCELLED));
     if (live) {
       const id = allOrders[i]?.id;
       if (!id) return;
@@ -171,7 +179,7 @@ export function useAdminOrders() {
     setNotes((n) => ({ ...n, [i]: cx }));
     setCancelling(-1);
     setOpen(i);
-  }, [cancelReady, cancelling, cx, live, allOrders, reload]);
+  }, [cancelReady, cancelling, cx, live, allOrders, reload, toast]);
 
   /* ── ההזמנה הידנית ── */
   const setField = useCallback(

@@ -23,6 +23,7 @@ import { ApiError } from '../../api/types';
 import { ChefConfirm } from './ChefConfirm';
 import { usePrefill } from '../../navigation/usePrefill';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
+import { headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
 import { ChefSectionRenderer } from './ChefSectionRenderer';
@@ -429,7 +430,8 @@ const s = StyleSheet.create({
     backgroundColor: ACCENT.hue,
   },
 
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
+  /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(0) },
   /**
    * ⚠ שתי בקשות של שקד לדף הראשי של פינת השף:
    * שוליים צרים יותר (18 ← 12), ופחות רווח מתחת לכותרת —

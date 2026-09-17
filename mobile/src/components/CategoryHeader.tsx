@@ -19,16 +19,31 @@ import { BackButton } from './BackButton';
  * אחד, כדי ששורות הפעילות יישבו בדיוק במקום של ״שלישי · 25 באוגוסט״
  * במסך הקוסקוס. בקשה מפורשת של שקד.
  */
-type Props = { title: string; date?: string | readonly string[] };
+type Props = {
+  title: string;
+  date?: string | readonly string[];
+  /**
+   * גובה גוש הכותרת בפועל.
+   *
+   * ⚠ **נוסף ב-17 בספטמבר 2026** · אחרי הגדלת הכתב שורת השעות במסך
+   * הפירות **נשברה לשורה נוספת**, והתוכן נגלל מתחתיה ונחתך. חישוב
+   * של ״כמה נקודות גדל הגופן״ לא תופס שבירת שורה, ולכן המסך הזה
+   * מודד את הכותרת במקום לנחש אותה.
+   */
+  onHeight?: (h: number) => void;
+};
 
-export function CategoryHeader({ title, date }: Props) {
+export function CategoryHeader({ title, date, onHeight }: Props) {
   const { back } = useNav();
   const dateLines = date === undefined ? [] : typeof date === 'string' ? [date] : date;
 
   return (
     <>
       <BackButton onPress={back} tint="#F4F0FA" />
-      <View style={s.head}>
+      <View
+        style={s.head}
+        onLayout={onHeight ? (e) => onHeight(e.nativeEvent.layout.height) : undefined}
+      >
         <Text style={s.title}>{title}</Text>
         {dateLines.map((line) => (
           <Text key={line} style={s.date}>

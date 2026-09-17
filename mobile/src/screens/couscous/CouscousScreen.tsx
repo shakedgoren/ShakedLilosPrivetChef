@@ -31,6 +31,7 @@ import {
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
+import { headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useCouscousOrder } from './useCouscousOrder';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
@@ -218,7 +219,8 @@ const s = StyleSheet.create({
   addonName: { fontSize: 12.5, fontWeight: '600', lineHeight: 15, textAlign: 'center', color: surface.ink },
   addonPrice: { fontSize: 12, fontWeight: '600', color: ACCENT.hue },
 
-  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 },
+  /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
+  page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(1) },
   list: { paddingBottom: space.lg, gap: LIST_GAP },
   row: {
     height: DISH_ROW.height,

@@ -1,4 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
+import { apiEnabled } from '../api/config';
+import { saleDayStatus } from '../api/orders';
+import { SALE_DAY_CATEGORIES } from '../data/shared';
 
 /**
  * מצב התזכורות · מקור אמת אחד לכל האפליקציה.
@@ -52,3 +55,33 @@ export function useReminder(category: string): boolean | undefined {
     () => state.get(category),
   );
 }
+
+/**
+ * טעינת מצב התזכורות מהשרת · **לכל קטגוריות יום המכירה יחד**.
+ *
+ * ⚠ **נוסף ב-17 בספטמבר 2026, אחרי שהתלונה חזרה** · המאגר המשותף
+ * לבדו לא הספיק: כל מסך עדיין **שאל בעצמו ועל הקטגוריה שלו בלבד**.
+ * שורת דף הבית שאלה רק על המכירה הקרובה, וחלונית הקטגוריה שאלה רק
+ * כשלוחצים ״המשך״ — ולכן כל עוד לא לחצו, החלונית פעלה לפי ערך
+ * שאיש לא טען, ושני המסכים יכלו להראות דברים שונים.
+ *
+ * עכשיו דף הבית טוען בבת אחת את שתיהן, ומכאן ואילך שניהם קוראים
+ * מאותו מקום.
+ *
+ * ⚠ **כישלון אינו משנה כלום** · עדיף להשאיר את מה שכבר ידוע מאשר
+ * להצהיר ״אין תזכורת״ בגלל רשת שנפלה.
+ */
+export async function syncReminders(): Promise<void> {
+  if (!apiEnabled) return;
+  await Promise.all(
+    SALE_DAY_CATEGORIES.map(async (category) => {
+      try {
+        const day = await saleDayStatus(category);
+        setReminder(category, day.reminder ?? false);
+      } catch {
+        /* ראו ההערה למעלה */
+      }
+    }),
+  );
+}
+

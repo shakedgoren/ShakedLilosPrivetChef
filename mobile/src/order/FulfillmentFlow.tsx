@@ -180,11 +180,11 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
             {minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}
             {first}–{last}
           </Text>
-          {/* ⚠ המחירון נוסף כאן · הלקוחה לא ידעה כמה עולה משלוח
-              עד שההזמנה כבר נשלחה */}
-          <Text style={s.optionSub}>
-            {SHIP_NEAR} ₪ בתוך יבנה · {SHIP_FAR} ₪ מחוצה לה
-          </Text>
+          {/* ⚠ **המחירון ירד מכאן · 17 בספטמבר 2026** · בקשה של שקד:
+              ״בתצוגה המקדימה של המשלוח שלא יציג את המחירים, רק לאחר
+              שבוחרים משלוח שזה יציג בתוך איפה שרושמים את הכתובת״.
+              הוא עבר ל-`AddressStep`, שם גם ברור לאיזו עיר הוא
+              מתייחס. */}
         </View>
         <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
       </Pressable>
@@ -297,6 +297,12 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
         zone
         okNote={DELIVERY_OK}
       />
+
+      {/* ⚠ **המחירון כאן ולא בבחירת המסירה** · בקשה של שקד · ראו
+          ההערה ב-`ShipStep`. הסכומים עצמם נמסרו על ידה. */}
+      <Text style={s.shipFee}>
+        דמי משלוח · {SHIP_NEAR} ₪ בתוך יבנה · {SHIP_FAR} ₪ מחוצה לה
+      </Text>
 
       <ContinueButton
         onPress={f.addressNext}
@@ -527,6 +533,14 @@ const s = StyleSheet.create({
   optionText: { flexGrow: 1, flexShrink: 1, gap: 3 },
   optionTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   optionSub: { fontSize: type.label, color: surface.muted },
+  /* ⚠ מחירון המשלוח · יושב מתחת לשדה הכתובת · ראו `AddressStep` */
+  shipFee: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: surface.muted,
+    textAlign: 'center',
+    marginTop: -2,
+  },
   toast: { fontSize: type.label, color: '#B95349', textAlign: 'center' },
 
   hint: { fontSize: 11.5, color: surface.muted },

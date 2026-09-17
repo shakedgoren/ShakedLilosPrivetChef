@@ -262,9 +262,15 @@ function Cards({ s, api }: { s: Section; api: Api }) {
             <Photo
               name={eventPhoto(o.n)}
               rgb={ACCENT.rgb}
-              style={[st.cardShot, { height: shotSide }]}
+              style={[st.cardShot, { width: shotSide, height: shotSide }]}
               zoom={false}
             />
+            {/* ⚠ **הכף **מתחת** לתמונה ולא עליה · 17 בספטמבר 2026** ·
+                בקשה של שקד: ״הגובה של כל אופציה צריך להיות גבוה יותר
+                כדי שיראו את התמונה בשלמותה ולא תיחתך, מתחת לתמונה
+                באותה כרטיסייה צריכה להגיע השכבה הירוקה ועלייה
+                הכיתוב״. קודם הכף ריחפה **על** התמונה וכיסתה
+                כשליש ממנה. */}
             <View style={st.cardFoot}>
               {/* ⚠ הייתה כאן מלבן ירוק אטום · בקנבס זה
                   `linear-gradient(to top, …0.96 → 0.9 → 0.55 → 0)`,
@@ -413,7 +419,6 @@ const CARD_BORDER = 2;
 const FOOT_PAD_TOP = 12;
 /** ⚠ מוזכר גם ב-`footFill`, שמבטל אותו בהיסט שלילי */
 const FOOT_PAD_SIDE = 10;
-const FOOT_RGB = 'rgb(198,228,211)';
 /**
  * ⚠ **הכף אטומה, והמעבר יצא ממנה · 16 בספטמבר 2026** · שקד דיווחה
  * ש״בנראות של חלה לכל אירוע הפס הירוק נשבר שם ולא רואים את
@@ -433,13 +438,23 @@ const FOOT_FILL = 'rgba(198,228,211,0.96)';
  * ב-16 בספטמבר, ולמחרת הבהירה: ״התכוונתי שצריך להוריד **מבחינת
  * גובה**״. הרצועה הייתה 36 ותפסה נתח מהתמונה; עכשיו 22.
  */
-const FADE_H = 22;
+const FADE_H = 26;
+/** כמה מהרצועה יורד אל תוך הירוק · השאר יושב על התמונה */
+const SEAM = 9;
 /** ⚠ עדין בכוונה · ״טיפה״, לא מסך חלבי */
-const FADE_BLUR = 14;
-/** עצירות רצועת המעבר בלבד · מלמטה (אטום) למעלה (שקוף) */
+const FADE_BLUR = 18;
+/**
+ * ⚠ **לבן ולא ירוק · בקשה של שקד (17 בספטמבר 2026)** · ״בין החיבור
+ * של התמונה לבין החיבור של השכבה הירוקה צריך לחבר טשטוש לבן״.
+ * הרצועה היא להבה לבנה רכה שדוהה לשקוף לשני הכיוונים, ולכן היא
+ * מטשטשת את התפר משני צדדיו במקום לצייר קו.
+ */
+const FADE_RGB = 'rgb(255,255,255)';
+/** עצירות הרצועה · שקוף בקצוות, לבן במרכז */
 const FOOT_STOPS: [number, number][] = [
-  [0, 0.96],
-  [0.5, 0.6],
+  [0, 0],
+  [0.42, 0.72],
+  [0.6, 0.72],
   [1, 0],
 ];
 
@@ -476,7 +491,7 @@ function FadeStrip({ width }: { width?: number }) {
         <Defs>
           <LinearGradient id={id} x1="0" y1="1" x2="0" y2="0">
             {FOOT_STOPS.map(([at, op]) => (
-              <Stop key={at} offset={at} stopColor={FOOT_RGB} stopOpacity={op} />
+              <Stop key={at} offset={at} stopColor={FADE_RGB} stopOpacity={op} />
             ))}
           </LinearGradient>
         </Defs>
@@ -607,8 +622,14 @@ const st = StyleSheet.create({
   chipText: { fontSize: 12.5 },
 
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
+  /**
+   * ⚠ **בלי גובה קבוע · 17 בספטמבר 2026** · היה `height: CARD_H`,
+   * והכף ריחפה על התמונה וחתכה אותה. עכשיו התמונה ריבועית ומלאה,
+   * הכף זורמת מתחתיה, והגובה נגזר מהתוכן. שני כרטיסים באותה שורה
+   * מתיישרים לגבוה שבהם, כי זו ברירת המחדל של שורה גולשת.
+   */
   card: {
-    height: CARD_H,
+    minHeight: CARD_H,
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: CARD_BORDER,
@@ -633,23 +654,25 @@ const st = StyleSheet.create({
    * בגודלה המרובע ותיראה במלואה. לכן היא נצמדת לראש הכרטיס ברוחב
    * מלא, והגובה מגיע מ-`shotSide` — ולא נמתחת לגובה המלבן.
    */
-  cardShot: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    left: 0,
-    width: '100%',
-  },
+  /**
+   * ⚠ **בזרימה ולא ממוקמת-מוחלט** · הכף יושבת מתחתיה · ראו `card`.
+   *
+   * ⚠ **רוחב מפורש ולא `stretch`** · נמדד בסימולטור ב-17 בספטמבר:
+   * ל-`Image` יש מידות טבעיות (‎800×800), ו-`alignSelf: 'stretch'`
+   * לא גבר עליהן — התמונה נפרשה ל-800 נקודות והכרטיס הראה ממנה
+   * פינה אחת מוגדלת. עם רוחב מספרי היא נכנסת שלמה.
+   */
+  cardShot: { borderTopLeftRadius: 18, borderTopRightRadius: 18 },
   /* כיתוב על גרדיאנט ירוק בתחתית · הערכים מהקנבס */
   cardFoot: {
-    position: 'absolute',
-    right: 0,
-    left: 0,
-    bottom: 0,
+    /* ⚠ ממלאה את מה שנשאר מתחת לתמונה · ראו `card` */
+    flex: 1,
+    alignSelf: 'stretch',
     paddingTop: FOOT_PAD_TOP,
     paddingHorizontal: FOOT_PAD_SIDE,
     paddingBottom: 11,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 3,
     backgroundColor: FOOT_FILL,
   },
@@ -663,11 +686,12 @@ const st = StyleSheet.create({
    */
   footFill: {
     position: 'absolute',
-    top: -FADE_H,
+    /* ⚠ **על התפר ולא מעליו** · חלקה על התמונה וחלקה על הירוק,
+       כדי שהחיבור עצמו יהיה מטושטש ולא קו · ראו `SEAM` */
+    top: -(FADE_H - SEAM),
     right: 0,
     left: 0,
     height: FADE_H,
-    overflow: 'hidden',
   },
   cardName: { fontSize: 13, fontWeight: '600', color: '#22452F', lineHeight: 15.6, textAlign: 'center' },
   cardDesc: { fontSize: 10, fontWeight: '300', lineHeight: 14.5, color: '#37634A', textAlign: 'center' },
