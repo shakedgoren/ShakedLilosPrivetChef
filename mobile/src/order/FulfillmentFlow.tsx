@@ -69,6 +69,13 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState('');
 
+  /* ההזמנה נסגרה · ראו את ההערה על ה-X */
+  const done = f.step === STEP.done || f.step === STEP.confirm;
+  const closeHome = () => {
+    f.reset();
+    onHome();
+  };
+
   if (f.step === STEP.closed) return null;
 
   const onPay = async (p: string) => {
@@ -103,7 +110,10 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
         <View style={s.sheet}>
           <View style={s.head}>
             <Text style={s.title}>{titleFor(f)}</Text>
-            <Pressable onPress={f.reset} hitSlop={10}>
+            {/* ⚠ **במסך האישור ה-X מחזיר הביתה · 17 בספטמבר 2026** ·
+                בקשה של שקד. בשאר השלבים הוא רק סוגר את החלונית
+                ומשאיר את ההזמנה כפי שהיא. */}
+            <Pressable onPress={done ? closeHome : f.reset} hitSlop={10}>
               <S k="close" size={13} color="#6E6478" />
             </Pressable>
           </View>
@@ -435,7 +445,10 @@ function ConfirmStep({
 
         {lines.map((l) => (
           <View key={l.name} style={s.line}>
-            <Text style={s.lineQty}>{l.qty}×</Text>
+            {/* ⚠ **בלי ״1×״ · 17 בספטמבר 2026** · שקד ביקשה שהסלטים
+                ייכתבו בגרמים ״ולא את x״. כמות אחת אינה מוסיפה מידע
+                בשום שורה, ולכן היא יורדת בכל הקטגוריות. */}
+            {l.qty > 1 ? <Text style={s.lineQty}>{l.qty}×</Text> : null}
             <Text style={s.lineName}>{l.name}</Text>
             <Text style={s.lineSum}>{l.sum} ₪</Text>
           </View>

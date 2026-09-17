@@ -11,30 +11,28 @@ import type { FruitDetails } from './FruitOrderSheet';
  * במערכת ההזמנות של האתר, ולכן אין כאן התחברות ואין זרימת מסירה.
  * הכפתור פותח שיחת וואטסאפ עם ההזמנה כתובה בפנים.
  *
- * נוסח ההודעה נכתב על ידי Claude · ✅ שקד אישרה אותו ב-11 בספטמבר 2026.
- * אין לשנות בלי בקשה מפורשת ממנה. זה המקום היחיד שבו הנוסח חי.
- *
- * ⚠ **הורחב ב-15 בספטמבר 2026 לבקשת שקד** · היא ביקשה שחלונית
- * תאסוף שם, תאריך, שעה ואופן מסירה, ושההודעה תצא ״עם הפרטים
- * המלאים״. הפתיח, שורות המגשים ושורת הסה״כ נשארו מילה במילה כפי
- * שאישרה; שורות הפרטים נוספו אחריהן, והניסוח שלהן הוא שלי.
+ * ⚠ **הנוסח הוחלף כולו ב-17 בספטמבר 2026** · שקד מסרה תבנית
+ * מדויקת וביקשה אותה מילה במילה. הנוסח הקודם — שאני כתבתי והיא
+ * אישרה ב-11 בספטמבר — ירד לגמרי, וגם שורות השם, הסכום ודמי
+ * המשלוח שהיו בו. זה המקום היחיד שבו הנוסח חי.
  */
 
 /** מספר הוואטסאפ של מיכל · אותו מספר שמופיע במסך, בפורמט בינלאומי */
 export const MICHAL_WA = '972522958511';
 
-const GREETING = 'היי מיכל, אשמח להזמין מגש פירות';
-const TOTAL_LABEL = 'סה״כ';
+/**
+ * ⚠ **הנוסח נכתב על ידי שקד · 17 בספטמבר 2026** · היא מסרה אותו
+ * מילה במילה, כולל הפיסוק וצורות הפנייה הכפולות. כל הנוסח הקודם
+ * הוחלף. **אין לשנות כאן דבר בלי בקשה מפורשת ממנה.**
+ */
+const OPEN = 'היי מיכל, אני מעוניינ/ת לבצע הזמנה של : ';
+const WHEN = 'לתאריך ושעה : ';
+const SHIP = 'אופן מסירה : ';
+const SIGN = 'תודה, אני ממתינ/ה לתשובה!';
 
-/** ⚠ נוסח שכתבתי · תוויות שורות הפרטים */
-const NAME_LABEL = 'שם';
-const DATE_LABEL = 'תאריך';
-const TIME_LABEL = 'שעה';
-const SHIP_LABEL = 'מסירה';
-const PICKUP_TEXT = 'איסוף עצמי';
-const DELIV_TEXT = 'משלוח';
-const ADDR_LABEL = 'כתובת';
-const FEE_LABEL = 'דמי משלוח';
+/** ⚠ הנוסח של שקד · הכתובת המלאה של נקודת האיסוף */
+const PICKUP_TEXT = 'איסוף עצמי מרחוב הנופר 25 יבנה';
+const DELIV_PREFIX = 'משלוח לרחוב ';
 
 /**
  * דמי המשלוח לעיר שנבחרה.
@@ -50,31 +48,33 @@ export function humanDate(key: string): string {
   return `${d}.${m}.${y} (יום ${DOWS[dowOf(key)]}׳)`;
 }
 
-/** גוף ההודעה · שורה לכל מגש, הסכום, ואז פרטי ההזמנה */
+/**
+ * גוף ההודעה · בדיוק בתבנית של שקד.
+ *
+ * ⚠ **ארבעה שדות בלבד** · סוג המגשים והכמות, התאריך, השעה ואופן
+ * המסירה. הסכום, השם ודמי המשלוח **ירדו** — הם לא בתבנית שמסרה.
+ */
 export function whatsappMessage(
   lines: OrderLine[],
   total: number,
   details?: FruitDetails,
 ): string {
-  const items = lines.map((l) => `· ${l.name} × ${l.qty} — ${l.sum} ₪`);
-  const out = [GREETING + ':', ...items, '', `${TOTAL_LABEL}: ${total} ₪`];
-  if (!details) return out.join('\n');
+  /* ⚠ הסכום אינו בהודעה · נשאר בחתימה כדי לא לשבור קוראים קיימים */
+  void total;
+  const what = lines.map((l) => `${l.name} × ${l.qty}`).join(', ');
+  if (!details) return `${OPEN}${what},\n${SIGN}`;
 
   const deliv = details.ship === 'deliv';
-  out.push(
-    '',
-    `${NAME_LABEL}: ${details.name}`,
-    `${DATE_LABEL}: ${humanDate(details.date)}`,
-    `${TIME_LABEL}: ${details.time}`,
-    `${SHIP_LABEL}: ${deliv ? DELIV_TEXT : PICKUP_TEXT}`,
-  );
-  if (deliv && details.city) {
-    out.push(
-      `${ADDR_LABEL}: ${details.address}, ${details.city}`,
-      `${FEE_LABEL}: ${shippingFee(details.city)} ₪`,
-    );
-  }
-  return out.join('\n');
+  const where = deliv
+    ? `${DELIV_PREFIX}${[details.address, details.city].filter(Boolean).join(', ')}`
+    : PICKUP_TEXT;
+
+  return [
+    `${OPEN}${what},`,
+    `${WHEN}${humanDate(details.date)} , ${details.time},`,
+    `${SHIP}${where},`,
+    SIGN,
+  ].join('\n');
 }
 
 /** הקישור המלא · wa.me עם ההודעה מקודדת */

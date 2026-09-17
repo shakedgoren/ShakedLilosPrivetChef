@@ -1,5 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
-import { BOXES, priceOfBox, type Box, type Section } from '../../data/boxes';
+import {
+  BOXES,
+  CHALLAH_ONE,
+  CHALLAH_PAIR,
+  SALAD_PER_KG,
+  priceOfBox,
+  type Box,
+  type Section,
+} from '../../data/boxes';
 import type { OrderLine } from '../../order/types';
 
 export type Picks = Record<string, any>;
@@ -89,7 +97,23 @@ export function useBoxesOrder() {
     return box.sections.every((s) => sectionReady(s, picks));
   }, [box, picks, total]);
 
-  /**
+/**
+ * ⚠ **נוסח הסיכום של ״קחו כמה שבא לכם״ · 17 בספטמבר 2026** ·
+ * בקשות של שקד, מילה במילה:
+ * · ״אם הזמנתי חלה מסוג שומשום הוא לא צריך לכתוב שומשום אלא חלה
+ *   עם ציפוי שומשום, אם זו חלה ללא כלום אז פשוט לרשום חלה ללא
+ *   ציפוי״.
+ * · ״לגבי הסלטים לא לרשום מ״ל אלא לרשום 500 גרם״.
+ *
+ * ⚠ **המרה של אחד לאחד** · מיליליטר של סלט נחשב גרם. זו ההנחה
+ * שמאחורי הבקשה, ואם היא שגויה זה המקום לתקן.
+ */
+const PLAIN_COAT = 'קלאסית';
+const coatLine = (coat: string) =>
+  coat === PLAIN_COAT ? 'חלה ללא ציפוי' : `חלה עם ציפוי ${coat}`;
+const saladLine = (name: string, ml: number) => `${name} · ${ml} גרם`;
+
+/**
    * שורות הסיכום · המארז ואחריו הבחירות שנעשו בו.
    *
    * ⚠ **״קחו כמה שבא לכם״ יוצא מהכלל · 16 בספטמבר 2026** · בקשה של
@@ -103,7 +127,46 @@ export function useBoxesOrder() {
    */
   const lines: OrderLine[] = useMemo(() => {
     if (!box) return [];
-    const out: OrderLine[] = box.key === 'free' ? [] : [{ qty: 1, name: box.name, sum: total }];
+
+    /**
+     * ⚠ **״קחו כמה שבא לכם״ · שורות עם מחיר** · בקשה של שקד:
+     * ״הוא לא רושם את המחיר ליד הפריט שהוזמן״.
+     *
+     * ⚠ **החלות מתומחרות כזוגות** · 44 ש״ח לזוג ו-25 ליחידה, ולכן
+     * אי אפשר לתמחר שורה בנפרד. הסכום הכולל מחולק בין השורות לפי
+     * מספר היחידות, והשורה האחרונה בולעת את שארית העיגול — כך
+     * שהשורות מסתכמות **בדיוק** בסה״כ.
+     */
+    if (box.key === 'free') {
+      const coats = (picks.coats ?? {}) as Record<string, number>;
+      const salads = (picks.salads ?? {}) as Record<string, number>;
+      const units = Object.values(coats).reduce((n, v) => n + v, 0);
+      const challah =
+        Math.floor(units / 2) * CHALLAH_PAIR + (units % 2) * CHALLAH_ONE;
+
+      const out: OrderLine[] = [];
+      const chosen = Object.entries(coats).filter(([, n]) => n > 0);
+      let spent = 0;
+      chosen.forEach(([coat, n], i) => {
+        const last = i === chosen.length - 1;
+        const sum = last ? challah - spent : Math.round((challah * n) / units);
+        spent += sum;
+        out.push({ qty: n, name: coatLine(coat), sum });
+      });
+
+      Object.entries(salads)
+        .filter(([, ml]) => ml > 0)
+        .forEach(([name, ml]) =>
+          out.push({
+            qty: 1,
+            name: saladLine(name, ml),
+            sum: Math.round((ml * SALAD_PER_KG) / 1000),
+          }),
+        );
+      return out;
+    }
+
+    const out: OrderLine[] = [{ qty: 1, name: box.name, sum: total }];
     box.sections.forEach((s) => {
       if (!s.id || isDormant(s, picks)) return;
       const v = picks[s.id];

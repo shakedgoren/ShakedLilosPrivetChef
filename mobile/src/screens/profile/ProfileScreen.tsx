@@ -302,16 +302,19 @@ export function ProfileScreen() {
           שקד: ״הכפתור שמור לא צריך להיות שם תוריד אותו במקום זה
           תוסיף כפתור עם V מימין לאיזור אישי באותה השורה של הכפתור
           התנתקות״.
-          ⚠ **מיקום מוחלט עם `insets.top`** · בדיוק כמו
-          `LogoutButton` שבצד השני. מיקום מוחלט אינו מכבד את ריפוד
-          האזור הבטוח, ובלי ההיסט הכפתור היה יושב על השעון. */}
+          ⚠ **בלי `insets.top` · תוקן ב-17 בספטמבר 2026** · שקד
+          דיווחה שהכפתור אינו באותו גובה של ההתנתקות. `LogoutButton`
+          יושב בשכבה מוחלטת שפרושה על **כל המסך**, ולכן הוא מוסיף
+          את ההיסט בעצמו. הכפתור כאן יושב בתוך `s.page`, שכבר מתחיל
+          **אחרי** האזור הבטוח — וההיסט נספר פעמיים.
+          ⚠ הכפתור מוצג תמיד · אפור כשאין מה לשמור, גם זו בקשתה. */}
       <Pressable
         onPress={() => void save()}
         disabled={!canSave}
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel="שמירת הפרטים"
-        style={[s.saveFab, { top: insets.top + SAVE_TOP }, canSave ? s.saveOn : s.saveOff]}
+        style={[s.saveFab, { top: SAVE_TOP }, canSave ? s.saveOn : s.saveOff]}
       >
         <S k="check" size={18} color={canSave ? '#43307A' : '#A79FB2'} />
       </Pressable>

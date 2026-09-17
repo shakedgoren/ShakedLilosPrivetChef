@@ -70,6 +70,22 @@ const TICK_STROKE = 3;
 /** המילה שבה הקנבס חותך את התיאור · מה שאחריה הוא המחיר */
 const PRICE_AT = 'תוספת';
 
+/**
+ * ⚠ **״לסועד״ ליד המחיר · 17 בספטמבר 2026** · בקשה של שקד לשדרוגי
+ * עמדת הטאבון: ״ליד המחיר להוסיף את המילה לסועד חוץ מהעיצוב
+ * שולחן, ובנוסף להגדיל את המחירים״.
+ *
+ * ⚠ **התוספת כאן ולא בנתונים** · `data/chef.ts` נוצר אוטומטית
+ * מהקנבס, ועריכה ידנית שלו נמחקת בסריקה הבאה.
+ *
+ * ⚠ החריג נזהה **מהכיתוב עצמו** · עיצוב השולחן מתומחר ״סה״כ״
+ * ולא לסועד, ולכן כל תג שכבר אומר ״סה״כ״ נשאר כמו שהוא.
+ */
+const PER_GUEST = 'לסועד';
+const TOTAL_MARK = 'סה״כ';
+const badgeWithUnit = (badge: string) =>
+  badge.includes(TOTAL_MARK) || badge.includes(PER_GUEST) ? badge : `${badge} ${PER_GUEST}`;
+
 type Props = {
   name: string;
   desc?: string;
@@ -128,7 +144,7 @@ export function ChefExtraCard({ name, desc, badge, on, one = false, onPress }: P
         {badge ? (
           <View style={s.badge}>
             <Text numberOfLines={1} style={s.badgeText}>
-              {badge}
+              {badgeWithUnit(badge)}
             </Text>
           </View>
         ) : null}
@@ -192,13 +208,14 @@ const s = StyleSheet.create({
   desc: { fontWeight: '400', color: INK_SOFT, textAlign: 'center' },
   price: { marginTop: 3, fontWeight: '600', color: INK, textAlign: 'center' },
   badge: {
-    marginTop: 2,
+    marginTop: 3,
     borderRadius: 999,
-    paddingVertical: 2,
-    paddingHorizontal: 9,
+    paddingVertical: 3,
+    paddingHorizontal: 11,
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
-  badgeText: { fontSize: 10, fontWeight: '600', color: INK },
+  /* ⚠ הוגדל מ-10 · בקשת שקד ״להגדיל את המחירים״ */
+  badgeText: { fontSize: 12.5, fontWeight: '700', color: INK },
   /* ⚠ הפינה השמאלית · בקנבס `left: 9`, וב-RTL זו הפינה הרחוקה מהטקסט */
   tick: {
     position: 'absolute',
