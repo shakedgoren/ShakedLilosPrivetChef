@@ -28,6 +28,14 @@ const PAD = (ITEM_H * (VISIBLE - 1)) / 2;
 const BOX_PAD = 10;
 /** קפיצות הדקות · רבע שעה, כמו בחלון איסוף */
 const STEP_MIN = 15;
+/**
+ * ⚠ **רוחב הקופסה · צומצם ב-17 בספטמבר 2026** · בקשה של שקד:
+ * ״שהרוחב של זה יהיה צר יותר״. הקופסה נמתחה לכל רוחב החלונית,
+ * ושתי עמודות ספרות באמצע נראו אבודות בתוכה.
+ */
+const BOX_W = 176;
+/** משך גלילת התיקון · ראו `settling` */
+const SNAP_MS = 260;
 
 type Props = {
   /** ״HH:MM״ */
@@ -54,16 +62,45 @@ function Column({
   const ref = React.useRef<ScrollView>(null);
   const index = Math.max(0, values.indexOf(value));
 
-  /* מציבים את הגלגל על הערך הנוכחי · גם בפתיחה וגם כשהוא משתנה מבחוץ */
+  /**
+   * ⚠ **המספרים רצו בלי הפסקה · תוקן ב-17 בספטמבר 2026** · שקד
+   * דיווחה: ״כשאני מחליקה עם האצבע לבחירת שעה יש באג המספרים לא
+   * מפסיקים לרוץ ללא הפסקה״.
+   *
+   * הסיבה היא **לולאה בין שתי גלילות**: `settle` קרא ל-`onChange`
+   * **וגם** ל-`scrollTo` מונפש. ה-`onChange` שינה את הערך למעלה,
+   * האפקט שלמטה גלל שוב, והגלילה המונפשת סיימה ופתחה `settle`
+   * נוסף — וחוזר חלילה.
+   *
+   * `at` זוכר על איזו משבצת הגלגל **באמת** נמצא, ולכן האפקט אינו
+   * מתקן גלילה שהגיעה מהגלגל עצמו. `settling` חוסם `settle` בזמן
+   * גלילת התיקון.
+   */
+  const at = React.useRef(index);
+  const settling = React.useRef(false);
+
   React.useEffect(() => {
+    if (at.current === index) return;
+    at.current = index;
     ref.current?.scrollTo({ y: index * ITEM_H, animated: false });
   }, [index]);
 
   const settle = (y: number) => {
+    if (settling.current) return;
     const i = Math.min(values.length - 1, Math.max(0, Math.round(y / ITEM_H)));
+    at.current = i;
+
+    /* ⚠ מיישרים רק כשבאמת נעצרנו בין משבצות · `snapToInterval`
+       כבר עושה את רוב העבודה, וגלילה מיותרת היא זו שפתחה לולאה */
+    if (Math.abs(y - i * ITEM_H) > 1) {
+      settling.current = true;
+      ref.current?.scrollTo({ y: i * ITEM_H, animated: true });
+      setTimeout(() => {
+        settling.current = false;
+      }, SNAP_MS);
+    }
+
     if (values[i] !== value) onChange(values[i]);
-    /* ⚠ מיישרים בכוח · גלילה קצרה נעצרת בין משבצות */
-    ref.current?.scrollTo({ y: i * ITEM_H, animated: true });
   };
 
   return (
@@ -139,6 +176,8 @@ export function TimeWheel({ value, onChange, from, to, accent }: Props) {
 
 const s = StyleSheet.create({
   box: {
+    width: BOX_W,
+    alignSelf: 'center',
     borderRadius: 22,
     borderWidth: 1.5,
     paddingVertical: BOX_PAD,

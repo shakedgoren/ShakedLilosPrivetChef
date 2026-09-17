@@ -169,6 +169,17 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
 
     const date = await resolveCustomerSaleDate(prisma, undefined, category);
     const rec = await loadSaleDayView(prisma, date, category);
+    /**
+     * ⚠ **האם כבר ביקשה תזכורת · 17 בספטמבר 2026** · בקשה של שקד:
+     * ״במידה ותזכורת הופעלה כבר, לא להציע לבן אדם להפעיל שוב״.
+     * חוזר כאן ולא בנקודה נפרדת · הלקוח כבר שואל את המצב ממילא.
+     */
+    const reminder = req.user
+      ? (await prisma.saleReminder.findUnique({
+          where: { userId_category: { userId: req.user.id, category } },
+          select: { id: true },
+        })) !== null
+      : false;
     const problem = evaluateCustomerSaleDay({
       rec,
       category,
@@ -181,6 +192,7 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
       open: problem === null,
       /* ⚠ שלושת המצבים · ראו `saleDayState` */
       state: saleDayState({ rec, category, today: isoDate(new Date()) }),
+      reminder,
       reason: problem?.code ?? '',
       message: problem?.message ?? '',
     });
@@ -247,6 +259,23 @@ ordersRouter.post('/remind', requireAuth, async (req, res, next) => {
       create: { userId: req.user!.id, category },
     });
     res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * ביטול תזכורת.
+ * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״אם ילחצו עליו שוב פשוט
+ * יקפוץ… ״התזכורת נמחקה״ והאייקון יתחלף בחזרה לפעמון בלי קו״.
+ * ⚠ מחיקה של מה שאינו קיים אינה שגיאה · התוצאה זהה.
+ */
+ordersRouter.delete('/remind', requireAuth, async (req, res, next) => {
+  try {
+    const category = String(req.query.category ?? req.body?.category ?? '');
+    if (!isCategory(category)) throw badRequest('invalid_order', 'category');
+    await prisma.saleReminder.deleteMany({ where: { userId: req.user!.id, category } });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

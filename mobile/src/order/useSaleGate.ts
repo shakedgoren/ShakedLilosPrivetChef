@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useCheer } from '../components/Cheer';
 import { apiEnabled } from '../api/config';
 import { requestSaleReminder, saleDayStatus } from '../api/orders';
 import { ApiError } from '../api/types';
@@ -16,17 +17,28 @@ import { hasSaleDay } from '../data/shared';
  * ⚠ **רק לקוסקוס ולשניצל** · שאר הקטגוריות אינן תלויות ביום מכירה
  * ולכן השער שקוף להן לגמרי — הוא אפילו לא פונה לשרת.
  */
+/** הנוסחים של שקד · מילה במילה */
+const REMINDER_ON = 'תזכורת הופעלה';
+
 export function useSaleGate(category: string) {
   const [closed, setClosed] = useState<{ note: string } | null>(null);
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   /**
-   * ⚠ **קונפטי במקום חלונית שנייה** · שקד ביקשה (16 בספטמבר 2026)
-   * שהרשמה לתזכורת ״לא תקפיץ עוד פופאפ עם נרשמת״ אלא תעשה קונפטי.
-   * לכן ההצלחה **סוגרת** את חלונית הפעמון ומדליקה את החגיגה.
+   * ⚠ **החגיגה עברה לשכבה גלובלית · 17 בספטמבר 2026** · קודם היא
+   * רונדרה בתוך מסך הקטגוריה, ולכן הניווט הביתה קטע אותה — ומשם
+   * נולדה ההשהיה ששקד קראה לה איטית. עכשיו `useCheer` מציג אותה
+   * מעל כל האפליקציה, והמסך חוזר הביתה מיד.
    */
-  const [celebrate, setCelebrate] = useState(false);
+  const { cheer } = useCheer();
+
+  /**
+   * ⚠ **האם כבר יש תזכורת** · בקשה של שקד: ״במידה ותזכורת הופעלה
+   * כבר, לא להציע לבן אדם להפעיל שוב תזכורת״. במקרה כזה החלונית
+   * רק **מודיעה** ואינה מציעה.
+   */
+  const [reminded, setReminded] = useState(false);
 
   /**
    * מריץ את `onOpen` אם אפשר להזמין, ואחרת פותח את חלונית הפעמון.
@@ -47,6 +59,7 @@ export function useSaleGate(category: string) {
           onOpen();
           return;
         }
+        setReminded(day.reminder ?? false);
         setClosed({ note: day.message });
       } catch {
         /* כשל רשת · לא חוסמים את הלקוחה בגלל בדיקה שנכשלה */
@@ -63,14 +76,15 @@ export function useSaleGate(category: string) {
     setErr('');
     try {
       await requestSaleReminder(category);
+      setReminded(true);
       setClosed(null);
-      setCelebrate(true);
+      cheer(REMINDER_ON);
     } catch (e) {
       setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
     } finally {
       setBusy(false);
     }
-  }, [category]);
+  }, [category, cheer]);
 
   return {
     guard,
@@ -82,9 +96,8 @@ export function useSaleGate(category: string) {
     remind,
     busy,
     err,
-    /** הקונפטי רץ · מוצג במסך שמארח את השער */
-    celebrate,
-    endCelebrate: useCallback(() => setCelebrate(false), []),
+    /** כבר ביקשה תזכורת · החלונית מודיעה ואינה מציעה */
+    reminded,
   };
 }
 

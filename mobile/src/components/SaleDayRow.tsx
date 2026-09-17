@@ -2,14 +2,19 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { Bell } from '../icons';
-import { Confetti } from './Confetti';
+import { useCheer } from './Cheer';
 import { GlassFill } from './Glass';
 import { CATEGORIES } from '../data/categories';
 import { upcomingSale } from '../data/saleWeek';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { GLASS_SHADOW, GLASS_STOPS } from '../theme/glass';
 import { apiEnabled } from '../api/config';
-import { requestSaleReminder, saleDayStatus, type SaleState } from '../api/orders';
+import {
+  cancelSaleReminder,
+  requestSaleReminder,
+  saleDayStatus,
+  type SaleState,
+} from '../api/orders';
 
 /**
  * שורת יום המכירה הקרוב · דף הבית, אחרי התחברות.
@@ -20,13 +25,13 @@ import { requestSaleReminder, saleDayStatus, type SaleState } from '../api/order
  *
  * 1. **הקטגוריה הייתה מקובעת לקוסקוס.** עכשיו היא נגזרת מהשעון
  *    לפי החוק שלה: משלישי ב-18:00 עד שישי ב-18:00 מוצג השניצל,
- *    ומשישי ב-18:00 עד שלישי ב-18:00 מוצג הקוסקוס. הפונקציה
- *    `upcomingSale` כבר מימשה בדיוק את זה בשביל דף הניהול.
+ *    ומשישי ב-18:00 עד שלישי ב-18:00 מוצג הקוסקוס.
  * 2. **הוצגה הודעת השגיאה של השרת.** ״היום סגור להזמנות״ הוא נוסח
- *    שנכתב לחסימת הזמנה, לא לשורת מידע. עכשיו מוצג שם יום המכירה,
- *    ולצידו תווית מצב.
+ *    שנכתב לחסימת הזמנה, לא לשורת מידע.
  *
- * שלושת המצבים, הצבעים והנוסחים — בקשה מפורשת שלה.
+ * ⚠ **מתג התזכורת · 17 בספטמבר 2026** · בקשה של שקד: ״שיהיה סימון
+ * של קו כזה על הפעמון, ואם ילחצו עליו שוב פשוט יקפוץ לכמה שניות
+ * ההודעה ״התזכורת נמחקה״ והאייקון יתחלף בחזרה לפעמון בלי קו״.
  */
 
 /** ⚠ צבעי המצב · ירוק וכתום מגווני הקטגוריות, האדום מ-`SaleClosedSheet` */
@@ -46,6 +51,12 @@ const STATE_TEXT: Record<SaleState, string> = {
   sold_out: 'המכירה נסגרה',
 };
 
+/** הנוסחים של המתג · בקשה של שקד */
+const ON_TEXT = 'תזכורת הופעלה';
+const OFF_TEXT = 'התזכורת נמחקה';
+/** כמה זמן הודעת הביטול נשארת */
+const TOAST_MS = 2600;
+
 const BELL = 15;
 const BELL_BTN = 30;
 
@@ -58,10 +69,11 @@ export function SaleDayRow({ onOpen }: Props) {
   /* ⚠ נקבע פעם אחת בכניסה למסך · שעון שרץ כאן היה מרנדר בלי סיבה */
   const upcoming = React.useMemo(() => upcomingSale(new Date()), []);
   const cat = CATEGORIES.find((c) => c.key === upcoming.cat);
+  const { cheer } = useCheer();
 
   const [state, setState] = React.useState<SaleState | null>(null);
-  const [asked, setAsked] = React.useState(false);
-  const [cheer, setCheer] = React.useState(false);
+  const [on, setOn] = React.useState(false);
+  const [toast, setToast] = React.useState('');
 
   React.useEffect(() => {
     if (!apiEnabled) return;
@@ -71,6 +83,7 @@ export function SaleDayRow({ onOpen }: Props) {
         if (!live) return;
         /* ⚠ שרת ישן מחזיר `open` בלבד · נגזר ממנו מצב סביר */
         setState(d.state ?? (d.open ? 'open' : 'pending'));
+        setOn(d.reminder ?? false);
       })
       .catch(() => undefined);
     return () => {
@@ -78,26 +91,33 @@ export function SaleDayRow({ onOpen }: Props) {
     };
   }, [upcoming.cat]);
 
-  const remind = React.useCallback(() => {
-    if (asked) return;
-    setAsked(true);
-    setCheer(true);
-    /* התזכורת היא בונוס · כישלון שלה לא אמור לשבור את דף הבית */
-    void requestSaleReminder(upcoming.cat).catch(() => setAsked(false));
-  }, [asked, upcoming.cat]);
+  React.useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(''), TOAST_MS);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  const toggle = React.useCallback(() => {
+    if (on) {
+      setOn(false);
+      setToast(OFF_TEXT);
+      /* ⚠ כישלון מחזיר את המתג · אחרת הלקוחה חושבת שביטלה ולא */
+      void cancelSaleReminder(upcoming.cat).catch(() => setOn(true));
+      return;
+    }
+    setOn(true);
+    cheer(ON_TEXT);
+    void requestSaleReminder(upcoming.cat).catch(() => setOn(false));
+  }, [cheer, on, upcoming.cat]);
 
   /* עד שהתשובה חוזרת אין מה להבטיח · עדיף לא להראות כלום מלשקר */
   if (!cat || !state) return null;
 
-  const open = state === 'open';
+  const isOpen = state === 'open';
 
   return (
     <>
-      <Pressable
-        disabled={!open}
-        onPress={() => onOpen(upcoming.cat)}
-        style={s.row}
-      >
+      <Pressable disabled={!isOpen} onPress={() => onOpen(upcoming.cat)} style={s.row}>
         <GlassFill stops={GLASS_STOPS} radius={radius.field} />
         <Text style={s.title}>{cat.sub}</Text>
         <View style={s.grow} />
@@ -107,38 +127,47 @@ export function SaleDayRow({ onOpen }: Props) {
           <Text style={[s.chipText, { color: STATE_INK[state] }]}>{STATE_TEXT[state]}</Text>
         </View>
 
-        {/* ⚠ הפעמון רק כשטרם החלה · בקשה של שקד, ״לקבל תזכורת
-            באפליקציה כשהמכירה תתחיל״ */}
+        {/* ⚠ הפעמון רק כשטרם החלה · אין למה להזכיר ביום פתוח או סגור */}
         {state === 'pending' ? (
           <Pressable
-            onPress={remind}
-            disabled={asked}
+            onPress={toggle}
             hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="תזכירו לי כשהמכירה תתחיל"
-            style={[s.bell, { backgroundColor: a(STATE_RGB.pending, asked ? 0.3 : 0.16) }]}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: on }}
+            accessibilityLabel={on ? 'ביטול התזכורת' : 'תזכירו לי כשהמכירה תתחיל'}
+            style={[s.bell, { backgroundColor: a(STATE_RGB.pending, on ? 0.3 : 0.16) }]}
           >
             <Bell size={BELL} color={STATE_INK.pending} strokeWidth={1.8} />
+            {/* ⚠ הקו האלכסוני · ״סימון של קו כזה על הפעמון״ */}
+            {on ? <View style={[s.slash, { backgroundColor: STATE_INK.pending }]} /> : null}
           </Pressable>
         ) : null}
       </Pressable>
 
-      {cheer ? <Confetti onDone={() => setCheer(false)} /> : null}
+      {toast ? (
+        <View style={s.toast}>
+          <Text style={s.toastText}>{toast}</Text>
+        </View>
+      ) : null}
     </>
   );
 }
 
 const s = StyleSheet.create({
   row: {
-    minHeight: 50,
+    /**
+     * ⚠ **גובה קבוע · תוקן ב-17 בספטמבר 2026** · שקד דיווחה
+     * ש״החלק הלבן לא בגודל המתאים לכל הכרטיסייה״. `GlassFill`
+     * מצייר `Svg` ב-`height="100%"`, ואחוז אינו נפתר כשגובה
+     * ההורה נגזר מהתוכן. עם גובה קבוע הזכוכית ממלאת הכל.
+     */
+    height: 54,
     borderRadius: radius.field,
     paddingHorizontal: 12,
-    paddingVertical: 8,
     marginTop: space.sm,
     /**
      * ⚠ **רווח מהכרטיסים · בקשת שקד (16 בספטמבר 2026)** · ״צריך
      * להוסיף רווח בין הכרטיסייה הזו לבין הקארדים שמתחתיה״.
-     * קודם לא היה כאן מרווח תחתון כלל.
      */
     marginBottom: 20,
     flexDirection: 'row',
@@ -168,4 +197,22 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  /* ⚠ אלכסון על הפעמון · 45 מעלות, מפינה לפינה של האייקון */
+  slash: {
+    position: 'absolute',
+    width: BELL + 6,
+    height: 1.8,
+    borderRadius: 1,
+    transform: [{ rotate: '-45deg' }],
+  },
+  toast: {
+    alignSelf: 'center',
+    marginTop: -12,
+    marginBottom: 14,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(42,36,48,0.86)',
+  },
+  toastText: { fontSize: 12.5, fontWeight: '600', color: '#FFFFFF' },
 });

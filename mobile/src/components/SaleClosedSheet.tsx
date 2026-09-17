@@ -19,6 +19,9 @@ import { iconOrbShadow } from '../theme/glass';
  * נשמרת בשרת כדי שכלום לא יאבד ביום שההחלטה תתקבל.
  */
 
+/** ⚠ הנוסח של שקד · מילה במילה */
+const ALREADY = 'המכירה טרם החלה, תזכורת תשלח אלייך כשהמכירה תיפתח';
+
 const BELL = 30;
 const BELL_RING = 76;
 
@@ -32,6 +35,13 @@ type Props = {
   note?: string;
   busy?: boolean;
   err?: string;
+  /**
+   * כבר ביקשה תזכורת.
+   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״במידה ותזכורת הופעלה
+   * כבר, לא להציע לבן אדם להפעיל שוב תזכורת״ — החלונית מודיעה
+   * ואינה שואלת.
+   */
+  reminded?: boolean;
   onRemind: () => void;
   onClose: () => void;
 };
@@ -43,6 +53,7 @@ export function SaleClosedSheet({
   note,
   busy = false,
   err,
+  reminded = false,
   onRemind,
   onClose,
 }: Props) {
@@ -64,18 +75,37 @@ export function SaleClosedSheet({
               לא תקפיץ חלונית שנייה. ההצלחה סוגרת את החלונית ומריצה
               קונפטי במסך שמאחוריה. */}
           <Text style={s.title}>יום המכירה עדיין לא נפתח</Text>
-          <Text style={s.body}>{note || `${categoryName} עדיין לא פתוח להזמנות.`}</Text>
-          <Text style={s.ask}>רוצה שנזכיר לך כשהמכירה נפתחת?</Text>
 
-          {err ? <Text style={s.err}>{err}</Text> : null}
+          {/* ⚠ יש כבר תזכורת · מודיעים ולא שואלים · ראו `reminded` */}
+          {reminded ? (
+            <>
+              <Text style={s.body}>{ALREADY}</Text>
+              <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
+                <Text style={s.skipText}>הבנתי</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={s.body}>{note || `${categoryName} עדיין לא פתוח להזמנות.`}</Text>
+              <Text style={s.ask}>רוצה שנזכיר לך כשהמכירה נפתחת?</Text>
 
-          {/* ⚠ **בלי חץ וברוחב מינימלי · 16 בספטמבר 2026** · בקשה של
-              שקד. היה `wide`, כלומר נמתח לכל רוחב החלונית. */}
-          <ContinueButton onPress={onRemind} accent={accent} disabled={busy} label="כן, תזכירו לי" bare />
+              {err ? <Text style={s.err}>{err}</Text> : null}
 
-          <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
-            <Text style={s.skipText}>לא תודה</Text>
-          </Pressable>
+              {/* ⚠ **בלי חץ וברוחב מינימלי · 16 בספטמבר 2026** · בקשה
+                  של שקד. היה `wide`, כלומר נמתח לכל רוחב החלונית. */}
+              <ContinueButton
+                onPress={onRemind}
+                accent={accent}
+                disabled={busy}
+                label="כן, תזכירו לי"
+                bare
+              />
+
+              <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
+                <Text style={s.skipText}>לא תודה</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </View>
     </Modal>

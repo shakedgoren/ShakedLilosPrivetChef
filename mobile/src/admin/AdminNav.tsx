@@ -54,7 +54,11 @@ export function AdminNav() {
       <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
         {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
         <S k={sym} size={ICON} color={on ? ON : INDIGO_70} />
-        <Text style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}>
+        {/* ⚠ שורה אחת · ״ימי מכירה״ היא הארוכה, והיא קובעת */}
+        <Text
+          numberOfLines={1}
+          style={[s.label, { color: on ? ON : OFF, fontWeight: on ? '700' : '400' }]}
+        >
           {label}
         </Text>
       </Pressable>
@@ -84,23 +88,29 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     boxShadow: SOFT_SHADOW,
     elevation: 8,
     zIndex: 20,
   } as never,
   /* ⚠ הזכוכית מביאה רקע וצל משלה · המילוי והצל שלנו יורדים */
   glass: { backgroundColor: 'transparent', boxShadow: undefined, elevation: 0 } as never,
-  /* ⚠ צר יותר · חמש לשוניות במקום ארבע, ו-52+12 לא נכנסו */
+  /**
+   * ⚠ **רוחב אחיד · 17 בספטמבר 2026** · בקשה של שקד: ״לסדר את
+   * העיגול שמקיף את מה שנבחר שיהיה רחב יותר ובגודל אחיד עבור
+   * כולם״. `minWidth` עם ריפוד נתן לכל לשונית את רוחב **המילה
+   * שלה** — ולכן הגלולה של ״ימי מכירה״ הייתה רחבה בהרבה משל
+   * ״בית״. `flex: 1` מחלק את הפס שווה בשווה.
+   */
   tab: {
-    minWidth: 44,
+    flex: 1,
     height: 56,
     borderRadius: radius.pill,
-    paddingHorizontal: 6,
+    paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
   },
   tabOn: { backgroundColor: LAV.pill },
-  label: { fontSize: 12 },
+  label: { fontSize: 11 },
 });

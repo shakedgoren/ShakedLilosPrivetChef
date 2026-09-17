@@ -5,7 +5,11 @@ import { Text } from '../../ui/text';
 import { radius, surface } from '../../theme/tokens';
 import { type IconProps } from '../../icons';
 import { useNav } from '../../navigation/store';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { iconOrbShadow } from '../../theme/glass';
+
+/** הרווח מעל הכותרת · מעל האזור הבטוח */
+const HEAD_PAD = 14;
 
 export type HeaderAction = {
   label: string;
@@ -47,8 +51,15 @@ type Props = {
  */
 export function AdminShell({ title, titleSize = 21, sub, actions = [], children }: Props) {
   const { back, canBack, go } = useNav();
+  /**
+   * ⚠ **הריפוד העליון · תוקן ב-17 בספטמבר 2026** · שקד ביקשה
+   * להסיר את האזור הבטוח מצד הניהול, וזה נעשה — אבל בלי לפצות
+   * על כך כאן, ולכן **הכותרת נחתכה מתחת למגרעת בכל המסכים**.
+   * זו בדיוק ההתאמה שקיימת בצד הלקוחה.
+   */
+  const insets = useSafeAreaInsets();
   return (
-    <View style={s.root}>
+    <View style={[s.root, { paddingTop: insets.top + HEAD_PAD }]}>
       {/* ⚠ **שורה אחת** · שקד ביקשה (15 בספטמבר 2026) להסיר את
           הרווח שהיה מעל הכותרת: הכותרת, הכפתורים וחץ החזרה יושבים
           כולם בשורה אחת. הכותרת ממורכזת למרכז המסך, הכפתורים
@@ -130,7 +141,7 @@ export function KpiRow({
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, paddingTop: 18, paddingHorizontal: 18, gap: 12 },
+  root: { flex: 1, paddingHorizontal: 18, gap: 12 },
   head: { justifyContent: 'center', minHeight: 46 },
   /**
    * ⚠ **`left`/`right` ולא `start`/`end`** · בדפדפן

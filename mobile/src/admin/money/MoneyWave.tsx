@@ -1,6 +1,6 @@
 import React from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop, Text as SvgText } from 'react-native-svg';
 
 /**
  * רצועת ״הגלים״ · הבחירה של שקד (15 בספטמבר 2026) מתוך חמש הצעות.
@@ -24,7 +24,21 @@ export type WavePoint = { k: string; rev: number; exp: number };
  * הגובה של הדיאגרמת רווחיות״. היה 78, וזה נתן גל שטוח שבו הפרשים
  * בין חודשים כמעט לא נראו.
  */
-const H = 112;
+const H = 150;
+
+/**
+ * ⚠ **מד הסכומים · 17 בספטמבר 2026** · בקשה של שקד: ״שים מצד שמאל
+ * מד עם סכומים מ-0 ועד הסכום שנכנס בהתאם לתקופה שמסתכלים עלייה״.
+ * הגל מתחיל אחרי המד, אחרת הקו עובר מתחת למספרים.
+ */
+const AXIS_W = 42;
+const AXIS_STEPS = 4;
+const AXIS_INK = '#8C81A4';
+const AXIS_LINE = 'rgba(140,129,164,0.16)';
+const AXIS_SIZE = 9.5;
+
+/** ‎12000 → ‎12k · אותו קיצור של גרף המחזור */
+const tick = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(Math.round(n)));
 const TOP = 7;
 /**
  * ⚠ **קו האפס גבוה מהתחתית** · עובי הקו 2.6, ואם הוא יושב על
@@ -108,8 +122,11 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
     if (w <= 0 || points.length === 0) return null;
     const width = w;
     const top = Math.max(...points.map((p) => Math.max(p.rev, p.exp)), 1);
+    /* ⚠ הגל מתחיל אחרי המד · ראו `AXIS_W` */
+    const x0 = AXIS_W;
+    const span = Math.max(1, width - AXIS_W);
     const at = (v: number, i: number) => ({
-      x: points.length === 1 ? width / 2 : (i / (points.length - 1)) * width,
+      x: points.length === 1 ? x0 + span / 2 : x0 + (i / (points.length - 1)) * span,
       y: BASE - (v / top) * (BASE - TOP),
     });
     const rev = points.map((p, i) => at(p.rev, i));
@@ -120,12 +137,18 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
      */
     const tip = rev[rev.length - 1];
     const last = { x: Math.min(Math.max(tip.x, 6), width - 6), y: Math.min(Math.max(tip.y, 6), H - 6) };
+    /* המד · מאפס ועד הסכום הגבוה בתקופה */
+    const axis = Array.from({ length: AXIS_STEPS + 1 }, (_, i) => {
+      const v = (top * i) / AXIS_STEPS;
+      return { v, y: BASE - (v / top) * (BASE - TOP) };
+    });
     return {
       width,
+      axis,
       revLine: smooth(rev),
       expLine: smooth(exp),
-      revArea: `${smooth(rev)} L${width} ${H} L0 ${H} Z`,
-      expArea: `${smooth(exp)} L${width} ${H} L0 ${H} Z`,
+      revArea: `${smooth(rev)} L${width} ${H} L${AXIS_W} ${H} Z`,
+      expArea: `${smooth(exp)} L${width} ${H} L${AXIS_W} ${H} Z`,
       last,
     };
   }, [w, points]);
@@ -157,6 +180,29 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
                 <Stop offset="1" stopColor="#C98A5B" stopOpacity="0.03" />
               </LinearGradient>
             </Defs>
+
+            {/* ⚠ המד · מאחורי הגלים, ראו `AXIS_W` */}
+            {chart.axis.map((a) => (
+              <React.Fragment key={a.v}>
+                <Line
+                  x1={AXIS_W}
+                  y1={a.y}
+                  x2={chart.width}
+                  y2={a.y}
+                  stroke={AXIS_LINE}
+                  strokeWidth={1}
+                />
+                <SvgText
+                  x={AXIS_W - 7}
+                  y={a.y + AXIS_SIZE / 3}
+                  textAnchor="end"
+                  fontSize={AXIS_SIZE}
+                  fill={AXIS_INK}
+                >
+                  {tick(a.v)}
+                </SvgText>
+              </React.Fragment>
+            ))}
 
             <Path d={chart.revArea} fill="url(#wRev)" />
             <AnimatedPath

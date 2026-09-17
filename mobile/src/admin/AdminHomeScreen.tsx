@@ -1,6 +1,7 @@
 import React from 'react';
 import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
@@ -43,7 +44,11 @@ const shortDate = (iso: string) =>
 /** ⚠ טקסט שכתבתי · שקד ביקשה את המילים האלה על הכפתור */
 const NEW_ORDER_LABEL = 'הזמנה חדשה';
 
+/** הרווח מעל הכותרת · מעל האזור הבטוח, כמו ב-`AdminShell` */
+const HOME_PAD = 14;
+
 export function AdminHomeScreen() {
+  const insets = useSafeAreaInsets();
   const { go, signOut } = useNav();
   const home = useAdminHome();
   /* אותה חלונית בדיוק של מסך ההזמנות · ההזמנה הידנית חיה שם */
@@ -51,7 +56,12 @@ export function AdminHomeScreen() {
   const [bye, setBye] = React.useState(false);
 
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={s.root}
+      /* ⚠ הריפוד העליון · ראו את ההערה ב-`AdminShell` */
+      contentContainerStyle={[s.pad, { paddingTop: insets.top + HOME_PAD }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* ⚠ **כותרת ממורכזת, + בשמאל, התנתקות בימין** · שקד ביקשה
           (15 בספטמבר 2026) שכפתור ההתנתקות יעבור לפינה הימנית —
           אותה פינה שבשאר מסכי הניהול מחזיקה את חץ החזרה — ושה-+
@@ -245,7 +255,8 @@ export function AdminHomeScreen() {
 const s = StyleSheet.create({
   /* ⚠ רקע הדף · מתחת לכל הכרטיסים, בגוון של ערכת לבנדר */
   root: { flex: 1, backgroundColor: LAV.page },
-  pad: { paddingTop: 30, paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
+  /* ⚠ הריפוד העליון נקבע בזמן ריצה · ראו את ההערה ב-`AdminShell` */
+  pad: { paddingHorizontal: 18, paddingBottom: 120, gap: 12 },
   head: { justifyContent: 'center', minHeight: 46 },
   headText: { alignItems: 'center', gap: 2 },
   /**

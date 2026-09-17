@@ -313,6 +313,8 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
  * היה 24 בשתי עמודות.
  */
 const PAY_GLYPH = 38;
+/** ⚠ הרוחב המרבי בתוך האריח · ראו `maxWidth` ב-`PayLogo` */
+const PAY_MAX_W = 84;
 const PAY_COLS = 3;
 /** ⚠ בהיר יותר · המסגרת הרגילה היא 0.16, ושקד ביקשה שתהיה עדינה */
 const PAY_EDGE = 'rgba(130,112,162,0.1)';
@@ -375,7 +377,7 @@ function PayStep({
               onPress={() => choose(p)}
               style={[s.pay, { opacity: busy ? 0.45 : 1 }]}
             >
-              <PayLogo method={payLogo} size={PAY_GLYPH} />
+              <PayLogo method={payLogo} size={PAY_GLYPH} maxWidth={PAY_MAX_W} />
               <Text style={s.payLabel}>{p}</Text>
             </Pressable>
           );

@@ -21,6 +21,7 @@ import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { BackSwipe } from './src/components/BackSwipe';
 import { ScreenStage } from './src/navigation/ScreenStage';
+import { CheerProvider } from './src/components/Cheer';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
 import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
@@ -170,6 +171,8 @@ export default function App() {
     <SafeAreaProvider>
       <NavProvider>
       <LightboxProvider>
+      {/* ⚠ החגיגה מעל הכל · ראו `Cheer` · הניווט לא קוטע אותה */}
+      <CheerProvider>
         {/**
           * ⚠ **הרקע מתעלם מהשוליים, התוכן שומר על העליון** · שקד
           * ביקשה (15 בספטמבר 2026) לבטל את שני הצדדים, ואז דיווחה
@@ -183,6 +186,7 @@ export default function App() {
           * פיקסלים בתחתית (‎34 נקודות ב-@3x), בדיוק מידת פס הבית.
           */}
         <Shell />
+      </CheerProvider>
       </LightboxProvider>
       </NavProvider>
     </SafeAreaProvider>

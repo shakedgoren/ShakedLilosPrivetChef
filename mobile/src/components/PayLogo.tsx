@@ -32,17 +32,29 @@ const LOGOS: Record<string, { src: number; ratio: number }> = {
 
 export const PAY_METHODS = Object.keys(LOGOS);
 
-type Props = { method: string; size?: number };
+type Props = {
+  method: string;
+  size?: number;
+  /**
+   * הרוחב המרבי · הלוגו מתכווץ כדי להיכנס.
+   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״האייקון של פייבוקס
+   * צריך להיות קטן יותר שלא יצא מהמסגרת״. פייבוקס מלבני ביחס
+   * 414:114, ולכן בגובה 38 הוא יצא ברוחב 138 — רחב מהאריח עצמו.
+   */
+  maxWidth?: number;
+};
 
 /**
  * הגובה הוא מה שקובע · רוחב נגזר מיחס הצדדים של הקובץ, כדי
  * שהלוגו המלבני של פייבוקס לא ייראה מעוך לצד הריבועיים.
  */
-export function PayLogo({ method, size = 24 }: Props) {
+export function PayLogo({ method, size = 24, maxWidth }: Props) {
   const logo = LOGOS[method];
   if (!logo) return <View style={{ width: size, height: size }} />;
+  /* הגובה יורד כשהרוחב לא נכנס · היחס נשמר */
+  const h = maxWidth ? Math.min(size, maxWidth / logo.ratio) : size;
   return (
-    <View style={[s.box, { height: size, width: size * logo.ratio }]}>
+    <View style={[s.box, { height: h, width: h * logo.ratio }]}>
       <Image source={logo.src} style={s.img} resizeMode="contain" accessibilityLabel={method} />
     </View>
   );

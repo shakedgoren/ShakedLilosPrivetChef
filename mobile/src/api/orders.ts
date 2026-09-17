@@ -22,6 +22,8 @@ export const saleDayStatus = (category: string) =>
     date: string;
     open: boolean;
     state?: SaleState;
+    /** האם המשתמשת כבר ביקשה תזכורת · ראו `/orders/remind` */
+    reminder?: boolean;
     reason: string;
     message: string;
   }>(
@@ -32,6 +34,12 @@ export const saleDayStatus = (category: string) =>
 /** התזכורת מגיעה כהתראה בתוך האפליקציה · החלטה של שקד */
 export const requestSaleReminder = (category: string) =>
   api<{ ok: true }>('/orders/remind', { body: { category } });
+
+/** ביטול תזכורת · בקשה של שקד מ-17 בספטמבר 2026 */
+export const cancelSaleReminder = (category: string) =>
+  api<{ ok: true }>(`/orders/remind?category=${encodeURIComponent(category)}`, {
+    method: 'DELETE',
+  });
 
 export type SaleNotification = { category: string; date: string };
 

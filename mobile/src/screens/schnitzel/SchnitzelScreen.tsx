@@ -3,7 +3,6 @@ import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
-import { Confetti } from '../../components/Confetti';
 import { useSaleGate } from '../../order/useSaleGate';
 import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
@@ -237,7 +236,11 @@ export function SchnitzelScreen() {
 
         err={saleGate.err}
 
-        onRemind={() => void saleGate.remind()}
+        reminded={saleGate.reminded}
+        onRemind={() => {
+          void saleGate.remind();
+          go('main');
+        }}
 
         onClose={() => {
           saleGate.close();
@@ -247,18 +250,10 @@ export function SchnitzelScreen() {
       />
 
       {/* ⚠ קונפטי במקום חלונית ״נרשמת״ · בקשה של שקד */}
-      {/* ⚠ **חוזר לדף הבית אחרי הקונפטי · 16 בספטמבר 2026** · בקשה
-          של שקד: ״אם כן מופיע הקונפטי אם לא אין קונפטי, צריכה
-          להיות חזרה לדף הבית״. הקונפטי מרונדר במסך הזה, ולכן ניווט
-          מיידי היה קוטע אותו באמצע — לכן החזרה נתלית בסיומו. */}
-      {saleGate.celebrate && (
-        <Confetti
-          onDone={() => {
-            saleGate.endCelebrate();
-            go('main');
-          }}
-        />
-      )}
+      {/* ⚠ **החגיגה עברה לשכבה גלובלית · 17 בספטמבר 2026** · ראו
+          `Cheer`. המסך חוזר הביתה **מיד**, והקונפטי והפעמון
+          ממשיכים לרוץ מעליו — קודם הניווט קטע אותם, ומשם נולדה
+          ההשהיה ששקד קראה לה איטית. */}
 
 
       <FulfillmentFlow
