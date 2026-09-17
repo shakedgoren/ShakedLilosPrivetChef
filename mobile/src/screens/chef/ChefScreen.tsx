@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useScreenBack } from '../../navigation/useScreenBack';
 import { RollingTotal } from '../../components/RollingTotal';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { AccessibilityInfo, Animated, Easing, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -127,6 +128,21 @@ function PickCta({ onPress }: { onPress: () => void }) {
 export function ChefScreen() {
   const { go, loggedIn } = useNav();
   const o = useChefOrder();
+
+  /**
+   * ⚠ **חזרה בתוך השאלון · בקשה של שקד (17 בספטמבר 2026)** ·
+   * ״אם אני בפינת השף בשלב מתקדם ועשיתי חזרה אחורה זה צריך להחזיר
+   * אותי לשלב אחד לפני ולא לפינת השף ישירות או לדף הבית״.
+   * `o.prev` כבר יודע את זה: שלב אחורה, ומעמוד ראשון חזרה לרשימת
+   * המסלולים. מחוץ למסלול מחזירים `false` — ואז יוצאים מהמסך.
+   */
+  useScreenBack(
+    React.useCallback(() => {
+      if (!o.pkg) return false;
+      o.prev();
+      return true;
+    }, [o.pkg, o.prev]),
+  );
   /* הלשונית הפתוחה בתפריט · ארוחת שף או עמדת טאבון */
   const [tab, setTab] = useState(0);
   /* בקשת ההצעה נשלחה · מסך הסיום פתוח */

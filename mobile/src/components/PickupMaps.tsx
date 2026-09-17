@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
-import { Linking, PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Linking, PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
@@ -25,11 +25,13 @@ const ARROW_STROKE = 2.4;
  * כשהאפליקציה לא מותקנת; הקישור הזה פותח את האפליקציה אם היא
  * קיימת, ואחרת את האתר.
  *
- * ⚠ **האייקון אינו הלוגו של וויז** · אין לנו את הקובץ, ולוגו הוא
- * סימן מסחר שאסור לצייר בקירוב. כאן משמש אייקון האיסוף של
- * האפליקציה לצד המילה ״וויז״. אם שקד תשלח את הקובץ הוא יוחלף,
- * בדיוק כפי שנעשה בלוגואים של אמצעי התשלום.
+ * ⚠ **הלוגו האמיתי · 17 בספטמבר 2026** · שקד שלחה את הקובץ
+ * (`assets/waze-icon.png`). קודם עמד כאן אייקון האיסוף של
+ * האפליקציה, כי לוגו הוא סימן מסחר שאסור לצייר בקירוב.
+ * הוא מוצג כמו שהוא ואינו נצבע, בדיוק כמו לוגואי התשלום.
  */
+const WAZE_ICON = require('../../assets/waze-icon.png');
+const WAZE_SIZE = 18;
 const WAZE_URL = `https://waze.com/ul?q=${encodeURIComponent(PICKUP.address)}&navigate=yes`;
 const openWaze = () => {
   void Linking.openURL(WAZE_URL).catch(() => undefined);
@@ -79,7 +81,12 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
           accessibilityLabel="פתיחת הכתובת בוויז"
           style={[s.waze, { backgroundColor: a(rgb, 0.12) }]}
         >
-          <S k="pickup" size={15} color={ink} />
+          <Image
+            source={WAZE_ICON}
+            style={s.wazeIcon}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
           <Text style={[s.wazeText, { color: ink }]}>וויז</Text>
         </Pressable>
       </View>
@@ -135,6 +142,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 11,
     borderRadius: radius.pill,
   },
+  wazeIcon: { width: WAZE_SIZE, height: WAZE_SIZE },
   wazeText: { fontSize: 12.5, fontWeight: '700' },
   note: { fontSize: type.label, color: surface.muted, lineHeight: 19 },
   frame: {

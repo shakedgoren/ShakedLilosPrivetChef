@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useScreenBack } from '../../navigation/useScreenBack';
 import { S } from '../../components/Sym';
 import { TEXT_END } from '../../theme/rtl';
 import { RollingTotal } from '../../components/RollingTotal';
@@ -56,6 +57,20 @@ const CHEV_STROKE = 2.4;
 export function BoxesScreen() {
   const { go, goLogin, loggedIn } = useNav();
   const o = useBoxesOrder();
+
+  /**
+   * ⚠ **חזרה בתוך הספיישלים · בקשה של שקד (17 בספטמבר 2026)** ·
+   * ״נכנסתי לתוך קטגוריה, חזרה אחורה צריכה להחזיר אותי לספיישלים
+   * ולא לעמוד הבית״. פתיחת מארז היא שינוי מצב באותו מסך ולא מסך
+   * חדש במחסנית, ולכן החזרה קפצה החוצה.
+   */
+  useScreenBack(
+    React.useCallback(() => {
+      if (!o.current) return false;
+      o.backToList();
+      return true;
+    }, [o.current, o.backToList]),
+  );
   const f = useFulfillment(BOXES_FULFILLMENT);
   /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
   const saleGate = useSaleGate('box');

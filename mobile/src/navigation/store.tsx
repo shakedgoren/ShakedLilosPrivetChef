@@ -65,6 +65,11 @@ type Nav = {
   /** האם שכבת ההתחברות פתוחה כרגע */
   loginOverlay: boolean;
   back: () => void;
+  /** רישום מטפל חזרה פנימי · ראו `back` */
+  registerBack: (fn: (() => boolean) | null) => void;
+  /** כיוון המעבר האחרון ומונה שלו · ראו `ScreenStage` */
+  navDir: 'fwd' | 'back';
+  navTick: number;
   signIn: (session?: Session) => void;
   signOut: () => void;
   setUser: (user: PublicUser) => void;
@@ -129,6 +134,7 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       prefill.current = load ?? null;
       setLoginOverlay(false);
       setStack((s) => [...s, screen]);
+      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1 }));
       setScreen(to);
     },
     [screen],
@@ -143,13 +149,43 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const goLogin = useCallback(() => setLoginOverlay(true), []);
   const closeLogin = useCallback(() => setLoginOverlay(false), []);
 
+  /**
+   * חזרה **בתוך** מסך · לפני שיוצאים ממנו.
+   *
+   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״אם אני נמצאת בספיישלים
+   * ונכנסתי לתוך קטגוריה, חזרה אחורה צריכה להחזיר אותי לספיישלים
+   * ולא לעמוד הבית. כנ״ל בפינת השף — שלב אחד לפני״.
+   *
+   * הסיבה שזה לא עבד: פתיחת מארז או מעבר שלב בשאלון הם **שינוי
+   * מצב בתוך אותו מסך**, לא מסך חדש במחסנית. לכן החזרה קפצה ישר
+   * החוצה. מסך שיש לו שלבים פנימיים רושם כאן מטפל, והוא נשאל
+   * ראשון. `true` = טיפלתי, אל תצא מהמסך.
+   */
+  /**
+   * כיוון המעבר האחרון ומונה שלו · ההנפשה קוראת אותם.
+   * ⚠ המונה נחוץ · מעבר למסך שכבר מוצג לא היה מפעיל את התנועה
+   * בלעדיו. ראו `ScreenStage`.
+   */
+  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number }>({
+    dir: 'fwd',
+    tick: 0,
+  });
+
+  const [trap, setTrap] = useState<(() => boolean) | null>(null);
+  const registerBack = useCallback(
+    (fn: (() => boolean) | null) => setTrap(() => fn),
+    [],
+  );
+
   const back = useCallback(() => {
+    if (trap?.()) return;
     setStack((s) => {
       if (s.length === 0) return s;
+      setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
       setScreen(s[s.length - 1]);
       return s.slice(0, -1);
     });
-  }, []);
+  }, [trap]);
 
   /**
    * התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה,
@@ -201,12 +237,16 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       closeLogin,
       loginOverlay,
       back,
+      registerBack,
+      navDir: nav.dir,
+      navTick: nav.tick,
       signIn,
       signOut,
       setUser: applyUser,
-      canBack: stack.length > 0,
+      /* ⚠ גם שלב פנימי הוא ״יש לאן לחזור״ · אחרת המחווה מושבתת */
+      canBack: stack.length > 0 || trap !== null,
     }),
-    [screen, loggedIn, user, go, takePrefill, goLogin, closeLogin, loginOverlay, back, signIn, signOut, applyUser, stack.length],
+    [screen, loggedIn, user, go, takePrefill, goLogin, closeLogin, loginOverlay, back, registerBack, signIn, signOut, applyUser, stack.length, trap, nav],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

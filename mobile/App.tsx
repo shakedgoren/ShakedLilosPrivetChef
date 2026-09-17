@@ -20,6 +20,7 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { IconSheetScreen } from './src/screens/IconSheetScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { BackSwipe } from './src/components/BackSwipe';
+import { ScreenStage } from './src/navigation/ScreenStage';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { CouscousScreen } from './src/screens/couscous/CouscousScreen';
 import { SchnitzelScreen } from './src/screens/schnitzel/SchnitzelScreen';
@@ -214,7 +215,11 @@ function Shell() {
           <SafeAreaView style={s.safe} edges={topEdges}>
             {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
             <BackSwipe>
-              <Router />
+              {/* ⚠ ההנפשה שבחרה · ״קיפול החוצה״ קדימה ו״החלקה
+                  אופקית״ אחורה · ראו `ScreenStage` */}
+              <ScreenStage>
+                <Router />
+              </ScreenStage>
             </BackSwipe>
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו

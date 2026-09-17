@@ -3,7 +3,14 @@ import { S } from '../components/Sym';
 import { RollingTotal } from '../components/RollingTotal';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
-import { PAYMENTS, SALE_DATE, deliveryFee, payLinkFor, shippingFeeFor } from '../data/shared';
+import {
+  BUSINESS_PHONE,
+  PAYMENTS,
+  SALE_DATE,
+  deliveryFee,
+  payLinkFor,
+  shippingFeeFor,
+} from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -42,6 +49,8 @@ const SHIP_FAR = shippingFeeFor('אחר');
  * השלבים — שעת האיסוף וכתובת המשלוח.
  */
 const CONFIRM_LABEL = 'אישור';
+/** אמצעי התשלום שמבוצעים בהעברה · ולא במזומן ביד */
+const TRANSFER = new Set(['ביט', 'פייבוקס']);
 /** מה שכתוב כשהכתובת בתוך אזור החלוקה */
 const DELIVERY_OK = 'הכתובת בתוך אזור החלוקה';
 
@@ -324,6 +333,16 @@ function PayStep({
   due: number;
 }) {
   /**
+   * ⚠ **מסלול העברה ידנית · 17 בספטמבר 2026** · שקד מסרה את מספר
+   * העסק, ואי אפשר לגזור ממנו קישור תשלום — לביט ולפייבוקס אין
+   * סכמה ציבורית שמקבלת ״שלם לטלפון X סכום Y״.
+   *
+   * עד שיהיה לה קישור אישי, הלחיצה **מציגה את המספר ואת הסכום**
+   * במקום לפתוח אפליקציה שלא תדע מה לעשות. ההזמנה נרשמת רק אחרי
+   * אישור, כדי שהלקוחה לא תאשר לפני שראתה לאן להעביר.
+   */
+  const [manual, setManual] = React.useState<string | null>(null);
+  /**
    * ⚠ **מעבר לאפליקציית התשלום · בקשה של שקד** · ״בלחיצה על ביט או
    * פייבוקס זה צריך להעביר לאפליקציה עם הסכום המתאים״.
    * ⚠ הקישורים עדיין ריקים · ראו `PAY_LINKS` ב-`data/shared.ts`.
@@ -331,7 +350,16 @@ function PayStep({
    */
   const choose = (p: string) => {
     const link = payLinkFor(p, due);
-    if (link) void Linking.openURL(link).catch(() => undefined);
+    if (link) {
+      void Linking.openURL(link).catch(() => undefined);
+      onPay(p);
+      return;
+    }
+    /* ⚠ אין קישור · מציגים את המספר והסכום · ראו `PAY_LINKS` */
+    if (TRANSFER.has(p)) {
+      setManual(p);
+      return;
+    }
     onPay(p);
   };
 
@@ -353,6 +381,25 @@ function PayStep({
           );
         })}
       </OptionGrid>
+      {/* ⚠ ההעברה הידנית · ראו ההערה למעלה */}
+      {manual ? (
+        <View style={[s.transfer, { borderColor: a(accent.rgb, 0.3) }]}>
+          <Text style={s.transferHead}>{`להעברה ב${manual}`}</Text>
+          <Text style={[s.transferPhone, { color: accent.deep }]}>{BUSINESS_PHONE}</Text>
+          <Text style={s.transferSum}>{`${Math.round(due)} ₪`}</Text>
+          <ContinueButton
+            onPress={() => {
+              setManual(null);
+              onPay(manual);
+            }}
+            accent={accent}
+            label={CONFIRM_LABEL}
+            disabled={busy}
+            bare
+          />
+        </View>
+      ) : null}
+
       {err ? <Text style={s.toast}>{err}</Text> : null}
     </View>
   );
@@ -485,6 +532,20 @@ const s = StyleSheet.create({
     paddingHorizontal: 8,
   },
   payLabel: { fontSize: 13, fontWeight: '600', color: surface.ink, textAlign: 'center' },
+  /* ⚠ ההעברה הידנית · ראו את ההערה ב-`PayStep` */
+  transfer: {
+    marginTop: 4,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    gap: 6,
+  },
+  transferHead: { fontSize: 12.5, color: surface.muted },
+  transferPhone: { fontSize: 24, fontWeight: '700', letterSpacing: 0.5 },
+  transferSum: { fontSize: 15, fontWeight: '600', color: surface.ink, marginBottom: 6 },
 
   cta: { height: 50, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
 

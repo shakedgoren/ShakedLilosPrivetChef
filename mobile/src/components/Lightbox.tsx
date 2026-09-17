@@ -1,6 +1,17 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { S } from './Sym';
-import { Image, Modal, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { Text } from '../ui/text';
 import { BlurView } from 'expo-blur';
 import { Photo } from './Photo';
@@ -34,6 +45,18 @@ const SCRIM = 'rgba(42,36,48,0.34)';
 const SHOT_RADIUS = 18;
 /** יחס ברירת מחדל · ריבוע, עד שהקובץ נמדד */
 const FALLBACK_RATIO = 1;
+
+/**
+ * פתיחת התמונה · ״דהייה וקנה מידה״.
+ *
+ * ⚠ **שקד בחרה (17 בספטמבר 2026)** · מתוך חמש תצוגות מקדימות.
+ * ⚠ **מונפשת התמונה בלבד, לא השכבה** · `animationType="fade"` של
+ * `Modal` מדהה פנימה את כל השכבה, וה-`backdrop-filter` מתחיל
+ * להרכיב רק כשהיא גלויה — ולכן הטשטוש ״לוקח שנייה++״, כפי ששקד
+ * דיווחה בעבר. המסך הכהה מופיע מיד, והתמונה נפתחת מעליו.
+ */
+const OPEN_MS = 220;
+const OPEN_FROM = 0.9;
 
 /**
  * יחס הרוחב-גובה של קובץ התמונה · נמדד מהנכס עצמו ולא מוקלד.
@@ -112,7 +135,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
         {shot && (
           <Modal visible transparent animationType="none" onRequestClose={close}>
             <Scrim onPress={close} />
-            <View style={[s.stage, PASS_TOUCH]}>
+            <Stage>
               {/* שם התמונה · מעל התמונה במרכז, כמו `shotName` בקנבס.
                   מוצג רק כשיש שם ב-`photoTitles.ts`. */}
               {shot.title ? <Text style={s.title}>{shot.title}</Text> : null}
@@ -125,7 +148,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
               <Pressable onPress={close} style={[s.shotPress, { aspectRatio: ratioOf(shot.name) }]}>
                 <Photo name={shot.name} style={s.shot} zoom={false} />
               </Pressable>
-            </View>
+            </Stage>
             <Pressable onPress={close} style={s.close} hitSlop={10}>
               <S k="close" size={15} color="#FFFFFF" />
             </Pressable>
@@ -133,6 +156,43 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
         )}
       </LightboxOpenCtx.Provider>
     </LightboxCtx.Provider>
+  );
+}
+
+/** התמונה נפתחת · דהייה וקנה מידה · ראו `OPEN_MS` */
+function Stage({ children }: { children: React.ReactNode }) {
+  const t = React.useRef(new Animated.Value(0)).current;
+  const [reduce, setReduce] = React.useState(false);
+
+  React.useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((v) => alive && setReduce(v))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (reduce) {
+      t.setValue(1);
+      return;
+    }
+    Animated.timing(t, {
+      toValue: 1,
+      duration: OPEN_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [reduce, t]);
+
+  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [OPEN_FROM, 1] });
+
+  return (
+    <Animated.View style={[s.stage, PASS_TOUCH, { opacity: t, transform: [{ scale }] }]}>
+      {children}
+    </Animated.View>
   );
 }
 
