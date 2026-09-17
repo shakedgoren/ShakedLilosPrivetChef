@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { cancelSaleReminder, listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
 import { useCheer } from '../../components/Cheer';
+import { setReminder, useReminder } from '../../order/reminders';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { Confetti } from '../../components/Confetti';
 import { OrderTracker } from '../../components/OrderTracker';
@@ -66,9 +67,11 @@ export function MyOrdersScreen() {
   /**
    * ⚠ **כבר יש תזכורת · 17 בספטמבר 2026** · החלונית כאן לא ידעה על
    * זה בכלל, ולכן היא הציעה להירשם שוב למי שכבר רשומה. אותו שדה
-   * שכבר חוזר מ-`/orders/sale-day`.
+   * שכבר חוזר מ-`/orders/sale-day`, ואותו מאגר משותף של שאר
+   * האפליקציה · ראו `order/reminders`.
    */
-  const [reminded, setReminded] = useState(false);
+  const remindCat = closed?.order.category ?? '';
+  const reminded = useReminder(remindCat) ?? false;
   const [remindBusy, setRemindBusy] = useState(false);
   const [remindDone, setRemindDone] = useState(false);
   const [remindErr, setRemindErr] = useState('');
@@ -105,7 +108,7 @@ export function MyOrdersScreen() {
         return;
       }
       setClosed({ order: o, note: day.message });
-      setReminded(day.reminder ?? false);
+      setReminder(o.category, day.reminder ?? false);
       setRemindDone(false);
       setRemindErr('');
     } catch (e) {
@@ -121,6 +124,7 @@ export function MyOrdersScreen() {
     setRemindErr('');
     try {
       await requestSaleReminder(closed.order.category);
+      setReminder(closed.order.category, true);
       /* ⚠ סוגר את החלונית ומריץ קונפטי · שקד ביקשה שלא תקפוץ
          חלונית שנייה עם ״נרשמת״ (16 בספטמבר 2026) */
       setClosed(null);
@@ -139,7 +143,7 @@ export function MyOrdersScreen() {
     setRemindErr('');
     try {
       await cancelSaleReminder(closed.order.category);
-      setReminded(false);
+      setReminder(closed.order.category, false);
       setClosed(null);
       toast('התזכורת נמחקה');
     } catch (e) {

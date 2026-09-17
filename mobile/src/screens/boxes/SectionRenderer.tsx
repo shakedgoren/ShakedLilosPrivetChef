@@ -1,4 +1,5 @@
 import React from 'react';
+import { BlurView } from 'expo-blur';
 import { S } from '../../components/Sym';
 import { INPUT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -270,23 +271,8 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                   כלומר הכף מתמוססת כלפי מעלה והתמונה נראית דרכה.
                   ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
                   ב-SVG מתחת לטקסט. */}
-              <View style={[st.footFill, NO_TOUCH]}>
-                {/* ⚠ **הטשטוש ירד · 17 בספטמבר 2026** · שקד ביקשה אותו
-                    ב-16 בספטמבר (״טיפה אפקט של טשטוש״) וביטלה אותו
-                    למחרת: ״צריך להוריד את הטשטוש שיהיה המפריד בין
-                    התמונה לבין הפס הירוק״. המפריד עכשיו הוא
-                    הגרדיאנט בלבד. */}
-                <Svg width="100%" height={FADE_H}>
-                  <Defs>
-                    <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">
-                      {FOOT_STOPS.map(([at, op]) => (
-                        <Stop key={at} offset={at} stopColor={FOOT_RGB} stopOpacity={op} />
-                      ))}
-                    </LinearGradient>
-                  </Defs>
-                  <Rect x="0" y="0" width="100%" height={FADE_H} fill="url(#cardFoot)" />
-                </Svg>
-              </View>
+              {/* ⚠ הרוחב מהמדידה של הרשת · ראו `FadeStrip` */}
+              <FadeStrip width={shotSide} />
               <Text style={st.cardName}>{o.n}</Text>
               {o.d ? <Text style={st.cardDesc}>{o.d}</Text> : null}
               <View style={st.addPill}>
@@ -425,6 +411,8 @@ const CARD_BORDER = 2;
  * כדי שהכף תסתיר פחות מהתמונה המרובעת.
  */
 const FOOT_PAD_TOP = 12;
+/** ⚠ מוזכר גם ב-`footFill`, שמבטל אותו בהיסט שלילי */
+const FOOT_PAD_SIDE = 10;
 const FOOT_RGB = 'rgb(198,228,211)';
 /**
  * ⚠ **הכף אטומה, והמעבר יצא ממנה · 16 בספטמבר 2026** · שקד דיווחה
@@ -441,17 +429,62 @@ const FOOT_RGB = 'rgb(198,228,211)';
  */
 const FOOT_FILL = 'rgba(198,228,211,0.96)';
 /**
- * ⚠ **רצועת המעבר · הוגדלה ב-16 בספטמבר 2026** · בקשה של שקד
- * למעבר רך בין התמונה לכף הירוקה. היה כאן גם טשטוש, והיא ביקשה
- * להסיר אותו למחרת — ראו ההערה ליד הרצועה עצמה.
+ * ⚠ **גובה רצועת המעבר · 17 בספטמבר 2026** · שקד ביקשה טשטוש
+ * ב-16 בספטמבר, ולמחרת הבהירה: ״התכוונתי שצריך להוריד **מבחינת
+ * גובה**״. הרצועה הייתה 36 ותפסה נתח מהתמונה; עכשיו 22.
  */
-const FADE_H = 36;
+const FADE_H = 22;
+/** ⚠ עדין בכוונה · ״טיפה״, לא מסך חלבי */
+const FADE_BLUR = 14;
 /** עצירות רצועת המעבר בלבד · מלמטה (אטום) למעלה (שקוף) */
 const FOOT_STOPS: [number, number][] = [
   [0, 0.96],
   [0.5, 0.6],
   [1, 0],
 ];
+
+/**
+ * רצועת המעבר בין התמונה לכף הירוקה.
+ *
+ * ⚠ **רכיב נפרד, ומזהה ייחודי לכל כרטיס · 17 בספטמבר 2026** · קודם
+ * כל הכרטיסים הגדירו `LinearGradient` עם **אותו `id`**. `react-native-svg`
+ * מחזיק את המברשות במרשם אחד לפי שם, ולכן שבעה כרטיסים עם אותו שם
+ * דורסים זה את זה — וזה חלק ממה ששקד ראתה כ״חתיכה ירוקה״.
+ *
+ * ⚠ **מידות במספרים ולא באחוזים ולא במתיחה** · נמדד בסימולטור
+ * ב-17 בספטמבר 2026, בשני ניסיונות: עם `width="100%"` ועם
+ * `StyleSheet.absoluteFill` בלבד, ה-`Svg` צויר ברוחב של כ-32
+ * נקודות בקצה אחד במקום לרוחב הכרטיס — וזו בדיוק ״החתיכה הירוקה
+ * בצד שמאל״ ששקד ראתה. הטשטוש שמתחתיו כן נמתח, ולכן נראו שתי
+ * רצועות שונות זו לצד זו. הרוחב מגיע עכשיו מהמדידה של רשת
+ * הכרטיסים, שקיימת ממילא.
+ */
+let fadeSeq = 0;
+const nextFadeId = () => `foot${(fadeSeq += 1)}`;
+
+function FadeStrip({ width }: { width?: number }) {
+  const id = React.useMemo(nextFadeId, []);
+  /* ⚠ עד שהרשת נמדדת אין רוחב · רצועה ברוחב אפס עדיפה על רצועה שגויה */
+  if (!width) return null;
+  return (
+    <View style={[st.footFill, NO_TOUCH]}>
+      {/* ⚠ **הטשטוש חזר, נמוך יותר · 17 בספטמבר 2026** · שקד ביקשה
+          אותו ב-16 בספטמבר והבהירה למחרת שהכוונה הייתה **להוריד את
+          הגובה שלו**, לא למחוק אותו. ראו `FADE_H`. */}
+      <BlurView intensity={FADE_BLUR} tint="light" style={StyleSheet.absoluteFill} />
+      <Svg width={width} height={FADE_H}>
+        <Defs>
+          <LinearGradient id={id} x1="0" y1="1" x2="0" y2="0">
+            {FOOT_STOPS.map(([at, op]) => (
+              <Stop key={at} offset={at} stopColor={FOOT_RGB} stopOpacity={op} />
+            ))}
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width={width} height={FADE_H} fill={`url(#${id})`} />
+      </Svg>
+    </View>
+  );
+}
 
 const st = StyleSheet.create({
   /* כותרת הסעיף · ממורכזת, עם רמז המכסה לצידה */
@@ -614,14 +647,28 @@ const st = StyleSheet.create({
     left: 0,
     bottom: 0,
     paddingTop: FOOT_PAD_TOP,
-    paddingHorizontal: 10,
+    paddingHorizontal: FOOT_PAD_SIDE,
     paddingBottom: 11,
     alignItems: 'center',
     gap: 3,
     backgroundColor: FOOT_FILL,
   },
-  /* ⚠ **מעל הכף ולא בתוכה** · `top` שלילי · ראו ההערה ב-`FOOT_FILL` */
-  footFill: { position: 'absolute', top: -FADE_H, right: 0, left: 0, height: FADE_H },
+  /**
+   * ⚠ **מעל הכף ולא בתוכה** · `top` שלילי · ראו ההערה ב-`FOOT_FILL`.
+   *
+   * ⚠ **מתוחה על הכף ולא על תיבת התוכן שלה** · `right`/`left` על ילד
+   * ממוקם-מוחלט נמדדים מול **תיבת הריפוד** של ההורה, ולכן הריפוד
+   * האופקי של הכף אינו מצמצם את הרצועה. נמדד ב-17 בספטמבר: עם
+   * היסטים שליליים היא יצאה רחבה מדי ונשארה פינה חשופה בקצה.
+   */
+  footFill: {
+    position: 'absolute',
+    top: -FADE_H,
+    right: 0,
+    left: 0,
+    height: FADE_H,
+    overflow: 'hidden',
+  },
   cardName: { fontSize: 13, fontWeight: '600', color: '#22452F', lineHeight: 15.6, textAlign: 'center' },
   cardDesc: { fontSize: 10, fontWeight: '300', lineHeight: 14.5, color: '#37634A', textAlign: 'center' },
   addPill: {

@@ -5,6 +5,7 @@ import { cancelSaleReminder, requestSaleReminder, saleDayStatus } from '../api/o
 import { ApiError } from '../api/types';
 import { COPY, orderError } from '../api/copy';
 import { hasSaleDay } from '../data/shared';
+import { setReminder, useReminder } from './reminders';
 
 /**
  * שער יום המכירה.
@@ -38,8 +39,16 @@ export function useSaleGate(category: string) {
    * ⚠ **האם כבר יש תזכורת** · בקשה של שקד: ״במידה ותזכורת הופעלה
    * כבר, לא להציע לבן אדם להפעיל שוב תזכורת״. במקרה כזה החלונית
    * רק **מודיעה** ואינה מציעה.
+   *
+   * ⚠ **מגיע מהמאגר המשותף · 17 בספטמבר 2026** · היה כאן מצב מקומי,
+   * ולכן שורת דף הבית והחלונית כאן יכלו להראות שני דברים סותרים
+   * באותו רגע · ראו `order/reminders`.
    */
-  const [reminded, setReminded] = useState(false);
+  const reminded = useReminder(category) ?? false;
+  const setReminded = useCallback(
+    (next: boolean) => setReminder(category, next),
+    [category],
+  );
 
   /**
    * מריץ את `onOpen` אם אפשר להזמין, ואחרת פותח את חלונית הפעמון.

@@ -111,6 +111,22 @@ export function ForgotSheet({
   return (
     /* ⚠ נפתחת באמצע · ראו `raised` */
     <Sheet onClose={onClose} raised>
+      {/**
+        * ⚠ **X במקום ״סגירה״ · בקשה של שקד (17 בספטמבר 2026)** ·
+        * ״תמחק את ׳סגירה׳ ובמקום תוסיף x בצד שמאל למעלה״.
+        * ⚠ `left` פיזי ולא `start` · היא ביקשה שמאל, ותחת RTL
+        * ״התחלה״ היא ימין.
+        */}
+      <Pressable
+        onPress={onClose}
+        hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel={T.close}
+        style={s.x}
+      >
+        <S k="close" size={13} color="#6E6478" />
+      </Pressable>
+
       <Text style={s.title}>{T.forgotTitle}</Text>
       <Text style={s.sub}>{T.forgotBody}</Text>
 
@@ -139,10 +155,6 @@ export function ForgotSheet({
         <S k="clock" size={13} color={surface.faint} />
         <Text style={s.ttlText}>{sent ? `${T.forgotTtl} · נשלח` : T.forgotTtl}</Text>
       </View>
-
-      <Pressable onPress={onClose}>
-        <Text style={s.close}>{T.close}</Text>
-      </Pressable>
     </Sheet>
   );
 }
@@ -241,6 +253,19 @@ const s = StyleSheet.create({
 
   ttl: { flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', marginTop: 10 },
   ttlText: { fontSize: 12, color: surface.faint },
+  /* ⚠ ה-X של יריעת הסיסמה · ראו ההערה ליד הכפתור */
+  x: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(130,112,162,0.09)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
   close: { fontSize: 12.5, color: '#8A8194', textAlign: 'center', paddingVertical: 10 },
   deep: { color: DEEP },
 });

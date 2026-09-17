@@ -9,6 +9,7 @@ import { upcomingSale } from '../data/saleWeek';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { GLASS_SHADOW, GLASS_STOPS } from '../theme/glass';
 import { apiEnabled } from '../api/config';
+import { setReminder, useReminder } from '../order/reminders';
 import {
   cancelSaleReminder,
   requestSaleReminder,
@@ -76,7 +77,16 @@ export function SaleDayRow({ onOpen }: Props) {
   const { cheer, toast } = useCheer();
 
   const [state, setState] = React.useState<SaleState | null>(null);
-  const [on, setOn] = React.useState(false);
+  /**
+   * ⚠ **המצב מגיע מהמאגר המשותף · 17 בספטמבר 2026** · שקד דיווחה
+   * ש״אין סנכרון בין התזכורת שמופיעה בדף הבית לבין התזכורת בעמוד
+   * עצמו״. היה כאן `useState` מקומי · ראו `order/reminders`.
+   */
+  const on = useReminder(upcoming.cat) ?? false;
+  const setOn = React.useCallback(
+    (next: boolean) => setReminder(upcoming.cat, next),
+    [upcoming.cat],
+  );
 
   React.useEffect(() => {
     if (!apiEnabled) return;
@@ -86,7 +96,7 @@ export function SaleDayRow({ onOpen }: Props) {
         if (!live) return;
         /* ⚠ שרת ישן מחזיר `open` בלבד · נגזר ממנו מצב סביר */
         setState(d.state ?? (d.open ? 'open' : 'pending'));
-        setOn(d.reminder ?? false);
+        setReminder(upcoming.cat, d.reminder ?? false);
       })
       .catch(() => undefined);
     return () => {

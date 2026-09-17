@@ -17,6 +17,7 @@ import { PICKUP } from '../data/categories';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { Photo } from './Photo';
 import { iconOrbShadow } from '../theme/glass';
+import { NO_TOUCH } from '../theme/pointerEvents';
 /**
  * מפות ההגעה לחנייה · הכתובת בגדול, הערת הוויז מתחתיה,
  * וארבע המפות עם כותרת הכיוון על התמונה מימין למעלה.
@@ -68,8 +69,9 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   /**
    * ⚠ **המפה הקודמת והכיוון נשמרים** · בלעדיהם אין מה להחליק החוצה,
    * ואי אפשר לדעת לאיזה צד. `seq` מבדיל בין שתי לחיצות על אותה מפה.
+   * `step` הוא **הפרש האינדקס** · ‎+1 קדימה, ‎-1 אחורה.
    */
-  const [at, setAt] = useState({ i: 0, from: -1, dir: 1, seq: 0 });
+  const [at, setAt] = useState({ i: 0, from: -1, step: -1, seq: 0 });
   /**
    * מרחק ההחלקה · רוחב המסך.
    *
@@ -88,10 +90,10 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   const i = at.i;
   const cur = maps[i];
 
-  const step = (d: number) =>
-    setAt((p) => ({ i: (p.i + d + maps.length) % maps.length, from: p.i, dir: d, seq: p.seq + 1 }));
+  const go = (d: number) =>
+    setAt((p) => ({ i: (p.i + d + maps.length) % maps.length, from: p.i, step: d, seq: p.seq + 1 }));
   const jump = (k: number) =>
-    setAt((p) => (k === p.i ? p : { i: k, from: p.i, dir: k > p.i ? 1 : -1, seq: p.seq + 1 }));
+    setAt((p) => (k === p.i ? p : { i: k, from: p.i, step: k > p.i ? 1 : -1, seq: p.seq + 1 }));
 
   /**
    * ⚠ **החלקה בין המפות · בקשה של שקד** · ״צריך לאפשר לעבור בין
@@ -101,7 +103,11 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
    * הייתה בולעת את הלחיצה שמגדילה את המפה, ו״להגדיל את התמונות״
    * היא חלק מאותה בקשה. כך אצבע שזזה גוררת, ואצבע שנחה מגדילה.
    *
-   * ⚠ הכיוון · תחת RTL גרירה שמאלה היא ״הבא״, כמו בשאר הקרוסלות.
+   * ⚠ **הכיוון התהפך · 17 בספטמבר 2026** · שקד: ״ההחלקה עם האצבע
+   * לא מעבירה לכיוון הנכון, זה צריך להיות הפוך״. וזה נכון: הנקודות
+   * מסודרות מימין לשמאל (הראשונה בימין), ולכן גרירה **שמאלה** מזיזה
+   * את הרצועה שמאלה ומגלה את מה שנמצא מימינה — כלומר את המפה
+   * ה**קודמת**. עכשיו האצבע והמפות הולכות יחד עם הנקודות.
    */
   const pan = React.useMemo(
     () =>
@@ -110,7 +116,7 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
           Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 6,
         onPanResponderRelease: (_e, g) => {
           if (Math.abs(g.dx) < SWIPE_PX) return;
-          step(g.dx < 0 ? 1 : -1);
+          go(g.dx < 0 ? -1 : 1);
         },
       }),
     [maps.length],
@@ -140,32 +146,45 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
 
       <View style={s.frame} {...pan.panHandlers}>
         {/* ⚠ `zoom` דלוק · לחיצה מגדילה את המפה במסך מלא · בקשת שקד */}
+        {/* ⚠ **הכותרת נוסעת עם המפה שלה · 17 בספטמבר 2026** · היא
+            ישבה **מחוץ** לשכבה המתחלפת, ולכן היא התחלפה בפריים אחד
+            בתחילת המעבר — ובמשך כל ההחלקה נראתה הכותרת החדשה מעל
+            המפה הישנה. זה חלק ממה ששקד קראה לו ״משהו שם באפקט לא
+            מסתדר טוב״. */}
         <Swap
           seq={at.seq}
-          dir={at.dir}
+          step={at.step}
           width={travel}
           leaving={
             at.from >= 0 && at.from !== i ? (
-              /* ⚠ בלי `zoom` · היא בדרך החוצה, ואין מה ללחוץ עליה */
-              <Photo name={maps[at.from].file} rgb={rgb} style={s.map} zoom={false} />
+              <>
+                {/* ⚠ בלי `zoom` · היא בדרך החוצה, ואין מה ללחוץ עליה */}
+                <Photo name={maps[at.from].file} rgb={rgb} style={s.map} zoom={false} />
+                <View style={[s.badge, NO_TOUCH]}>
+                  <Text style={[s.badgeText, { color: ink }]}>{maps[at.from].title}</Text>
+                </View>
+              </>
             ) : null
           }
-          entering={<Photo name={cur.file} rgb={rgb} style={s.map} />}
+          entering={
+            <>
+              <Photo name={cur.file} rgb={rgb} style={s.map} />
+              <View style={[s.badge, NO_TOUCH]}>
+                <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
+              </View>
+            </>
+          }
         />
-
-        <View style={s.badge}>
-          <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
-        </View>
 
         {/* ⚠ היו כאן תווי טקסט ‹ › · הם **מראה דו-כיוונית**, ולכן
             ב-RTL הדפדפן הפך אותם והחץ הימני הצביע שמאלה. אותם
             אייקוני SVG של שאר הקרוסלות חסינים לזה.
             ⚠ הכיוון החוצה · ימינה בימין ושמאלה בשמאל, כפי ששקד
             ביקשה גם בקרוסלת פינת השף. */}
-        <Pressable onPress={() => step(-1)} style={[s.arrow, s.arrowRight]} hitSlop={6}>
+        <Pressable onPress={() => go(-1)} style={[s.arrow, s.arrowRight]} hitSlop={6}>
           <S k="chevronRight" size={ARROW_GLYPH} color={ink} />
         </Pressable>
-        <Pressable onPress={() => step(1)} style={[s.arrow, s.arrowLeft]} hitSlop={6}>
+        <Pressable onPress={() => go(1)} style={[s.arrow, s.arrowLeft]} hitSlop={6}>
           <S k="chevronLeft" size={ARROW_GLYPH} color={ink} />
         </Pressable>
       </View>
@@ -199,13 +218,14 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
  */
 function Swap({
   seq,
-  dir,
+  step,
   width,
   leaving,
   entering,
 }: {
   seq: number;
-  dir: number;
+  /** הפרש האינדקס · ‎+1 קדימה (שמאלה ברצועה), ‎-1 אחורה (ימינה) */
+  step: number;
   /** מרחק ההחלקה בנקודות · ראו `travel` */
   width: number;
   /** המפה שעוזבת · `null` בפתיחה הראשונה, כשאין מאיפה לבוא */
@@ -241,8 +261,13 @@ function Swap({
     return () => anim.stop();
   }, [reduce, t]);
 
-  const out = t.interpolate({ inputRange: [0, 1], outputRange: [0, -dir * width] });
-  const into = t.interpolate({ inputRange: [0, 1], outputRange: [dir * width, 0] });
+  /**
+   * ⚠ **הצד נגזר מהפרש האינדקס ולא מהאצבע** · הנקודות מסודרות
+   * מימין לשמאל, ולכן המפה ה**הבאה** יושבת משמאל לנוכחית: היא
+   * נכנסת משמאל והיוצאת מפנה לה מקום ימינה. אחורה — הפוך.
+   */
+  const out = t.interpolate({ inputRange: [0, 1], outputRange: [0, step * width] });
+  const into = t.interpolate({ inputRange: [0, 1], outputRange: [-step * width, 0] });
 
   return (
     <>
