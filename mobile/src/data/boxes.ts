@@ -1122,6 +1122,12 @@ export const BOXES_FULFILLMENT = {
   pickDate: true,
 } as const;
 
+/**
+ * מארזים שנמסרים בימי שישי בלבד · בקשה של שקד מ-17 בספטמבר 2026.
+ * ⚠ המפתחות ולא השמות · השם מוצג ללקוחה ועלול להשתנות.
+ */
+export const FRIDAY_ONLY_BOXES: readonly string[] = ['free', 'celebSalads', 'celebMain', 'all'];
+
 /** סכום ההזמנה · לכל מארז חוקי תמחור משלו, כמו בקנבס */
 export function priceOfBox(box: Box, picks: Record<string, any>): number {
   if (box.key === 'free') {

@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
-import { listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
+import { cancelSaleReminder, listMyOrders, requestSaleReminder, saleDayStatus } from '../../api/orders';
+import { useCheer } from '../../components/Cheer';
 import { SaleClosedSheet } from '../../components/SaleClosedSheet';
 import { Confetti } from '../../components/Confetti';
 import { OrderTracker } from '../../components/OrderTracker';
@@ -34,6 +35,8 @@ import { iconOrbShadow, TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 /** ההזמנות שלי · מקביל ל-MyOrders.dc.html, מחובר ל-GET /orders */
 export function MyOrdersScreen() {
   const { go, signOut } = useNav();
+  /* ההודעה הצפה · ראו `Cheer` */
+  const { toast } = useCheer();
   const [orders, setOrders] = useState<Order[]>([]);
   const [err, setErr] = useState('');
   const [open, setOpen] = useState<string | null>(null);
@@ -60,6 +63,12 @@ export function MyOrdersScreen() {
   const [checking, setChecking] = useState<string | null>(null);
   /* חלונית ״יום המכירה עדיין לא נפתח״ */
   const [closed, setClosed] = useState<{ order: Order; note: string } | null>(null);
+  /**
+   * ⚠ **כבר יש תזכורת · 17 בספטמבר 2026** · החלונית כאן לא ידעה על
+   * זה בכלל, ולכן היא הציעה להירשם שוב למי שכבר רשומה. אותו שדה
+   * שכבר חוזר מ-`/orders/sale-day`.
+   */
+  const [reminded, setReminded] = useState(false);
   const [remindBusy, setRemindBusy] = useState(false);
   const [remindDone, setRemindDone] = useState(false);
   const [remindErr, setRemindErr] = useState('');
@@ -96,6 +105,7 @@ export function MyOrdersScreen() {
         return;
       }
       setClosed({ order: o, note: day.message });
+      setReminded(day.reminder ?? false);
       setRemindDone(false);
       setRemindErr('');
     } catch (e) {
@@ -115,6 +125,23 @@ export function MyOrdersScreen() {
          חלונית שנייה עם ״נרשמת״ (16 בספטמבר 2026) */
       setClosed(null);
       setRemindDone(true);
+    } catch (e) {
+      setRemindErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
+    } finally {
+      setRemindBusy(false);
+    }
+  };
+
+  /** ביטול התזכורת מתוך החלונית · ראו `reminded` */
+  const onUnremind = async () => {
+    if (!closed) return;
+    setRemindBusy(true);
+    setRemindErr('');
+    try {
+      await cancelSaleReminder(closed.order.category);
+      setReminded(false);
+      setClosed(null);
+      toast('התזכורת נמחקה');
     } catch (e) {
       setRemindErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
     } finally {
@@ -180,7 +207,9 @@ export function MyOrdersScreen() {
         note={closed?.note}
         busy={remindBusy}
         err={remindErr}
+        reminded={reminded}
         onRemind={() => void onRemind()}
+        onUnremind={() => void onUnremind()}
         onClose={() => setClosed(null)}
       />
 

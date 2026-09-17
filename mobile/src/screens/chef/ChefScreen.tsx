@@ -26,6 +26,7 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { useNav } from '../../navigation/store';
 import { useChefOrder } from './useChefOrder';
 import { ChefSectionRenderer } from './ChefSectionRenderer';
+import { StepIn } from '../../components/StepIn';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
 import { BackButton } from '../../components/BackButton';
@@ -202,14 +203,17 @@ export function ChefScreen() {
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets
         >
-          <View style={s.intro}>
+          {/* ⚠ **כניסה במדרגות · 17 בספטמבר 2026** · בקשה של שקד:
+              ״המסך יעלה למעלה ושהפריטים יופיעו אחד אחרי השני
+              בעלייה״. בשאר הקטגוריות זה כבר היה, וכאן לא. */}
+          <StepIn index={0} style={s.intro}>
             <Text style={s.introTitle}>{INTRO_TITLE}</Text>
             <Text style={s.introBody}>{INTRO_BODY}</Text>
             <Text style={s.introCta}>{INTRO_CTA}</Text>
-          </View>
+          </StepIn>
 
           {/* שתי לשוניות · ארוחת שף מול עמדת טאבון */}
-          <View style={s.modes}>
+          <StepIn index={1} style={s.modes}>
             {o.packages.map((p, i) => (
               <Pressable
                 key={p.key}
@@ -219,10 +223,10 @@ export function ChefScreen() {
                 <Text style={[s.modeText, tab === i && s.modeTextOn]}>{p.name}</Text>
               </Pressable>
             ))}
-          </View>
+          </StepIn>
 
           {/* כרטיס המסלול · הכפתור, אחריו הקרוסלה ואז שורות הפירוט */}
-          <View style={s.pkgCard}>
+          <StepIn index={2} style={s.pkgCard}>
             {/* ⚠ הכפתור עלה מעל הקרוסלה ולבש את עיצוב ׮המשךׯ ·
                 שתי בקשות של שקד. קודם הוא היה גלולה שטוחה בתחתית. */}
             {/* ⚠ **עיצוב ״קו תחתון״ · נבחר ב-16 בספטמבר 2026** · שקד
@@ -262,7 +266,7 @@ export function ChefScreen() {
                 שקד. הוא ישב מעל הקרוסלה, כלומר לפני שהלקוחה בכלל
                 קראה מה המסלול כולל. */}
             <PickCta onPress={() => o.openPackage(tab)} />
-          </View>
+          </StepIn>
         </ScrollView>
       </View>
     );

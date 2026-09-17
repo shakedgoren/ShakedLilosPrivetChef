@@ -20,11 +20,11 @@ export type WavePoint = { k: string; rev: number; exp: number };
 
 /** ⚠ **גובה מינימלי** · בקשה של שקד · מספיק לגל ולא יותר */
 /**
- * ⚠ **הוגדל · 16 בספטמבר 2026** · בקשה של שקד: ״בכספים תגדיל את
- * הגובה של הדיאגרמת רווחיות״. היה 78, וזה נתן גל שטוח שבו הפרשים
- * בין חודשים כמעט לא נראו.
+ * ⚠ **הוגדל פעמיים** · 16 בספטמבר 2026 מ-78 ל-150 (״בכספים תגדיל
+ * את הגובה של הדיאגרמת רווחיות״), ו-17 בספטמבר ל-190 (״תגדיל עוד
+ * קצת את הגובה שלה״).
  */
-const H = 150;
+const H = 190;
 
 /**
  * ⚠ **מד הסכומים · 17 בספטמבר 2026** · בקשה של שקד: ״שים מצד שמאל
@@ -55,7 +55,15 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 /**
  * עקומה רכה דרך הנקודות · קטמול-רום שמתורגם לבזייה מעוקבת.
  * ⚠ קו שבור בין הנקודות נראה כמו גרף ולא כמו גל.
+ *
+ * ⚠ **נקודות הבקרה נכלאות בין שתי הנקודות · 17 בספטמבר 2026** ·
+ * קטמול-רום **חורג** משתי הנקודות כשיש קפיצה חדה, ובגרף מצטבר
+ * נמדד בסימולטור שהקו **צנח לאפס** ממש לפני הקפיצה של 15 בספטמבר.
+ * מצטבר לא יכול לרדת, ולכן זה קורא שקר. הכליאה שומרת על הרכות
+ * ומונעת את החריגה.
  */
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
 function smooth(pts: { x: number; y: number }[]): string {
   if (pts.length === 0) return '';
   if (pts.length === 1) return `M${pts[0].x} ${pts[0].y}`;
@@ -65,10 +73,12 @@ function smooth(pts: { x: number; y: number }[]): string {
     const p1 = pts[i];
     const p2 = pts[i + 1];
     const p3 = pts[i + 2] ?? p2;
+    const lo = Math.min(p1.y, p2.y);
+    const hi = Math.max(p1.y, p2.y);
     const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c1y = clamp(p1.y + (p2.y - p0.y) / 6, lo, hi);
     const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
+    const c2y = clamp(p2.y - (p3.y - p1.y) / 6, lo, hi);
     d += ` C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
   }
   return d;
@@ -121,7 +131,33 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
   const chart = React.useMemo(() => {
     if (w <= 0 || points.length === 0) return null;
     const width = w;
-    const top = Math.max(...points.map((p) => Math.max(p.rev, p.exp)), 1);
+
+    /**
+     * ⚠ **מצטבר ולא לפי סל · תוקן ב-17 בספטמבר 2026** · שקד דיווחה
+     * ״הוא לא מציג את המחיר הנכון בהתאם להכנסות בהתאם לתקופה״.
+     *
+     * נמדד מול בסיס הנתונים: בספטמבר נכנסו 37,642 ₪ סך הכל, אבל
+     * הסל הגבוה ביותר — 15 בספטמבר — הוא 31,770 ₪. המד נבנה מול
+     * **הסל הגבוה**, ולכן הוא נעצר ב-31.8k בזמן שהאריח ליד הראה
+     * 37,642. שני מספרים נכונים שלא הסכימו זה עם זה.
+     *
+     * הבקשה המקורית הייתה ״מד עם סכומים מ-0 ועד הסכום שנכנס בהתאם
+     * לתקופה שמסתכלים עלייה״ — כלומר הגרף צריך **להגיע** לסכום
+     * התקופה. בעקומה מצטברת הנקודה האחרונה היא בדיוק המחזור של
+     * התקופה, והמד נגמר בו.
+     */
+    const run: { rev: number; exp: number }[] = [];
+    points.reduce(
+      (sum, p) => {
+        const next = { rev: sum.rev + p.rev, exp: sum.exp + p.exp };
+        run.push(next);
+        return next;
+      },
+      { rev: 0, exp: 0 },
+    );
+    /* ⚠ מצטבר הוא עולה תמיד · הנקודה האחרונה היא הגבוהה ביותר */
+    const tail = run[run.length - 1];
+    const top = Math.max(tail.rev, tail.exp, 1);
     /* ⚠ הגל מתחיל אחרי המד · ראו `AXIS_W` */
     const x0 = AXIS_W;
     const span = Math.max(1, width - AXIS_W);
@@ -129,8 +165,8 @@ export function MoneyWave({ points }: { points: WavePoint[] }) {
       x: points.length === 1 ? x0 + span / 2 : x0 + (i / (points.length - 1)) * span,
       y: BASE - (v / top) * (BASE - TOP),
     });
-    const rev = points.map((p, i) => at(p.rev, i));
-    const exp = points.map((p, i) => at(p.exp, i));
+    const rev = run.map((p, i) => at(p.rev, i));
+    const exp = run.map((p, i) => at(p.exp, i));
     /**
      * ⚠ **הנקודה נכנסת פנימה** · לכרטיס יש `overflow: hidden`,
      * ובקצה ממש חצי מהעיגול נחתך. נמדד בדפדפן.

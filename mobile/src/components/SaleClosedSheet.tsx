@@ -43,6 +43,13 @@ type Props = {
    */
   reminded?: boolean;
   onRemind: () => void;
+  /**
+   * ביטול התזכורת.
+   * ⚠ **נוסף ב-17 בספטמבר 2026** · שקד דיווחה שההודעה ״תישלח אלייך
+   * תזכורת״ מופיעה תמיד ״גם אם לא סימנתי שאני רוצה לקבל תזכורת״.
+   * הבקשה אכן הייתה שמורה בשרת — מה שחסר היה כפתור לבטל אותה.
+   */
+  onUnremind: () => void;
   onClose: () => void;
 };
 
@@ -55,6 +62,7 @@ export function SaleClosedSheet({
   err,
   reminded = false,
   onRemind,
+  onUnremind,
   onClose,
 }: Props) {
   if (!open) return null;
@@ -80,6 +88,11 @@ export function SaleClosedSheet({
           {reminded ? (
             <>
               <Text style={s.body}>{ALREADY}</Text>
+              {err ? <Text style={s.err}>{err}</Text> : null}
+              {/* ⚠ הדרך לבטל · ראו `onUnremind` */}
+              <Pressable onPress={onUnremind} disabled={busy} style={s.skip} hitSlop={6}>
+                <Text style={[s.skipText, s.undo]}>אני לא רוצה תזכורת</Text>
+              </Pressable>
               <Pressable onPress={onClose} style={s.skip} hitSlop={6}>
                 <Text style={s.skipText}>הבנתי</Text>
               </Pressable>
@@ -161,4 +174,6 @@ const s = StyleSheet.create({
   err: { fontSize: 11.5, color: '#B95349', textAlign: 'center' },
   skip: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: radius.pill },
   skipText: { fontSize: 13, color: surface.faint },
+  /* ⚠ ההיפוך מודגש מעט · זו פעולה, לא סגירה */
+  undo: { fontWeight: '600', color: surface.inkSoft, textDecorationLine: 'underline' },
 });

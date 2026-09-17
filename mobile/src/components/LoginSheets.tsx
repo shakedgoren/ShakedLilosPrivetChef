@@ -129,7 +129,8 @@ export function ForgotSheet({
         </View>
       </View>
 
-      <Pressable onPress={onSend} disabled={busy} style={[s.cta, busy && s.ctaOff]}>
+      {/* ⚠ ברוחב מינימלי · ראו `ctaSlim` */}
+      <Pressable onPress={onSend} disabled={busy} style={[s.cta, s.ctaSlim, busy && s.ctaOff]}>
         <Send size={18} color="#FFFFFF" />
         <Text style={s.ctaText}>{T.forgotCta}</Text>
       </Pressable>
@@ -161,8 +162,17 @@ const s = StyleSheet.create({
     paddingBottom: 22,
     boxShadow: '0 -20px 50px -24px rgba(60,44,96,0.5)',
   } as never,
-  /* ⚠ באמצע · פינות עגולות מכל הצדדים, והידית מיותרת */
-  sheetMid: { borderRadius: 26, paddingTop: 22 },
+  /**
+   * ⚠ באמצע · פינות עגולות מכל הצדדים, והידית מיותרת.
+   *
+   * ⚠ **`maxHeight` בוטל כאן · 17 בספטמבר 2026** · שקד דיווחה
+   * ש״תקף ל-10 דקות״ נחתך כשמקלידים מייל. הסיבה: `maxHeight: '78%'`
+   * של היריעה הכללית נמדד מול הגובה **שנשאר אחרי שהמקלדת נפתחה**
+   * (`KeyboardAvoidingView` ב-`padding`), ולכן השורה האחרונה נשארה
+   * מחוץ לגבול ונחתכה. ליריעה הזו יש חמש שורות קבועות והיא נכנסת
+   * תמיד — ולכן פשוט אין לה תקרה.
+   */
+  sheetMid: { maxHeight: undefined, borderRadius: 26, paddingTop: 22, paddingBottom: 26 },
   grab: {
     width: 40,
     height: 4,
@@ -218,6 +228,14 @@ const s = StyleSheet.create({
     gap: 8,
     marginTop: 8,
   },
+  /**
+   * ⚠ **רוחב מינימלי · בקשה של שקד (17 בספטמבר 2026)** · ״הכפתור של
+   * שליחת הקישור צריך להיות ברוחב מינמלי״. קודם הוא נמתח לכל רוחב
+   * היריעה, כי זה ברירת המחדל של ילד בעמודה.
+   * ⚠ חל על יריעת הסיסמה בלבד · כפתור ״הבנתי ומאשרת״ שביריעת
+   * התנאים נשאר רחב, כי הוא הפעולה היחידה שם.
+   */
+  ctaSlim: { alignSelf: 'center', paddingHorizontal: 30 },
   ctaOff: { opacity: 0.5 },
   ctaText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
 

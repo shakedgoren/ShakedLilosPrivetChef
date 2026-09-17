@@ -54,8 +54,6 @@ const STATE_TEXT: Record<SaleState, string> = {
 /** הנוסחים של המתג · בקשה של שקד */
 const ON_TEXT = 'תזכורת הופעלה';
 const OFF_TEXT = 'התזכורת נמחקה';
-/** כמה זמן הודעת הביטול נשארת */
-const TOAST_MS = 2600;
 
 const BELL = 15;
 const BELL_BTN = 30;
@@ -69,11 +67,16 @@ export function SaleDayRow({ onOpen }: Props) {
   /* ⚠ נקבע פעם אחת בכניסה למסך · שעון שרץ כאן היה מרנדר בלי סיבה */
   const upcoming = React.useMemo(() => upcomingSale(new Date()), []);
   const cat = CATEGORIES.find((c) => c.key === upcoming.cat);
-  const { cheer } = useCheer();
+  /**
+   * ⚠ **שתי ההודעות עברו לשכבה הצפה · 17 בספטמבר 2026** · בקשה של
+   * שקד: ״שההודעה ׳תזכורת נמחקה׳ לא תזיז דברים במסך הבית, שתופיע
+   * כמו הודעה צפה״. קודם היא רונדרה כאן, מתחת לשורה, ולכן היא דחפה
+   * את כל הכרטיסים שמתחתיה למטה ואז החזירה אותם.
+   */
+  const { cheer, toast } = useCheer();
 
   const [state, setState] = React.useState<SaleState | null>(null);
   const [on, setOn] = React.useState(false);
-  const [toast, setToast] = React.useState('');
 
   React.useEffect(() => {
     if (!apiEnabled) return;
@@ -91,16 +94,10 @@ export function SaleDayRow({ onOpen }: Props) {
     };
   }, [upcoming.cat]);
 
-  React.useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(''), TOAST_MS);
-    return () => clearTimeout(id);
-  }, [toast]);
-
   const toggle = React.useCallback(() => {
     if (on) {
       setOn(false);
-      setToast(OFF_TEXT);
+      toast(OFF_TEXT);
       /* ⚠ כישלון מחזיר את המתג · אחרת הלקוחה חושבת שביטלה ולא */
       void cancelSaleReminder(upcoming.cat).catch(() => setOn(true));
       return;
@@ -108,7 +105,7 @@ export function SaleDayRow({ onOpen }: Props) {
     setOn(true);
     cheer(ON_TEXT);
     void requestSaleReminder(upcoming.cat).catch(() => setOn(false));
-  }, [cheer, on, upcoming.cat]);
+  }, [cheer, on, toast, upcoming.cat]);
 
   /* עד שהתשובה חוזרת אין מה להבטיח · עדיף לא להראות כלום מלשקר */
   if (!cat || !state) return null;
@@ -116,7 +113,6 @@ export function SaleDayRow({ onOpen }: Props) {
   const isOpen = state === 'open';
 
   return (
-    <>
       <Pressable disabled={!isOpen} onPress={() => onOpen(upcoming.cat)} style={s.row}>
         <GlassFill stops={GLASS_STOPS} radius={radius.field} />
         <Text style={s.title}>{cat.sub}</Text>
@@ -143,13 +139,6 @@ export function SaleDayRow({ onOpen }: Props) {
           </Pressable>
         ) : null}
       </Pressable>
-
-      {toast ? (
-        <View style={s.toast}>
-          <Text style={s.toastText}>{toast}</Text>
-        </View>
-      ) : null}
-    </>
   );
 }
 
@@ -205,14 +194,4 @@ const s = StyleSheet.create({
     borderRadius: 1,
     transform: [{ rotate: '-45deg' }],
   },
-  toast: {
-    alignSelf: 'center',
-    marginTop: -12,
-    marginBottom: 14,
-    paddingVertical: 7,
-    paddingHorizontal: 16,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(42,36,48,0.86)',
-  },
-  toastText: { fontSize: 12.5, fontWeight: '600', color: '#FFFFFF' },
 });

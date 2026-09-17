@@ -21,8 +21,18 @@ const nextId = () => `glass${(seq += 1)}`;
 export function GlassFill({ stops, radius }: FillProps) {
   const id = React.useMemo(nextId, []);
   const step = stops.length > 1 ? 1 / (stops.length - 1) : 1;
+  /**
+   * ⚠ **בלי `width`/`height` על ה-`Svg` · תוקן ב-17 בספטמבר 2026** ·
+   * שקד דיווחה שבשורת המכירה הקרובה ״החלק הלבן לא בגודל המתאים לכל
+   * הכרטיסייה״. היו כאן גם `absoluteFill` וגם `width="100%"`, ושניהם
+   * נמדדים אחרת: `absoluteFill` נמתח על **תיבת הריפוד** של ההורה,
+   * ואילו אחוזים נמדדים מול **תיבת התוכן** — כלומר אחרי הריפוד.
+   * לשורה שם `paddingHorizontal: 12`, ולכן הזכוכית יצאה צרה ב-24
+   * נקודות מהכרטיסייה. עכשיו המתיחה נקבעת בסגנון בלבד, וה-`Rect`
+   * שבפנים ממילא מצויר ב-100% מתוך מסגרת ה-SVG שנמדדה.
+   */
   return (
-    <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, { borderRadius: radius }, NO_TOUCH]}>
+    <Svg style={[StyleSheet.absoluteFill, { borderRadius: radius }, NO_TOUCH]}>
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0.5" y2="0.866">
           {stops.map((c, i) => (

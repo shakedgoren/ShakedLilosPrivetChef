@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useCheer } from '../components/Cheer';
 import { apiEnabled } from '../api/config';
-import { requestSaleReminder, saleDayStatus } from '../api/orders';
+import { cancelSaleReminder, requestSaleReminder, saleDayStatus } from '../api/orders';
 import { ApiError } from '../api/types';
 import { COPY, orderError } from '../api/copy';
 import { hasSaleDay } from '../data/shared';
@@ -19,6 +19,7 @@ import { hasSaleDay } from '../data/shared';
  */
 /** הנוסחים של שקד · מילה במילה */
 const REMINDER_ON = 'תזכורת הופעלה';
+const REMINDER_OFF = 'התזכורת נמחקה';
 
 export function useSaleGate(category: string) {
   const [closed, setClosed] = useState<{ note: string } | null>(null);
@@ -31,7 +32,7 @@ export function useSaleGate(category: string) {
    * נולדה ההשהיה ששקד קראה לה איטית. עכשיו `useCheer` מציג אותה
    * מעל כל האפליקציה, והמסך חוזר הביתה מיד.
    */
-  const { cheer } = useCheer();
+  const { cheer, toast } = useCheer();
 
   /**
    * ⚠ **האם כבר יש תזכורת** · בקשה של שקד: ״במידה ותזכורת הופעלה
@@ -86,6 +87,32 @@ export function useSaleGate(category: string) {
     }
   }, [category, cheer]);
 
+  /**
+   * ביטול התזכורת מתוך החלונית.
+   *
+   * ⚠ **נוסף ב-17 בספטמבר 2026** · שקד דיווחה: ״זה מציג תמיד את
+   * ההודעה שתישלח אלייך תזכורת גם אם לא סימנתי שאני רוצה לקבל
+   * תזכורת״. נבדק מול בסיס הנתונים: היו שם **שתי** בקשות תזכורת
+   * שמורות על החשבון שלה, לקוסקוס ולשניצל — כלומר החלונית דיווחה
+   * נכון. מה שחסר היה **הדרך לבטל**: המתג היחיד ישב בשורת המכירה
+   * בדף הבית, והחלונית רק הודיעה ולא נתנה לשנות. עכשיו אפשר לבטל
+   * מכאן, וההודעה מפסיקה להופיע.
+   */
+  const unremind = useCallback(async () => {
+    setBusy(true);
+    setErr('');
+    try {
+      await cancelSaleReminder(category);
+      setReminded(false);
+      setClosed(null);
+      toast(REMINDER_OFF);
+    } catch (e) {
+      setErr(e instanceof ApiError ? orderError(e.code, e.message) : COPY.saveFail);
+    } finally {
+      setBusy(false);
+    }
+  }, [category, toast]);
+
   return {
     guard,
     checking,
@@ -94,6 +121,7 @@ export function useSaleGate(category: string) {
     note: closed?.note ?? '',
     close: useCallback(() => setClosed(null), []),
     remind,
+    unremind,
     busy,
     err,
     /** כבר ביקשה תזכורת · החלונית מודיעה ואינה מציעה */

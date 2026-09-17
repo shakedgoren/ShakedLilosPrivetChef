@@ -23,6 +23,14 @@ export type FulfillmentConfig = {
    * לקוסקוס ולשניצל יש יום מכירה קבוע ולכן אין להם תאריך לבחור.
    */
   pickDate?: boolean;
+  /**
+   * אילו תאריכים פתוחים בלוח · ברירת המחדל היא כלל פינת השף.
+   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · חלק מהמארזים נמסרים
+   * בימי שישי בלבד · ראו `FRIDAY_ONLY_BOXES`.
+   */
+  dateOpen?: (key: string) => boolean;
+  /** ההסבר מתחת ללוח · הולך יד ביד עם `dateOpen` */
+  dateHint?: string;
 };
 
 export const hhmm = (m: number) =>

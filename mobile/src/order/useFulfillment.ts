@@ -70,8 +70,17 @@ export function useFulfillment(cfg: FulfillmentConfig) {
 
   const settleClock = useCallback(() => setClock((c) => clamp(c)), [clamp]);
 
+  /**
+   * ⚠ **תאריך שכבר אינו פתוח נזרק · 17 בספטמבר 2026** · המארזים
+   * אינם חולקים לוח אחד יותר (״קחו כמה שבא לכם״ ואחיו נמסרים בשישי
+   * בלבד), ולכן מעבר ממארז למארז עלול להשאיר תאריך שנבחר בלוח
+   * הקודם ואינו חוקי בחדש. בלי זה ״המשך״ היה נפתח עם יום רביעי
+   * בהזמנה של מארז שנמסר רק בשישי.
+   */
+  const dateOk = date !== null && (cfg.dateOpen ? cfg.dateOpen(date) : true);
+
   /** ⚠ כשצריך תאריך, אי אפשר להמשיך בלעדיו */
-  const clockReady = !cfg.pickDate || date !== null;
+  const clockReady = !cfg.pickDate || dateOk;
 
   const clockNext = useCallback(() => {
     if (!clockReady) return;
@@ -113,6 +122,8 @@ export function useFulfillment(cfg: FulfillmentConfig) {
     ship, isDelivery: ship === 'deliv',
     time, clock, setClock, settleClock, clockNext, clockReady, pickSlot,
     date, setDate,
+    /* ⚠ תאריך שנבחר ועדיין חוקי בלוח הנוכחי · ראו `dateOk` */
+    dateOk,
     city, setCity, addr, setAddr, addressNext, addressOk,
     pay, pickPay,
     toast, wantDelivery, wantPickup,

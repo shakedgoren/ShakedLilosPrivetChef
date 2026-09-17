@@ -1,5 +1,4 @@
 import React from 'react';
-import { BlurView } from 'expo-blur';
 import { S } from '../../components/Sym';
 import { INPUT_START } from '../../theme/rtl';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -272,12 +271,11 @@ function Cards({ s, api }: { s: Section; api: Api }) {
                   ל-React Native אין גרדיאנטים ב-CSS, ולכן הוא מצויר
                   ב-SVG מתחת לטקסט. */}
               <View style={[st.footFill, NO_TOUCH]}>
-                {/* ⚠ הטשטוש מתחת לגרדיאנט · ראו `FADE_BLUR` */}
-                <BlurView
-                  intensity={FADE_BLUR}
-                  tint="light"
-                  style={StyleSheet.absoluteFill}
-                />
+                {/* ⚠ **הטשטוש ירד · 17 בספטמבר 2026** · שקד ביקשה אותו
+                    ב-16 בספטמבר (״טיפה אפקט של טשטוש״) וביטלה אותו
+                    למחרת: ״צריך להוריד את הטשטוש שיהיה המפריד בין
+                    התמונה לבין הפס הירוק״. המפריד עכשיו הוא
+                    הגרדיאנט בלבד. */}
                 <Svg width="100%" height={FADE_H}>
                   <Defs>
                     <LinearGradient id="cardFoot" x1="0" y1="1" x2="0" y2="0">
@@ -443,13 +441,11 @@ const FOOT_RGB = 'rgb(198,228,211)';
  */
 const FOOT_FILL = 'rgba(198,228,211,0.96)';
 /**
- * ⚠ **רצועת המעבר · הוגדלה וקיבלה טשטוש ב-17 בספטמבר 2026** ·
- * בקשה של שקד: ״להוסיף טיפה אפקט של טשטוש בין התמונה לבין הפס
- * הירוק״. הרצועה מטשטשת את התמונה שמאחוריה, והגרדיאנט מונח מעליה.
+ * ⚠ **רצועת המעבר · הוגדלה ב-16 בספטמבר 2026** · בקשה של שקד
+ * למעבר רך בין התמונה לכף הירוקה. היה כאן גם טשטוש, והיא ביקשה
+ * להסיר אותו למחרת — ראו ההערה ליד הרצועה עצמה.
  */
 const FADE_H = 36;
-/** ⚠ עדין בכוונה · ״טיפה״, לא מסך חלבי */
-const FADE_BLUR = 16;
 /** עצירות רצועת המעבר בלבד · מלמטה (אטום) למעלה (שקוף) */
 const FOOT_STOPS: [number, number][] = [
   [0, 0.96],

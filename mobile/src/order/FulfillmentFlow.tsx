@@ -213,9 +213,13 @@ function ClockStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
     <View style={s.stack}>
       {f.cfg.pickDate ? (
         <DateCalendar
-          value={f.date ?? undefined}
+          /* ⚠ תאריך מלוח קודם אינו מסומן · ראו `dateOk` */
+          value={f.dateOk ? (f.date ?? undefined) : undefined}
           onPick={f.setDate}
           accent={accent}
+          /* ⚠ מארזי שישי · ראו `dateOpen` ב-`FulfillmentConfig` */
+          isOpen={f.cfg.dateOpen}
+          hint={f.cfg.dateHint}
         />
       ) : null}
 

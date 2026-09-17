@@ -11,7 +11,8 @@ import { usePrefill } from '../../navigation/usePrefill';
 import { BAR_BOTTOM_WITH_NAV, SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
-import { BOXES_FULFILLMENT } from '../../data/boxes';
+import { BOXES_FULFILLMENT, FRIDAY_ONLY_BOXES } from '../../data/boxes';
+import { FRIDAY_HINT, fridayOnly } from '../../data/calendar';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { BOX_PHOTOS } from '../../data/photos';
@@ -70,7 +71,19 @@ export function BoxesScreen() {
       return true;
     }, [o.current, o.backToList]),
   );
-  const f = useFulfillment(BOXES_FULFILLMENT);
+  /**
+   * ⚠ **לוח שישי בלבד · בקשה של שקד (17 בספטמבר 2026)** · ארבעה
+   * מארזים נמסרים בימי שישי בלבד, ולכן הלוח שלהם אינו הלוח הכללי.
+   * ⚠ `useMemo` · אובייקט חדש בכל רינדור היה מאפס את זרימת המסירה.
+   */
+  const cfg = React.useMemo(
+    () =>
+      o.box && FRIDAY_ONLY_BOXES.includes(o.box.key)
+        ? { ...BOXES_FULFILLMENT, dateOpen: fridayOnly, dateHint: FRIDAY_HINT }
+        : BOXES_FULFILLMENT,
+    [o.box],
+  );
+  const f = useFulfillment(cfg);
   /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
   const saleGate = useSaleGate('box');
   const [gate, setGate] = useState(false);
@@ -184,6 +197,7 @@ export function BoxesScreen() {
         err={saleGate.err}
 
         reminded={saleGate.reminded}
+        onUnremind={() => void saleGate.unremind()}
         onRemind={() => {
           void saleGate.remind();
           go('main');

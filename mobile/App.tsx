@@ -69,8 +69,13 @@ const ADMIN_SCREENS: Screen[] = [
   'adminIncome',
 ];
 
-function Router() {
-  const { screen, user, apiEnabled } = useNav();
+/**
+ * ⚠ **המסך מגיע כמאפיין ולא מההקשר · 17 בספטמבר 2026** · `ScreenStage`
+ * מחזיק **שני** מסכים בזמן מעבר — היוצא והנכנס — ולכן הוא חייב
+ * להיות מסוגל לבקש מסך מסוים ולא ״המסך הנוכחי״. ראו שם.
+ */
+function Router({ screen }: { screen: Screen }) {
+  const { user, apiEnabled } = useNav();
   const gated = ADMIN_SCREENS.includes(screen) && apiEnabled && user?.role !== 'admin';
   const view = gated ? 'main' : screen;
 
@@ -219,11 +224,11 @@ function Shell() {
           <SafeAreaView style={s.safe} edges={topEdges}>
             {/* ⚠ גרירה מהקצה הימני שמאלה = חזרה · בקשה של שקד */}
             <BackSwipe>
-              {/* ⚠ ההנפשה שבחרה · ״קיפול החוצה״ קדימה ו״החלקה
-                  אופקית״ אחורה · ראו `ScreenStage` */}
-              <ScreenStage>
-                <Router />
-              </ScreenStage>
+              {/* ⚠ ההנפשה שבחרה · ״צניחה למעלה״ קדימה ו״החלקה
+                  אופקית״ אחורה · ראו `ScreenStage`.
+                  ⚠ פונקציה ולא ילדים · בזמן מעבר מרונדרים **שני**
+                  מסכים, ולכן השכבה חייבת לבקש מסך לפי שם. */}
+              <ScreenStage render={(scr) => <Router screen={scr} />} />
             </BackSwipe>
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו

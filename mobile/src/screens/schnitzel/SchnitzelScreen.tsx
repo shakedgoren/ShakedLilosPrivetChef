@@ -237,6 +237,7 @@ export function SchnitzelScreen() {
         err={saleGate.err}
 
         reminded={saleGate.reminded}
+        onUnremind={() => void saleGate.unremind()}
         onRemind={() => {
           void saleGate.remind();
           go('main');

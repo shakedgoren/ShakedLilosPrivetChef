@@ -1,45 +1,73 @@
 import React from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, useWindowDimensions } from 'react-native';
-import { useNav } from './store';
+import { AccessibilityInfo, Animated, Easing, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useNav, type Screen } from './store';
 
 /**
  * ההנפשה של מעבר בין מסכים.
  *
- * ⚠ **שקד בחרה (17 בספטמבר 2026)** · מתוך עשר תצוגות מקדימות:
- * · קדימה — ״קיפול החוצה״ · המסך החדש נפתח מהמרכז החוצה.
- * · אחורה — ״החלקה אופקית״.
+ * ⚠ **נכתב מחדש ב-17 בספטמבר 2026 · שני מסכים במקום אחד** · שקד
+ * דיווחה ״האפקטים לא מורגשים… אני רוצה שיהיה לי ממש אפקט מעבר כמו
+ * שאני עוברת תמונה בגלריה של האייפון״.
  *
- * ⚠ **מונפש המסך **הנכנס** בלבד** · המסך היוצא מוחלף מיד, כי
- * `Router` מרנדר מסך אחד בכל רגע. כדי להנפיש גם אותו צריך להחזיק
- * שני מסכים מרונדרים בו-זמנית, והמסך הישן היה נטען מחדש ומאבד את
- * המצב שהיית בו — למשל שלב בשאלון השף. לכן זו הגרסה שנבחרה.
+ * זו הייתה **הסיבה** שהתנועה לא נראתה: עד עכשיו רק המסך **הנכנס**
+ * הונפש, והיוצא נעלם בפריים אחד. בגלריה של האייפון שתי התמונות זזות
+ * יחד — וזה מה שנותן את התחושה. בדיוק כמו בתצוגה המקדימה שהיא בחרה
+ * ממנה, שבה `.scr.top` ו-`.scr.under` מונפשים שניהם.
  *
- * הכיוון נשמר: בחזרה **הכל זז שמאלה**, לכיוון שאליו האצבע מושכת
- * במחוות החזרה, ולכן המסך הנכנס מגיע מימין ומתיישב.
+ * ⚠ **חוצץ מתחלף ולא רינדור כפול** · שתי משבצות קבועות, `a` ו-`b`,
+ * ובכל מעבר **המשבצת הפנויה** מקבלת את המסך החדש. המשבצת השנייה
+ * מחזיקה את המסך היוצא **בלי להרכיב אותו מחדש** — אותו עץ ריאקט
+ * ממשיך לחיות עד סוף התנועה, ולכן אין קריאות שרת כפולות ואין הבהוב.
+ * זו הסיבה היחידה שהמבנה כאן אינו `{children}` פשוט.
+ *
+ * ⚠ **המסך היוצא מתעמעם** · המסכים שקופים (השטיפה מאחוריהם היא
+ * שנראית), ובלי העמעום שני התכנים היו נראים זה דרך זה בזמן החפיפה.
  */
 
-/** משך המעבר · אותו עקום של שאר התנועות באפליקציה */
-const FWD_MS = 300;
-const BACK_MS = 280;
+/**
+ * ⚠ **המשכים · 17 בספטמבר 2026** · היו 300 ו-280, ושקד אמרה שזה
+ * ״לא מורגש״. בתצוגה המקדימה שהיא אישרה חלק התנועה ארך כשנייה,
+ * וזה ארוך מדי למסך שלם. אלה הערכים שבאמצע, ונמדדו על הסימולטור.
+ */
+const FWD_MS = 500;
+const BACK_MS = 420;
+/** האטה לקראת הסוף · אותו עקום של שאר התנועות באפליקציה */
 const EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
 
-/** מאיזה קנה מידה המסך נפתח · ״קיפול החוצה״ */
-const FOLD_FROM = 0.62;
+/**
+ * כמה המסך **המתגלה** זז בחזרה, כשבר מרוחב המסך.
+ * ⚠ זה ההבדל בין ״שתי שקופיות״ לבין גלריה · באייפון המסך שמתגלה
+ * זז לאט יותר מזה שעוזב, והעומק הזה הוא מה שהעין קוראת כ״אחורה״.
+ */
+const PARALLAX = 0.26;
 
-export function ScreenStage({ children }: { children: React.ReactNode }) {
-  const { navDir, navTick } = useNav();
-  const { width } = useWindowDimensions();
+type Slot = 'a' | 'b';
+type Pair = { a: Screen | null; b: Screen | null; front: Slot; tick: number };
+
+const other = (s: Slot): Slot => (s === 'a' ? 'b' : 'a');
+
+export function ScreenStage({ render }: { render: (screen: Screen) => React.ReactNode }) {
+  const { screen, navDir, navTick } = useNav();
+  const { width, height } = useWindowDimensions();
+
+  const [pair, setPair] = React.useState<Pair>(() => ({
+    a: screen,
+    b: null,
+    front: 'a',
+    tick: navTick,
+  }));
 
   /**
-   * ⚠ **ערך חדש לכל מעבר, בלי `setValue`** · תוקן ב-17 בספטמבר.
-   * קודם ישב כאן ערך יחיד ב-`useRef`, והאפקט אתחל אותו ב-
-   * `t.setValue(0)`. **אסור לקרוא ל-`setValue` על ערך שמחובר
-   * לדרייבר הילידי** — הערך נתקע, ונמדד שהמסך נשאר מחוץ למסך
-   * אחרי מחוות חזרה ולא חזר לעולם.
-   * `useMemo` על המונה נותן ערך נקי בכל מעבר, ואז אין מה לאתחל.
+   * ⚠ **עדכון בזמן הרינדור ולא ב-`useEffect`** · זה הדפוס הרשמי של
+   * ריאקט להתאמת מצב לשינוי קלט. עם `useEffect` היה נשאר פריים אחד
+   * שבו המסך החדש עוד לא מרונדר — כלומר הבהוב בתחילת כל מעבר.
    */
-  const t = React.useMemo(() => new Animated.Value(0), [navTick]);
+  if (pair.tick !== navTick) {
+    const front = other(pair.front);
+    setPair({ ...pair, [front]: screen, front, tick: navTick });
+  }
 
+  const t = React.useMemo(() => new Animated.Value(0), [navTick]);
   const [reduce, setReduce] = React.useState(false);
 
   React.useEffect(() => {
@@ -53,42 +81,100 @@ export function ScreenStage({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
+    /* סוף התנועה · משחררים את המסך היוצא, אבל רק אם לא התחיל מעבר חדש */
+    const dropTail = () =>
+      setPair((p) => {
+        if (p.tick !== navTick) return p;
+        const tail = other(p.front);
+        if (p[tail] === null) return p;
+        return { ...p, [tail]: null };
+      });
+
     if (reduce) {
       t.setValue(1);
+      dropTail();
       return;
     }
-    Animated.timing(t, {
+    const anim = Animated.timing(t, {
       toValue: 1,
       duration: navDir === 'back' ? BACK_MS : FWD_MS,
       easing: EASE,
       useNativeDriver: true,
-    }).start();
-  }, [t, navDir, reduce]);
-
-  /* ״קיפול החוצה״ · נפתח מהמרכז */
-  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [FOLD_FROM, 1] });
-  /* ״החלקה אופקית״ · נכנס מימין וזז שמאלה, עם האצבע */
-  const slide = t.interpolate({ inputRange: [0, 1], outputRange: [width, 0] });
-
-  const style =
-    navDir === 'back'
-      ? { transform: [{ translateX: slide }] }
-      : { opacity: t, transform: [{ scale }] };
+    });
+    anim.start(({ finished }) => {
+      if (finished) dropTail();
+    });
+    return () => anim.stop();
+  }, [t, navDir, navTick, reduce]);
 
   /**
-   * ⚠ **בלי `key` על השכבה** · היה כאן `key={screen}`, ואז כל מעבר
-   * **פירק והרכיב מחדש** את ה-`Animated.View`. הדרייבר הילידי
-   * מחובר לצומת עצמו, ולכן הערך המונפש נשאר תלוי בצומת שנמחק —
-   * וההנפשה לא הניעה כלום. נמדד: המסך נחת מיד במקומו, בלי תנועה,
-   * גם כשהמשך הועלה ל-9 שניות.
+   * ״צניחה למעלה״ · הבקשה של שקד: אפקט 04 מהתצוגה, הפוך.
+   * שם המסך **נופל מטה** ונעלם; כאן הוא **עולה מלמטה** ומתיישב.
    */
+  const rise = t.interpolate({ inputRange: [0, 1], outputRange: [height, 0] });
+  /**
+   * היוצא נמוג מוקדם · מתחת למסך שעולה אין מה לראות דרכו.
+   * ⚠ **נמדד בסימולטור** · עם [0, 0.45, 1] → [1, 0.3, 0] דף הבית עוד
+   * נראה ב-30% מאחורי המסך שעולה, והקרוסלה שלו הציצה בין השורות.
+   */
+  const fadeOut = t.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 0.16, 0] });
+
+  /* ״החלקה אופקית״ · שניהם זזים שמאלה, עם האצבע שמושכת מהקצה */
+  const slideIn = t.interpolate({ inputRange: [0, 1], outputRange: [width * PARALLAX, 0] });
+  const slideOut = t.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
+  /* היוצא שקוף, ולכן הוא מתעמעם בחלק שבו הוא עדיין חופף לנכנס */
+  const slideFade = t.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0.55, 0] });
+
+  const isBack = navDir === 'back';
+
+  /**
+   * ⚠ **סדר הציור נקבע ב-`zIndex` ולא בסדר הילדים** · המשבצות
+   * מתחלפות בכל מעבר, ולכן אי אפשר להסתמך על מי מהן מרונדרת שנייה.
+   * קדימה — הנכנס עולה **מעל**; אחורה — היוצא מחליק **מעל** ומגלה
+   * את הקודם מתחתיו, כמו באייפון.
+   */
+  const frontStyle = isBack
+    ? { zIndex: 1, transform: [{ translateX: slideIn }] }
+    : { zIndex: 2, transform: [{ translateY: rise }] };
+
+  const tailStyle = isBack
+    ? { zIndex: 2, opacity: slideFade, transform: [{ translateX: slideOut }] }
+    : { zIndex: 1, opacity: fadeOut };
+
+  const styleFor = (slot: Slot) => (slot === pair.front ? frontStyle : tailStyle);
+
   return (
-    <Animated.View style={[s.fill, style]}>
-      {children}
-    </Animated.View>
+    <View style={s.fill}>
+      {/* ⚠ שתי המשבצות תמיד באותו מקום במערך · כך המשבצת ששורדת
+          מעבר **אינה מורכבת מחדש** ושומרת על המצב שבתוכה */}
+      <Layer style={styleFor('a')} screen={pair.a} render={render} />
+      <Layer style={styleFor('b')} screen={pair.b} render={render} />
+    </View>
   );
+}
+
+type Move = Animated.AnimatedInterpolation<number>;
+type LayerStyle = {
+  zIndex: number;
+  opacity?: Move;
+  transform?: ({ translateX: Move } | { translateY: Move })[];
+};
+
+function Layer({
+  screen,
+  style,
+  render,
+}: {
+  screen: Screen | null;
+  style: LayerStyle;
+  render: (screen: Screen) => React.ReactNode;
+}) {
+  if (!screen) return null;
+  return <Animated.View style={[s.layer, style]}>{render(screen)}</Animated.View>;
 }
 
 const s = StyleSheet.create({
   fill: { flex: 1 },
+  /* ⚠ שתי השכבות זו על זו · אחרת הן היו נערמות אנכית */
+  layer: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
 });

@@ -9,6 +9,7 @@ import {
   PanResponder,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Text } from '../ui/text';
@@ -51,19 +52,46 @@ const openWaze = () => {
 const SWIPE_PX = 28;
 
 /**
- * ⚠ **מעבר בין המפות · 17 בספטמבר 2026** · בקשה של שקד שיהיה אפקט
- * מעבר בהחלקה ובחצים. אותה ״דהייה וקנה מידה״ שהיא בחרה לפתיחת
- * התמונות, כדי שכל האפליקציה תדבר באותה שפה.
+ * ⚠ **מעבר בין המפות · נכתב מחדש ב-17 בספטמבר 2026** · שקד ביקשה
+ * ״אפקט מעבר של תמונות כמו האפקט מעבר תמונות שקיים באייפון״. קודם
+ * הייתה כאן ״דהייה וקנה מידה״ — התמונה החדשה נדלקה **במקום**, ולכן
+ * לא הייתה שום תחושה של מעבר בין שתי תמונות.
+ *
+ * עכשיו שתי המפות מוחזקות יחד: **היוצאת מחליקה החוצה והנכנסת
+ * נכנסת מהצד ההפוך**, לכיוון שאליו האצבע משכה. בדיוק כמו בגלריה.
  */
-const SWAP_MS = 220;
-const SWAP_FROM = 0.94;
+const SWAP_MS = 320;
+/** ⚠ עקום שמאט לקראת הסוף · אותו של שאר התנועות באפליקציה */
+const SWAP_EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
 
 export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
-  const [i, setI] = useState(0);
+  /**
+   * ⚠ **המפה הקודמת והכיוון נשמרים** · בלעדיהם אין מה להחליק החוצה,
+   * ואי אפשר לדעת לאיזה צד. `seq` מבדיל בין שתי לחיצות על אותה מפה.
+   */
+  const [at, setAt] = useState({ i: 0, from: -1, dir: 1, seq: 0 });
+  /**
+   * מרחק ההחלקה · רוחב המסך.
+   *
+   * ⚠ **לא נמדד מהפריסה · נמדד בסימולטור ב-17 בספטמבר 2026** · קודם
+   * ישב כאן `useState(0)` שהתמלא במדידת הפריסה של המסגרת, והתנועה
+   * **קפאה**: ברינדור הראשון הרוחב 0, ולכן התנועה יצאה ״מ-0 ל-0״;
+   * הרינדור השני — זה שהביא את הרוחב האמיתי — בנה צמתים מונפשים
+   * חדשים **באמצע** הנפשה ילידית שכבר רצה, והיא לא המשיכה.
+   * נמדד: עם רוחב קבוע התמונות מחליקות, ועם הנמדד הן קופצות.
+   *
+   * רוחב המסך זמין כבר ברינדור הראשון. הוא גדול במקצת מהמסגרת,
+   * ולכן התמונה נוסעת קצת יותר — והמסגרת חותכת ממילא.
+   */
+  const { width: travel } = useWindowDimensions();
   const maps = PICKUP.maps;
+  const i = at.i;
   const cur = maps[i];
 
-  const step = (d: number) => setI((n) => (n + d + maps.length) % maps.length);
+  const step = (d: number) =>
+    setAt((p) => ({ i: (p.i + d + maps.length) % maps.length, from: p.i, dir: d, seq: p.seq + 1 }));
+  const jump = (k: number) =>
+    setAt((p) => (k === p.i ? p : { i: k, from: p.i, dir: k > p.i ? 1 : -1, seq: p.seq + 1 }));
 
   /**
    * ⚠ **החלקה בין המפות · בקשה של שקד** · ״צריך לאפשר לעבור בין
@@ -112,9 +140,18 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
 
       <View style={s.frame} {...pan.panHandlers}>
         {/* ⚠ `zoom` דלוק · לחיצה מגדילה את המפה במסך מלא · בקשת שקד */}
-        <Swap index={i}>
-          <Photo name={cur.file} rgb={rgb} style={s.map} />
-        </Swap>
+        <Swap
+          seq={at.seq}
+          dir={at.dir}
+          width={travel}
+          leaving={
+            at.from >= 0 && at.from !== i ? (
+              /* ⚠ בלי `zoom` · היא בדרך החוצה, ואין מה ללחוץ עליה */
+              <Photo name={maps[at.from].file} rgb={rgb} style={s.map} zoom={false} />
+            ) : null
+          }
+          entering={<Photo name={cur.file} rgb={rgb} style={s.map} />}
+        />
 
         <View style={s.badge}>
           <Text style={[s.badgeText, { color: ink }]}>{cur.title}</Text>
@@ -137,7 +174,7 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
         {maps.map((m, k) => (
           <Pressable
             key={m.file}
-            onPress={() => setI(k)}
+            onPress={() => jump(k)}
             style={[
               s.dot,
               { width: k === i ? 18 : 6, backgroundColor: k === i ? ink : 'rgba(130,112,162,0.28)' },
@@ -150,10 +187,33 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
   );
 }
 
-/** התמונה המתחלפת · דהייה וקנה מידה · ראו `SWAP_MS` */
-function Swap({ index, children }: { index: number; children: React.ReactNode }) {
-  /* ⚠ ערך חדש לכל מפה · אסור `setValue` על ערך מחובר לדרייבר הילידי */
-  const t = React.useMemo(() => new Animated.Value(0), [index]);
+/**
+ * שתי המפות מחליקות יחד · היוצאת החוצה והנכנסת פנימה.
+ *
+ * ⚠ **הילד הראשון הוא היוצאת והשני הנכנסת** · הסדר הזה הוא החוזה
+ * של הרכיב, והוא מה שמאפשר להנפיש את שתיהן מערך אחד.
+ *
+ * ⚠ **הכיוון** · `dir` חיובי הוא ״הבא״, כלומר האצבע נמשכה שמאלה;
+ * אז היוצאת הולכת שמאלה והנכנסת מגיעה מימין. תחת RTL זו אותה
+ * מוסכמה של כל הקרוסלות באפליקציה.
+ */
+function Swap({
+  seq,
+  dir,
+  width,
+  leaving,
+  entering,
+}: {
+  seq: number;
+  dir: number;
+  /** מרחק ההחלקה בנקודות · ראו `travel` */
+  width: number;
+  /** המפה שעוזבת · `null` בפתיחה הראשונה, כשאין מאיפה לבוא */
+  leaving: React.ReactNode;
+  entering: React.ReactNode;
+}) {
+  /* ⚠ ערך חדש לכל מעבר · אסור `setValue` על ערך מחובר לדרייבר הילידי */
+  const t = React.useMemo(() => new Animated.Value(0), [seq]);
   const [reduce, setReduce] = React.useState(false);
 
   React.useEffect(() => {
@@ -171,20 +231,30 @@ function Swap({ index, children }: { index: number; children: React.ReactNode })
       t.setValue(1);
       return;
     }
-    Animated.timing(t, {
+    const anim = Animated.timing(t, {
       toValue: 1,
       duration: SWAP_MS,
-      easing: Easing.out(Easing.cubic),
+      easing: SWAP_EASE,
       useNativeDriver: true,
-    }).start();
+    });
+    anim.start();
+    return () => anim.stop();
   }, [reduce, t]);
 
-  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [SWAP_FROM, 1] });
+  const out = t.interpolate({ inputRange: [0, 1], outputRange: [0, -dir * width] });
+  const into = t.interpolate({ inputRange: [0, 1], outputRange: [dir * width, 0] });
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, { opacity: t, transform: [{ scale }] }]}>
-      {children}
-    </Animated.View>
+    <>
+      {leaving ? (
+        <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: out }] }]}>
+          {leaving}
+        </Animated.View>
+      ) : null}
+      <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: into }] }]}>
+        {entering}
+      </Animated.View>
+    </>
   );
 }
 

@@ -14,11 +14,20 @@ import { AccessibilityInfo, Animated, Easing } from 'react-native';
  * הדגל יושב ברמת המודול ולכן מתאפס רק בהפעלה מחדש.
  */
 
+/**
+ * ⚠ **הודגש · 17 בספטמבר 2026** · שקד: ״כשהאפליקציה מעלה את דף
+ * הבית האפקט לא מספיק מורגש״. היו 90 / 420 / 16 — ההפרש בין
+ * אובייקט לאובייקט היה קצר מזמן העלייה עצמו, ולכן כולם עלו כמעט
+ * יחד והעין ראתה גוש אחד. עכשיו ההפרש קרוב לרבע מזמן העלייה,
+ * והעלייה עצמה כפולה ומלווה בהתרחבות קלה.
+ */
 /** ההפרש בין אובייקט לאובייקט */
-const STEP_MS = 90;
-const DUR_MS = 420;
+const STEP_MS = 130;
+const DUR_MS = 520;
 /** כמה האובייקט עולה בדרך פנימה */
-const RISE = 16;
+const RISE = 30;
+/** מאיזה קנה מידה הוא נפתח · עדין בכוונה, רק כדי להוסיף עומק */
+const FROM_SCALE = 0.94;
 
 let played = false;
 
@@ -62,9 +71,10 @@ export function Appear({
   if (!first.current) return <>{children}</>;
 
   const translateY = t.interpolate({ inputRange: [0, 1], outputRange: [RISE, 0] });
+  const scale = t.interpolate({ inputRange: [0, 1], outputRange: [FROM_SCALE, 1] });
 
   return (
-    <Animated.View style={{ opacity: t, transform: [{ translateY }] }}>
+    <Animated.View style={{ opacity: t, transform: [{ translateY }, { scale }] }}>
       {children}
     </Animated.View>
   );

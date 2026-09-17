@@ -33,7 +33,8 @@ export function StepIn({ index, style, children }: Props) {
     const anim = Animated.timing(v, {
       toValue: 1,
       duration: STEP_IN.ms,
-      delay: Math.min(index, STEP_IN.maxSteps) * STEP_IN.stagger,
+      /* ⚠ `lead` · המסך עצמו עולה קודם, ורק אז הפריטים · ראו `STEP_IN` */
+      delay: STEP_IN.lead + Math.min(index, STEP_IN.maxSteps) * STEP_IN.stagger,
       easing: EASE_OUT,
       useNativeDriver: false,
     });
