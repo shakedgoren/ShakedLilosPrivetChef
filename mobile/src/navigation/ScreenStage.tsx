@@ -27,10 +27,19 @@ const EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
 const FOLD_FROM = 0.62;
 
 export function ScreenStage({ children }: { children: React.ReactNode }) {
-  const { screen, navDir, navTick } = useNav();
+  const { navDir, navTick } = useNav();
   const { width } = useWindowDimensions();
 
-  const t = React.useRef(new Animated.Value(1)).current;
+  /**
+   * ⚠ **ערך חדש לכל מעבר, בלי `setValue`** · תוקן ב-17 בספטמבר.
+   * קודם ישב כאן ערך יחיד ב-`useRef`, והאפקט אתחל אותו ב-
+   * `t.setValue(0)`. **אסור לקרוא ל-`setValue` על ערך שמחובר
+   * לדרייבר הילידי** — הערך נתקע, ונמדד שהמסך נשאר מחוץ למסך
+   * אחרי מחוות חזרה ולא חזר לעולם.
+   * `useMemo` על המונה נותן ערך נקי בכל מעבר, ואז אין מה לאתחל.
+   */
+  const t = React.useMemo(() => new Animated.Value(0), [navTick]);
+
   const [reduce, setReduce] = React.useState(false);
 
   React.useEffect(() => {
@@ -43,20 +52,18 @@ export function ScreenStage({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  /* ⚠ `navTick` ולא `screen` · מסך שחוזר לעצמו עדיין מנפיש */
   React.useEffect(() => {
     if (reduce) {
       t.setValue(1);
       return;
     }
-    t.setValue(0);
     Animated.timing(t, {
       toValue: 1,
       duration: navDir === 'back' ? BACK_MS : FWD_MS,
       easing: EASE,
       useNativeDriver: true,
     }).start();
-  }, [navTick, navDir, reduce, t]);
+  }, [t, navDir, reduce]);
 
   /* ״קיפול החוצה״ · נפתח מהמרכז */
   const scale = t.interpolate({ inputRange: [0, 1], outputRange: [FOLD_FROM, 1] });
@@ -68,12 +75,15 @@ export function ScreenStage({ children }: { children: React.ReactNode }) {
       ? { transform: [{ translateX: slide }] }
       : { opacity: t, transform: [{ scale }] };
 
+  /**
+   * ⚠ **בלי `key` על השכבה** · היה כאן `key={screen}`, ואז כל מעבר
+   * **פירק והרכיב מחדש** את ה-`Animated.View`. הדרייבר הילידי
+   * מחובר לצומת עצמו, ולכן הערך המונפש נשאר תלוי בצומת שנמחק —
+   * וההנפשה לא הניעה כלום. נמדד: המסך נחת מיד במקומו, בלי תנועה,
+   * גם כשהמשך הועלה ל-9 שניות.
+   */
   return (
-    <Animated.View
-      style={[s.fill, style]}
-      /* המפתח מאלץ רינדור נקי לכל מסך · בלעדיו התנועה מדלגת */
-      key={screen}
-    >
+    <Animated.View style={[s.fill, style]}>
       {children}
     </Animated.View>
   );

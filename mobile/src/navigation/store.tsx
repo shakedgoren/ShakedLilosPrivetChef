@@ -129,6 +129,18 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
      שהצריכה לא תגרור רינדור נוסף */
   const prefill = React.useRef<Prefill | null>(null);
 
+  /**
+   * כיוון המעבר האחרון ומונה שלו · ההנפשה קוראת אותם.
+   * ⚠ המונה נחוץ · מעבר למסך שכבר מוצג לא היה מפעיל את התנועה
+   * בלעדיו. ראו `ScreenStage`.
+   * ⚠ **חייב להיות לפני `go`** · הוא קורא ל-`setNav`.
+   */
+  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number }>({
+    dir: 'fwd',
+    tick: 0,
+  });
+
+
   const go = useCallback(
     (to: Screen, load?: Prefill) => {
       prefill.current = load ?? null;
@@ -161,31 +173,28 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
    * החוצה. מסך שיש לו שלבים פנימיים רושם כאן מטפל, והוא נשאל
    * ראשון. `true` = טיפלתי, אל תצא מהמסך.
    */
-  /**
-   * כיוון המעבר האחרון ומונה שלו · ההנפשה קוראת אותם.
-   * ⚠ המונה נחוץ · מעבר למסך שכבר מוצג לא היה מפעיל את התנועה
-   * בלעדיו. ראו `ScreenStage`.
-   */
-  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number }>({
-    dir: 'fwd',
-    tick: 0,
-  });
-
   const [trap, setTrap] = useState<(() => boolean) | null>(null);
   const registerBack = useCallback(
     (fn: (() => boolean) | null) => setTrap(() => fn),
     [],
   );
 
+  /**
+   * ⚠ **בלי תופעות לוואי בתוך עדכון מצב · תוקן ב-17 בספטמבר 2026** ·
+   * `setScreen` ו-`setNav` ישבו **בתוך** פונקציית העדכון של
+   * `setStack`. ריאקט מריץ פונקציות עדכון בשלב הרינדור, ולפעמים
+   * פעמיים, וקריאות מצב מתוכן אינן מובטחות.
+   *
+   * נמדד: אחרי מחוות חזרה רצה דווקא **הנפשת הכניסה** — כלומר
+   * `navDir` מעולם לא התהפך ל-`back`.
+   */
   const back = useCallback(() => {
     if (trap?.()) return;
-    setStack((s) => {
-      if (s.length === 0) return s;
-      setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
-      setScreen(s[s.length - 1]);
-      return s.slice(0, -1);
-    });
-  }, [trap]);
+    if (stack.length === 0) return;
+    setNav((n) => ({ dir: 'back', tick: n.tick + 1 }));
+    setScreen(stack[stack.length - 1]);
+    setStack((s) => s.slice(0, -1));
+  }, [trap, stack]);
 
   /**
    * התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה,
