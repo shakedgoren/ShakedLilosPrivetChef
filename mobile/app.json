@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "BITE & TELL",
+    "slug": "bite-and-tell",
     "scheme": "bitetell",
     "version": "1.0.0",
     "_orientationNote": "⚠ היה portrait · נפתח ל-default ב-18.9.2026 כדי שלוח יום המכירה יוכל להסתובב עם המכשיר. כל שאר המסכים ננעלים לזקוף ב-RootNavigator — iOS חותך את בקשת המסך מול מה שה-Info.plist מתיר, ולכן הפתיחה כאן הכרחית.",
@@ -17,10 +17,13 @@
           "he"
         ]
       },
-      "bundleIdentifier": "com.shakedliloz.mobile",
+      "bundleIdentifier": "com.biteandtell.app",
+      "buildNumber": "1",
       "requireFullScreen": true
     },
     "android": {
+      "package": "com.biteandtell.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
