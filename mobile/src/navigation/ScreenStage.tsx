@@ -512,7 +512,9 @@ function Layer({
   if (!screen) return null;
   return (
     <Animated.View style={[s.layer, style]}>
-      <Animated.View style={move ? [s.fill, { transform: [{ translateX: move }] }] : s.fill}>
+      <Animated.View
+        style={move ? [s.sheet, { transform: [{ translateX: move }] }] : s.sheet}
+      >
         {render(screen)}
         {/* ⚠ **מעל התוכן ולא מתחתיו** · זו החשכה של מסך שעוד לא הגיע,
             כמו באייפון · `pointerEvents` כדי שלא תבלע לחיצות */}
@@ -538,13 +540,24 @@ const s = StyleSheet.create({
    * הייתה חוזרת להיות שקופה — ואיתה חוזר בדיוק המראה שביקשנו
    * להעלים.
    */
-  layer: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: surface.ground,
-  },
+  layer: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  /**
+   * ⚠ **הרקע כאן ולא על השכבה החיצונית · נמדד ב-18 בספטמבר 2026** ·
+   * זה היה הבאג שבגללו המחווה לא נראתה כמו בסרטון.
+   *
+   * ההזזה של הגרירה יושבת על השכבה **הפנימית** (ראו ההערה ליד
+   * `slideIn`), אבל הרקע האטום ישב על ה**חיצונית** — שאינה זזה
+   * לעולם. התוצאה: תוכן המסך היוצא החליק שמאלה, והרקע שלו נשאר
+   * פרוש על כל המסך ו**כיסה את המסך שמתחתיו**. מה שנראה מאחורי
+   * האצבע היה לילך שטוח, לא המסך הקודם.
+   *
+   * נמדד: הרצועה שנחשפה הייתה בצבע ‎[243,239,250] עם סטיית תקן
+   * 4.5 — כלומר שטח אחיד לגמרי — וגם ריבוע אדום שהושתל בשכבה
+   * הנחשפת לא נראה כלל.
+   *
+   * ⚠ **ולכן המעבר המתוזמן כן עבד** · שם ההזזה על השכבה החיצונית,
+   * והרקע נוסע איתה. רק הגרירה נשברה.
+   */
+  sheet: { flex: 1, backgroundColor: surface.ground },
   dim: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: '#000' },
 });
