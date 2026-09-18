@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useNav, type Screen } from './store';
+import { surface } from '../theme/tokens';
 
 /**
  * ההנפשה של מעבר בין מסכים.
@@ -54,8 +55,30 @@ const EASE = Easing.bezier(0.22, 0.9, 0.28, 1);
  * כמה המסך **המתגלה** זז בחזרה, כשבר מרוחב המסך.
  * ⚠ זה ההבדל בין ״שתי שקופיות״ לבין גלריה · באייפון המסך שמתגלה
  * זז לאט יותר מזה שעוזב, והעומק הזה הוא מה שהעין קוראת כ״אחורה״.
+ *
+ * ⚠ **0.300 · נמדד מהסרטון של שקד ב-18 בספטמבר 2026** · היא שלחה
+ * הקלטת מסך של ״מעבר אחורה״ מאפליקציית הקבצים. עקבתי בה אחרי התפר
+ * שבין שני המסכים פריים-פריים, והתאמתי כל מסך לצילום נקי שלו: המסך
+ * היוצא הוא **הזזה טהורה** אחרי האצבע, והמסך המתגלה יושב על
+ * `0.300 × מה שנשאר` — אותו מספר בכל אחד מ-25 הפריימים שנמדדו,
+ * בסטייה של פחות מאחוז. כאן ישב 0.26 שניחשתי.
  */
-const PARALLAX = 0.26;
+const PARALLAX = 0.3;
+
+/**
+ * ההחשכה על המסך **המתגלה** · שחור, כשבר.
+ * ⚠ **נמדד באותו סרטון** · השוויתי פיקסלים לבנים של המסך המתגלה
+ * מול צילום נקי שלו: 3.4% בהתחלת המחווה, 1.5% בשני שליש הדרך, אפס
+ * בסוף. כלומר שכבה שחורה שמתחילה ב-4% ונמוגה ליניארית.
+ */
+const DIM = 0.04;
+
+/**
+ * הצל שהמסך היוצא מטיל על זה שמתחתיו.
+ * ⚠ **נמדד** · כ-2% החשכה בדיוק בקצה, נמוגה על פני כ-25 נקודות.
+ * רק הקצה האחורי נראה — שלושת האחרים מחוץ למסך.
+ */
+const EDGE_SHADOW = '0 0 22px 0 rgba(58,44,84,0.03)';
 
 /* ── המחווה ─────────────────────────────────────────── */
 
@@ -67,9 +90,23 @@ const SLOP = 10;
 const COMMIT_AT = 0.34;
 /** ומאיזו מהירות היא משלימה גם בלי המרחק · נקודות לאלפית שנייה */
 const COMMIT_VX = 0.45;
-/** גבולות משך ההשלמה · מהיר ככל שהאצבע הייתה מהירה, ובתוך טווח סביר */
-const SETTLE_MIN = 110;
-const SETTLE_MAX = 380;
+/**
+ * ההתיישבות · קפיץ שממשיך את **מהירות האצבע**, לא הנפשה מתוזמנת.
+ *
+ * ⚠ **נמדד בסרטון · 18 בספטמבר 2026** · בשני מקומות: דחיפה קדימה
+ * של המערכת נחה לפי דעיכה מעריכית של 0.79 לפריים (קבוע זמן 70
+ * אלפיות), וביטול מחווה מעצירה מוחלטת חזר הביתה ב-100 אלפיות
+ * בעקומת S. **בשניהם אין חריגה מעבר ליעד** — ולכן `overshootClamping`.
+ * הערכים כאן יושבים בין השניים.
+ */
+const SPRING = {
+  stiffness: 420,
+  damping: 42,
+  mass: 1,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.002,
+  restSpeedThreshold: 0.01,
+} as const;
 /** מסך בלי הצגה מראש · שם המחווה חוזרת להתנהגות הישנה, בלי גרירה */
 const FIRE_AT = 60;
 
@@ -215,18 +252,19 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
           const vx = -g.vx;
           const commit = at > COMMIT_AT || vx > COMMIT_VX;
           /**
-           * ⚠ **המשך נגזר מהמהירות של האצבע** · זו הבקשה עצמה: מי
-           * שמשכה מהר רואה סיום מהיר, ומי שגררה לאט רואה אותו נגמר
-           * בנחת. הטווח שומר על שפיות בשני הקצוות.
+           * ⚠ **המהירות של האצבע נמסרת לקפיץ · 18 בספטמבר 2026** ·
+           * כאן ישבה הנפשה מתוזמנת שהמשך שלה חושב מהמהירות. זה עבד,
+           * אבל זה לא מה שקורה ב-iOS: שם האצבע **משחררת לתוך קפיץ**,
+           * והמהירות ממשיכה רציפה לרגע שאחרי השחרור. זה ההבדל שנראה
+           * בסרטון — מסך שמשוחרר במעוף ממשיך במעוף, ולא מתחיל מחדש
+           * בתאוצה משלו. `vx` בנקודות לאלפית שנייה, והקפיץ מבקש
+           * יחידות של הערך לשנייה.
            */
-          const rest = commit ? 1 - at : at;
-          const speed = Math.max(Math.abs(vx), 0.25) / w;
-          const ms = clamp(rest / speed, SETTLE_MIN, SETTLE_MAX);
           const mine = gesture.current;
-          const anim = Animated.timing(dragT, {
+          const anim = Animated.spring(dragT, {
             toValue: commit ? 1 : 0,
-            duration: ms,
-            easing: Easing.out(Easing.quad),
+            velocity: (vx / w) * 1000,
+            ...SPRING,
             useNativeDriver: false,
           });
           settle.current = anim;
@@ -273,7 +311,26 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
       toValue: 1,
       duration: navDir === 'back' ? BACK_MS : FWD_MS,
       easing: EASE,
-      useNativeDriver: true,
+      /**
+       * ⚠ **דרייבר אחד לכל השכבה · נמדד ב-18 בספטמבר 2026** · כאן
+       * ישב `true`, וזה היה **הבאג שבגללו האפקטים לא הורגשו**.
+       *
+       * שתי משבצות המסך הן שני `View` קבועים שחיים לאורך כל הריצה.
+       * המעבר המתוזמן הניע אותם על **הדרייבר הילידי**, והמחווה חייבת
+       * להניע אותם על **ה-JS** (אסור `setValue` על ערך ילידי). מרגע
+       * שה-`View` חובר פעם אחת לדרייבר הילידי, הוא המשיך להחזיק את
+       * התכונות — ושינוי מצד ה-JS כבר לא צייר אותו מחדש.
+       *
+       * ⚠ **נמדד ולא שוער** · הקפאתי את המעבר על 0.5 וצילמתי:
+       * עם `true` המסך היוצא ישב על **0 פיקסלים** — כלומר לא זז בכלל
+       * ורק ״קפץ״ בסוף; עם `false` הוא ישב על **603 פיקסלים**, שהם
+       * בדיוק חצי מ-1206. זה בדיוק מה ששקד תיארה פעמיים — ״האפקטים
+       * לא מורגשים״ ו״משהו שם באפקט לא מסתדר טוב״.
+       *
+       * המחיר הוא הנפשה שרצה על ה-JS. למעבר של 420 אלפיות זה בסדר,
+       * והמחווה ממילא רצה שם.
+       */
+      useNativeDriver: false,
     });
     anim.start(({ finished }) => {
       if (finished) dropTail();
@@ -290,18 +347,11 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
    * שם המסך **נופל מטה** ונעלם; כאן הוא **עולה מלמטה** ומתיישב.
    */
   const rise = t.interpolate({ inputRange: [0, 1], outputRange: [height, 0] });
-  /**
-   * היוצא נמוג מוקדם · מתחת למסך שעולה אין מה לראות דרכו.
-   * ⚠ **נמדד בסימולטור** · עם [0, 0.45, 1] → [1, 0.3, 0] דף הבית עוד
-   * נראה ב-30% מאחורי המסך שעולה, והקרוסלה שלו הציצה בין השורות.
-   */
-  const fadeOut = t.interpolate({ inputRange: [0, 0.3, 1], outputRange: [1, 0.16, 0] });
-
   /* ״החלקה אופקית״ · שניהם זזים שמאלה, עם האצבע שמושכת מהקצה */
   const slideIn = v.interpolate({ inputRange: [0, 1], outputRange: [width * PARALLAX, 0] });
   const slideOut = v.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
-  /* היוצא שקוף, ולכן הוא מתעמעם בחלק שבו הוא עדיין חופף לנכנס */
-  const slideFade = v.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0.55, 0] });
+  /* ההחשכה על המסך המתגלה · נמוגה ככל שהוא מגיע · ראו `DIM` */
+  const dim = v.interpolate({ inputRange: [0, 1], outputRange: [DIM, 0] });
 
   const isBack = navDir === 'back' || drag;
 
@@ -315,9 +365,22 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
     ? { zIndex: 1, transform: [{ translateX: slideIn }] }
     : { zIndex: 2, transform: [{ translateY: rise }] };
 
+  /**
+   * ⚠ **היוצא אינו נמוג יותר · 18 בספטמבר 2026** · כאן ישבו שתי
+   * עמעום: `slideFade` בחזרה ו-`fadeOut` קדימה. הם היו שם כי שכבת
+   * המסך הייתה **שקופה**, והשטיפה ישבה מתחת לשתיהן — בלי עמעום היו
+   * רואים את שני המסכים זה דרך זה.
+   *
+   * בסרטון שקד שלחה המסך היוצא **אינו משנה שקיפות בכלל**: התאמתי
+   * אותו לצילום נקי שלו ב-25 פריימים וקיבלתי הפרש של פחות מיחידת
+   * בהירות אחת. זו הזזה טהורה. לכן השטיפה ירדה מהשורש ועברה
+   * **לתוך כל שכבה** (ראו `App.tsx`), השכבות אטומות, והעמעום מיותר.
+   * במקומו נשארו שני הדברים שכן נמדדו — הצל בקצה וההחשכה על מי
+   * שמתגלה.
+   */
   const outStyle = isBack
-    ? { zIndex: 2, opacity: slideFade, transform: [{ translateX: slideOut }] }
-    : { zIndex: 1, opacity: fadeOut };
+    ? { zIndex: 2, boxShadow: EDGE_SHADOW, transform: [{ translateX: slideOut }] }
+    : { zIndex: 1 };
 
   /**
    * ⚠ **בגרירה התפקידים הפוכים** · במעבר רגיל החזית היא המסך
@@ -331,8 +394,18 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
     <View style={s.fill} {...pan.panHandlers}>
       {/* ⚠ שתי המשבצות תמיד באותו מקום במערך · כך המשבצת ששורדת
           מעבר **אינה מורכבת מחדש** ושומרת על המצב שבתוכה */}
-      <Layer style={styleFor('a')} screen={pair.a} render={render} />
-      <Layer style={styleFor('b')} screen={pair.b} render={render} />
+      <Layer
+        style={styleFor('a')}
+        dim={isBack && 'a' !== leaving ? dim : null}
+        screen={pair.a}
+        render={render}
+      />
+      <Layer
+        style={styleFor('b')}
+        dim={isBack && 'b' !== leaving ? dim : null}
+        screen={pair.b}
+        render={render}
+      />
     </View>
   );
 }
@@ -340,25 +413,50 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
 type Move = Animated.AnimatedInterpolation<number>;
 type LayerStyle = {
   zIndex: number;
-  opacity?: Move;
+  boxShadow?: string;
   transform?: ({ translateX: Move } | { translateY: Move })[];
 };
 
 function Layer({
   screen,
   style,
+  dim,
   render,
 }: {
   screen: Screen | null;
   style: LayerStyle;
+  /** ההחשכה על מסך שנחשף · `null` לכל מצב אחר */
+  dim: Move | null;
   render: (screen: Screen) => React.ReactNode;
 }) {
   if (!screen) return null;
-  return <Animated.View style={[s.layer, style]}>{render(screen)}</Animated.View>;
+  return (
+    <Animated.View style={[s.layer, style]}>
+      {render(screen)}
+      {/* ⚠ **מעל התוכן ולא מתחתיו** · זו החשכה של מסך שעוד לא הגיע,
+          כמו באייפון · `NO_TOUCH` כדי שלא תבלע לחיצות */}
+      {dim ? <Animated.View pointerEvents="none" style={[s.dim, { opacity: dim }]} /> : null}
+    </Animated.View>
+  );
 }
 
 const s = StyleSheet.create({
   fill: { flex: 1 },
-  /* ⚠ שתי השכבות זו על זו · אחרת הן היו נערמות אנכית */
-  layer: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  /**
+   * ⚠ שתי השכבות זו על זו · אחרת הן היו נערמות אנכית.
+   * ⚠ **אטומה · 18 בספטמבר 2026** · השטיפה שבתוך כל שכבה כבר צובעת
+   * אותה, וזו רשת הביטחון: `react-native-svg` באחוזים אינו אמין
+   * במכשיר (נמדד כאן פעמיים), ובלי הצבע שכבה שהשטיפה נכשלה בה
+   * הייתה חוזרת להיות שקופה — ואיתה חוזר בדיוק המראה שביקשנו
+   * להעלים.
+   */
+  layer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: surface.ground,
+  },
+  dim: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: '#000' },
 });

@@ -7,7 +7,7 @@ import { Text } from './src/ui/text';
  * `ignoresSafeArea(_:edges:)` — כלומר להתעלם מצד אחד ולא מכולם —
  * ולכן צריך את הגרסה עם `edges`. החבילה כלולה ב-Expo Go.
  */
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { FONTS } from './src/theme/fonts';
@@ -114,12 +114,30 @@ function Router({ screen }: { screen: Screen }) {
   );
 }
 
-/** הנאב-בר הנכון למסך הנוכחי · של הניהול או של הלקוחה */
-/** שטיפת הרקע · במסכי הקטגוריות היא נצבעת בגוון הקטגוריה */
-function Wash() {
-  const { screen } = useNav();
-  const key = CATEGORY_SCREENS.includes(screen as CategoryKey) ? (screen as CategoryKey) : undefined;
-  return <PageWash categoryKey={key} />;
+/** גוון השטיפה של מסך · במסכי הקטגוריות היא נצבעת בגוון הקטגוריה */
+const washOf = (screen: Screen) =>
+  CATEGORY_SCREENS.includes(screen as CategoryKey) ? (screen as CategoryKey) : undefined;
+
+/**
+ * מסך שלם · השטיפה שלו ותוכנו.
+ *
+ * ⚠ **השטיפה ירדה מהשורש · 18 בספטמבר 2026** · היא ישבה פעם אחת
+ * מתחת לכל האפליקציה, ולכן **שכבות המסך היו שקופות** — ובמעבר
+ * אופקי היה רואים את שני המסכים זה דרך זה. הפיצוי היה עמעום של
+ * המסך היוצא, וזה בדיוק מה ששקד תיארה כ״משהו שם באפקט לא מסתדר
+ * טוב״: באייפון המסך היוצא **לא נעלם, הוא רק זז**.
+ *
+ * מרגע שכל מסך נושא שטיפה משלו הוא אטום, ואפשר להזיז אותו בלי
+ * שקיפות בכלל. `bleed` מחזיר לשטיפה את מה שהריפוד העליון לקח
+ * ממנה — ראו `PageWash`.
+ */
+function Page({ screen, bleed }: { screen: Screen; bleed: number }) {
+  return (
+    <View style={s.page}>
+      <PageWash categoryKey={washOf(screen)} bleed={bleed} />
+      <Router screen={screen} />
+    </View>
+  );
 }
 
 function Chrome() {
@@ -203,12 +221,15 @@ export default function App() {
  */
 function Shell() {
   const { screen } = useNav();
-  const topEdges = NO_TOP_INSET(screen) ? EDGES_NONE : EDGES_TOP;
+  const insets = useSafeAreaInsets();
+  const noTop = NO_TOP_INSET(screen);
+  const topEdges = noTop ? EDGES_NONE : EDGES_TOP;
+  /* ⚠ בדיוק הריפוד שה-`SafeAreaView` מוסיף · ראו `Page` */
+  const bleed = noTop ? 0 : insets.top;
 
   return (
         <View style={s.root}>
           <StatusBar style="dark" />
-          <Wash />
           {/**
             * ⚠ **האזור הבטוח העליון חזר · 16 בספטמבר 2026** · שקד
             * ביקשה להסיר אותו, ונמדד בסימולטור שאז ״BITE & TELL״
@@ -229,7 +250,7 @@ function Shell() {
                 מזיזה את שני המסכים בזמן אמת עם האצבע, ולכן היא
                 חייבת לשבת באותו רכיב שמחזיק אותם. `BackSwipe`,
                 שרק ירה חזרה אחרי 60 נקודות, ירד.*/}
-            <ScreenStage render={(scr) => <Router screen={scr} />} />
+            <ScreenStage render={(scr) => <Page screen={scr} bleed={bleed} />} />
             {/* ⚠ מותקן פעם אחת · שקד ביקשה שההתנתקות תופיע בכל רחבי
                 האפליקציה, ולא רק ב״ההזמנות שלי״ וב״אזור אישי״ כמו
                 בקנבס. חייב להיות **לפני** שכבת ההתחברות, שאחרת הוא
@@ -252,6 +273,8 @@ function Shell() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: surface.ground },
+  /* ⚠ אטום · השטיפה שבתוכו היא שצובעת · ראו `Page` */
+  page: { flex: 1 },
   /* ⚠ שקוף · השטיפה שמתחתיו היא שנראית */
   safe: { flex: 1 },
   todo: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },

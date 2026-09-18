@@ -29,18 +29,33 @@ const SWAP: Partial<Record<CategoryKey, { at: number; rgb: string; alpha: number
   chef: { at: 2, rgb: '232,198,166', alpha: 0.15 },
 };
 
-type Props = { categoryKey?: CategoryKey };
+type Props = {
+  categoryKey?: CategoryKey;
+  /**
+   * כמה השטיפה גולשת **מעל** ראש ההורה, בנקודות.
+   *
+   * ⚠ **נוסף ב-18 בספטמבר 2026** · מאז שכל מסך נושא שטיפה משלו
+   * (ראו `ScreenStage`), ההורה שלה הוא שכבת המסך — והיא יושבת
+   * **מתחת** לאזור הבטוח העליון. בלי הגלישה נשאר פס בהיר מתחת
+   * למגרעת, בדיוק הפס ששקד ביקשה להעלים ב-16 בספטמבר.
+   *
+   * ⚠ **גלישה ולא ריפוד שלילי** · הקופסה נמתחת כלפי מעלה, ולכן
+   * אחוזי הכתמים נמדדים שוב על **גובה המסך המלא** — אותה גיאומטריה
+   * בדיוק שהייתה כשהשטיפה ישבה בשורש. ריפוד היה מזיז את הכתמים.
+   */
+  bleed?: number;
+};
 
 let seq = 0;
 const nextId = () => `wash${(seq += 1)}`;
 
-export function PageWash({ categoryKey }: Props) {
+export function PageWash({ categoryKey, bleed = 0 }: Props) {
   const id = React.useMemo(nextId, []);
   const swap = categoryKey ? SWAP[categoryKey] : undefined;
   const blobs = BASE.map((b, i) => (swap && swap.at === i ? { ...b, rgb: swap.rgb, alpha: swap.alpha } : b));
 
   return (
-    <View style={[styles.wash, NO_TOUCH]}>
+    <View style={[styles.wash, bleed ? { top: -bleed } : null, NO_TOUCH]}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
         <Defs>
           {blobs.map((b, i) => (
