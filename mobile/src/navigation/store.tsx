@@ -3,6 +3,8 @@ import { apiEnabled } from '../api/config';
 import { me } from '../api/auth';
 import { tokenStore } from '../api/storage';
 import type { PublicUser } from '../api/types';
+import { StackActions } from '@react-navigation/native';
+import { navReady, navigationRef } from './ref';
 
 /**
  * מעטפת הניווט · מקבילה ל-App.dc.html בקנבס: מסך אחד בכל רגע,
@@ -64,27 +66,16 @@ type Nav = {
   closeLogin: () => void;
   /** האם שכבת ההתחברות פתוחה כרגע */
   loginOverlay: boolean;
-  back: (opts?: { settled?: boolean }) => void;
-  /**
-   * המסך שחזרה אחורה תגיע אליו · `null` כשאין, או כשהחזרה היא
-   * **בתוך** המסך (שלב בשאלון) ולכן אי אפשר להציג אותו מראש.
-   * ⚠ ראו `ScreenStage` · זה מה שמאפשר לגרור את המסך עם האצבע.
-   */
-  peekBack: Screen | null;
-  /** רישום מטפל חזרה פנימי · ראו `back` */
-  registerBack: (fn: (() => boolean) | null) => void;
-  /** כיוון המעבר האחרון ומונה שלו · ראו `ScreenStage` */
-  navDir: 'fwd' | 'back';
-  navTick: number;
-  /**
-   * המעבר כבר הושלם על המסך · האצבע הביאה אותו עד הסוף.
-   * ⚠ בלי זה השכבה הייתה מנפישה שוב את מה שכבר במקום · ראו שם.
-   */
-  navSettled: boolean;
+  back: () => void;
   signIn: (session?: Session) => void;
   signOut: () => void;
   setUser: (user: PublicUser) => void;
   canBack: boolean;
+  /**
+   * ⚠ **פנימי** · השורש מדווח כאן על המסלול שהנוויגטור מציג, כדי
+   * ש-`screen` יישאר נכון לכל מי שקורא אותו. ראו `App.tsx`.
+   */
+  syncRoute: (name: string) => void;
 };
 
 const Ctx = createContext<Nav | null>(null);
@@ -100,9 +91,32 @@ function initialScreen(): Screen {
   return (SCREENS as readonly string[]).includes(want ?? '') ? (want as Screen) : 'guest';
 }
 
+/**
+ * איפוס המחסנית למסך אחד.
+ * ⚠ מחוץ לרכיב · אין לו תלות בשום מצב, והוא נקרא גם מהתחברות וגם
+ * מהתנתקות.
+ */
+function resetTo(name: Screen) {
+  if (navReady()) navigationRef.reset({ index: 0, routes: [{ name }] });
+}
+
 export function NavProvider({ children }: { children: React.ReactNode }) {
+  /**
+   * המסך שמוצג כרגע.
+   *
+   * ⚠ **מראה ולא מקור · 18 בספטמבר 2026** · עד שלב 2 זה היה **מקור
+   * האמת** של הניווט. מרגע שיש נוויגטור נייטיבי, מקור האמת הוא
+   * המחסנית של המערכת, וכאן נשמר רק מה שהיא מציגה — כדי ש-36
+   * הקבצים שקוראים `screen` לא ישתנו בכלל.
+   */
   const [screen, setScreen] = useState<Screen>(initialScreen);
-  const [stack, setStack] = useState<Screen[]>([]);
+  /**
+   * האם יש לאן לחזור.
+   * ⚠ **נגזר מהנוויגטור ולא ממערך שלנו** · `canGoBack()` אינו ערך
+   * שריאקט עוקב אחריו, ולכן הוא נדגם בכל שינוי מסלול — שזה בדיוק
+   * הרגע היחיד שבו הוא יכול להשתנות.
+   */
+  const [canBack, setCanBack] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   /**
    * שכבת ההתחברות.
@@ -146,23 +160,22 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
    * בלעדיו. ראו `ScreenStage`.
    * ⚠ **חייב להיות לפני `go`** · הוא קורא ל-`setNav`.
    */
-  const [nav, setNav] = useState<{ dir: 'fwd' | 'back'; tick: number; settled: boolean }>({
-    dir: 'fwd',
-    tick: 0,
-    settled: false,
-  });
-
-
-  const go = useCallback(
-    (to: Screen, load?: Prefill) => {
-      prefill.current = load ?? null;
-      setLoginOverlay(false);
-      setStack((s) => [...s, screen]);
-      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1, settled: false }));
-      setScreen(to);
-    },
-    [screen],
-  );
+  /**
+   * מעבר למסך · **דחיפה על המחסנית הנייטיבית**.
+   *
+   * ⚠ **שלב 2 · 18 בספטמבר 2026** · כאן ישבה דחיפה למערך מקומי.
+   * עכשיו זו דחיפה אמיתית, ולכן המעבר, מחוות החזרה והצל מגיעים
+   * מ-UIKit ולא מקוד שלנו.
+   *
+   * ⚠ **`push` ולא `navigate`** · `navigate` היה קופץ אחורה אל מסך
+   * שכבר במחסנית במקום לפתוח אותו מחדש, וזה שינוי התנהגות שלא
+   * ביקשנו כאן. שמירת ההתנהגות הקיימת היא כל הרעיון בשלב הזה.
+   */
+  const go = useCallback((to: Screen, load?: Prefill) => {
+    prefill.current = load ?? null;
+    setLoginOverlay(false);
+    if (navReady()) navigationRef.dispatch(StackActions.push(to));
+  }, []);
 
   const takePrefill = useCallback(() => {
     const p = prefill.current;
@@ -174,50 +187,26 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const closeLogin = useCallback(() => setLoginOverlay(false), []);
 
   /**
-   * חזרה **בתוך** מסך · לפני שיוצאים ממנו.
+   * חזרה אחורה.
    *
-   * ⚠ **בקשה של שקד (17 בספטמבר 2026)** · ״אם אני נמצאת בספיישלים
-   * ונכנסתי לתוך קטגוריה, חזרה אחורה צריכה להחזיר אותי לספיישלים
-   * ולא לעמוד הבית. כנ״ל בפינת השף — שלב אחד לפני״.
+   * ⚠ **המלכודת הפנימית עברה למסך · ראו `useScreenBack`** · קודם היא
+   * ישבה כאן, ולכן רצה **רק** כשמישהו קרא ל-`back()` בקוד. מרגע
+   * שהחזרה מגיעה גם ממחוות המערכת, מלכודת כזו הייתה נעקפת בשקט.
+   * עכשיו היא יושבת על `beforeRemove` של המסך עצמו, שנורה בכל דרך
+   * יציאה — כפתור, מחווה או קוד.
    *
-   * הסיבה שזה לא עבד: פתיחת מארז או מעבר שלב בשאלון הם **שינוי
-   * מצב בתוך אותו מסך**, לא מסך חדש במחסנית. לכן החזרה קפצה ישר
-   * החוצה. מסך שיש לו שלבים פנימיים רושם כאן מטפל, והוא נשאל
-   * ראשון. `true` = טיפלתי, אל תצא מהמסך.
+   * ⚠ **בלי ארגומנטים** · `onPress={back}` מעביר אירוע לחיצה, וקודם
+   * היה כאן שדה שחייב היה להיות `=== true` בגללו. אין בו יותר צורך.
    */
-  const [trap, setTrap] = useState<(() => boolean) | null>(null);
-  const registerBack = useCallback(
-    (fn: (() => boolean) | null) => setTrap(() => fn),
-    [],
-  );
+  const back = useCallback(() => {
+    if (navReady() && navigationRef.canGoBack()) navigationRef.goBack();
+  }, []);
 
-  /**
-   * ⚠ **בלי תופעות לוואי בתוך עדכון מצב · תוקן ב-17 בספטמבר 2026** ·
-   * `setScreen` ו-`setNav` ישבו **בתוך** פונקציית העדכון של
-   * `setStack`. ריאקט מריץ פונקציות עדכון בשלב הרינדור, ולפעמים
-   * פעמיים, וקריאות מצב מתוכן אינן מובטחות.
-   *
-   * נמדד: אחרי מחוות חזרה רצה דווקא **הנפשת הכניסה** — כלומר
-   * `navDir` מעולם לא התהפך ל-`back`.
-   */
-  const back = useCallback(
-    (opts?: { settled?: boolean }) => {
-      if (trap?.()) return;
-      if (stack.length === 0) return;
-      /**
-       * ⚠ **`settled` · המחווה כבר סיימה** · כשהאצבע גררה את המסך עד
-       * הסוף, הוא כבר נמצא במקומו על המסך. בלי הדגל הזה שכבת
-       * ההנפשה הייתה מריצה עליו מעבר שני מאפס · ראו `ScreenStage`.
-       * ⚠ **חייב להיות `=== true`** · `onPress={back}` מעביר אירוע
-       * לחיצה כארגומנט ראשון, ואובייקט אירוע אינו נושא את השדה הזה.
-       */
-      const settled = opts?.settled === true;
-      setNav((n) => ({ dir: 'back', tick: n.tick + 1, settled }));
-      setScreen(stack[stack.length - 1]);
-      setStack((s) => s.slice(0, -1));
-    },
-    [trap, stack],
-  );
+  /** ⚠ פנימי · השורש מדווח מה הנוויגטור מציג · ראו `App.tsx` */
+  const syncRoute = useCallback((name: string) => {
+    if ((SCREENS as readonly string[]).includes(name)) setScreen(name as Screen);
+    setCanBack(navReady() && navigationRef.canGoBack());
+  }, []);
 
   /**
    * התחברות מאפסת את המחסנית · הבית המחובר הוא ההתחלה החדשה,
@@ -236,13 +225,12 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setLoginOverlay(false);
-      setStack([]);
-      /* ⚠ **גם התחברות היא מעבר** · בלי המונה שכבת ההנפשה לא יודעת
-         שהמסך התחלף · ראו `ScreenStage` */
-      setNav((n) => ({ dir: 'fwd', tick: n.tick + 1, settled: false }));
       /* ⚠ המנהלת נכנסת לניהול · הגישה לניהול היא רק דרך ההתחברות שלה
          (החלטה 12), ולכן כניסה עם חשבון מנהלת לא נוחתת בבית של לקוחה. */
-      setScreen(session?.user.role === 'admin' ? 'admin' : 'main');
+      const home: Screen = session?.user.role === 'admin' ? 'admin' : 'main';
+      /* ⚠ **איפוס ולא דחיפה** · הבית המחובר הוא ההתחלה החדשה, ואסור
+         שהחלקה אחורה תחזיר למסך ההתחברות. */
+      resetTo(home);
     },
     [loginOverlay],
   );
@@ -251,11 +239,9 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
     setLoggedIn(false);
     setUser(null);
     void tokenStore.clear();
-    setStack([]);
     setLoginOverlay(false);
-    /* ⚠ גם התנתקות · ראו ההערה ב-`signIn` */
-    setNav((n) => ({ dir: 'back', tick: n.tick + 1, settled: false }));
-    setScreen('guest');
+    /* ⚠ גם כאן איפוס · אחרי התנתקות אין לאן לחזור */
+    resetTo('guest');
   }, []);
 
   const applyUser = useCallback((next: PublicUser) => {
@@ -274,19 +260,15 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       closeLogin,
       loginOverlay,
       back,
-      registerBack,
-      navDir: nav.dir,
-      navTick: nav.tick,
-      navSettled: nav.settled,
-      /* ⚠ מסך פנימי (`trap`) אינו ניתן להצגה מראש · ראו `peekBack` */
-      peekBack: trap === null && stack.length > 0 ? stack[stack.length - 1] : null,
+
       signIn,
       signOut,
       setUser: applyUser,
       /* ⚠ גם שלב פנימי הוא ״יש לאן לחזור״ · אחרת המחווה מושבתת */
-      canBack: stack.length > 0 || trap !== null,
+      canBack,
+      syncRoute,
     }),
-    [screen, loggedIn, user, go, takePrefill, goLogin, closeLogin, loginOverlay, back, registerBack, signIn, signOut, applyUser, stack.length, trap, nav],
+    [screen, loggedIn, user, go, takePrefill, goLogin, closeLogin, loginOverlay, back, signIn, signOut, applyUser, canBack, syncRoute],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

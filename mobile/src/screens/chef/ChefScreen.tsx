@@ -138,13 +138,7 @@ export function ChefScreen() {
    * `o.prev` כבר יודע את זה: שלב אחורה, ומעמוד ראשון חזרה לרשימת
    * המסלולים. מחוץ למסלול מחזירים `false` — ואז יוצאים מהמסך.
    */
-  useScreenBack(
-    React.useCallback(() => {
-      if (!o.pkg) return false;
-      o.prev();
-      return true;
-    }, [o.pkg, o.prev]),
-  );
+  useScreenBack(Boolean(o.pkg), o.prev);
   /* הלשונית הפתוחה בתפריט · ארוחת שף או עמדת טאבון */
   const [tab, setTab] = useState(0);
   /* בקשת ההצעה נשלחה · מסך הסיום פתוח */
