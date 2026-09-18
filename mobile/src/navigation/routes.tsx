@@ -27,6 +27,7 @@ import { AdminCustomersScreen } from '../admin/AdminCustomersScreen';
 import { AdminMenuScreen } from '../admin/AdminMenuScreen';
 import { AdminCostsScreen } from '../admin/AdminCostsScreen';
 import { AdminHistoryScreen } from '../admin/AdminHistoryScreen';
+import { AdminOrderHistoryScreen } from '../admin/AdminOrderHistoryScreen';
 import { AdminBoardScreen } from '../admin/AdminBoardScreen';
 import { AdminExpensesScreen } from '../admin/AdminExpensesScreen';
 import { AdminIncomeScreen } from '../admin/AdminIncomeScreen';
@@ -52,6 +53,7 @@ export const ADMIN_SCREENS: Screen[] = [
   'adminMenu',
   'adminCosts',
   'adminHistory',
+  'adminOrderHistory',
   'adminBoard',
   'adminExpenses',
   'adminIncome',
@@ -88,6 +90,7 @@ function Router({ screen }: { screen: Screen }) {
   if (view === 'adminMenu') return <AdminMenuScreen />;
   if (view === 'adminCosts') return <AdminCostsScreen />;
   if (view === 'adminHistory') return <AdminHistoryScreen />;
+  if (view === 'adminOrderHistory') return <AdminOrderHistoryScreen />;
   if (view === 'adminBoard') return <AdminBoardScreen />;
   if (view === 'adminExpenses') return <AdminExpensesScreen />;
   if (view === 'adminIncome') return <AdminIncomeScreen />;

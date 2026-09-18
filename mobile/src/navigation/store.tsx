@@ -34,6 +34,7 @@ export const SCREENS = [
   'adminMenu',
   'adminCosts',
   'adminHistory',
+  'adminOrderHistory',
   'adminBoard',
   'adminExpenses',
   'adminIncome',

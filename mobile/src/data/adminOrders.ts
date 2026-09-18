@@ -260,6 +260,12 @@ export type AdminOrder = {
   via: string;
   /** שעות שנותרו עד האיסוף · שלילי אם עבר */
   hrs: number;
+  /**
+   * יום המכירה שאליו ההזמנה שייכת · `saleDate` בשרת.
+   * ⚠ **חסר בהזמנות הקנבס ובהזמנה שנפתחת ידנית במצב הדגמה** ·
+   * ראו `AdminOrdersScreen`, שם חוסר תאריך נחשב למכירה הנוכחית.
+   */
+  saleDate?: string;
   /** ⚠ לא מהקנבס · תיעוד הביטול שמגיע מהשרת */
   cancelReason?: string;
   cancelNote?: string;

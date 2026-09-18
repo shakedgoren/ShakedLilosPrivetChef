@@ -112,7 +112,32 @@ function Shell() {
   return (
     <View style={s.root}>
       <StatusBar style="dark" />
-      <NavigationContainer ref={navigationRef} onReady={onRoute} onStateChange={onRoute}>
+      {/**
+       * ⚠ **`direction="rtl"` · כיוון המעבר · 18 בספטמבר 2026** ·
+       * בקשה של שקד: ״האפקט מעבר פשוט מושלם, אבל הוא רק לא בכיוון
+       * הנכון — לא החלקה משמאל לימין אלא החלקה מימין לשמאל״.
+       *
+       * ⚠ **זה הברז היחיד שמזיז את הכיוון ב-iOS** · `animation`
+       * מסוג `slide_from_left` הוא **אנדרואיד בלבד** ונופל לברירת
+       * המחדל ב-iOS. הכיוון שם נקבע ב-UIKit לפי
+       * `semanticContentAttribute` של הנוויגיישן-קונטרולר, ולפי
+       * `RNSScreenStackHeaderConfig.mm` המקום **היחיד** שכותב
+       * אותו הוא `direction` של תצורת הכותרת — שמגיע מ-`useLocale()`
+       * של המכל הזה, וברירת המחדל שלו היא `'ltr'`.
+       *
+       * ⚠ **עובד גם כשהכותרת מוסתרת** · `headerShown: false` רק
+       * מעביר `hidden` לתצורה, היא עצמה עדיין נרכבת.
+       *
+       * ⚠ **`I18nManager` לא היה מספיק** · הוא אמנם `isRTL=true`,
+       * אבל ריאקט־נייטיב כותב `semanticContentAttribute` על
+       * התצוגות שלו בלבד ולא על זו של הנוויגיישן-קונטרולר.
+       */}
+      <NavigationContainer
+        ref={navigationRef}
+        direction="rtl"
+        onReady={onRoute}
+        onStateChange={onRoute}
+      >
         <RootNavigator />
       </NavigationContainer>
 

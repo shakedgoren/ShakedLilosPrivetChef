@@ -57,14 +57,58 @@ export const markNotificationSeen = (category: string, date: string) =>
 
 export const getOrder = (id: string) => api<{ order: Order }>(`/orders/${id}`);
 
-export const adminListOrders = (query?: { status?: string; category?: string; q?: string }) => {
+/**
+ * הזמנות הניהול.
+ *
+ * ⚠ **`date` ו-`limit` נוספו ב-18 בספטמבר 2026** · בקשה של שקד:
+ * ״בעמוד ההזמנות לראות רק את ההזמנות הפתוחות שקשורות לאותה המכירה
+ * הנוכחית. את כל השאר שיהיו בהיסטוריית הזמנות״.
+ *
+ * ⚠ **כולם אופציונליים** · בלי אף אחד מהם התשובה זהה למה שהייתה,
+ * ולכן שום קורא קיים לא נשבר.
+ */
+export const adminListOrders = (query?: {
+  status?: string;
+  category?: string;
+  q?: string;
+  /** יום מכירה יחיד · `saleDate` בשרת */
+  date?: string;
+  /** כמה להחזיר · בלעדיו הכל, כמו קודם */
+  limit?: number;
+  /** כמה לדלג · העימוד בתוך יום מכירה אחד */
+  skip?: number;
+  /**
+   * רק מה שעדיין דורש עבודה · לא נמסרה ולא בוטלה.
+   * ⚠ **סטטוס מפורש גובר עליו** · שניהם מסננים את אותו שדה.
+   */
+  open?: boolean;
+}) => {
   const sp = new URLSearchParams();
   if (query?.status) sp.set('status', query.status);
   if (query?.category) sp.set('category', query.category);
   if (query?.q) sp.set('q', query.q);
+  if (query?.date) sp.set('date', query.date);
+  if (query?.limit) sp.set('limit', String(query.limit));
+  if (query?.skip) sp.set('skip', String(query.skip));
+  if (query?.open) sp.set('open', '1');
   const q = sp.toString();
-  return api<{ orders: Order[]; cards: AdminCard[] }>(`/admin/orders${q ? `?${q}` : ''}`);
+  return api<{ orders: Order[]; cards: AdminCard[]; total?: number }>(
+    `/admin/orders${q ? `?${q}` : ''}`,
+  );
 };
+
+/** יום מכירה בהיסטוריה · שורה אחת ליום, לא הזמנה */
+export type SaleDaySummary = { category: string; date: string; orders: number };
+
+/**
+ * היסטוריית ההזמנות · **ימי מכירה בלבד**.
+ * ⚠ זו הנקודה שמייתרת עימוד במסך הראשי: במקום אלפי הזמנות נשלחת
+ * שורה אחת לכל יום מכירה, וההזמנות נטענות רק כשפותחים תאריך.
+ */
+export const adminOrderHistory = (category?: string) =>
+  api<{ days: SaleDaySummary[] }>(
+    `/admin/orders/history${category ? `?category=${encodeURIComponent(category)}` : ''}`,
+  );
 
 export const adminGetOrder = (id: string) =>
   api<{ order: Order; card: AdminCard }>(`/admin/orders/${id}`);

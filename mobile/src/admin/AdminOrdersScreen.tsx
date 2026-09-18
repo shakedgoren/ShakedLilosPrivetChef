@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
 import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
@@ -13,7 +13,8 @@ import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
-import { Calendar, Plus } from '../icons';
+import { Calendar, Clock, Plus } from '../icons';
+import { upcomingSale } from '../data/saleWeek';
 
 const ALL = 'הכל';
 const COUS = HUES.cous;
@@ -34,15 +35,47 @@ export function AdminOrdersScreen() {
   const { go } = useNav();
   const admin = useAdminOrders();
 
-  const all = admin.allOrders.map((o, i) => ({ o, i, status: admin.statusOf(i) }));
+  /**
+   * ⚠ **רק המכירה הנוכחית · 18 בספטמבר 2026** · בקשה של שקד:
+   * ״בעמוד ההזמנות לראות רק את ההזמנות הפתוחות שקשורות לאותה המכירה
+   * הנוכחית. את כל השאר שיהיו בהיסטוריית הזמנות״.
+   *
+   * ⚠ **נגזר ולא נשאל מהשרת** · `upcomingSale` כבר מחזיק את הקטגוריה
+   * ואת התאריך, וזה אותו מקור שמזין את לוח יום המכירה. שאילתה נוספת
+   * הייתה יכולה להחזיר תאריך אחר ולפצל את שני המסכים.
+   */
+  const sale = React.useMemo(() => upcomingSale(new Date()), []);
+
+  /**
+   * ⚠ **הזמנה בלי תאריך נחשבת למכירה הנוכחית** · הזמנות הקנבס
+   * ומצב ההדגמה אינן נושאות `saleDate`, ובלי הנפילה הזו המסך היה
+   * נראה ריק לגמרי בלי שרת.
+   */
+  const dayOf = (o: { saleDate?: string }) => o.saleDate ?? sale.date;
+
+  const every = admin.allOrders.map((o, i) => ({ o, i, status: admin.statusOf(i) }));
+  const all = every.filter((x) => dayOf(x.o) === sale.date);
+
+  /**
+   * ⚠ **הזמנות פתוחות ממכירה קודמת · החלטה שלי, לא בקשה** · סינון
+   * קפדני למכירה הנוכחית היה **מעלים** הזמנה משלישי שעדיין לא נמסרה
+   * ברגע שהמכירה הבאה היא שישי — כלומר עבודה שנופלת בין הכיסאות.
+   * לכן היא מופיעה כאן בנפרד ובכותרת משלה. להסרה — מחיקת הגוש.
+   */
+  const stale = every.filter(
+    (x) => dayOf(x.o) !== sale.date && x.status !== CANCELLED && x.status !== 'נמסרה',
+  );
+
   const shown = admin.tab === ALL ? all : all.filter((x) => x.status === admin.tab);
 
   const live = all.filter((x) => x.status !== CANCELLED);
   const kpis = [
-    { k: 'הזמנות היום', v: all.length, fg: surface.ink },
+    { k: 'הזמנות במכירה', v: all.length, fg: surface.ink },
     { k: 'עוד לא נמסרו', v: live.filter((x) => x.status !== 'נמסרה').length, fg: '#A65E2A' },
     { k: 'מחזור נוכחי', v: live.reduce((s, x) => s + x.o.sum, 0), fg: COUS.deep },
   ];
+
+  const [staleOpen, setStaleOpen] = React.useState(false);
 
   const cancelTarget = admin.cancelling >= 0 ? admin.allOrders[admin.cancelling] : null;
 
@@ -55,6 +88,8 @@ export function AdminOrdersScreen() {
          כשמות הנגישות. שני עיגולים של 38 נכנסים בשורת הכותרת
          בלי לדרוס אותה, מה שהגלולות הרחבות לא יכלו. */
       actions={[
+        /* ⚠ השער להיסטוריה · אותו דפוס של אייקון השעון במסך הקניות */
+        { label: 'היסטוריית הזמנות', onPress: () => go('adminOrderHistory'), icon: Clock },
         { label: BOARD_LABEL, onPress: () => go('adminBoard'), icon: Calendar },
         { label: 'הזמנה ידנית', onPress: admin.openNew, icon: Plus, primary: true },
       ]}
@@ -93,6 +128,36 @@ export function AdminOrdersScreen() {
             />
           ))
         )}
+        {/* ⚠ הזמנות פתוחות ממכירה קודמת · ראו ההערה ליד `stale` ·
+            **מקופל כברירת מחדל** כדי שהמסך יישאר ״רק המכירה
+            הנוכחית״ כפי שביקשה, בלי לאבד עבודה פתוחה. */}
+        {stale.length > 0 ? (
+          <>
+            <Pressable
+              onPress={() => setStaleOpen((v) => !v)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: staleOpen }}
+              style={s.staleHead}
+            >
+              <Text style={s.staleText}>
+                {staleOpen ? '▾' : '▸'}  פתוחות ממכירות קודמות · {stale.length}
+              </Text>
+            </Pressable>
+            {staleOpen && stale.map((x) => (
+              <OrderCard
+                key={x.o.id ?? x.i}
+                order={x.o}
+                status={x.status}
+                isOpen={admin.open === x.i}
+                note={admin.noteOf(x.i)}
+                flow={admin.flow}
+                onToggle={() => admin.toggle(x.i)}
+                onAdvance={() => admin.advance(x.i)}
+                onCancel={() => admin.askCancel(x.i)}
+              />
+            ))}
+          </>
+        ) : null}
       </ScrollView>
 
       {cancelTarget ? (
@@ -124,6 +189,8 @@ export function AdminOrdersScreen() {
 }
 
 const s = StyleSheet.create({
+  staleHead: { marginTop: 14, marginBottom: 2, paddingVertical: 6 },
+  staleText: { fontSize: 13, fontWeight: '600', color: '#A65E2A', textAlign: 'center' },
   tabs: { flexDirection: 'row', gap: 6 },
   tab: { flex: 1 },
   list: { flex: 1 },

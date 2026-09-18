@@ -27,26 +27,100 @@ adminRouter.get('/orders', async (req, res, next) => {
     if (statusRaw && !status) throw badRequest('invalid_status');
     if (category && !isCategory(category)) throw badRequest('invalid_category');
 
+    /**
+     * ⚠ **סינון לפי יום מכירה ועימוד · 18 בספטמבר 2026** · בקשה של
+     * שקד: ״בעמוד ההזמנות לראות רק את ההזמנות הפתוחות שקשורות לאותה
+     * המכירה הנוכחית. את כל השאר שיהיו בהיסטוריית הזמנות״.
+     *
+     * ⚠ **שניהם אופציונליים** · בלעדיהם התשובה זהה למה שהייתה, ולכן
+     * שום קורא קיים לא נשבר.
+     *
+     * ⚠ **עימוד בדילוג ולא בסמן** · כאן המיון הוא לפי `createdAt`
+     * בתוך **יום מכירה אחד**, כלומר קבוצה שאינה משתנה תוך כדי
+     * גלילה. סמן היה מורכב יותר בלי להרוויח דבר.
+     */
+    const date = typeof req.query.date === 'string' ? req.query.date : '';
+    /**
+     * ⚠ **`open=1` · ההזמנות שעדיין דורשות עבודה** · מסך ההזמנות
+     * מציג את המכירה הנוכחית, ובנוסף הזמנות פתוחות ממכירות קודמות
+     * כדי שעבודה שלא נסגרה לא תיעלם. בלי הדגל הזה הוא היה חייב
+     * למשוך את **כל** ההזמנות מאז ומעולם רק כדי למצוא אותן.
+     */
+    const openOnly = req.query.open === '1' || req.query.open === 'true';
+    const take = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200) || undefined;
+    const skip = Math.max(Number(req.query.skip) || 0, 0) || undefined;
+
+    const where = {
+      /* ⚠ סטטוס מפורש גובר על `open` · שניהם כותבים לאותו שדה */
+      ...(status ? { status } : openOnly ? { status: { notIn: [DELIVERED, CANCELLED] } } : {}),
+      ...(category ? { category } : {}),
+      ...(date ? { saleDate: date } : {}),
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q } },
+              { phone: { contains: q } },
+            ],
+          }
+        : {}),
+    };
+
     const rows = await prisma.order.findMany({
-      where: {
-        ...(status ? { status } : {}),
-        ...(category ? { category } : {}),
-        ...(q
-          ? {
-              OR: [
-                { name: { contains: q } },
-                { phone: { contains: q } },
-              ],
-            }
-          : {}),
-      },
+      where,
       orderBy: { createdAt: 'desc' },
+      ...(take ? { take } : {}),
+      ...(skip ? { skip } : {}),
     });
+    /* ⚠ נדרש כדי לדעת אם יש עוד · בלעדיו הגלילה לא יודעת מתי לעצור */
+    const total = take ? await prisma.order.count({ where }) : rows.length;
 
     res.json({
       orders: rows.map(serializeOrder),
       cards: rows.map(serializeAdminCard),
+      total,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * היסטוריית ההזמנות · **ימי מכירה, לא הזמנות**.
+ *
+ * ⚠ **נבנה ב-18 בספטמבר 2026** · בקשה של שקד: ״שיהיו בהיסטוריית
+ * הזמנות, מחולקות לפי קטגוריות ומחולקות לכל תאריך. בראשי אני אראה
+ * רק את התאריך, וכשאני אלחץ על התאריך ייפתחו כל ההזמנות של אותה
+ * מכירה״.
+ *
+ * ⚠ **זו הנקודה שמחליפה את הצורך בעימוד במסך הראשי** · במקום לשלוח
+ * אלפי הזמנות, נשלחת **שורה אחת ליום מכירה**. ההזמנות עצמן נטענות
+ * רק כשפותחים תאריך, ושם כבר יש עימוד.
+ */
+adminRouter.get('/orders/history', async (req, res, next) => {
+  try {
+    const category = typeof req.query.category === 'string' ? req.query.category : '';
+    if (category && !isCategory(category)) throw badRequest('invalid_category');
+
+    const rows = await prisma.order.groupBy({
+      by: ['category', 'saleDate'],
+      where: {
+        ...(category ? { category } : {}),
+        /* ⚠ יום בלי תאריך אינו יום מכירה · הצעות שף ובקשות מחיר */
+        saleDate: { not: '' },
+      },
+      _count: { _all: true },
+    });
+
+    const days = rows
+      .map((r: { category: string; saleDate: string; _count: { _all: number } }) => ({
+        category: r.category,
+        date: r.saleDate,
+        orders: r._count._all,
+      }))
+      /* החדש למעלה · אותו סדר שבו היא חושבת על המכירות */
+      .sort((a: { date: string }, b: { date: string }) => (a.date < b.date ? 1 : -1));
+
+    res.json({ days });
   } catch (err) {
     next(err);
   }

@@ -26,6 +26,7 @@ import {
   type NewOrderDraft,
 } from './orderMath';
 import { canNotify, manualOrderLink } from './manualOrderWa';
+import { upcomingSale } from '../data/saleWeek';
 
 /** חלונית החלה · סוג החלה, התוספות שנבחרו, ואיזו חלה נערכת (-1 = חדשה) */
 export type RollPop = { type: string; tops: string[]; edit: number } | null;
@@ -49,6 +50,7 @@ const cardToOrder = (c: AdminCard): AdminOrder => ({
   pay: c.pay,
   via: c.via,
   hrs: c.hrs,
+  saleDate: c.saleDate,
   cancelReason: c.cancelReason,
   cancelNote: c.cancelNote,
 });
@@ -77,9 +79,25 @@ export function useAdminOrders() {
   /* שם הלקוח שההודעה נשלחה אליו · מזין את חלונית האישור */
   const [notified, setNotified] = useState('');
 
+  /**
+   * ⚠ **שתי שאילתות תחומות במקום ״כל ההזמנות״ · 18 בספטמבר 2026** ·
+   * מסך ההזמנות מציג רק את המכירה הנוכחית, ולכן אין סיבה למשוך את
+   * כל ההיסטוריה. הראשונה היא יום המכירה הקרוב, השנייה היא מה
+   * שעדיין פתוח ממכירות קודמות — הזמנה שלא נמסרה לא נופלת בין
+   * הכיסאות. כל השאר נמצא במסך ההיסטוריה.
+   *
+   * ⚠ **כפילויות נופלות לפי מזהה** · הזמנה פתוחה של המכירה הנוכחית
+   * חוזרת בשתי השאילתות.
+   */
   const reload = useCallback(async () => {
     if (!live) return;
-    const { cards } = await adminListOrders();
+    const day = upcomingSale(new Date()).date;
+    const [today, stillOpen] = await Promise.all([
+      adminListOrders({ date: day }),
+      adminListOrders({ open: true }),
+    ]);
+    const seen = new Set(today.cards.map((c) => c.id));
+    const cards = today.cards.concat(stillOpen.cards.filter((c) => !seen.has(c.id)));
     setRemote(cards.map(cardToOrder));
     try {
       const { customers } = await adminListCustomers();
@@ -289,6 +307,8 @@ export function useAdminOrders() {
       hrs: MANUAL_ORDER_HOURS,
       via: '',
       status: FLOW[0],
+      /* ⚠ הזמנה ידנית שייכת למכירה הקרובה · כמו במסלול השרת */
+      saleDate: upcomingSale(new Date()).date,
     };
     setExtra((e) => [...e, row]);
     setNewOpen(false);
