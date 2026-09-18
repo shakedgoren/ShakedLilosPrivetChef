@@ -45,6 +45,11 @@ export const env = {
     return (process.env.GOOGLE_CLIENT_ID ?? '').split(',')[0]?.trim() ?? '';
   },
   resetDebug: process.env.RESET_DEBUG === '1',
+  /**
+   * כמה שכבות פרוקסי לסמוך עליהן · `1` מאחורי nginx/Render/Fly.
+   * ⚠ ריק = בלי אמון · ראו `http/rateLimit`.
+   */
+  trustProxy: Number(process.env.TRUST_PROXY ?? 0) || 0,
 
   /* שליחת מייל · איפוס סיסמה. בלי אלה לא נשלח כלום (ראו mail/mailer.ts) */
   smtpHost: process.env.SMTP_HOST ?? '',

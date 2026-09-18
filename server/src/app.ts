@@ -3,6 +3,7 @@ import express from 'express';
 import { ZodError } from 'zod';
 import { env } from './env.ts';
 import { HttpError } from './errors.ts';
+import { apiLimiter, authLimiter } from './http/rateLimit.ts';
 import { authRouter } from './routes/auth.ts';
 import { usersRouter } from './routes/users.ts';
 import { ordersRouter } from './routes/orders.ts';
@@ -15,6 +16,13 @@ import { whatsappWebhookRouter } from './routes/whatsappWebhook.ts';
 
 export function createApp() {
   const app = express();
+  /**
+   * ⚠ **כתובת אמיתית מאחורי פרוקסי** · בלי זה כל הבקשות נראות
+   * כמגיעות מאותה כתובת והגבלת הקצב חוסמת את כולן יחד.
+   * ⚠ מופעל רק כשמוגדר במפורש · `trust proxy` פתוח לרווחה מאפשר
+   * לזייף כתובת דרך `X-Forwarded-For`.
+   */
+  if (env.trustProxy) app.set('trust proxy', env.trustProxy);
   app.use(cors({ origin: true }));
   app.use(express.json({ limit: '4mb' }));
   app.use('/uploads', express.static(env.uploadDir));
@@ -24,6 +32,9 @@ export function createApp() {
   });
 
   app.use('/webhooks/whatsapp', whatsappWebhookRouter);
+  /* ⚠ הגבלת קצב · ראו `http/rateLimit` · הרגישה לפני הכללית */
+  app.use('/auth', authLimiter);
+  app.use(apiLimiter);
   app.use('/auth', authRouter);
   app.use('/users', usersRouter);
   app.use('/orders', ordersRouter);
