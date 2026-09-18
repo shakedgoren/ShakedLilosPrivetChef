@@ -24,6 +24,11 @@ export const saleDayStatus = (category: string) =>
     state?: SaleState;
     /** האם המשתמשת כבר ביקשה תזכורת · ראו `/orders/remind` */
     reminder?: boolean;
+    /**
+     * מזהי המנות שאזלו · **בלי מספרים** · ראו `order/stock.ts`.
+     * ⚠ אופציונלי · שרת ישן שעדיין לא עודכן אינו מחזיר את השדה.
+     */
+    soldOut?: string[];
     reason: string;
     message: string;
   }>(

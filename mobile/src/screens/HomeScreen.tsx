@@ -13,6 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { SaleAlert } from '../components/SaleAlert';
 import { SaleDayRow } from '../components/SaleDayRow';
 import { apiEnabled } from '../api/config';
+import { syncStock } from '../order/stock';
 import { syncReminders } from '../order/reminders';
 import { listNotifications, markNotificationSeen, type SaleNotification } from '../api/orders';
 
@@ -87,6 +88,8 @@ export function HomeScreen() {
     }
     /* ⚠ מצב התזכורות נטען כאן לכל הקטגוריות · ראו `syncReminders` */
     void syncReminders();
+    /* ⚠ מה שאזל · אותו מסלול בדיוק · ראו `order/stock.ts` */
+    void syncStock().catch(() => undefined);
     let live = true;
     listNotifications()
       .then(({ notifications }) => {

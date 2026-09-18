@@ -29,6 +29,33 @@ const SALE_CATS = new Set(['cous', 'schn']);
 export type SaleDayError = { code: string; message: string; dishId?: string };
 
 /** חוקי יום מכירה ללקוחה · בלי גישה למסד, לבדיקות */
+/**
+ * המנות שאזלו · **מזהים בלבד, בלי מספרים**.
+ *
+ * ⚠ **נוסף ב-18 בספטמבר 2026** · שקד ביקשה שכשנגמר המלאי ההזמנה
+ * תיחסם בצד הלקוחה, ובאותה נשימה הדגישה: ״אין תצוגה של המלאי
+ * ללקוח!!!!! זה רק עבור האחראיות על ההזמנות שלא יתקבלו יותר מדי״.
+ *
+ * לכן חוזרת **רשימת מזהים** ולא מכסות ולא יתרות. הלקוחה רואה
+ * ״נגמר המלאי״ על מנה שאזלה, ואי אפשר להסיק מהתשובה כמה נשאר בשום
+ * מנה אחרת.
+ *
+ * ⚠ **אותו חישוב של `evaluateCustomerSaleDay`** · פסולת נספרת יחד
+ * עם מה שנמכר, בדיוק כמו בבדיקה שחוסמת בפועל בשליחת ההזמנה.
+ */
+export function soldOutDishes(rec: SaleDayView | null, category: string): string[] {
+  if (!rec) return [];
+  const dishes = CATS[category as DayCatKey]?.dishes ?? [];
+  const out: string[] = [];
+  for (const dish of dishes) {
+    const quota = rec.quotas[dish.id] ?? dish.q;
+    if (quota === undefined) continue;
+    const used = (rec.sold[dish.id] ?? 0) + (rec.waste[dish.id] ?? 0);
+    if (used >= quota) out.push(dish.id);
+  }
+  return out;
+}
+
 export function evaluateCustomerSaleDay(opts: {
   rec: SaleDayView | null;
   category: string;

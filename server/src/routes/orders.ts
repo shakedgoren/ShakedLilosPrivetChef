@@ -16,6 +16,7 @@ import {
   assertCustomerOrderDay,
   evaluateCustomerSaleDay,
   loadSaleDayView,
+  soldOutDishes,
   saleDayState,
   resolveCustomerSaleDate,
 } from '../orders/saleDay.ts';
@@ -192,6 +193,8 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
       open: problem === null,
       /* ⚠ שלושת המצבים · ראו `saleDayState` */
       state: saleDayState({ rec, category, today: isoDate(new Date()) }),
+      /* ⚠ מזהים בלבד · ראו `soldOutDishes` · הלקוחה לא רואה מספרים */
+      soldOut: soldOutDishes(rec, category),
       reminder,
       reason: problem?.code ?? '',
       message: problem?.message ?? '',

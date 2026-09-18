@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { qtyOfCustomerDetails } from '../admin/sold.ts';
-import { evaluateCustomerSaleDay, isIsoDate } from './saleDay.ts';
+import { evaluateCustomerSaleDay, isIsoDate, soldOutDishes } from './saleDay.ts';
 
 const openCous = {
   date: '2026-09-15',
@@ -147,4 +147,28 @@ test('qty של לקוחה · קוסקוס ושניצל', () => {
     }),
     { boxTemp: 1 },
   );
+});
+
+/**
+ * ⚠ **המנות שאזלו · 18 בספטמבר 2026** · הבדיקה שומרת על שני דברים
+ * ששקד ביקשה במפורש: שהחסימה תתפוס, ושהתשובה **לא תסגיר מספרים**.
+ */
+test('מנות שאזלו · מזהים בלבד', () => {
+  /* veg: מכסה 5, נמכרו 3 ועוד 1 פסולת = 4 · עוד אחת פנויה */
+  assert.deepEqual(soldOutDishes(openCous, 'cous'), ['chick']);
+
+  /* הפסולת נספרת · עוד פסולת אחת סוגרת גם את veg */
+  assert.deepEqual(
+    soldOutDishes({ ...openCous, waste: { veg: 2 } }, 'cous').sort(),
+    ['chick', 'veg'],
+  );
+
+  /* חריגה מעבר למכסה נשארת ״אזל״ ולא הופכת למשהו אחר */
+  assert.deepEqual(soldOutDishes({ ...openCous, sold: { chick: 99 } }, 'cous'), ['chick']);
+
+  /* בלי רשומת יום אין מה לחסום */
+  assert.deepEqual(soldOutDishes(null, 'cous'), []);
+
+  /* ⚠ מזהים בלבד · אין בתשובה שום מספר */
+  for (const id of soldOutDishes(openCous, 'cous')) assert.equal(typeof id, 'string');
 });

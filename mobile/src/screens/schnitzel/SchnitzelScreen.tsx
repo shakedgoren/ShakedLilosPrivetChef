@@ -38,6 +38,7 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { FONT_BUMP, headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
+import { SCHN_BOX_IDS, SCHN_UNIT_IDS, SOLD_OUT, useSoldOut, syncStock } from '../../order/stock';
 import { ToppingsSheet } from './ToppingsSheet';
 import { Gift, PlatterFamily, PlatterSingles } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
@@ -62,6 +63,16 @@ export function SchnitzelScreen() {
   /* רוחב הכרטיס נמדד · הנוסחה בקנבס היא (100% − רווח) ÷ 2 */
   const [gridW, setGridW] = useState(0);
   const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
+  /* ⚠ חסימת מלאי · ראו `order/stock.ts` · ההגנה עצמה בשרת */
+  const gone = useSoldOut('schn');
+  /**
+   * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
+   * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
+   * ובדיוק בדקות האלה מנה יכולה להיגמר.
+   */
+  React.useEffect(() => {
+    void syncStock().catch(() => undefined);
+  }, []);
   /* `meals` נדרש למינימום המשלוח · מארז נחשב חמש מנות */
   const f = useFulfillment({ ...SCHNITZEL_FULFILLMENT, meals: o.meals });
   /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
@@ -151,15 +162,23 @@ export function SchnitzelScreen() {
             <Text style={s.sectionTitle}>{PICK_TYPE_LABEL}</Text>
             {/* שתי עמודות · תמונה מלמעלה, בדיוק כמו בקנבס */}
             <View style={s.grid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
-              {SCHNITZEL_TYPES.map((t, k) => (
+              {SCHNITZEL_TYPES.map((t, k) => {
+                /* ⚠ המנה אזלה · ראו `order/stock.ts` */
+                const out = gone.has(SCHN_UNIT_IDS[k]);
+                return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
-                  <Pressable onPress={() => o.openAdd(k)} style={[s.typeCard, { width: typeCardW }]}>
+                  <Pressable
+                    onPress={() => o.openAdd(k)}
+                    disabled={out}
+                    style={[s.typeCard, { width: typeCardW }, out && s.cardOut]}
+                  >
                     <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
                     <Text style={s.typeName}>{t.name}</Text>
-                    <Text style={s.typePrice}>{t.unit} ₪</Text>
+                    <Text style={out ? s.typeGone : s.typePrice}>{out ? SOLD_OUT : `${t.unit} ₪`}</Text>
                   </Pressable>
                 </StepIn>
-              ))}
+                );
+              })}
             </View>
           </>
         ) : (
@@ -188,15 +207,22 @@ export function SchnitzelScreen() {
             {/* בחירת מארז · אותו כרטיס בדיוק של ״בחר סוג חלה״ */}
             <Text style={s.sectionTitle}>{PICK_BOX_LABEL}</Text>
             <View style={s.grid}>
-              {SCHNITZEL_TYPES.map((t, k) => (
+              {SCHNITZEL_TYPES.map((t, k) => {
+                const out = gone.has(SCHN_BOX_IDS[k]);
+                return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
-                  <Pressable onPress={() => o.openBox(k)} style={[s.typeCard, { width: typeCardW }]}>
+                  <Pressable
+                    onPress={() => o.openBox(k)}
+                    disabled={out}
+                    style={[s.typeCard, { width: typeCardW }, out && s.cardOut]}
+                  >
                     <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
                     <Text style={s.typeName}>{t.name}</Text>
-                    <Text style={s.typePrice}>{t.box} ₪</Text>
+                    <Text style={out ? s.typeGone : s.typePrice}>{out ? SOLD_OUT : `${t.box} ₪`}</Text>
                   </Pressable>
                 </StepIn>
-              ))}
+                );
+              })}
             </View>
           </>
         )}
@@ -392,6 +418,9 @@ const s = StyleSheet.create({
    * (ראו `typeCard`), המחירים נוחתים על אותו קו בדיוק.
    */
   typePrice: { marginTop: 'auto', fontSize: 13, fontWeight: '700', color: ACCENT.deep },
+  /* ⚠ מנה שאזלה · אפורה, ולחיצה עליה אינה עושה דבר */
+  cardOut: { opacity: 0.45 },
+  typeGone: { marginTop: 'auto', fontSize: 12.5, fontWeight: '600', color: '#8A8194' },
 
   /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(1) },

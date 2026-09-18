@@ -14,6 +14,7 @@ import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
+import { COUS_IDS, SOLD_OUT, useSoldOut, syncStock } from '../../order/stock';
 import { COUSCOUS_PHOTOS } from '../../data/photos';
 import {
   ADDONS_LABEL,
@@ -60,6 +61,21 @@ export function CouscousScreen() {
   };
 
   /* המנות והתוספות מוצגות בנפרד · בקנבס אלה שני בלוקים שונים */
+  /**
+   * ⚠ **חסימת מלאי · 18 בספטמבר 2026** · בקשה של שקד: ״במידה ואין
+   * במלאי, את הדבר הזה חוסם את האופציה להזמנה בצד לקוח — מסמן
+   * באפור וכותב ׳נגמר המלאי׳״. ההגנה עצמה כבר בשרת; כאן ההודעה
+   * מגיעה **לפני** שממלאים הזמנה שלמה.
+   */
+  const gone = useSoldOut('cous');
+  /**
+   * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
+   * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
+   * ובדיוק בדקות האלה מנה יכולה להיגמר.
+   */
+  React.useEffect(() => {
+    void syncStock().catch(() => undefined);
+  }, []);
   const meals = COUSCOUS_MENU.map((it, i) => ({ it, i })).filter((x) => x.it.meal);
   const addons = COUSCOUS_MENU.map((it, i) => ({ it, i })).filter((x) => !x.it.meal);
   const addonW = gridW
@@ -77,35 +93,58 @@ export function CouscousScreen() {
         <Text style={s.intro}>{COUSCOUS_INTRO}</Text>
 
         {/* המנות · שורה עם תמונה 58×58 */}
-        {meals.map(({ it, i }, k) => (
-          <StepIn key={it.name} index={k} style={s.row}>
-            <Photo name={COUSCOUS_PHOTOS[i]} rgb={ACCENT.rgb} style={s.shot} />
-            <View style={s.rowText}>
-              <Text style={s.name}>{it.name}</Text>
-              <Text style={s.price}>{it.price} ₪</Text>
-            </View>
-            <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
-          </StepIn>
-        ))}
+        {meals.map(({ it, i }, k) => {
+          /* ⚠ המנה אזלה · ראו `order/stock.ts` */
+          const out = gone.has(COUS_IDS[i]);
+          return (
+            <StepIn key={it.name} index={k} style={s.row}>
+              <Photo
+                name={COUSCOUS_PHOTOS[i]}
+                rgb={ACCENT.rgb}
+                style={out ? [s.shot, s.fade] : s.shot}
+              />
+              <View style={s.rowText}>
+                <Text style={[s.name, out && s.inkOut]}>{it.name}</Text>
+                <Text style={[s.price, out && s.inkOut]}>{it.price} ₪</Text>
+              </View>
+              {out ? (
+                <Text style={s.gone}>{SOLD_OUT}</Text>
+              ) : (
+                <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
+              )}
+            </StepIn>
+          );
+        })}
 
         <Text style={s.pickle}>{PICKLE_NOTE}</Text>
         <Text style={s.addonsLabel}>{ADDONS_LABEL}</Text>
 
         {/* התוספות · שלוש עמודות בלי תמונה, כמו בקנבס */}
         <View style={s.addonGrid} onLayout={(e) => setGridW(e.nativeEvent.layout.width)}>
-          {addons.map(({ it, i }, k) => (
+          {addons.map(({ it, i }, k) => {
+            const out = gone.has(COUS_IDS[i]);
+            return (
             <StepIn key={it.name} index={meals.length + k} style={[s.addon, { width: addonW }]}>
               {/* התמונה יושבת בתוך הכרטיס מעל השם · שקד ביקשה, אין כזו בקנבס */}
               <Photo
                 name={COUSCOUS_PHOTOS[i]}
                 rgb={ACCENT.rgb}
-                style={[s.addonShot, { width: addonShotSize, height: addonShotSize }]}
+                style={
+                  out
+                    ? [s.addonShot, { width: addonShotSize, height: addonShotSize }, s.fade]
+                    : [s.addonShot, { width: addonShotSize, height: addonShotSize }]
+                }
               />
-              <Text style={s.addonName}>{it.name}</Text>
-              <Text style={s.addonPrice}>{it.price} ₪</Text>
-              <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
+              <Text style={[s.addonName, out && s.inkOut]}>{it.name}</Text>
+              <Text style={[s.addonPrice, out && s.inkOut]}>{it.price} ₪</Text>
+              {out ? (
+                <Text style={s.gone}>{SOLD_OUT}</Text>
+              ) : (
+                <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
+              )}
             </StepIn>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -222,6 +261,17 @@ const s = StyleSheet.create({
   /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(1) },
   list: { paddingBottom: space.lg, gap: LIST_GAP },
+  /**
+   * ⚠ **מנה שאזלה · אפורה ובלי סטפר** · ראו `useSoldOut`.
+   *
+   * ⚠ **לא `opacity` על השורה · נמדד ב-18 בספטמבר 2026** · שקפות
+   * על `StepIn` פשוט **לא נראית**: הוא מנפיש `opacity` משלו ומצרף
+   * אותה **אחרי** הסגנון שהוא מקבל, ולכן היא דורסת אותו. הצילום
+   * והכיתוב מעומעמים ישירות, והם לא עוברים דרכו.
+   */
+  fade: { opacity: 0.4 },
+  inkOut: { color: surface.faint },
+  gone: { fontSize: 12.5, fontWeight: '600', color: surface.muted, textAlign: 'center' },
   row: {
     height: DISH_ROW.height,
     flexDirection: 'row',
