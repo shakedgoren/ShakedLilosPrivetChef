@@ -28,14 +28,36 @@ import { SCREEN_COMPONENTS } from './routes';
 const Stack = createNativeStackNavigator();
 
 /**
+ * המסכים שמותר להם להסתובב עם המכשיר.
+ *
+ * ⚠ **בקשה של שקד · 18 בספטמבר 2026** · ״בצד הניהולי ביום מכירה
+ * שלא תהיה תצוגת אייפון יותר, שיהיה פשוט רק בדף הזה ספציפי אופציה
+ * להפוך את המסך אם אני הופכת את הטלפון״.
+ *
+ * ⚠ **רק הלוח** · כל שאר האפליקציה נשארת זקופה דרך
+ * `screenOptions`. `app.json` פתוח עכשיו ל-`default` כי iOS חותך
+ * את מה שמסך מבקש מול מה שה-`Info.plist` מתיר — בלי זה הבקשה של
+ * המסך פשוט לא הייתה נענית.
+ */
+const ROTATES: readonly string[] = ['adminBoard'];
+
+/**
  * ⚠ **מסך אחד לכל שם, מראש** · המסלולים אינם נבנים דינמית בזמן
  * ריצה; `SCREENS` הוא המקור, וכך שם שמתווסף שם מקבל מסלול מעצמו.
  */
 export function RootNavigator() {
   return (
-    <Stack.Navigator initialRouteName="guest" screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      initialRouteName="guest"
+      screenOptions={{ headerShown: false, orientation: 'portrait' }}
+    >
       {SCREENS.map((name) => (
-        <Stack.Screen key={name} name={name} component={SCREEN_COMPONENTS[name]} />
+        <Stack.Screen
+          key={name}
+          name={name}
+          component={SCREEN_COMPONENTS[name]}
+          options={ROTATES.includes(name) ? { orientation: 'all' } : undefined}
+        />
       ))}
     </Stack.Navigator>
   );

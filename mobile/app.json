@@ -4,7 +4,8 @@
     "slug": "mobile",
     "scheme": "bitetell",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "_orientationNote": "⚠ היה portrait · נפתח ל-default ב-18.9.2026 כדי שלוח יום המכירה יוכל להסתובב עם המכשיר. כל שאר המסכים ננעלים לזקוף ב-RootNavigator — iOS חותך את בקשת המסך מול מה שה-Info.plist מתיר, ולכן הפתיחה כאן הכרחית.",
+  "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
@@ -16,7 +17,8 @@
           "he"
         ]
       },
-      "bundleIdentifier": "com.shakedliloz.mobile"
+      "bundleIdentifier": "com.shakedliloz.mobile",
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {

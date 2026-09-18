@@ -39,13 +39,6 @@ import { FONT_BUMP } from '../theme/fontScale';
 
 /** ריפוד המסך */
 const ROOT_PAD = 14;
-/**
- * כיוון הסיבוב של תצוגת הטלפון.
- * ⚠ **התהפך ב-18 בספטמבר 2026** · היה ‎'90deg', ושקד ביקשה ״תסובב
- * את הטבלה לכיוון השני״. עכשיו קוראים אותה כשמסובבים את המכשיר
- * **עם כיוון השעון**.
- */
-const TURN_ANGLE = '-90deg';
 /** כל כמה זמן הלוח שואל את השרת מחדש · ראו ההערה ב-`reload` */
 const REFRESH_MS = 20000;
 /** הריפוד מעל הכותרת · מתווסף לאזור הבטוח */
@@ -62,17 +55,6 @@ const TOTAL_LABEL = 'סה״כ';
 const dishQuota = (cat: string, id: string) =>
   CATS[cat as keyof typeof CATS]?.dishes.find((d) => d.id === id)?.q ?? 0;
 
-
-/**
- * ⚠ **מתג התצוגה** · בקשה של שקד — הלוח תוכנן לאייפד (1180×820),
- * והיא רוצה לעבור בין תצוגת אייפד לתצוגת טלפון בלחיצה.
- * בתצוגת טלפון הטבלה מצטמצמת לעמודות שנכנסות למסך צר.
- */
-const VIEWS = [
-  { id: 'pad', label: 'תצוגת אייפד' },
-  { id: 'phone', label: 'תצוגת טלפון' },
-] as const;
-type ViewId = (typeof VIEWS)[number]['id'];
 
 type Row = {
   id?: string;
@@ -112,8 +94,6 @@ export function AdminBoardScreen() {
   const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
     START_MODE as 'all' | 'pickup' | 'deliv',
   );
-  /* ברירת המחדל נגזרת מרוחב החלון · באייפד פותחים בתצוגת אייפד */
-  const [view, setView] = useState<ViewId>('pad');
   const [orders, setOrders] = useState<Row[]>(() =>
     BOARD_SEED.map((o) => ({ ...o, q: { ...o.q }, hrs: o.hrs })),
   );
@@ -255,35 +235,20 @@ export function AdminBoardScreen() {
   });
 
   /**
-   * ⚠ הרוחבים · בתצוגת אייפד בדיוק אלה של הקנבס, ובתצוגת טלפון
-   * מצטמצמים כדי שהשורה תיכנס במסך צר בלי גלילה אינסופית.
-   */
-  /**
-   * ⚠ **טבלה רחבה במסך צר** · הלוח תוכנן לאייפד (1180 רוחב), ובאייפון
-   * עמודות הכמויות, הסכום והסטטוס נשארו מחוץ למסך. שקד הציעה
-   * ״שהטבלה תהיה מוצגת במצב שוכב״.
+   * ⚠ **הסיבוב הוא של המכשיר · 18 בספטמבר 2026** · בקשה של שקד:
+   * ״שלא תהיה תצוגת אייפון יותר, שיהיה פשוט רק בדף הזה ספציפי
+   * אופציה להפוך את המסך אם אני הופכת את הטלפון״.
    *
-   * שתי הדרכים פתוחות עכשיו:
-   * · **מסובבים את המכשיר** · מרוחב 700 ומעלה הטבלה המלאה של
-   *   הקנבס נכנסת, ותצוגת הטלפון עוברת אליה מעצמה.
-   * · **מחזיקים זקוף** · כל הזמנה הופכת לכרטיס משלה, בלי גלילה
-   *   לרוחב בכלל. טבלה מסובבת ב-90 מעלות הייתה מאלצת לקרוא
-   *   בצוואר מוטה, ולכן לא עשיתי את זה.
+   * ירדו כאן שני דברים שהיו קודם: **מתג ״תצוגת אייפד / תצוגת
+   * טלפון״**, ו**הסיבוב המדומה** של העמוד כולו ב-90 מעלות. במקומם
+   * המסך הזה — ורק הוא — מורשה להסתובב עם המכשיר, דרך
+   * `orientation: 'all'` ב-`RootNavigator`. iOS מסובב, והפריסה
+   * כאן עוקבת אחרי הרוחב שמתקבל.
+   *
+   * ⚠ **700 הוא הסף** · מעליו נכנסת הטבלה המלאה של הקנבס. אייפון
+   * שוכב הוא כ-850 ומעלה, אייפון זקוף כ-400.
    */
   const landscape = width >= 700;
-  const pad = view === 'pad' || landscape;
-  /**
-   * האם להציג את הטבלה שוכבת.
-   *
-   * ⚠ **החליף את ההקטנה · 18 בספטמבר 2026** · שקד: ״שינית את
-   * התצוגה של האייפד, הקטנת אותה ולא ביקשתי את זה. בתצוגת טלפון
-   * אני לא רוצה שזה יהיה מותאם לרוחב של הטלפון — תציג לי את
-   * הטבלה לרוחב כאילו הטלפון שוכב, מבלי שאני אשכיב אותו״.
-   *
-   * לכן ההקטנה ירדה לגמרי: **תצוגת האייפד חזרה לגודלה המלא**
-   * (וגולשת לצדדים כמו קודם), ותצוגת הטלפון מסובבת ב-90 מעלות.
-   */
-  const turn = view === 'phone' && !landscape;
   /**
    * ⚠ **רוחבי הקנבס הצטמצמו** · בקנבס העמודות הן 92/220/68/96/104/206
    * (1126 מתוך ארטבורד 1180), ושקד ביקשה (15 בספטמבר 2026) לצמצם
@@ -291,13 +256,23 @@ export function AdminBoardScreen() {
    * כל עמודה ירדה לרוחב שהתוכן שלה באמת דורש: שעה 11:40, שם מלא,
    * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
    */
-  const w = pad
+  const w = landscape
     ? { time: 54, who: 92, item: 50, sum: 62, pay: 62, status: 146 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
-  const body = (
-    <View style={[s.root, turn ? s.rootTurned : { paddingTop: insets.top + ROOT_TOP }]}>
+  return (
+    <View
+      style={[
+        s.root,
+        {
+          paddingTop: insets.top + ROOT_TOP,
+          /* ⚠ שוכב · המגרעת ופס הבית עוברים לצדדים */
+          paddingLeft: ROOT_PAD + insets.left,
+          paddingRight: ROOT_PAD + insets.right,
+        },
+      ]}
+    >
       {/* ⚠ **הכותרת בשורת החץ** · שקד ביקשה (15 בספטמבר 2026) להסיר
           את הרווח שהיה מעל הכותרת בכל מסכי הניהול. הכותרת ממורכזת
           וחץ החזרה מרחף בפינה הימנית, והפקדים יורדים לשורה שמתחת —
@@ -316,18 +291,6 @@ export function AdminBoardScreen() {
       </View>
 
       <View style={s.tools}>
-        {/* ⚠ מתג התצוגה · בקשה של שקד, אינו בקנבס */}
-        <View style={s.views}>
-          {VIEWS.map((v) => {
-            const on = view === v.id;
-            return (
-              <Pressable key={v.id} onPress={() => setView(v.id)} style={[s.viewBtn, on && s.viewOn]}>
-                <Text style={[s.viewText, on && s.viewTextOn]}>{v.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
         {/* ⚠ **בורר מפולח** · שקד שלחה צילום מסך: מיכל אפור אחד
             שמחזיק את שלושת הטאבים, הנבחר הוא גלולה לבנה עם צל,
             ולכל אחד תג מספר עגול משלו. קודם היו כאן שלוש גלולות
@@ -349,7 +312,7 @@ export function AdminBoardScreen() {
         {gone > 0 ? <Text style={s.gone}>{`${BOARD_GONE} ${gone}`}</Text> : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={pad} style={s.stock}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={landscape} style={s.stock}>
         {stock.map((it) => {
           /* ⚠ שלושת המצבים של הקנבס · אזל, מתחת לסף, ורגיל */
           const outOf = it.left <= 0;
@@ -530,52 +493,11 @@ export function AdminBoardScreen() {
       ) : null}
     </View>
   );
-
-  if (!turn) return body;
-  /**
-   * ⚠ **העמוד כולו מסתובב, לא רק הטבלה · 18 בספטמבר 2026** · בקשה
-   * של שקד: ״גם העמוד כולו צריך להיות באותה התצורה של הטבלה
-   * ולהיות מותאם לגודל של מסך של אייפון 16 plus״.
-   *
-   * ⚠ **התיבה מוזמנת כבר בממדים המוחלפים** · `transform` אינו משנה
-   * פריסה, ולכן רוחב התיבה הוא **גובה המסך** וגובהה הוא **רוחבו**;
-   * אחרי הסיבוב היא יושבת בדיוק על המסך. המידות מגיעות מהחלון
-   * עצמו, ולכן זה נכון לכל אייפון ולא רק ל-16 Plus.
-   *
-   * ⚠ **האפליקציה נעולה לאורך** · ה-`Info.plist` מתיר באייפון רק
-   * `Portrait`, ולכן אי אפשר להישען על סיבוב מערכת. זו בדיוק
-   * הסיבה שהסיבוב נעשה כאן.
-   *
-   * ⚠ **ריפוד בצדדים במקום אזור בטוח** · אחרי הסיבוב המגרעת ופס
-   * הבית יושבים על **הצדדים** של התוכן, ולא מעליו ומתחתיו, ולכן
-   * הריפוד העליון הרגיל אינו רלוונטי כאן.
-   */
-  return (
-    <View style={s.stage}>
-      <View
-        style={[
-          s.turned,
-          {
-            width: height,
-            height: width,
-            left: (width - height) / 2,
-            top: (height - width) / 2,
-            paddingHorizontal: Math.max(insets.top, insets.bottom, 12),
-          },
-        ]}
-      >
-        {body}
-      </View>
-    </View>
-  );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: ROOT_PAD, gap: 8, backgroundColor: surface.ground },
-  /* ⚠ בעמוד מסובב אין ״למעלה״ בטוח · ראו ההערה ליד `s.turned` */
-  rootTurned: { paddingTop: ROOT_TOP },
-  stage: { flex: 1, backgroundColor: surface.ground, overflow: 'hidden' },
-  turned: { position: 'absolute', transform: [{ rotate: TURN_ANGLE }] },
+  /* ⚠ הריפוד האופקי נקבע בהרכבה · מוסיף את האזור הבטוח כששוכבים */
+  root: { flex: 1, gap: 8, backgroundColor: surface.ground },
   /* ⚠ חותך את מה שגולש אחרי ההקטנה · ראו ההערה ליד הטבלה */
   fitBox: { flex: 1, overflow: 'hidden' },
   tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
@@ -707,20 +629,6 @@ const s = StyleSheet.create({
   stepOff: { backgroundColor: 'rgba(255,255,255,0.72)' },
   cancelBox: { borderColor: 'rgba(185,83,73,0.32)' },
 
-  /* מתג התצוגה · אינו בקנבס, בקשה של שקד */
-  views: { flexDirection: 'row', gap: 4 },
-  viewBtn: {
-    height: 28,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(130,112,162,0.22)',
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewOn: { backgroundColor: '#C6B3EC', borderColor: '#C6B3EC' },
-
   /* ── כרטיס הזמנה · תצוגת טלפון זקוף ── */
   cardPad: { gap: 9, paddingBottom: 120 },
   oCard: { borderRadius: 16, borderWidth: 1.5, padding: 11, gap: 9 },
@@ -764,8 +672,6 @@ const s = StyleSheet.create({
   },
   oTotalK: { flex: 1, fontSize: 15, fontWeight: '600', color: surface.inkSoft },
   oTotalV: { fontSize: 17, fontWeight: '700', color: surface.ink },
-  viewText: { fontSize: 12.5, fontWeight: '600', color: '#6E6478' },
-  viewTextOn: { color: '#43307A' },
   x: { fontSize: 18.5, color: '#B95349', paddingHorizontal: 4 },
   foot: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: 'rgba(130,112,162,0.16)' },
   /* שורת הסיכום · אותו רוחב תא בדיוק, כדי שהמספר יישב מתחת לעמודה */
