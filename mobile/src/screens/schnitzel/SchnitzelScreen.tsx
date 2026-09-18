@@ -35,7 +35,7 @@ import {
 import { FulfillmentFlow } from '../../order/FulfillmentFlow';
 import { useFulfillment } from '../../order/useFulfillment';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
-import { headRoom } from '../../theme/fontScale';
+import { FONT_BUMP, headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { ToppingsSheet } from './ToppingsSheet';
@@ -316,9 +316,25 @@ const s = StyleSheet.create({
   giftText: { flex: 1, fontSize: 14.5, fontWeight: '600', lineHeight: 20, color: ACCENT.deep },
 
   /* שתי עמודות · תמונה מלמעלה · משותפת לחלות, לצורות ולמארזים */
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: TYPE_CARD.gridGap },
+  /**
+   * ⚠ **`stretch` במפורש · 18 בספטמבר 2026** · זו ברירת המחדל של
+   * יוגה, אבל כאן היא **נושאת משמעות**: היא זו שמיישרת את שתי
+   * הכרטיסיות שבשורה לגובה הגבוהה שבהן. ראו `typeCard`.
+   */
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'stretch',
+    gap: TYPE_CARD.gridGap,
+  },
   formCard: {
-    height: FORM_CARD.height,
+    /**
+     * ⚠ **`minHeight` ולא `height` · 18 בספטמבר 2026** · גובה קבוע
+     * גובר על המתיחה של השורה, וגם חותך את הכיתוב מרגע שהכתב גדל
+     * ב-`FONT_BUMP`. עם מינימום הכרטיס נושם ושתי הצורות יוצאות
+     * באותו גובה.
+     */
+    minHeight: FORM_CARD.height,
     borderRadius: FORM_CARD.radius,
     padding: FORM_CARD.padding,
     gap: FORM_CARD.gap,
@@ -332,8 +348,26 @@ const s = StyleSheet.create({
   pickOff: { backgroundColor: 'rgba(255,255,255,0.7)', borderColor: 'rgba(130,112,162,0.16)' },
   pickedText: { color: ACCENT.deep, fontWeight: '600' },
   typeCard: {
+    /**
+     * ⚠ **ממלא את המשבצת · 18 בספטמבר 2026** · בקשה של שקד:
+     * ״הכרטיסיות של השניצלים גם בבודד וגם במארזים צריכות להיות
+     * באותו הגודל״.
+     *
+     * הסיבה: `StepIn` (המעטפת שמנפישה את הכניסה) כן נמתחה לגובה
+     * השורה, אבל הכרטיס **שבתוכה** הצטמצם לגובה התוכן שלו. שם מנה
+     * שנשבר לשתי שורות האריך כרטיס אחד והשאיר את השני נמוך.
+     * `flex: 1` ממלא את המעטפת, ולכן כל כרטיסי השורה שווים.
+     */
+    flex: 1,
     borderRadius: TYPE_CARD.radius,
     paddingVertical: TYPE_CARD.padV,
+    /**
+     * ⚠ **רווח נוסף מתחת · בקשה של שקד (18 בספטמבר 2026)** ·
+     * ״להוסיף מעט רווח כי הגדלנו את הכתב וזה נחתך מלמטה״. הריפוד
+     * מהקנבס נקבע לכתב המקורי; התוספת מחזירה בדיוק את מה שהגדלת
+     * הכתב בלעה, ותישאר נכונה גם בשינוי הבא.
+     */
+    paddingBottom: TYPE_CARD.padV + FONT_BUMP,
     paddingHorizontal: TYPE_CARD.padH,
     gap: TYPE_CARD.gap,
     alignItems: 'center',
