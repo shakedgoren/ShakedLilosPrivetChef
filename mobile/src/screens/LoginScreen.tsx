@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { INPUT_START } from '../theme/rtl';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, space, surface } from '../theme/tokens';
 import { useNav } from '../navigation/store';
@@ -162,6 +170,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [step, setStep] = useState<Step>(mode === 'up' ? 'up1' : 'in');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  /* ⚠ למה הגדרת זיהוי הפנים נכשלה · null = אין מה להגיד */
+  const [faceHelp, setFaceHelp] = useState<'settings' | 'failed' | null>(null);
   const [showPass, setShowPass] = useState(false);
 
   const [phone, setPhone] = useState('');
@@ -304,9 +314,25 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         setStep('in');
         return;
       }
-      await enrollFace(session.token);
-      signIn(session);
+      const res = await enrollFace(session.token);
+      if (res.ok) {
+        signIn(session);
+        return;
+      }
+      /**
+       * ⚠ **נשארים על החלונית · 18 בספטמבר 2026** · קודם המסך
+       * התעלם מהתשובה ונכנס הביתה בכל מקרה, ולכן שקד דיווחה
+       * ש״לוחצים כן וזה פשוט מעביר לדף הבית״. עכשיו היא רואה מה
+       * קרה ויכולה לנסות שוב או להיכנס בלי זיהוי פנים.
+       */
+      pending.current = session;
+      setFaceHelp(res.why === 'cancel' ? null : res.why);
     });
+  };
+
+  /** פתיחת הגדרות המכשיר · שם מפעילים את זיהוי הפנים לאפליקציה */
+  const openSettings = () => {
+    void Linking.openSettings().catch(() => undefined);
   };
 
   const onSendCode = () =>
@@ -391,6 +417,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           <S k="clock" size={17} color="#6E6480" />
           <Text style={s.ghostText}>{T.faceNo}</Text>
         </Pressable>
+        {/* ⚠ **למה זה לא עבד** · ראו ההערה ב-`onArm`. הנוסחים
+            נכתבו על ידי Claude · ראו `loginCopy`. */}
+        {faceHelp ? (
+          <>
+            <Text style={s.faceHelp}>
+              {faceHelp === 'settings' ? T.faceBlocked : T.faceFailed}
+            </Text>
+            {faceHelp === 'settings' ? (
+              <Pressable onPress={openSettings} style={s.askGhost}>
+                <Text style={s.faceLink}>{T.faceSettings}</Text>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
       </View>
     );
   } else if (step === 'up1') {
@@ -775,4 +815,12 @@ const s = StyleSheet.create({
   linkStrong: { fontSize: 12.5, fontWeight: '700', color: '#5E5470', paddingVertical: 4 },
   link: { fontSize: 12.5, color: '#8A8194', textAlign: 'center', paddingVertical: 8 },
   err: { fontSize: 13, color: '#B95349', textAlign: 'center', marginTop: 10 },
+  faceHelp: {
+    fontSize: 13,
+    color: '#B95349',
+    textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 12,
+  },
+  faceLink: { fontSize: 14, fontWeight: '600', color: '#7C5CC4' },
 });

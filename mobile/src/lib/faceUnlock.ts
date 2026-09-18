@@ -76,18 +76,70 @@ export async function armFace(token: string): Promise<boolean> {
  * ⚠ **כישלון אינו חוסם כניסה** · היא כבר הוכיחה מי היא עם הסיסמה.
  * זיהוי הפנים הוא קיצור דרך לפעם הבאה, לא תנאי.
  */
-export async function enrollFace(token: string): Promise<boolean> {
-  if (!NATIVE || !token) return false;
+export type EnrollResult =
+  /** נסרקה ונשמרה */
+  | { ok: true }
+  /** נסגר על ידי המשתמשת · אין מה להגיד לה */
+  | { ok: false; why: 'cancel' }
+  /** המערכת סירבה · הפתרון נמצא בהגדרות ולא באפליקציה */
+  | { ok: false; why: 'settings' }
+  /** נכשל סתם · אפשר לנסות שוב */
+  | { ok: false; why: 'failed' };
+
+/**
+ * ⚠ **קודי השגיאה של iOS** · `authenticateAsync` מחזיר מחרוזת.
+ * אלה שמצריכים את **ההגדרות של המכשיר** ולא ניסיון נוסף:
+ * · `not_enrolled` — אין פנים רשומות במכשיר בכלל.
+ * · `not_available` / `not_supported` — אין חיישן, או שהרשאת
+ *   Face ID לאפליקציה **נדחתה**. אחרי דחייה iOS לא שואל שוב,
+ *   והחלונית לא נפתחת יותר — בדיוק ״לוחצת כן ולא קורה כלום״.
+ * · `passcode_not_set` — בלי קוד מכשיר אין ביומטריה.
+ * · `lockout` / `user_lockout` — יותר מדי כישלונות.
+ */
+const SETTINGS_ERRORS = new Set([
+  'not_enrolled',
+  'not_available',
+  'not_supported',
+  'passcode_not_set',
+  'lockout',
+  'user_lockout',
+]);
+
+const CANCEL_ERRORS = new Set(['user_cancel', 'app_cancel', 'system_cancel']);
+
+/**
+ * הגדרת הכניסה בזיהוי פנים · **סורקת פעם אחת ורק אז שומרת**.
+ *
+ * ⚠ **נוסף ב-18 בספטמבר 2026** · שקד דיווחה: ״כשלוחצים על ׳כן׳
+ * בזיהוי פנים זה לא מעביר להגדיר את הזיהוי פנים, זה מעביר לדף
+ * הבית״. ״כן, להגדיר״ קרא ל-`armFace`, שרק כותב את האסימון
+ * לכספת. שום חלונית של המערכת לא נפתחה.
+ *
+ * ⚠ **הסיבה שהיא דיווחה שוב · 18 בספטמבר 2026** · החלונית אמנם
+ * נפתחת (נמדד בסימולטור אייפון 17 Pro — צילום מסך עם ״Face ID״),
+ * אבל **הכישלון היה נבלע**: המסך התעלם מהתשובה ונכנס הביתה בכל
+ * מקרה. מבחינתה לחיצה על ״כן״ פשוט העבירה לדף הבית. לכן הפונקציה
+ * מחזירה עכשיו **סיבה** ולא כן/לא, והמסך אומר לה מה קרה.
+ *
+ * ⚠ **`disableDeviceFallback`** · בהגדרה חייבים את **הפנים**. עם
+ * נפילה לקוד המכשיר אפשר היה להפעיל זיהוי פנים בלי לסרוק פנים
+ * אפילו פעם אחת.
+ */
+export async function enrollFace(token: string): Promise<EnrollResult> {
+  if (!NATIVE || !token) return { ok: false, why: 'settings' };
   try {
     const res = await LocalAuthentication.authenticateAsync({
       promptMessage: LOGIN_COPY.facePrompt,
       cancelLabel: LOGIN_COPY.close,
       disableDeviceFallback: true,
     });
-    if (!res.success) return false;
-    return await armFace(token);
+    if (res.success) return (await armFace(token)) ? { ok: true } : { ok: false, why: 'failed' };
+    const code = 'error' in res ? String(res.error) : '';
+    if (CANCEL_ERRORS.has(code)) return { ok: false, why: 'cancel' };
+    if (SETTINGS_ERRORS.has(code)) return { ok: false, why: 'settings' };
+    return { ok: false, why: 'failed' };
   } catch {
-    return false;
+    return { ok: false, why: 'failed' };
   }
 }
 
