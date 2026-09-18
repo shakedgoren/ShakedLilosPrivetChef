@@ -44,6 +44,13 @@ export function BackButton({ onPress, tint, ink = INK, rgb = GLASS_RGB }: Props)
       onPress={onPress}
       style={[s.back, { backgroundColor: tint, boxShadow: iconOrbShadow(rgb) }]}
       hitSlop={10}
+      accessibilityRole="button"
+      /**
+       * ⚠ **כיתוב לקורא מסך · אינו נראה על המסך** · הכפתור הוא
+       * אייקון בלבד, ולכן VoiceOver היה מקריא אותו כ״כפתור״ ותו לא.
+       * ⚠ המילה ״חזרה״ נכתבה על ידי Claude · אינה מהקנבס.
+       */
+      accessibilityLabel="חזרה"
     >
       <S k="chevronRight" size={GLYPH} color={ink} />
     </Pressable>

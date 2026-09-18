@@ -90,7 +90,14 @@ export function Sheet({ title, sub, onClose, children, style, centerTitle = fals
             <Text style={[s.title, centerTitle && s.titleCenter]}>{title}</Text>
             {sub ? <Text style={s.sub}>{sub}</Text> : null}
           </View>
-          <Pressable onPress={onClose} style={s.close} hitSlop={8}>
+          <Pressable
+            onPress={onClose}
+            style={s.close}
+            hitSlop={8}
+            accessibilityRole="button"
+            /* ⚠ ״סגירה״ · המילה שלה מ-`loginCopy`, לא המצאה */
+            accessibilityLabel="סגירה"
+          >
             <S k="close" size={13} color="#6E6478" />
           </Pressable>
         </View>

@@ -321,6 +321,13 @@ function NavBar() {
           go(t.key);
         }}
         style={s.tab}
+        /**
+         * ⚠ **תפקיד ומצב לקורא מסך** · הכיתוב נקרא ממילא, אבל בלי
+         * אלה VoiceOver אינו יודע שזו **לשונית** ואינו מכריז איזו
+         * מהן נבחרה. אין כאן טקסט חדש.
+         */
+        accessibilityRole="tab"
+        accessibilityState={{ selected: on }}
       >
         {/* הכרית · מאחורי האייקון והכיתוב, לא מסביב ללשונית כולה */}
         {on ? <Animated.View style={[s.cushion, { opacity: flat }]} /> : null}

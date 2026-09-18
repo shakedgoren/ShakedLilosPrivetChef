@@ -51,7 +51,14 @@ export function AdminNav() {
   const tabs = TABS.map(({ key, label, sym }) => {
     const on = screen === key;
     return (
-      <Pressable key={key} onPress={() => go(key)} style={[s.tab, on && s.tabOn]}>
+      <Pressable
+        key={key}
+        onPress={() => go(key)}
+        style={[s.tab, on && s.tabOn]}
+        /* ⚠ תפקיד ומצב · ראו `BottomNav` · אין כאן טקסט חדש */
+        accessibilityRole="tab"
+        accessibilityState={{ selected: on }}
+      >
         {/* ⚠ עובי הקו משתנה עם המצב · 2 בפעילה ו-1.7 בשאר, כמו בקנבס */}
         <S k={sym} size={ICON} color={on ? ON : INDIGO_70} />
         {/* ⚠ שורה אחת · ״ימי מכירה״ היא הארוכה, והיא קובעת */}
