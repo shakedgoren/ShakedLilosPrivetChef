@@ -9,6 +9,7 @@ import {
   type DayCatKey,
   type DayRecord,
 } from '../../../mobile/src/data/adminDays.ts';
+import { notifySaleOpen } from '../push/saleOpen.ts';
 import { hebrewDayLabel, soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CANCELLED } from '../catalog/status.ts';
@@ -160,12 +161,27 @@ adminDaysRouter.put('/:date', async (req, res, next) => {
     const wasteJson =
       body.waste !== undefined ? JSON.stringify(body.waste) : (existing?.wasteJson ?? '{}');
 
+    const wasOpen = existing?.open ?? false;
     const row = await prisma.saleDay.upsert({
       where: { date },
       create: { date, blocked, sale, exceptCat, open, quotasJson, wasteJson },
       update: { blocked, sale, exceptCat, open, quotasJson, wasteJson },
     });
     const cat = row.blocked ? row.exceptCat : row.sale;
+
+    /**
+     * ⚠ **ההתראה יוצאת כאן · 18 בספטמבר 2026** · ברגע שהיום עובר
+     * מסגור לפתוח, ולא לפני. ראו `notifySaleOpen`.
+     *
+     * ⚠ **רק במעבר, לא בכל שמירה** · בלי `wasOpen` כל עדכון מכסה
+     * ביום פתוח היה שולח התראה נוספת לכל מי שביקשה תזכורת.
+     *
+     * ⚠ **בלי `await`** · פתיחת היום לא תמתין לשירות דחיפה חיצוני,
+     * ולא תיכשל בגללו.
+     */
+    if (!wasOpen && row.open && cat) {
+      void notifySaleOpen(prisma, cat, date).catch(() => undefined);
+    }
     const sold = await soldForDate(date, cat);
     res.json({ date, rec: serialize(row, sold) });
   } catch (err) {

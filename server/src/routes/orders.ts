@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { isExpoToken } from '../push/expo.ts';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { optionalAuth, requireAuth } from '../auth/middleware.ts';
@@ -227,6 +228,32 @@ ordersRouter.get('/notifications', requireAuth, async (req, res, next) => {
       if (problem === null) out.push({ category: rem.category, date });
     }
     res.json({ notifications: out });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * רישום אסימון הדחיפה של המכשיר.
+ *
+ * ⚠ **נוסף ב-18 בספטמבר 2026** · ראו `push/saleOpen.ts`. נשלח
+ * מהאפליקציה אחרי כניסה, ומעודכן בכל כניסה — אסימון של Expo יכול
+ * להתחלף, ומכשיר שהוחלף בעלים צריך לעבור לחשבון החדש.
+ *
+ * ⚠ **`upsert` על האסימון ולא על המשתמשת** · לאותה לקוחה יכולים
+ * להיות כמה מכשירים, ולאותו מכשיר יכולה להתחלף הבעלים.
+ */
+ordersRouter.post('/push-token', requireAuth, async (req, res, next) => {
+  try {
+    const token = String(req.body?.token ?? '').trim();
+    const platform = String(req.body?.platform ?? '').slice(0, 20);
+    if (!isExpoToken(token)) throw badRequest('invalid_order', 'token');
+    await prisma.pushToken.upsert({
+      where: { token },
+      create: { token, platform, userId: req.user!.id },
+      update: { platform, userId: req.user!.id },
+    });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

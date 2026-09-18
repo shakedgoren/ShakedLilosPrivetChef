@@ -43,6 +43,7 @@ import { AdminBoardScreen } from './src/admin/AdminBoardScreen';
 import { AdminExpensesScreen } from './src/admin/AdminExpensesScreen';
 import { AdminIncomeScreen } from './src/admin/AdminIncomeScreen';
 import { AdminNav } from './src/admin/AdminNav';
+import { registerForPush } from './src/lib/push';
 import { enableRTL } from './src/theme/rtl';
 import { surface } from './src/theme/tokens';
 import type { CategoryKey } from './src/theme/tokens';
@@ -220,7 +221,17 @@ export default function App() {
  * במסך הפעיל. ראו `NO_TOP_INSET`.
  */
 function Shell() {
-  const { screen } = useNav();
+  const { screen, loggedIn } = useNav();
+  /**
+   * ⚠ **רישום להתראות · 18 בספטמבר 2026** · ברגע שיש לקוחה מחוברת,
+   * ולא לפני: השרת שומר את האסימון לפי משתמשת, ולאורחת אין למי
+   * לשייך אותו. רץ גם בפתיחת האפליקציה כשהכניסה כבר שמורה, כי
+   * אסימון Expo יכול להתחלף. ראו `lib/push.ts`.
+   */
+  React.useEffect(() => {
+    if (!loggedIn) return;
+    void registerForPush();
+  }, [loggedIn]);
   const insets = useSafeAreaInsets();
   const noTop = NO_TOP_INSET(screen);
   const topEdges = noTop ? EDGES_NONE : EDGES_TOP;

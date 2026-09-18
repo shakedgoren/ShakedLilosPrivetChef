@@ -28,9 +28,30 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orders    Order[]
-  resets    PasswordReset[]
-  reminders SaleReminder[]
+  orders     Order[]
+  resets     PasswordReset[]
+  reminders  SaleReminder[]
+  pushTokens PushToken[]
+}
+
+/// אסימון דחיפה של מכשיר · לשליחת התראה אמיתית לטלפון.
+///
+/// ⚠ **נוסף ב-18 בספטמבר 2026** · עד כה התזכורת הייתה **בתוך
+/// האפליקציה** בלבד (החלטה של שקד מ-15 בספטמבר), והיא ביקשה
+/// במפורש להוסיף התראה אמיתית: ״ברור שלהיכנס לזה זה חובה״.
+///
+/// ⚠ **אסימון למכשיר, לא למשתמשת** · לאותה לקוחה יכולים להיות כמה
+/// מכשירים, ולכן המפתח הייחודי הוא האסימון עצמו. אותו מכשיר שמתחבר
+/// עם חשבון אחר פשוט עובר בעלים.
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// אסימון Expo · "ExponentPushToken[...]"
+  token     String   @unique
+  platform  String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 /// בקשת תזכורת לפתיחת יום מכירה.

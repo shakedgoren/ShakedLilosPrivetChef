@@ -88,3 +88,10 @@ export const adminCreateOrder = (body: {
   rolls?: { type: string; tops: string[] }[];
   saleDate?: string;
 }) => api<{ order: Order; card: AdminCard }>('/admin/orders', { body });
+
+/**
+ * רישום אסימון הדחיפה של המכשיר.
+ * ⚠ ראו `lib/push.ts` · השרת שומר אותו לפי אסימון ולא לפי משתמשת.
+ */
+export const registerPushToken = (token: string, platform: string) =>
+  api<{ ok: true }>('/orders/push-token', { body: { token, platform } });
