@@ -170,6 +170,8 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
    * אותו ערך, ואז ה-callback של הישנה התעורר וניקה את מצב החדשה.
    * המונה מזהה ״מי קרא לי״, וההנפשה הישנה נעצרת מיד.
    */
+  /** היכן המגע הנוכחי התחיל · ראו `onStartShouldSetPanResponderCapture` */
+  const startX = React.useRef(0);
   const settle = React.useRef<Animated.CompositeAnimation | null>(null);
   const gesture = React.useRef(0);
 
@@ -205,8 +207,15 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
   const pan = React.useMemo(
     () =>
       PanResponder.create({
-        /* ⚠ תמיד false · אחרת שום לחיצה באפליקציה לא הייתה עוברת */
-        onStartShouldSetPanResponderCapture: () => false,
+        /**
+         * ⚠ **תמיד false · אבל לא חסר תועלת** · אחרת שום לחיצה
+         * באפליקציה לא הייתה עוברת. מה שכן נעשה כאן הוא **לזכור
+         * היכן המגע התחיל**, וזה כל התיקון · ראו למטה.
+         */
+        onStartShouldSetPanResponderCapture: (e) => {
+          startX.current = e.nativeEvent.pageX;
+          return false;
+        },
         /**
          * ⚠ **`Capture` ולא הרגיל** · ברגע שילד — `ScrollView`,
          * `Pressable` — תפס את ה-responder, ההורה כבר לא נשאל
@@ -218,9 +227,41 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
          */
         onMoveShouldSetPanResponderCapture: (e, g) => {
           const { canBack: able, reduce: still } = live.current;
-          if (!able || still) return false;
+          /**
+           * ⚠ **״תנועה מופחתת״ אינה מבטלת את המחווה · 18 בספטמבר
+           * 2026** · כאן ישב גם `|| still`, כלומר כשהמכשיר מדווח
+           * ״תנועה מופחתת״ **מחוות החזרה נעלמה לגמרי**.
+           *
+           * ההגדרה מבקשת פחות הנפשה **מעטרת**, לא ביטול של דרך
+           * ניווט. מסך שרץ אחרי האצבע הוא הזזה ישירה ולא קישוט,
+           * ובאפל עצמה המחווה נשארת גם כשההגדרה דלוקה.
+           *
+           * ⚠ `reduce` **נשאר** משפיע על ההנפשות המתוזמנות · שם
+           * הבקשה לגיטימית, וראו ה-`useEffect` למטה.
+           */
+          if (!able) return false;
+          void still;
           const w = Dimensions.get('window').width;
-          const fromEdge = e.nativeEvent.pageX >= w - EDGE || g.x0 >= w - EDGE;
+          /**
+           * ⚠ **נקודת ההתחלה שלנו, לא של `gestureState` · נמדד
+           * ב-18 בספטמבר 2026** · כאן היה `g.x0`, והוא **תמיד 0**.
+           *
+           * `PanResponder` ממלא את `x0` רק כשהוא באמת נעשה
+           * ה-responder דרך שלב ה-**התחלה**. כאן שלב ההתחלה מחזיר
+           * תמיד `false` (אחרת אף לחיצה לא הייתה עוברת), ולכן
+           * `x0` נשאר אפס — ובדיקת הקצה נשענה למעשה **רק** על
+           * `pageX` של הרגע הזה.
+           *
+           * המשמעות: המחווה עבדה רק אם האצבע עדיין בתוך 44 הנקודות
+           * מהקצה **בדיוק בתזוזה שבה חצתה את סף ה-10 נקודות**.
+           * החלקה מהירה — כלומר בדיוק מה שעושים באמת — יצאה מהרצועה
+           * קודם, והמחווה פשוט לא קרתה. נמדד: `x0=0`, `pageX=100`,
+           * `dx=-286` — כל התנאים התקיימו חוץ מהקצה, והמסך לא זז.
+           *
+           * עכשיו נקודת ההתחלה נשמרת בשלב ההתחלה (ראו למעלה)
+           * ואינה תלויה במשא ומתן על ה-responder.
+           */
+          const fromEdge = startX.current >= w - EDGE;
           return fromEdge && g.dx < -SLOP && Math.abs(g.dx) > Math.abs(g.dy);
         },
         onPanResponderGrant: () => {
