@@ -256,9 +256,34 @@ export function AdminBoardScreen() {
    * כל עמודה ירדה לרוחב שהתוכן שלה באמת דורש: שעה 11:40, שם מלא,
    * ספרה או שתיים בכל פריט, סכום עד ארבע ספרות, ואמצעי תשלום.
    */
-  const w = landscape
+  const base = landscape
     ? { time: 54, who: 92, item: 50, sum: 62, pay: 62, status: 146 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
+  const baseW =
+    base.time + base.who + base.item * BOARD_CAT.items.length + base.sum + base.pay + base.status;
+
+  /**
+   * ⚠ **הטבלה נמתחת לרוחב המסך כששוכבים · 18 בספטמבר 2026** ·
+   * בקשה של שקד: ״זה מתהפך אבל זה לא על כל הדף״.
+   *
+   * הרוחבים נקבעו למינימום שהתוכן דורש (בקשה שלה מ-15 בספטמבר),
+   * וסכומם קטן מרוחב אייפון שוכב. התוצאה הייתה טבלה צמודה לימין
+   * ורצועה ריקה של כ-190 נקודות בשמאל — ״לא על כל הדף״.
+   *
+   * ⚠ **רק מותח, לעולם לא מכווץ** · כשהטבלה רחבה מהמסך (אייפון
+   * זקוף) המקדם נשאר 1 והגלילה לרוחב נשארת כפי שהייתה.
+   */
+  const inner = width - (ROOT_PAD + insets.left) - (ROOT_PAD + insets.right);
+  const grow = baseW < inner ? inner / baseW : 1;
+  const px = (n: number) => Math.floor(n * grow);
+  const w = {
+    time: px(base.time),
+    who: px(base.who),
+    item: px(base.item),
+    sum: px(base.sum),
+    pay: px(base.pay),
+    status: px(base.status),
+  };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
   return (
@@ -312,7 +337,16 @@ export function AdminBoardScreen() {
         {gone > 0 ? <Text style={s.gone}>{`${BOARD_GONE} ${gone}`}</Text> : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={landscape} style={s.stock}>
+      {/* ⚠ **ממורכז · בקשה של שקד (18 בספטמבר 2026)** · ״את
+          הקטגוריות למעלה מעל הטבלה צריך למרכז לאמצע״. `flexGrow`
+          על המכל הפנימי הוא מה שמאפשר למרכז ברצועה גוללת: בלעדיו
+          המכל מצטמצם לרוחב התוכן ואין מה למרכז בתוכו. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={landscape}
+        style={s.stock}
+        contentContainerStyle={s.stockRow}
+      >
         {stock.map((it) => {
           /* ⚠ שלושת המצבים של הקנבס · אזל, מתחת לסף, ורגיל */
           const outOf = it.left <= 0;
@@ -561,6 +595,7 @@ const s = StyleSheet.create({
    */
   gone: { fontSize: 14.5, fontWeight: '600', color: '#B95349', marginTop: 10 },
   stock: { flexGrow: 0 },
+  stockRow: { flexGrow: 1, justifyContent: 'center', alignItems: 'stretch' },
   /* ⚠ שתי שורות · הגובה נגזר מהתוכן ולא קבוע · ראו הכרית למעלה */
   stockChip: {
     marginEnd: 6,
@@ -570,9 +605,12 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(123,92,188,0.1)',
     justifyContent: 'center',
   },
-  stockName: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
-  stockForm: { fontSize: 12, fontWeight: '400', color: '#43307A' },
-  stockLeft: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
+  /* ⚠ **גובה שורה צמוד · בקשה של שקד (18 בספטמבר 2026)** · ״להוריד
+     את הרווח בין השם של המנה לבין הכמות״. ברירת המחדל של iOS היא
+     כ-1.4 מגודל הגופן, וזה מה שיצר את הרווח. */
+  stockName: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' },
+  stockForm: { fontSize: 12, lineHeight: 14, fontWeight: '400', color: '#43307A' },
+  stockLeft: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
   /**
    * ⚠ **ההגדלה הגלובלית מנוטרלת כאן · 17 בספטמבר 2026** · בקשה של
