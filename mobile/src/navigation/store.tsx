@@ -96,6 +96,54 @@ function initialScreen(): Screen {
  * ⚠ מחוץ לרכיב · אין לו תלות בשום מצב, והוא נקרא גם מהתחברות וגם
  * מהתנתקות.
  */
+/**
+ * שורשי הלשוניות · המסכים ששני הנאב-ברים מובילים אליהם.
+ *
+ * ⚠ **שלב 2ב׳ · 18 בספטמבר 2026** · לשונית **אינה דחיפה**. עד כה
+ * `go()` דחף כל יעד, גם לחיצה על לשונית, ולכן ״בית ← הזמנות ← אזור
+ * אישי ← בית״ בנה מחסנית באורך שלוש — וחזרה אחורה מהבית החזירה
+ * ל״אזור אישי״ במקום לצאת. אותו דבר בדיוק בנאב-בר של הניהול.
+ */
+const TAB_ROOTS: readonly Screen[] = [
+  'guest',
+  'main',
+  'orders',
+  'profile',
+  'admin',
+  'adminShopping',
+  'adminDays',
+  'adminOrders',
+  'adminMoney',
+];
+
+/**
+ * מעבר ללשונית.
+ *
+ * ⚠ **`popTo` לפני `reset`** · אם הלשונית כבר במחסנית — למשל דף
+ * הבית כשנמצאים בתוך קטגוריה — חוזרים **אל המסך הקיים** ולא בונים
+ * אותו מחדש. כך הוא שומר על מצבו, וזה גם מה ששקד ביקשה ב-17
+ * בספטמבר: ״כשאני חוזרת אחורה לדף הראשי, שהספיישל יהיה זה שבקטגוריה
+ * הראשית״.
+ *
+ * ⚠ **`reset` ולא `push` כשהיא אינה במחסנית** · לשונית היא **שורש**,
+ * לא שלב. בלי זה המחסנית גדלה בכל לחיצה.
+ */
+function goTab(to: Screen) {
+  if (!navReady()) return;
+  const routes = navigationRef.getRootState()?.routes ?? [];
+  const here = routes[routes.length - 1]?.name;
+  if (here === to) {
+    /* כבר שם · לחיצה חוזרת מחזירה לשורש, כמו בלשוניות של iOS */
+    if (routes.length > 1) navigationRef.dispatch(StackActions.popToTop());
+    return;
+  }
+  if (routes.some((r) => r.name === to)) {
+    navigationRef.dispatch(StackActions.popTo(to));
+    return;
+  }
+  navigationRef.reset({ index: 0, routes: [{ name: to }] });
+}
+
 function resetTo(name: Screen) {
   if (navReady()) navigationRef.reset({ index: 0, routes: [{ name }] });
 }
@@ -174,7 +222,13 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
   const go = useCallback((to: Screen, load?: Prefill) => {
     prefill.current = load ?? null;
     setLoginOverlay(false);
-    if (navReady()) navigationRef.dispatch(StackActions.push(to));
+    if (!navReady()) return;
+    /* ⚠ לשונית אינה דחיפה · ראו `goTab` */
+    if (TAB_ROOTS.includes(to)) {
+      goTab(to);
+      return;
+    }
+    navigationRef.dispatch(StackActions.push(to));
   }, []);
 
   const takePrefill = useCallback(() => {
