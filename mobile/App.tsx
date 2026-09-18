@@ -7,6 +7,7 @@ import { Text } from './src/ui/text';
  * `ignoresSafeArea(_:edges:)` — כלומר להתעלם מצד אחד ולא מכולם —
  * ולכן צריך את הגרסה עם `edges`. החבילה כלולה ב-Expo Go.
  */
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -191,6 +192,18 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
+    /**
+     * ⚠ **שורש המחוות · 18 בספטמבר 2026 · שלב 1 במעבר לניווט נייטיבי**
+     *
+     * `GestureHandlerRootView` מספק את ההקשר שכל מחווה של הספרייה
+     * מחפשת, ומאתחל את Fabric בעלייה. בלעדיו מחוות פשוט אינן עובדות,
+     * ובשקט — ולכן הוא חייב להיות **הרכיב החיצוני ביותר**.
+     *
+     * ⚠ **אין לזה שום השפעה נראית כרגע** · באפליקציה עדיין אין אף
+     * מחווה של הספרייה הזו; המחווה הקיימת היא `PanResponder` והיא
+     * ממשיכה לעבוד בדיוק כמו קודם. זו הנחת התשתית בלבד.
+     */
+    <GestureHandlerRootView style={s.gestureRoot}>
     <SafeAreaProvider>
       <NavProvider>
       <LightboxProvider>
@@ -213,6 +226,7 @@ export default function App() {
       </LightboxProvider>
       </NavProvider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -283,6 +297,8 @@ function Shell() {
 }
 
 const s = StyleSheet.create({
+  /* ⚠ שורש המחוות · ראו ההערה ב-`App` */
+  gestureRoot: { flex: 1 },
   root: { flex: 1, backgroundColor: surface.ground },
   /* ⚠ אטום · השטיפה שבתוכו היא שצובעת · ראו `Page` */
   page: { flex: 1 },
