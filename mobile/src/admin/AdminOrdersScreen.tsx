@@ -2,7 +2,8 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
-import { CANCELLED, HUES, ORDERS_SUBTITLE } from '../data/adminOrders';
+import { CANCELLED, HUES } from '../data/adminOrders';
+import { saleDateText } from '../data/calendar';
 import { AdminShell, KpiRow } from './ui/AdminShell';
 import { BOARD_LABEL } from '../data/adminOrders';
 import { useNav } from '../navigation/store';
@@ -82,7 +83,12 @@ export function AdminOrdersScreen() {
   return (
     <AdminShell
       title="הזמנות"
-      sub={ORDERS_SUBTITLE}
+      /**
+       * ⚠ **יום המכירה האמיתי · 19 בספטמבר 2026** · כאן ישב
+       * `ORDERS_SUBTITLE`, מחרוזת קבועה מהקנבס (״שלישי · 25
+       * באוגוסט״). הכותרת שיקרה על איזו מכירה מוצגת למטה.
+       */
+      sub={saleDateText(sale.date)}
       /* ⚠ **אייקונים ולא מילים** · בקשה של שקד (15 בספטמבר 2026):
          ״+״ להזמנה ידנית, ואייקון ימי המכירה ללוח. המילים נשארות
          כשמות הנגישות. שני עיגולים של 38 נכנסים בשורת הכותרת

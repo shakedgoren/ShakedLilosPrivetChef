@@ -338,7 +338,13 @@ export const BOARD_W = 1180;
 export const BOARD_H = 820;
 
 /* ── כותרות ── */
-export const BOARD_SUB = "שלישי · 25 באוגוסט · ניהול בזמן אמת";
+/**
+ * ⚠ **התאריך ירד מכאן · 19 בספטמבר 2026** · היה ״שלישי · 25
+ * באוגוסט · ניהול בזמן אמת״, מחרוזת קבועה מהקנבס שהוצגה בכותרת
+ * הלוח בלי קשר ליום המכירה האמיתי. התאריך מורכב עכשיו במסך
+ * מ-`saleDateText`, ונשאר כאן רק הזנב הקבוע.
+ */
+export const BOARD_SUB = "ניהול בזמן אמת";
 export const EMPTY_LABEL = "אין הזמנות בטאב הזה";
 export const TOTAL_LABEL = "סה״כ בטאב";
 export const GONE_PREFIX = "בוטלו";

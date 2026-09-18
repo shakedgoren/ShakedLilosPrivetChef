@@ -6,10 +6,12 @@ import { Text } from '../ui/text';
 import {
   BUSINESS_PHONE,
   PAYMENTS,
-  SALE_DATE,
   deliveryFee,
+  hasSaleDay,
   payLinkFor,
 } from '../data/shared';
+import { saleDateText } from '../data/calendar';
+import { upcomingSale } from '../data/saleWeek';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
@@ -91,7 +93,16 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
         city: f.city,
         address: f.addr,
         pay: p,
-        saleDate: SALE_DATE,
+        /**
+         * ⚠ **השרת קובע את יום המכירה · 19 בספטמבר 2026** · כאן
+         * נשלח `SALE_DATE`, מחרוזת בעברית שאינה תאריך ISO. השרת
+         * התעלם ממנה ופתר את החלון בעצמו, כך שבפועל היא לא הזיקה —
+         * אבל היא שיקרה על מה שנשלח.
+         *
+         * ⚠ **לא שולחים כלום במקום** · אם נשלח תאריך מפורש ושעון
+         * המכשיר סוטה, ההזמנה הייתה **נדחית**. בלי השדה השרת
+         * פותר את החלון הנוכחי וההזמנה נוחתת נכון.
+         */
         details,
       });
       f.pickPay(p);
@@ -125,7 +136,14 @@ export function FulfillmentFlow({ f, lines, total, accent, onHome, details }: Pr
               <PayStep busy={busy} err={err} onPay={onPay} accent={accent} due={total + deliveryFee(f.ship ?? '', f.city)} />
             )}
             {(f.step === STEP.done || f.step === STEP.confirm) && (
-              <ConfirmStep f={f} lines={lines} total={total} accent={accent} onHome={onHome} />
+              <ConfirmStep
+                f={f}
+                lines={lines}
+                total={total}
+                accent={accent}
+                onHome={onHome}
+                category={details?.category ?? ''}
+              />
             )}
           </ScrollView>
         </View>
@@ -429,12 +447,15 @@ function ConfirmStep({
   total,
   accent,
   onHome,
+  category,
 }: {
   f: Fulfillment;
   lines: OrderLine[];
   total: number;
   accent: Accent;
   onHome: () => void;
+  /** ⚠ רק כדי לדעת אם יש ״מועד״ להציג · ראו שורת המועד למטה */
+  category: string;
 }) {
   const fee = deliveryFee(f.ship ?? '', f.city);
 
@@ -481,7 +502,18 @@ function ConfirmStep({
         <Row k={f.isDelivery ? 'משלוח' : 'איסוף עצמי'} v={f.time ?? ''} />
         {f.isDelivery && <Row k="כתובת" v={`${f.addr}, ${f.city}`} />}
         <Row k="תשלום" v={f.pay ?? ''} />
-        <Row k="מועד" v={SALE_DATE} />
+        {/**
+          * ⚠ **יום המכירה האמיתי · 19 בספטמבר 2026** · כאן ישב
+          * `SALE_DATE`, מחרוזת קבועה מהקנבס (״שלישי · 25 באוגוסט״),
+          * ולכן **כל לקוחה** ראתה בסיכום ההזמנה את אותו תאריך —
+          * גם בהזמנת שניצל של שישי.
+          *
+          * ⚠ **רק לקטגוריות של יום מכירה** · בפירות, ספיישל ושף
+          * המועד נבחר בתוך הזרימה עצמה ואין ״יום מכירה״ לשלוף.
+          */}
+        {hasSaleDay(category) ? (
+          <Row k="מועד" v={saleDateText(upcomingSale(new Date()).date)} />
+        ) : null}
 
         {!f.isDelivery && <PickupMaps rgb={accent.rgb} ink={accent.deep} />}
       </View>

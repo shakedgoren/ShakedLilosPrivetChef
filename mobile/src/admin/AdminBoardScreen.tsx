@@ -5,7 +5,6 @@ import { Text, TextInput } from '../ui/text';
 import { surface } from '../theme/tokens';
 import {
   BAND as BOARD_BAND,
-  BOARD_SUB as BOARD_LIVE,
   CATS as BOARD_CATS,
   COL_W,
   EMPTY_LABEL as BOARD_EMPTY,
@@ -36,6 +35,8 @@ import type { CancelNote } from './useAdminOrders';
 import Svg, { Path } from 'react-native-svg';
 import { iconOrbShadow } from '../theme/glass';
 import { FONT_BUMP } from '../theme/fontScale';
+import { saleDateText } from '../data/calendar';
+import { BOARD_SUB } from '../data/adminBoard';
 
 /** ריפוד המסך */
 const ROOT_PAD = 14;
@@ -86,7 +87,9 @@ export function AdminBoardScreen() {
    * ⚠ **הקטגוריה נגזרת מהשעון · תוקן ב-17 בספטמבר 2026** · ראו
    * `boardCat`. נקבע פעם אחת בכניסה למסך, כמו בשורת דף הבית.
    */
-  const saleCat = React.useMemo(() => upcomingSale(new Date()).cat, []);
+  const sale = React.useMemo(() => upcomingSale(new Date()), []);
+  const saleCat = sale.cat;
+  const saleDate = sale.date;
   /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
   const { toast } = useCheer();
   const BOARD_CAT = React.useMemo(() => boardCatOf(saleCat), [saleCat]);
@@ -306,7 +309,8 @@ export function AdminBoardScreen() {
       <View style={s.head}>
         <View style={s.headText}>
           <Text style={s.title}>{BOARD_CAT.name}</Text>
-          <Text style={s.sub}>{BOARD_LIVE}</Text>
+          {/* ⚠ יום המכירה האמיתי · ראו `saleDateText` */}
+          <Text style={s.sub}>{`${saleDateText(saleDate)} · ${BOARD_SUB}`}</Text>
         </View>
         <View style={s.backWrap}>
           <Pressable onPress={() => back()} style={s.back}>

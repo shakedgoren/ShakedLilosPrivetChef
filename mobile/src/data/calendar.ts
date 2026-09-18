@@ -19,6 +19,11 @@ export const MONTHS = [
 /** ראשי הימים · ראשון עד שבת, כמו בקנבס */
 export const DOWS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'] as const;
 
+/** שמות הימים המלאים · לכותרות ולסיכום ההזמנה */
+export const DOW_NAMES = [
+  'ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת',
+] as const;
+
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /** מפתח יום · `YYYY-MM-DD`, ולכן השוואת מחרוזות היא גם השוואת תאריכים */
@@ -33,6 +38,19 @@ const isBlocked = (k: string) => BLOCKED_RANGES.some(([from, to]) => k >= from &
 
 /** יום השבוע של מפתח · 0 ראשון … 5 שישי · 6 שבת */
 export const dowOf = (k: string) => new Date(`${k}T00:00:00`).getDay();
+
+/**
+ * ״שישי · 18 בספטמבר״ · הנוסח של הקנבס ליום מכירה.
+ *
+ * ⚠ **נוסף ב-19 בספטמבר 2026** · במקומו ישב `SALE_DATE`, מחרוזת
+ * קבועה מהקנבס — ״שלישי · 25 באוגוסט״ — שהוצגה **ללקוחה בסיכום
+ * ההזמנה** ובכותרות מסכי הניהול, בלי קשר ליום המכירה האמיתי.
+ */
+export function saleDateText(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return '';
+  return `${DOW_NAMES[dowOf(iso)]} · ${d} ב${MONTHS[m - 1]}`;
+}
 
 const FRIDAY = 5;
 const SATURDAY = 6;

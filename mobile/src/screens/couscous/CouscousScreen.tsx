@@ -9,7 +9,6 @@ import { BAR_BOTTOM_WITH_NAV } from '../../components/BottomNav';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { COUSCOUS_FULFILLMENT, COUSCOUS_MENU } from '../../data/couscous';
-import { SALE_DATE } from '../../data/shared';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
