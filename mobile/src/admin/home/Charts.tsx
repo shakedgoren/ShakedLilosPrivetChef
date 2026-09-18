@@ -322,10 +322,20 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
   );
 }
 
-/** עמודות הרווח · ששת החודשים, האחרונה מודגשת */
-export function ProfitBars() {
+/**
+ * עמודות הרווח · ששת החודשים, האחרונה מודגשת.
+ *
+ * ⚠ **`grow` · 18 בספטמבר 2026** · בקשה של שקד: ״תגדיל את שתי
+ * הדיאגרמות בתוכן״. הקואורדינטות של העמודות מחולצות מהקנבס ואי
+ * אפשר לגעת בהן, ולכן ההגדלה היא **מתיחה אנכית של מערכת הצירים**:
+ * גם תיבת התצוגה וגם כל ערכי ה-y מוכפלים באותו מספר, והעמודות
+ * יוצאות גבוהות יותר בלי לשנות את הרוחב — שממילא תפוס על ידי
+ * הכרטיס שלצידו.
+ */
+export function ProfitBars({ grow = 1 }: { grow?: number }) {
+  const h = 30 * grow;
   return (
-    <Svg width="100%" height={30} viewBox="0 0 148 30">
+    <Svg width="100%" height={h} viewBox={`0 0 148 ${h}`}>
       <Defs>
         <LinearGradient id="profbar" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0%" stopColor="#437C59" stopOpacity={0.95} />
@@ -336,9 +346,9 @@ export function ProfitBars() {
         <Rect
           key={b.x}
           x={b.x}
-          y={b.y}
+          y={b.y * grow}
           width={18}
-          height={b.h}
+          height={b.h * grow}
           rx={4}
           fill={i === PROFIT.bars.length - 1 ? '#437C59' : 'url(#profbar)'}
         />

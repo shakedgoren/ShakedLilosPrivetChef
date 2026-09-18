@@ -9,11 +9,11 @@ import {
   SALE_DATE,
   deliveryFee,
   payLinkFor,
-  shippingFeeFor,
 } from '../data/shared';
 import { PickupMaps } from '../components/PickupMaps';
 import { a, radius, space, surface, type } from '../theme/tokens';
 import { STEP, type Fulfillment } from './useFulfillment';
+import { ShipFeeNote } from './ShipFeeNote';
 import { hhmm, type Accent, type OrderLine } from './types';
 import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
@@ -41,8 +41,6 @@ const CHEV_INK = '#C1BBCB';
 const CHEV_STROKE = 2.4;
 
 /* דמי המשלוח · לתצוגה בלבד, החישוב ב-`deliveryFee` */
-const SHIP_NEAR = shippingFeeFor('יבנה');
-const SHIP_FAR = shippingFeeFor('אחר');
 
 /**
  * ⚠ **״אישור״ ולא ״להמשך״ · 16 בספטמבר 2026** · בקשה של שקד בשני
@@ -300,9 +298,7 @@ function AddressStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
 
       {/* ⚠ **המחירון כאן ולא בבחירת המסירה** · בקשה של שקד · ראו
           ההערה ב-`ShipStep`. הסכומים עצמם נמסרו על ידה. */}
-      <Text style={s.shipFee}>
-        דמי משלוח · {SHIP_NEAR} ₪ בתוך יבנה · {SHIP_FAR} ₪ מחוצה לה
-      </Text>
+      <ShipFeeNote />
 
       <ContinueButton
         onPress={f.addressNext}
@@ -534,13 +530,6 @@ const s = StyleSheet.create({
   optionTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   optionSub: { fontSize: type.label, color: surface.muted },
   /* ⚠ מחירון המשלוח · יושב מתחת לשדה הכתובת · ראו `AddressStep` */
-  shipFee: {
-    fontSize: 12.5,
-    fontWeight: '500',
-    color: surface.muted,
-    textAlign: 'center',
-    marginTop: -2,
-  },
   toast: { fontSize: type.label, color: '#B95349', textAlign: 'center' },
 
   hint: { fontSize: 11.5, color: surface.muted },

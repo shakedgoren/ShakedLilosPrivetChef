@@ -25,6 +25,7 @@ import { upcomingSale } from '../data/saleWeek';
 import { boardCatOf, prepOf, type BoardItem } from './boardCat';
 import { apiEnabled } from '../api/config';
 import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
+import { saleDayStatus } from '../api/orders';
 import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,8 +36,17 @@ import Svg, { Path } from 'react-native-svg';
 import { iconOrbShadow } from '../theme/glass';
 import { FONT_BUMP } from '../theme/fontScale';
 
-/** ריפוד המסך · נגרע מרוחב הטבלה כשמקטינים · ראו `fit` */
+/** ריפוד המסך */
 const ROOT_PAD = 14;
+/**
+ * כיוון הסיבוב של תצוגת הטלפון.
+ * ⚠ ‎90 מעלות · ראש הטבלה פונה לקצה הימני של המסך, ולכן קוראים
+ * אותה כשמסובבים את המכשיר **נגד כיוון השעון**. אם הכיוון הפוך
+ * ממה ששקד ציפתה — זה השינוי היחיד, ל-‎'-90deg'.
+ */
+const TURN_ANGLE = '90deg';
+/** כל כמה זמן הלוח שואל את השרת מחדש · ראו ההערה ב-`reload` */
+const REFRESH_MS = 20000;
 /** הריפוד מעל הכותרת · מתווסף לאזור הבטוח */
 const ROOT_TOP = 10;
 
@@ -111,9 +121,23 @@ export function AdminBoardScreen() {
   const [cancelling, setCancelling] = useState(-1);
   const [cx, setCx] = useState<CancelNote>({ reason: '', note: '' });
 
+  /**
+   * טעינת הלוח.
+   *
+   * ⚠ **התאריך היה מוקלד · תוקן ב-18 בספטמבר 2026** · שקד דיווחה:
+   * ״כשלקוחה מזמינה הזמנה במערכת זה לא מוצג לי אוטומטית בדף ניהול
+   * ההזמנות של יום המכירה, זה כן מוצג בהזמנות הראשיות״.
+   *
+   * זה לא היה באג בשרת אלא **תאריך קבוע בקוד**: הלוח ביקש תמיד את
+   * ההזמנות של ‎1 בספטמבר 2026. כל הזמנה שנכנסה ביום אחר פשוט לא
+   * הייתה בתשובה. עכשיו התאריך מגיע מיום המכירה של הקטגוריה —
+   * אותה נקודה שהלקוחה עצמה מוזמנת דרכה — ולכן השניים מסונכרנים
+   * מעצם ההגדרה.
+   */
   const reload = useCallback(async () => {
     if (!live) return;
-    const res = await adminBoard('2026-09-01');
+    const day = await saleDayStatus(saleCat).catch(() => null);
+    const res = await adminBoard(day?.date, saleCat);
     setOrders(
       res.cards.map((c) => ({
         id: c.id,
@@ -135,11 +159,23 @@ export function AdminBoardScreen() {
     );
     /* המכסות של היום · מזינות את מוני ההכנה בראש הלוח */
     setQuotas(res.quotas ?? {});
-  }, [live]);
+  }, [live, saleCat]);
 
+  /**
+   * ⚠ **רענון חוזר · 18 בספטמבר 2026** · הלוח נטען פעם אחת בכניסה
+   * אליו, ולכן הזמנה שנכנסה בזמן שהוא פתוח לא הופיעה עד שסוגרים
+   * ופותחים אותו. שקד ביקשה שזה יקרה **אוטומטית**.
+   *
+   * ⚠ **דגימה ולא חיבור פתוח** · לשרת אין היום ערוץ שדוחף שינויים
+   * (לא WebSocket ולא SSE). דגימה כל `REFRESH_MS` היא הקירוב
+   * הזול; חיבור פתוח הוא שינוי בשרת, ואפשר לעשות אותו בנפרד.
+   */
   useEffect(() => {
     void reload().catch(() => undefined);
-  }, [reload]);
+    if (!live) return;
+    const id = setInterval(() => void reload().catch(() => undefined), REFRESH_MS);
+    return () => clearInterval(id);
+  }, [reload, live]);
 
   const liveRows = orders.filter((o) => !o.gone);
   const shown = liveRows
@@ -227,8 +263,20 @@ export function AdminBoardScreen() {
    */
   const landscape = width >= 700;
   const pad = view === 'pad' || landscape;
-  /* גובה אזור הטבלה · נדרש כדי לפצות על ההקטנה · ראו `fit` */
-  const [fitH, setFitH] = useState(0);
+  /**
+   * האם להציג את הטבלה שוכבת.
+   *
+   * ⚠ **החליף את ההקטנה · 18 בספטמבר 2026** · שקד: ״שינית את
+   * התצוגה של האייפד, הקטנת אותה ולא ביקשתי את זה. בתצוגת טלפון
+   * אני לא רוצה שזה יהיה מותאם לרוחב של הטלפון — תציג לי את
+   * הטבלה לרוחב כאילו הטלפון שוכב, מבלי שאני אשכיב אותו״.
+   *
+   * לכן ההקטנה ירדה לגמרי: **תצוגת האייפד חזרה לגודלה המלא**
+   * (וגולשת לצדדים כמו קודם), ותצוגת הטלפון מסובבת ב-90 מעלות.
+   */
+  const turn = view === 'phone' && !landscape;
+  /* מידות אזור הטבלה · נדרשות כדי למרכז את התיבה המסובבת */
+  const [box, setBox] = useState({ w: 0, h: 0 });
   /**
    * ⚠ **רוחבי הקנבס הצטמצמו** · בקנבס העמודות הן 92/220/68/96/104/206
    * (1126 מתוך ארטבורד 1180), ושקד ביקשה (15 בספטמבר 2026) לצמצם
@@ -240,11 +288,6 @@ export function AdminBoardScreen() {
     ? { time: 54, who: 92, item: 50, sum: 62, pay: 62, status: 146 }
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
-  /**
-   * יחס ההקטנה · 1 באייפד, וקטן ממנו כשהטבלה רחבה מהמסך.
-   * ⚠ הריפוד של המסך (`root`) נגרע, אחרת הטבלה נוגעת בקצוות.
-   */
-  const fit = Math.min(1, (width - ROOT_PAD * 2) / tableW);
 
   return (
     <View style={[s.root, { paddingTop: insets.top + ROOT_TOP }]}>
@@ -317,7 +360,11 @@ export function AdminBoardScreen() {
               : 'rgba(255,255,255,0.9)';
           return (
           <View key={it.id} style={[s.stockChip, { backgroundColor: bg, borderColor: bd }]}>
-            <Text style={[s.stockText, { color: fg }]}>{`${it.sub} ${it.left} מתוך ${it.quota}`}</Text>
+            {/* ⚠ **שתי שורות · 18 בספטמבר 2026** · בקשה של שקד:
+                ״שהכרטיסייה שלהן תהיה שהמנה כתובה למעלה והמלאי כתוב
+                שורה מתחתיי״. המילים לא השתנו, רק הפריסה. */}
+            <Text style={[s.stockName, { color: fg }]} numberOfLines={1}>{it.sub}</Text>
+            <Text style={[s.stockLeft, { color: fg }]}>{`${it.left} מתוך ${it.quota}`}</Text>
           </View>
           );
         })}
@@ -334,17 +381,34 @@ export function AdminBoardScreen() {
         * מקבל גובה מחולק ביחס ההקטנה — אחרת הטבלה הייתה נגמרת
         * באמצע המסך ומתחתיה שטח ריק.
         */}
-      <View style={s.fitBox} onLayout={(e) => setFitH(e.nativeEvent.layout.height)}>
+      <View
+        style={s.fitBox}
+        onLayout={(e) =>
+          setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })
+        }
+      >
+        {/**
+          * ⚠ **תיבה מסובבת, לא טבלה מוקטנת** · `transform` אינו משנה
+          * פריסה, ולכן התיבה מוזמנת כבר בממדים **המוחלפים** — רוחב
+          * בגובה האזור וגובה ברוחבו — וממורכזת בתוכו. אחרי הסיבוב
+          * היא יושבת בדיוק על האזור.
+          *
+          * ⚠ **הגלילה מסתובבת איתה** · ריאקט-נייטיב מתרגם מגע דרך
+          * ה-transform, ולכן החלקה לאורך המסך גוללת את השורות —
+          * כלומר ״למעלה ולמטה״ מנקודת המבט של מי שמסובבת את המכשיר.
+          */}
         <View
           style={
-            fit === 1
-              ? undefined
-              : {
-                  width: tableW,
-                  height: fitH > 0 ? fitH / fit : undefined,
-                  transform: [{ scale: fit }],
-                  transformOrigin: 'top right',
+            turn && box.w > 0
+              ? {
+                  position: 'absolute',
+                  width: box.h,
+                  height: box.w,
+                  left: (box.w - box.h) / 2,
+                  top: (box.h - box.w) / 2,
+                  transform: [{ rotate: TURN_ANGLE }],
                 }
+              : undefined
           }
         >
       <ScrollView horizontal>
@@ -547,8 +611,17 @@ const s = StyleSheet.create({
    */
   gone: { fontSize: 14.5, fontWeight: '600', color: '#B95349', marginTop: 10 },
   stock: { flexGrow: 0 },
-  stockChip: { marginEnd: 6, height: 28, paddingHorizontal: 10, borderRadius: 10, backgroundColor: 'rgba(123,92,188,0.1)', justifyContent: 'center' },
-  stockText: { fontSize: 12.5, color: '#43307A' },
+  /* ⚠ שתי שורות · הגובה נגזר מהתוכן ולא קבוע · ראו הכרית למעלה */
+  stockChip: {
+    marginEnd: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(123,92,188,0.1)',
+    justifyContent: 'center',
+  },
+  stockName: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
+  stockLeft: { fontSize: 12.5, fontWeight: '400', color: '#43307A' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
   /**
    * ⚠ **ההגדלה הגלובלית מנוטרלת כאן · 17 בספטמבר 2026** · בקשה של

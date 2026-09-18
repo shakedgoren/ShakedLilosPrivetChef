@@ -7,10 +7,11 @@ import { DateCalendar } from '../../components/DateCalendar';
 import { TimeWheel } from '../../components/TimeWheel';
 import { ContinueButton } from '../../components/ContinueButton';
 import { FRUIT_CAL_HINT, fruitDateOpen } from '../../data/calendar';
-import { FRUIT_FULFILLMENT, FRUIT_SHIPPING } from '../../data/fruit';
+import { FRUIT_FULFILLMENT } from '../../data/fruit';
 import { shippingFee } from './whatsappOrder';
 import { hhmm, toMinutes } from '../../order/types';
 import { AddressField, type AddressValue } from '../../components/AddressField';
+import { ShipFeeNote } from '../../order/ShipFeeNote';
 import { inDeliveryZone } from '../../data/israelAddresses';
 import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { TILE_SHADOW } from '../../theme/glass';
@@ -209,14 +210,13 @@ export function FruitOrderSheet({ open, onClose, onSend }: Props) {
                 </View>
               </Pressable>
 
-              {/* דמי המשלוח · הועתקו אחד לאחד משלב הכתובת בקנבס */}
-              <View style={s.fees}>
-                <Fee label={FRUIT_SHIPPING.near.label} fee={FRUIT_SHIPPING.near.fee} />
-                <View style={s.feeRule} />
-                <Fee label={FRUIT_SHIPPING.far.label} fee={FRUIT_SHIPPING.far.fee} />
-                <View style={s.feeRule} />
-                <Text style={s.feeArea}>{FRUIT_SHIPPING.area}</Text>
-              </View>
+              {/**
+                * ⚠ **המחירון ירד מהתצוגה המקדימה · 18 בספטמבר 2026** ·
+                * שקד ביקשה ב-17 בספטמבר ״בתצוגה המקדימה של המשלוח
+                * שלא יציג את המחירים, שיציג אותם בתוך שלב הכתובת״.
+                * בספיישלים זה נעשה; כאן הגוש נשאר. עכשיו הוא יושב
+                * רק בחלונית הכתובת, בדיוק כמו שם.
+                */}
             </View>
 
             {/* ⚠ **בלי חץ וברוחב מינימלי** · שקד ביקשה (16 בספטמבר
@@ -319,14 +319,22 @@ function AddressPopup({
               />
             </View>
 
-            {/* אזור החלוקה · הנוסח והסכומים מהקנבס */}
-            <View style={s.fees}>
-              <Fee label={FRUIT_SHIPPING.near.label} fee={FRUIT_SHIPPING.near.fee} />
-              <View style={s.feeRule} />
-              <Fee label={FRUIT_SHIPPING.far.label} fee={FRUIT_SHIPPING.far.fee} />
-              <View style={s.feeRule} />
-              <Text style={s.feeArea}>{FRUIT_SHIPPING.area}</Text>
-            </View>
+            {/**
+              * ⚠ **אותה שורה של הספיישלים · 18 בספטמבר 2026** ·
+              * בקשה של שקד: ״תתאים את הכרטיסייה של כתובת למשלוח
+              * במגשי פירות שתראה בדיוק כמו הכתובת למשלוח בכל
+              * הספיישלים״.
+              *
+              * כאן ישב גוש של שלוש שורות עם קווים מפרידים (בתוך
+              * יבנה · באזור השפלה · אזור החלוקה), מהקנבס של מגשי
+              * הפירות. בספיישלים זו שורה אחת, ועכשיו זו **אותה
+              * שורה ממש** · ראו `ShipFeeNote`.
+              *
+              * ⚠ **שורת ״אזור החלוקה: מאשדוד ועד ראשון לציון״ ירדה
+              * מכאן** · היא לא קיימת בספיישלים, וההנחיה הייתה
+              * שהשניים ייראו זהים. אפשר להחזיר אותה לשניהם יחד.
+              */}
+            <ShipFeeNote />
 
             <ContinueButton onPress={onConfirm} accent={ACCENT} disabled={!ok} label="אישור" wide />
           </ScrollView>
@@ -335,13 +343,6 @@ function AddressPopup({
     </Modal>
   );
 }
-
-const Fee = ({ label, fee }: { label: string; fee: number }) => (
-  <View style={s.feeRow}>
-    <Text style={s.feeLabel}>{label}</Text>
-    <Text style={s.feeValue}>{fee} ₪</Text>
-  </View>
-);
 
 const s = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(42,36,48,0.34)', justifyContent: 'center', padding: space.lg },
@@ -441,25 +442,5 @@ const s = StyleSheet.create({
   addrField: { gap: 5 },
 
   /* לוח דמי המשלוח · פינה 18, ריפוד 13/15, כמו בקנבס */
-  fees: {
-    marginTop: 2,
-    borderRadius: 18,
-    paddingVertical: 13,
-    paddingHorizontal: 15,
-    backgroundColor: a(ACCENT.rgb, 0.07),
-    borderWidth: 1,
-    borderColor: a(ACCENT.rgb, 0.18),
-    gap: 7,
-  },
-  feeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  feeLabel: { flexGrow: 1, fontSize: 12.5, fontWeight: '400', color: '#6E6478' },
-  feeValue: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: ACCENT.hue,
-    fontVariant: ['tabular-nums'],
-  },
-  feeRule: { height: 1, backgroundColor: a(ACCENT.rgb, 0.16) },
-  feeArea: { fontSize: 11.5, fontWeight: '300', color: '#8A8194', lineHeight: 17.25 },
 
 });

@@ -1,0 +1,45 @@
+import React from 'react';
+import { StyleSheet } from 'react-native';
+import { Text } from '../ui/text';
+import { surface } from '../theme/tokens';
+import { shippingFeeFor } from '../data/shared';
+
+/**
+ * שורת דמי המשלוח · **אותה שורה בדיוק** בספיישלים ובמגשי הפירות.
+ *
+ * ⚠ **נוצרה ב-18 בספטמבר 2026** · בקשה של שקד: ״תתאים את הכרטיסייה
+ * של כתובת למשלוח במגשי פירות שתראה בדיוק כמו הכתובת למשלוח בכל
+ * הספיישלים. רק תעדכן בשניהם את השורה של דמי המשלוח״.
+ *
+ * עד כה היו **שני מחירונים על המסך**: בספיישלים שורה אחת, ובמגשי
+ * הפירות גוש של שלוש שורות עם קו מפריד. רכיב אחד מבטיח שהם לא
+ * יוכלו להיפרד שוב.
+ *
+ * ⚠ **הנוסח הוא שלה, מילה במילה** · ״דמי משלוח : 20 ש״ח בתוך יבנה
+ * ‎* 60 ש״ח באיזור השפלה״ — כולל הנקודתיים, הכוכבית ו״ש״ח״ במקום ₪.
+ *
+ * ⚠ **הסכומים אינם מוקלדים** · הם מגיעים מ-`shippingFeeFor`, שהוא
+ * המקור היחיד גם לחישוב בפועל. כך אי אפשר להגיע למצב שהכיתוב אומר
+ * דבר אחד והחיוב אומר אחר.
+ */
+
+const NEAR = shippingFeeFor('יבנה');
+const FAR = shippingFeeFor('אחר');
+
+export function ShipFeeNote() {
+  return (
+    <Text style={s.note}>
+      דמי משלוח : {NEAR} ש״ח בתוך יבנה * {FAR} ש״ח באיזור השפלה
+    </Text>
+  );
+}
+
+const s = StyleSheet.create({
+  note: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: surface.muted,
+    textAlign: 'center',
+    marginTop: -2,
+  },
+});

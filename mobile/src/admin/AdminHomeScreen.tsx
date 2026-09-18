@@ -32,6 +32,22 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
   hist: 'adminHistory',
 };
 
+/**
+ * גובה שני כרטיסי הדיאגרמות · **אחד לשניהם**.
+ *
+ * ⚠ **הוגדל · 18 בספטמבר 2026** · בקשה של שקד: ״תוסיף מעט גובה
+ * לכרטיסיות של דיאגרמת העוגה שמחלקת לפי קטגוריות ולרווח החודש
+ * ותגדיל את שתי הדיאגרמות בתוכן״. היה 176 בשניהם.
+ *
+ * ⚠ **מספר אחד ולא שניים** · הם עומדים זה לצד זה עם `flex: 1`;
+ * שני גבהים שונים היו מיישרים אותם לגבוה ומשאירים לנמוך שוליים.
+ */
+const CHART_CARD_H = 202;
+/** רוחב העוגה · היה 127, וההגדלה היא כל מה שהכרטיס הגבוה מרשה */
+const PIE_W = 148;
+/** מתיחת עמודות הרווח · ראו `ProfitBars` */
+const BARS_GROW = 1.55;
+
 /** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
 const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
 
@@ -198,7 +214,7 @@ export function AdminHomeScreen() {
             שורות ממורכזות — קוסקוס מעל ספיישל, שניצל מעל שף. */}
         <GlassCard style={[s.donutCard, s.tint4]}>
           <View style={s.pieWrap}>
-            <CategoryPie parts={home.shares} />
+            <CategoryPie parts={home.shares} width={PIE_W} />
           </View>
           <View style={s.legend}>
             {home.shares.map((l) => (
@@ -234,7 +250,7 @@ export function AdminHomeScreen() {
             </View>
           </View>
           <View style={s.spacer} />
-          <ProfitBars />
+          <ProfitBars grow={BARS_GROW} />
         </GlassCard>
       </View>
 
@@ -347,7 +363,7 @@ const s = StyleSheet.create({
   expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
-  donutCard: { flex: 1, height: 176, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
+  donutCard: { flex: 1, height: CHART_CARD_H, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
   pieWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   /**
    * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״
@@ -367,7 +383,7 @@ const s = StyleSheet.create({
 
   profitCard: {
     flex: 1,
-    height: 176,
+    height: CHART_CARD_H,
     borderRadius: 26,
     paddingTop: 14,
     paddingHorizontal: 16,

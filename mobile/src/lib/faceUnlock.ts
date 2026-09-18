@@ -60,6 +60,37 @@ export async function armFace(token: string): Promise<boolean> {
   }
 }
 
+/**
+ * הגדרת הכניסה בזיהוי פנים · **סורקת פעם אחת ורק אז שומרת**.
+ *
+ * ⚠ **נוסף ב-18 בספטמבר 2026** · שקד דיווחה: ״כשלוחצים על ׳כן׳
+ * בזיהוי פנים זה לא מעביר להגדיר את הזיהוי פנים, זה מעביר לדף
+ * הבית״. היא צודקת — ״כן, להגדיר״ קרא ל-`armFace`, שרק כותב את
+ * האסימון לכספת. שום חלונית של המערכת לא נפתחה, ולכן מבחינתה שום
+ * דבר לא ״הוגדר״.
+ *
+ * ⚠ **`disableDeviceFallback`** · בהגדרה חייבים את **הפנים**. עם
+ * נפילה לקוד המכשיר אפשר היה להפעיל זיהוי פנים בלי לסרוק פנים
+ * אפילו פעם אחת, וזה בדיוק מה שהיה.
+ *
+ * ⚠ **כישלון אינו חוסם כניסה** · היא כבר הוכיחה מי היא עם הסיסמה.
+ * זיהוי הפנים הוא קיצור דרך לפעם הבאה, לא תנאי.
+ */
+export async function enrollFace(token: string): Promise<boolean> {
+  if (!NATIVE || !token) return false;
+  try {
+    const res = await LocalAuthentication.authenticateAsync({
+      promptMessage: LOGIN_COPY.facePrompt,
+      cancelLabel: LOGIN_COPY.close,
+      disableDeviceFallback: true,
+    });
+    if (!res.success) return false;
+    return await armFace(token);
+  } catch {
+    return false;
+  }
+}
+
 /** ביטול · גם בהתנתקות, כדי שלא יישאר אסימון של מי שיצא */
 export async function disarmFace(): Promise<void> {
   if (!NATIVE) return;

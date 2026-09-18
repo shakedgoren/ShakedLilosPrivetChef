@@ -177,8 +177,17 @@ export const adminRevenue = (range: 'day' | 'week' | 'month' | 'half') =>
     { method: 'GET' },
   );
 
-export const adminBoard = (date?: string) => {
-  const q = date ? `?date=${date}&category=cous` : '?category=cous';
+/**
+ * לוח יום המכירה.
+ *
+ * ⚠ **הקטגוריה הייתה מקובעת ל-`cous` · תוקן ב-18 בספטמבר 2026** ·
+ * המסך כבר גוזר את הקטגוריה מיום המכירה הקרוב (ראו `boardCat`),
+ * אבל **הקריאה לשרת** עדיין ביקשה קוסקוס תמיד. בשבוע של שניצל
+ * הלוח הציג עמודות של שניצל ונתונים של קוסקוס.
+ */
+export const adminBoard = (date?: string, category = 'cous') => {
+  const c = `category=${encodeURIComponent(category)}`;
+  const q = date ? `?date=${encodeURIComponent(date)}&${c}` : `?${c}`;
   return api<{
     orders: Order[];
     cards: AdminCard[];

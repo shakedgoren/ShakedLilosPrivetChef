@@ -23,7 +23,7 @@ import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
 import { Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
 import { User } from '../icons';
-import { armFace, disarmFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
+import { disarmFace, enrollFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
 import { maskPhone, normalizePhone } from '../lib/phone';
 import { useGoogleIdToken } from '../lib/googleAuth';
 import { DISPLAY_FAMILY } from '../theme/fonts';
@@ -277,14 +277,37 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
     })();
   };
 
-  const onArm = (yes: boolean) =>
-    run(async () => {
-      const session = pending.current;
-      pending.current = null;
-      if (yes && session) await armFace(session.token);
+  /**
+   * ⚠ **שני מסלולים נפרדים · 18 בספטמבר 2026** · שקד דיווחה על
+   * שתי תקלות באותה חלונית.
+   *
+   * ״לא עכשיו״ — ״לא סוגר ומעביר לדף הבית במהירות הנדרשת״. הוא רץ
+   * דרך `run`, שמדליק ומכבה מצב עסוק ומוסיף שני רינדורים לפני
+   * שהמסך בכלל מתחיל לזוז. כאן אין מה להמתין לו: הכניסה כבר
+   * הצליחה, והאסימון כבר ביד. לכן הוא נכנס **מיד**, בלי עטיפה.
+   *
+   * ״כן, להגדיר״ — ״לא מעביר להגדיר את הזיהוי פנים, מעביר לדף
+   * הבית״. ראו `enrollFace`: עכשיו נפתחת חלונית הסריקה של המערכת,
+   * וההגדרה נשמרת רק אחרי שהפנים נסרקו.
+   */
+  const onArm = (yes: boolean) => {
+    const session = pending.current;
+    pending.current = null;
+    if (!yes) {
+      /* ⚠ בלי הפעלה · נכנסים מיד · ראו ההערה למעלה */
       if (session) signIn(session);
       else setStep('in');
+      return;
+    }
+    void run(async () => {
+      if (!session) {
+        setStep('in');
+        return;
+      }
+      await enrollFace(session.token);
+      signIn(session);
     });
+  };
 
   const onSendCode = () =>
     run(async () => {
