@@ -161,33 +161,52 @@ export function AdminOrderHistoryScreen() {
               </View>
 
               {on ? (
+                /**
+                 * ⚠ **שני ילדים קבועים, תמיד · 19 בספטמבר 2026** ·
+                 * לחיצה על תאריך הפילה את האפליקציה:
+                 * `NSInternalInconsistencyException · Attempt to
+                 * unmount a view which has a different index`, עם
+                 * ה״טוען…״ בהודעה.
+                 *
+                 * הסיבה: כאן ישבו **שלושה אחים מותנים** — רשימת
+                 * ההזמנות, כפתור ״עוד״ ושורת ״טוען…״. כשהתשובה
+                 * חוזרת, באותו רינדור אחד ה״טוען…״ יורד והשורות
+                 * עולות, וכל האחים מזיזים אינדקס. שכבת ההרכבה של
+                 * Fabric לא עומדת בזה וזורקת.
+                 *
+                 * ⚠ **התיקון הוא מבני ולא ויזואלי** · מספר הילדים
+                 * וסדרם קבועים: רשימה, ואחריה מגירה אחת שבתוכה
+                 * מתחלף התוכן. הרכבה ופירוק קורים רק באינדקס 0 של
+                 * מכל ייעודי, ואין למה להזיז אינדקס.
+                 */
                 <View style={s.detail}>
-                  {rows.map((c) => (
-                    <View key={c.id} style={s.line}>
-                      <Text style={s.time}>{c.time}</Text>
-                      <Text style={s.who} numberOfLines={1}>
-                        {c.who}
-                      </Text>
-                      <Text style={s.status} numberOfLines={1}>
-                        {c.status}
-                      </Text>
-                      <Text style={s.sum}>{`${nf(c.sum)} ₪`}</Text>
-                    </View>
-                  ))}
+                  <View>
+                    {rows.map((c) => (
+                      <View key={c.id} style={s.line}>
+                        <Text style={s.time}>{c.time}</Text>
+                        <Text style={s.who} numberOfLines={1}>
+                          {c.who}
+                        </Text>
+                        <Text style={s.status} numberOfLines={1}>
+                          {c.status}
+                        </Text>
+                        <Text style={s.sum}>{`${nf(c.sum)} ₪`}</Text>
+                      </View>
+                    ))}
+                  </View>
 
-                  {/* ⚠ העימוד · רק כשיש עוד · ראו `PAGE` */}
-                  {rows.length < total ? (
-                    <Pressable
-                      onPress={() => void load(day, rows.length)}
-                      disabled={busy}
-                      style={s.more}
-                    >
-                      <Text style={s.moreText}>
-                        {busy ? 'טוען…' : `עוד ${Math.min(PAGE, total - rows.length)}`}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                  {rows.length === 0 && busy ? <Text style={s.empty}>טוען…</Text> : null}
+                  {/* ⚠ המגירה · ״טוען…״, ״עוד N״, או כלום · ראו `PAGE` */}
+                  <View>
+                    {busy ? (
+                      <Text style={s.empty}>טוען…</Text>
+                    ) : rows.length < total ? (
+                      <Pressable onPress={() => void load(day, rows.length)} style={s.more}>
+                        <Text style={s.moreText}>
+                          {`עוד ${Math.min(PAGE, total - rows.length)}`}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                 </View>
               ) : null}
             </Pressable>

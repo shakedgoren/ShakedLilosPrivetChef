@@ -5,6 +5,7 @@ import { tokenStore } from '../api/storage';
 import type { PublicUser } from '../api/types';
 import { StackActions } from '@react-navigation/native';
 import { navReady, navigationRef } from './ref';
+import { ApiError } from '../api/types';
 
 /**
  * מעטפת הניווט · מקבילה ל-App.dc.html בקנבס: מסך אחד בכל רגע,
@@ -190,8 +191,22 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
         setLoggedIn(true);
         const home = meUser.role === 'admin' ? 'admin' : 'main';
         setScreen((cur) => (cur === 'guest' || cur === 'login' || cur === 'signup' ? home : cur));
-      } catch {
-        await tokenStore.clear();
+      } catch (e) {
+        /**
+         * ⚠ **רק אסימון פסול מנתק · 19 בספטמבר 2026** · קודם עמד
+         * כאן `catch` ריק שמחק את האסימון על **כל** תקלה, כולל
+         * ״אין חיבור לשרת״. נתקלנו בזה בפועל: האפליקציה עלתה
+         * מחדש בזמן שהשרת היה למטה לרגע, והמשתמשת נותקה לגמרי
+         * ונאלצה להתחבר שוב.
+         *
+         * ⚠ **בפרודקשן זה היה מנתק לקוחות** בכל הפסקה קטנה
+         * ברשת או בכל פריסה מחדש של השרת.
+         *
+         * 401 ו-403 הם ״האסימון כבר לא תקף״ — שם באמת צריך
+         * לנקות. כל השאר הוא תקלה זמנית, והאסימון נשאר.
+         */
+        const dead = e instanceof ApiError && (e.status === 401 || e.status === 403);
+        if (dead) await tokenStore.clear();
       }
     })();
     return () => {
