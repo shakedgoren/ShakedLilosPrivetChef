@@ -1,7 +1,16 @@
 import React from 'react';
 import { S } from '../../components/Sym';
 import { INPUT_START } from '../../theme/rtl';
-import { Modal, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { Text, TextInput } from '../../ui/text';
 import { DateCalendar } from '../../components/DateCalendar';
 import { TimeWheel } from '../../components/TimeWheel';
@@ -287,7 +296,18 @@ function AddressPopup({
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
-      <View style={[s.blurScrim, BLUR]}>
+      {/**
+        * ⚠ **התחמקות ממקלדת · 18 בספטמבר 2026** · בחלונית הזו מקלידים
+        * רחוב ומספר בית, והיא ממורכזת בגובה — כלומר המקלדת כיסתה את
+        * שדה מספר הבית ואת כפתור האישור.
+        *
+        * ⚠ `padding` ב-iOS · זו ההתנהגות הנכונה שם, וזה גם הדפוס
+        * שכבר קיים במסך ההתחברות ובחלוניות ההתחברות.
+        */}
+      <KeyboardAvoidingView
+        style={[s.blurScrim, BLUR]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={s.sheet}>
           <View style={s.head}>
             <Text style={s.title}>כתובת למשלוח</Text>
@@ -346,7 +366,7 @@ function AddressPopup({
             <ContinueButton onPress={onConfirm} accent={ACCENT} disabled={!ok} label="אישור" bare />
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
