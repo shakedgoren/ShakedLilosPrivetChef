@@ -172,3 +172,51 @@ test('מנות שאזלו · מזהים בלבד', () => {
   /* ⚠ מזהים בלבד · אין בתשובה שום מספר */
   for (const id of soldOutDishes(openCous, 'cous')) assert.equal(typeof id, 'string');
 });
+
+/**
+ * ⚠ **הבאג שדווח ב-18 בספטמבר 2026** · ״המכירה של השניצל סגורה
+ * אבל זה נותן להכניס הזמנות של שניצלים״. יום מכירה נשאר `open`
+ * במסד גם אחרי שהמכירה נגמרה, ולכן השרת המשיך לקבל הזמנות.
+ */
+test('יום מכירה שהחלון שלו עבר נסגר מעצמו', () => {
+  const day = { ...openCous, quotas: { veg: 50 }, sold: {}, waste: {} };
+
+  /* לפני שעת הסגירה · פתוח */
+  assert.equal(
+    evaluateCustomerSaleDay({
+      rec: day,
+      category: 'cous',
+      requested: { veg: 1 },
+      today: '2026-09-15',
+      hour: 17,
+    }),
+    null,
+  );
+
+  /* בשעת הסגירה ואחריה · נסגר */
+  for (const hour of [18, 21, 23]) {
+    assert.equal(
+      evaluateCustomerSaleDay({
+        rec: day,
+        category: 'cous',
+        requested: { veg: 1 },
+        today: '2026-09-15',
+        hour,
+      })?.code,
+      'day_closed',
+      `שעה ${hour}`,
+    );
+  }
+
+  /* ⚠ יום **אחר** שפתוח אינו נסגר בגלל השעה של היום */
+  assert.equal(
+    evaluateCustomerSaleDay({
+      rec: day,
+      category: 'cous',
+      requested: { veg: 1 },
+      today: '2026-09-14',
+      hour: 23,
+    }),
+    null,
+  );
+});

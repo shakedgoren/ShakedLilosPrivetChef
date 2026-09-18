@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import { CATS, impliedWeekdayRecord, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
-import { addDaysIso, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
+import { addDaysIso, SALE_SWITCH_HOUR, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
 import type { CustomerDetails } from '../catalog/quote.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { badRequest, conflict } from '../errors.ts';
@@ -61,12 +61,44 @@ export function evaluateCustomerSaleDay(opts: {
   category: string;
   requested: QtyMap;
   today: string;
+  /**
+   * השעה הנוכחית · רק כשהיום הנבדק הוא **היום עצמו**.
+   * ⚠ ברירת המחדל היא ״לפני הסגירה״, כדי שבדיקות קיימות שלא
+   * מעבירות שעה ימשיכו לבדוק את מה שהן נכתבו לבדוק.
+   */
+  hour?: number;
 }): SaleDayError | null {
   const { rec, category, requested, today } = opts;
   const saleCat = SALE_CATS.has(category);
 
   if (saleCat && rec && rec.date < today) {
     return { code: 'day_closed', message: 'היום הזה כבר עבר' };
+  }
+
+  /**
+   * ⚠ **מכירה שהסתיימה · 18 בספטמבר 2026** · שקד דיווחה: ״המכירה
+   * של השניצל סגורה אבל זה נותן להכניס הזמנות של שניצלים״.
+   *
+   * מה שקרה בפועל: יום מכירה **לא נסגר מעצמו לעולם**. יום שישי
+   * 18.9 נשאר `open: true` במסד גם בשעה 21:30, שעות אחרי שהמכירה
+   * נגמרה, ולכן השרת המשיך לקבל הזמנות שניצל. באפליקציה עצמה
+   * החלון כבר עבר: `upcomingSale` מחליף לקוסקוס ב-18:00, ודף
+   * הבית כבר הציג את המכירה הבאה. שני חלקים של אותה אפליקציה
+   * אמרו שני דברים סותרים.
+   *
+   * ⚠ **הסגירה הידנית שלך גוברת ולא מוחלפת** · זו רק רשת ביטחון
+   * ליום שנשאר פתוח בטעות.
+   *
+   * ⚠ **השעה היא שלך** · `SALE_SWITCH_HOUR` הוא אותו קבוע שמחליף
+   * את המכירה הקרובה באפליקציה, ולכן בחרתי בו — אבל אם ההזמנות
+   * צריכות להיסגר מוקדם או מאוחר יותר, זה **מספר אחד**
+   * ב-`mobile/src/data/saleWeek.ts`.
+   *
+   * ⚠ **לקוחות בלבד** · ההזמנה הידנית של מסך הניהול אינה עוברת
+   * כאן, ולכן תמיד אפשר להוסיף הזמנה טלפונית באיחור.
+   */
+  if (saleCat && rec && rec.date === today && (opts.hour ?? 0) >= SALE_SWITCH_HOUR) {
+    return { code: 'day_closed', message: 'המכירה של היום נסגרה' };
   }
 
   if (!rec) {
@@ -132,9 +164,11 @@ export function saleDayState(opts: {
   rec: SaleDayView | null;
   category: string;
   today: string;
+  /* ⚠ חייב לעבור הלאה · אחרת המסך יאמר ״פתוח״ וההזמנה תידחה בסוף */
+  hour?: number;
 }): SaleState {
-  const { rec, category, today } = opts;
-  if (evaluateCustomerSaleDay({ rec, category, requested: {}, today }) === null) return 'open';
+  const { rec, category, today, hour } = opts;
+  if (evaluateCustomerSaleDay({ rec, category, requested: {}, today, hour }) === null) return 'open';
   if (!rec) return 'pending';
 
   const dishes = CATS[category as DayCatKey]?.dishes ?? [];
@@ -166,7 +200,12 @@ export async function resolveCustomerSaleDate(
     where: { open: true, date: { gte: today } },
     orderBy: { date: 'asc' },
   });
-  const match = open.find((d) => activeCategory(d) === category);
+  /* ⚠ יום פתוח שהחלון שלו כבר עבר אינו ״המכירה הקרובה״ · ראו
+     ההערה ב-`evaluateCustomerSaleDay` */
+  const past = new Date().getHours() >= SALE_SWITCH_HOUR;
+  const match = open.find(
+    (d) => activeCategory(d) === category && !(past && d.date === today),
+  );
   if (match) return match.date;
 
   if (category === 'cous' || category === 'schn') {
@@ -216,6 +255,7 @@ export async function assertCustomerOrderDay(
     category: opts.category,
     requested: qtyOfCustomerDetails(opts.details),
     today: isoDate(new Date()),
+    hour: new Date().getHours(),
   });
   if (err) throwSaleDayError(err);
   return date;

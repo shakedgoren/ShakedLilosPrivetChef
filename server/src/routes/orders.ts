@@ -182,18 +182,21 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
           select: { id: true },
         })) !== null
       : false;
+    /* ⚠ אותה שעה לשני החישובים · ראו `evaluateCustomerSaleDay` */
+    const hour = new Date().getHours();
     const problem = evaluateCustomerSaleDay({
       rec,
       category,
       requested: {},
       today: isoDate(new Date()),
+      hour,
     });
     res.json({
       category,
       date,
       open: problem === null,
       /* ⚠ שלושת המצבים · ראו `saleDayState` */
-      state: saleDayState({ rec, category, today: isoDate(new Date()) }),
+      state: saleDayState({ rec, category, today: isoDate(new Date()), hour }),
       /* ⚠ מזהים בלבד · ראו `soldOutDishes` · הלקוחה לא רואה מספרים */
       soldOut: soldOutDishes(rec, category),
       reminder,
