@@ -336,7 +336,14 @@ function AddressPopup({
               */}
             <ShipFeeNote />
 
-            <ContinueButton onPress={onConfirm} accent={ACCENT} disabled={!ok} label="אישור" wide />
+            {/**
+              * ⚠ **`bare` ולא `wide` · 18 בספטמבר 2026** · בקשה של
+              * שקד: ״הכפתור אישור בכתובת למשלוח צריך להראות בדיוק
+              * כמו הכפתור אישור בכתובת למשלוח בשאר המקומות
+              * באפליקציה״. בספיישלים הוא `bare`; כאן הוא היה `wide`
+              * ויצא רחב ובצורה אחרת.
+              */}
+            <ContinueButton onPress={onConfirm} accent={ACCENT} disabled={!ok} label="אישור" bare />
           </ScrollView>
         </View>
       </View>

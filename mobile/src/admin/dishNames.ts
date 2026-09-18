@@ -20,3 +20,43 @@ const DISPLAY: Readonly<Record<string, string>> = {
 
 /** השם לתצוגה · שם שאינו בטבלה חוזר כמו שהוא */
 export const adminDishName = (name: string): string => DISPLAY[name] ?? name;
+
+/**
+ * שם קצר לעמודת לוח יום המכירה.
+ *
+ * ⚠ **בקשה של שקד · 18 בספטמבר 2026** · ״במקום לכתוב בטבלה את
+ * הכיתובים הקיימים תכתוב: שניצל דק, שניצל טמפורה, מארז דק, מארז
+ * טמפורה — שזה ייכנס בנראות ולא יהיה …״.
+ *
+ * ⚠ **לפי מזהה ולא לפי שם** · השמות המלאים חיים בקבצים שנוצרים
+ * אוטומטית מהקנבס, והמזהה הוא הדבר היחיד שיציב ביניהם.
+ */
+const BOARD_COLUMN: Readonly<Record<string, string>> = {
+  thin: 'שניצל דק',
+  temp: 'שניצל טמפורה',
+  boxThin: 'מארז דק',
+  boxTemp: 'מארז טמפורה',
+};
+
+/**
+ * שלוש השורות של כרית המלאי שמעל הטבלה.
+ *
+ * ⚠ **בקשה של שקד · 18 בספטמבר 2026** · ״בשורה למעלה שמתארת
+ * תכתוב: שניצל דק (לרדת שורה) חלה (לרדת שורה) כמות מתוך מלאי״ —
+ * וכך לארבעתם. שתי השורות הראשונות כאן; השלישית היא המספרים
+ * עצמם, והיא נבנית במסך.
+ */
+const BOARD_PREP: Readonly<Record<string, readonly [string, string]>> = {
+  thin: ['שניצל דק', 'חלה'],
+  temp: ['שניצל טמפורה', 'חלה'],
+  boxThin: ['שניצל דק', 'מארז'],
+  boxTemp: ['שניצל טמפורה', 'מארז'],
+};
+
+/** כותרת העמודה · מזהה שאינו בטבלה חוזר לשם שהתקבל */
+export const boardColumn = (id: string, fallback: string): string =>
+  BOARD_COLUMN[id] ?? fallback;
+
+/** שתי שורות הכרית · מזהה שאינו בטבלה מקבל את השם בשורה אחת */
+export const boardPrepLines = (id: string, fallback: string): readonly [string, string] =>
+  BOARD_PREP[id] ?? [fallback, ''];

@@ -382,8 +382,16 @@ const s = StyleSheet.create({
     overflow: 'hidden',
   },
   typeName: { fontSize: 13, fontWeight: '600', lineHeight: 16, textAlign: 'center', color: surface.ink },
-  /* ⚠ שקד ביקשה שהמחירים יובלטו · המשקל עלה מ-600 ל-700 */
-  typePrice: { fontSize: 13, fontWeight: '700', color: ACCENT.deep },
+  /**
+   * ⚠ שקד ביקשה שהמחירים יובלטו · המשקל עלה מ-600 ל-700.
+   *
+   * ⚠ **נדחף לתחתית הכרטיס · 18 בספטמבר 2026** · בקשה שלה:
+   * ״שהמחירים יופיעו באותה השורה״. שם שנשבר לשתי שורות דחף את
+   * המחיר שלו שורה נמוך יותר מזה שלצידו. `marginTop: 'auto'`
+   * מצמיד את שניהם לתחתית — ומכיוון ששני הכרטיסים כבר באותו גובה
+   * (ראו `typeCard`), המחירים נוחתים על אותו קו בדיוק.
+   */
+  typePrice: { marginTop: 'auto', fontSize: 13, fontWeight: '700', color: ACCENT.deep },
 
   /* ⚠ `headRoom` מחזיר את הרווח שהגדלת הכתב בלעה · ראו שם */
   page: { flex: 1, paddingHorizontal: space.lg, paddingTop: 88 + headRoom(1) },
@@ -391,6 +399,13 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
     marginTop: space.sm,
+    /**
+     * ⚠ **רווח מתחת לבחירה · 18 בספטמבר 2026** · בקשה של שקד:
+     * ״להוסיף את הרווח לא מעל הכנפי עוף, אלא במסך של ׳לפי יחידה
+     * ומארז׳ מתחת לבחירה הזו״. קודם הוספתי אותו בתוך כרטיסי
+     * המנות; הרווח שייך כאן, מתחת ללשוניות עצמן.
+     */
+    marginBottom: space.sm,
     padding: 3,
     borderRadius: radius.pill,
     backgroundColor: 'rgba(130,112,162,0.09)',

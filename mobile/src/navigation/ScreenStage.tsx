@@ -312,25 +312,15 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
       duration: navDir === 'back' ? BACK_MS : FWD_MS,
       easing: EASE,
       /**
-       * ⚠ **דרייבר אחד לכל השכבה · נמדד ב-18 בספטמבר 2026** · כאן
-       * ישב `true`, וזה היה **הבאג שבגללו האפקטים לא הורגשו**.
+       * ⚠ **ילידי · וזה בטוח עכשיו** · ראו ההערה ליד `slideIn`:
+       * הערך הזה מזין **אך ורק** את השכבה החיצונית, שמעולם לא
+       * רואה ערך של ה-JS. הגרירה יושבת בשכבה הפנימית ולא נוגעת בו.
        *
-       * שתי משבצות המסך הן שני `View` קבועים שחיים לאורך כל הריצה.
-       * המעבר המתוזמן הניע אותם על **הדרייבר הילידי**, והמחווה חייבת
-       * להניע אותם על **ה-JS** (אסור `setValue` על ערך ילידי). מרגע
-       * שה-`View` חובר פעם אחת לדרייבר הילידי, הוא המשיך להחזיק את
-       * התכונות — ושינוי מצד ה-JS כבר לא צייר אותו מחדש.
-       *
-       * ⚠ **נמדד ולא שוער** · הקפאתי את המעבר על 0.5 וצילמתי:
-       * עם `true` המסך היוצא ישב על **0 פיקסלים** — כלומר לא זז בכלל
-       * ורק ״קפץ״ בסוף; עם `false` הוא ישב על **603 פיקסלים**, שהם
-       * בדיוק חצי מ-1206. זה בדיוק מה ששקד תיארה פעמיים — ״האפקטים
-       * לא מורגשים״ ו״משהו שם באפקט לא מסתדר טוב״.
-       *
-       * המחיר הוא הנפשה שרצה על ה-JS. למעבר של 420 אלפיות זה בסדר,
-       * והמחווה ממילא רצה שם.
+       * ⚠ **נמדד ב-18 בספטמבר 2026** · כשהכול ישב על אותו `View`,
+       * הקפאה על 0.5 נתנה מסך יוצא ב-**0 פיקסלים** עם הדרייבר
+       * הילידי ו-**603** בלעדיו. עם ההפרדה אין בכלל את הבחירה הזו.
        */
-      useNativeDriver: false,
+      useNativeDriver: true,
     });
     anim.start(({ finished }) => {
       if (finished) dropTail();
@@ -339,19 +329,34 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
   }, [t, navDir, navTick, navSettled, reduce]);
 
   const drag = dragTo !== null;
-  /* ⚠ בגרירה הערך הוא האצבע · אחרת הוא ההנפשה המתוזמנת */
-  const v = drag ? dragT : t;
 
   /**
    * ״צניחה למעלה״ · הבקשה של שקד: אפקט 04 מהתצוגה, הפוך.
    * שם המסך **נופל מטה** ונעלם; כאן הוא **עולה מלמטה** ומתיישב.
    */
   const rise = t.interpolate({ inputRange: [0, 1], outputRange: [height, 0] });
-  /* ״החלקה אופקית״ · שניהם זזים שמאלה, עם האצבע שמושכת מהקצה */
-  const slideIn = v.interpolate({ inputRange: [0, 1], outputRange: [width * PARALLAX, 0] });
-  const slideOut = v.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
-  /* ההחשכה על המסך המתגלה · נמוגה ככל שהוא מגיע · ראו `DIM` */
-  const dim = v.interpolate({ inputRange: [0, 1], outputRange: [DIM, 0] });
+  /**
+   * ⚠ **שני מסלולים · לא ערך אחד · 18 בספטמבר 2026** · כאן ישב
+   * `const v = drag ? dragT : t`, כלומר **אותו `View` הוזן פעם
+   * מערך ילידי ופעם מערך של ה-JS** — וזה בדיוק הבאג שבגללו
+   * ״האפקטים לא מורגשים״.
+   *
+   * הפתרון הראשון היה להוריד את כולם ל-JS, וזה עבד — אבל אז
+   * ההנפשה המתוזמנת רצה על אותו חוט שמרכיב את דף הבית, ושקד
+   * דיווחה מיד ש״לא עכשיו״ לא מגיע לדף הבית ״במהירות הנדרשת״.
+   *
+   * עכשיו כל שכבה היא **שתי שכבות**: החיצונית מונעת ילידית ונושאת
+   * את התנועה המתוזמנת, והפנימית מונעת מה-JS ונושאת את הגרירה.
+   * כל `View` קשור לדרייבר אחד לכל חייו, ושתי ההזזות מצטברות.
+   */
+  const slideIn = t.interpolate({ inputRange: [0, 1], outputRange: [width * PARALLAX, 0] });
+  const slideOut = t.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
+  const dim = t.interpolate({ inputRange: [0, 1], outputRange: [DIM, 0] });
+
+  /* אותן שתי תנועות בדיוק, על ערך האצבע · ראו ההערה למעלה */
+  const dragIn = dragT.interpolate({ inputRange: [0, 1], outputRange: [width * PARALLAX, 0] });
+  const dragOut = dragT.interpolate({ inputRange: [0, 1], outputRange: [0, -width] });
+  const dragDim = dragT.interpolate({ inputRange: [0, 1], outputRange: [DIM, 0] });
 
   const isBack = navDir === 'back' || drag;
 
@@ -388,21 +393,41 @@ export function ScreenStage({ render }: { render: (screen: Screen) => React.Reac
    * מחזיקה את זה שנחשף מתחתיו.
    */
   const leaving = drag ? pair.front : other(pair.front);
-  const styleFor = (slot: Slot) => (slot === leaving ? outStyle : inStyle);
+
+  /**
+   * הסגנון החיצוני · **ילידי**.
+   * ⚠ בגרירה הוא נשאר בזהות · המסך שאחריו האצבע רצה כבר סיים את
+   * המעבר שלו, ולכן `t` עומד על 1 ושתי ההזזות שלו הן אפס.
+   */
+  const timedFor = (slot: Slot): LayerStyle => {
+    if (!drag) return slot === leaving ? outStyle : inStyle;
+    return slot === leaving ? { zIndex: 2, boxShadow: EDGE_SHADOW } : { zIndex: 1 };
+  };
+
+  /** הסגנון הפנימי · **JS** · קיים רק בזמן גרירה */
+  const dragFor = (slot: Slot): Move | null =>
+    !drag ? null : slot === leaving ? dragOut : dragIn;
+
+  const dimFor = (slot: Slot): Move | null => {
+    if (!isBack || slot === leaving) return null;
+    return drag ? dragDim : dim;
+  };
 
   return (
     <View style={s.fill} {...pan.panHandlers}>
       {/* ⚠ שתי המשבצות תמיד באותו מקום במערך · כך המשבצת ששורדת
           מעבר **אינה מורכבת מחדש** ושומרת על המצב שבתוכה */}
       <Layer
-        style={styleFor('a')}
-        dim={isBack && 'a' !== leaving ? dim : null}
+        style={timedFor('a')}
+        move={dragFor('a')}
+        dim={dimFor('a')}
         screen={pair.a}
         render={render}
       />
       <Layer
-        style={styleFor('b')}
-        dim={isBack && 'b' !== leaving ? dim : null}
+        style={timedFor('b')}
+        move={dragFor('b')}
+        dim={dimFor('b')}
         screen={pair.b}
         render={render}
       />
@@ -417,14 +442,28 @@ type LayerStyle = {
   transform?: ({ translateX: Move } | { translateY: Move })[];
 };
 
+/**
+ * שכבת מסך · **שתי שכבות זו בתוך זו**.
+ *
+ * ⚠ החיצונית מונעת **ילידית** (התנועה המתוזמנת) והפנימית מונעת
+ * מה-**JS** (הגרירה). ההפרדה אינה קוסמטית: `View` שקיבל פעם אחת
+ * ערך ילידי מפסיק להגיב לעדכון מצד ה-JS, וזה היה הבאג · ראו
+ * ההערה ליד `slideIn`.
+ *
+ * ⚠ **`key` על ההחשכה** · גם היא מתחלפת בין שני הדרייברים, ולכן
+ * היא חייבת להיות **`View` אחר** בכל מצב ולא אותו אחד.
+ */
 function Layer({
   screen,
   style,
+  move,
   dim,
   render,
 }: {
   screen: Screen | null;
   style: LayerStyle;
+  /** הזזת הגרירה · `null` כשאין גרירה */
+  move: Move | null;
   /** ההחשכה על מסך שנחשף · `null` לכל מצב אחר */
   dim: Move | null;
   render: (screen: Screen) => React.ReactNode;
@@ -432,10 +471,18 @@ function Layer({
   if (!screen) return null;
   return (
     <Animated.View style={[s.layer, style]}>
-      {render(screen)}
-      {/* ⚠ **מעל התוכן ולא מתחתיו** · זו החשכה של מסך שעוד לא הגיע,
-          כמו באייפון · `NO_TOUCH` כדי שלא תבלע לחיצות */}
-      {dim ? <Animated.View pointerEvents="none" style={[s.dim, { opacity: dim }]} /> : null}
+      <Animated.View style={move ? [s.fill, { transform: [{ translateX: move }] }] : s.fill}>
+        {render(screen)}
+        {/* ⚠ **מעל התוכן ולא מתחתיו** · זו החשכה של מסך שעוד לא הגיע,
+            כמו באייפון · `pointerEvents` כדי שלא תבלע לחיצות */}
+        {dim ? (
+          <Animated.View
+            key={move ? 'drag' : 'timed'}
+            pointerEvents="none"
+            style={[s.dim, { opacity: dim }]}
+          />
+        ) : null}
+      </Animated.View>
     </Animated.View>
   );
 }

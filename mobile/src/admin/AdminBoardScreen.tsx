@@ -26,6 +26,7 @@ import { boardCatOf, prepOf, type BoardItem } from './boardCat';
 import { apiEnabled } from '../api/config';
 import { adminBoard, adminSetBoardStatus, adminSetQty } from '../api/admin';
 import { saleDayStatus } from '../api/orders';
+import { boardColumn, boardPrepLines } from './dishNames';
 import { adminSetStatus } from '../api/orders';
 import { useNav } from '../navigation/store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,11 +41,11 @@ import { FONT_BUMP } from '../theme/fontScale';
 const ROOT_PAD = 14;
 /**
  * כיוון הסיבוב של תצוגת הטלפון.
- * ⚠ ‎90 מעלות · ראש הטבלה פונה לקצה הימני של המסך, ולכן קוראים
- * אותה כשמסובבים את המכשיר **נגד כיוון השעון**. אם הכיוון הפוך
- * ממה ששקד ציפתה — זה השינוי היחיד, ל-‎'-90deg'.
+ * ⚠ **התהפך ב-18 בספטמבר 2026** · היה ‎'90deg', ושקד ביקשה ״תסובב
+ * את הטבלה לכיוון השני״. עכשיו קוראים אותה כשמסובבים את המכשיר
+ * **עם כיוון השעון**.
  */
-const TURN_ANGLE = '90deg';
+const TURN_ANGLE = '-90deg';
 /** כל כמה זמן הלוח שואל את השרת מחדש · ראו ההערה ב-`reload` */
 const REFRESH_MS = 20000;
 /** הריפוד מעל הכותרת · מתווסף לאזור הבטוח */
@@ -107,7 +108,7 @@ export function AdminBoardScreen() {
   /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
   const { toast } = useCheer();
   const BOARD_CAT = React.useMemo(() => boardCatOf(saleCat), [saleCat]);
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
     START_MODE as 'all' | 'pickup' | 'deliv',
   );
@@ -242,7 +243,15 @@ export function AdminBoardScreen() {
       0,
     );
     const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(saleCat, id)), 0);
-    return { id: p.id, sub: p.name, used, quota, left: quota - used };
+    return {
+      id: p.id,
+      sub: p.name,
+      /* שתי שורות הכיתוב · השלישית היא המספרים · ראו `boardPrepLines` */
+      lines: boardPrepLines(p.id, p.name),
+      used,
+      quota,
+      left: quota - used,
+    };
   });
 
   /**
@@ -275,8 +284,6 @@ export function AdminBoardScreen() {
    * (וגולשת לצדדים כמו קודם), ותצוגת הטלפון מסובבת ב-90 מעלות.
    */
   const turn = view === 'phone' && !landscape;
-  /* מידות אזור הטבלה · נדרשות כדי למרכז את התיבה המסובבת */
-  const [box, setBox] = useState({ w: 0, h: 0 });
   /**
    * ⚠ **רוחבי הקנבס הצטמצמו** · בקנבס העמודות הן 92/220/68/96/104/206
    * (1126 מתוך ארטבורד 1180), ושקד ביקשה (15 בספטמבר 2026) לצמצם
@@ -289,8 +296,8 @@ export function AdminBoardScreen() {
     : { time: 58, who: 96, item: 44, sum: 64, pay: 58, status: 118 };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
-  return (
-    <View style={[s.root, { paddingTop: insets.top + ROOT_TOP }]}>
+  const body = (
+    <View style={[s.root, turn ? s.rootTurned : { paddingTop: insets.top + ROOT_TOP }]}>
       {/* ⚠ **הכותרת בשורת החץ** · שקד ביקשה (15 בספטמבר 2026) להסיר
           את הרווח שהיה מעל הכותרת בכל מסכי הניהול. הכותרת ממורכזת
           וחץ החזרה מרחף בפינה הימנית, והפקדים יורדים לשורה שמתחת —
@@ -360,10 +367,11 @@ export function AdminBoardScreen() {
               : 'rgba(255,255,255,0.9)';
           return (
           <View key={it.id} style={[s.stockChip, { backgroundColor: bg, borderColor: bd }]}>
-            {/* ⚠ **שתי שורות · 18 בספטמבר 2026** · בקשה של שקד:
-                ״שהכרטיסייה שלהן תהיה שהמנה כתובה למעלה והמלאי כתוב
-                שורה מתחתיי״. המילים לא השתנו, רק הפריסה. */}
-            <Text style={[s.stockName, { color: fg }]} numberOfLines={1}>{it.sub}</Text>
+            {/* ⚠ **שלוש שורות · 18 בספטמבר 2026** · בקשה של שקד:
+                ״שניצל דק (לרדת שורה) חלה (לרדת שורה) כמות מתוך
+                מלאי״ — וכך לארבעתם. ראו `boardPrepLines`. */}
+            <Text style={[s.stockName, { color: fg }]} numberOfLines={1}>{it.lines[0]}</Text>
+            <Text style={[s.stockForm, { color: fg }]} numberOfLines={1}>{it.lines[1]}</Text>
             <Text style={[s.stockLeft, { color: fg }]}>{`${it.left} מתוך ${it.quota}`}</Text>
           </View>
           );
@@ -381,36 +389,8 @@ export function AdminBoardScreen() {
         * מקבל גובה מחולק ביחס ההקטנה — אחרת הטבלה הייתה נגמרת
         * באמצע המסך ומתחתיה שטח ריק.
         */}
-      <View
-        style={s.fitBox}
-        onLayout={(e) =>
-          setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })
-        }
-      >
-        {/**
-          * ⚠ **תיבה מסובבת, לא טבלה מוקטנת** · `transform` אינו משנה
-          * פריסה, ולכן התיבה מוזמנת כבר בממדים **המוחלפים** — רוחב
-          * בגובה האזור וגובה ברוחבו — וממורכזת בתוכו. אחרי הסיבוב
-          * היא יושבת בדיוק על האזור.
-          *
-          * ⚠ **הגלילה מסתובבת איתה** · ריאקט-נייטיב מתרגם מגע דרך
-          * ה-transform, ולכן החלקה לאורך המסך גוללת את השורות —
-          * כלומר ״למעלה ולמטה״ מנקודת המבט של מי שמסובבת את המכשיר.
-          */}
-        <View
-          style={
-            turn && box.w > 0
-              ? {
-                  position: 'absolute',
-                  width: box.h,
-                  height: box.w,
-                  left: (box.w - box.h) / 2,
-                  top: (box.h - box.w) / 2,
-                  transform: [{ rotate: TURN_ANGLE }],
-                }
-              : undefined
-          }
-        >
+      <View style={s.fitBox}>
+        <View>
       <ScrollView horizontal>
         {/* ⚠ **הרוחב נגזר מהעמודות בפועל** · קודם הוא הוזמן לפי
             `tableWidth` של הקנבס (1126) בעוד שהעמודות הצטמצמו,
@@ -421,7 +401,13 @@ export function AdminBoardScreen() {
             <Text style={[s.col, { width: w.who }]}>{HEAD_COLS.who}</Text>
             {BOARD_CAT.items.map((it) => (
               <View key={it.id} style={[s.cellBox, { width: w.item }]}>
-                <Text style={s.colIn} numberOfLines={2}>{`${it.t}\n${it.sub}`}</Text>
+                {/* ⚠ **שם קצר בשורה אחת · 18 בספטמבר 2026** · בקשה
+                    של שקד: ״במקום הכיתובים הקיימים תכתוב שניצל דק,
+                    שניצל טמפורה, מארז דק, מארז טמפורה — שזה ייכנס
+                    בנראות ולא יהיה …״. ראו `boardColumn`. */}
+                <Text style={s.colIn} numberOfLines={2}>
+                  {boardColumn(it.id, `${it.t} ${it.sub}`.trim())}
+                </Text>
               </View>
             ))}
             <Text style={[s.col, { width: w.sum }]}>{TAIL_COLS.sum}</Text>
@@ -544,10 +530,52 @@ export function AdminBoardScreen() {
       ) : null}
     </View>
   );
+
+  if (!turn) return body;
+  /**
+   * ⚠ **העמוד כולו מסתובב, לא רק הטבלה · 18 בספטמבר 2026** · בקשה
+   * של שקד: ״גם העמוד כולו צריך להיות באותה התצורה של הטבלה
+   * ולהיות מותאם לגודל של מסך של אייפון 16 plus״.
+   *
+   * ⚠ **התיבה מוזמנת כבר בממדים המוחלפים** · `transform` אינו משנה
+   * פריסה, ולכן רוחב התיבה הוא **גובה המסך** וגובהה הוא **רוחבו**;
+   * אחרי הסיבוב היא יושבת בדיוק על המסך. המידות מגיעות מהחלון
+   * עצמו, ולכן זה נכון לכל אייפון ולא רק ל-16 Plus.
+   *
+   * ⚠ **האפליקציה נעולה לאורך** · ה-`Info.plist` מתיר באייפון רק
+   * `Portrait`, ולכן אי אפשר להישען על סיבוב מערכת. זו בדיוק
+   * הסיבה שהסיבוב נעשה כאן.
+   *
+   * ⚠ **ריפוד בצדדים במקום אזור בטוח** · אחרי הסיבוב המגרעת ופס
+   * הבית יושבים על **הצדדים** של התוכן, ולא מעליו ומתחתיו, ולכן
+   * הריפוד העליון הרגיל אינו רלוונטי כאן.
+   */
+  return (
+    <View style={s.stage}>
+      <View
+        style={[
+          s.turned,
+          {
+            width: height,
+            height: width,
+            left: (width - height) / 2,
+            top: (height - width) / 2,
+            paddingHorizontal: Math.max(insets.top, insets.bottom, 12),
+          },
+        ]}
+      >
+        {body}
+      </View>
+    </View>
+  );
 }
 
 const s = StyleSheet.create({
   root: { flex: 1, paddingHorizontal: ROOT_PAD, gap: 8, backgroundColor: surface.ground },
+  /* ⚠ בעמוד מסובב אין ״למעלה״ בטוח · ראו ההערה ליד `s.turned` */
+  rootTurned: { paddingTop: ROOT_TOP },
+  stage: { flex: 1, backgroundColor: surface.ground, overflow: 'hidden' },
+  turned: { position: 'absolute', transform: [{ rotate: TURN_ANGLE }] },
   /* ⚠ חותך את מה שגולש אחרי ההקטנה · ראו ההערה ליד הטבלה */
   fitBox: { flex: 1, overflow: 'hidden' },
   tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
@@ -621,7 +649,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   stockName: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
-  stockLeft: { fontSize: 12.5, fontWeight: '400', color: '#43307A' },
+  stockForm: { fontSize: 12, fontWeight: '400', color: '#43307A' },
+  stockLeft: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
   /**
    * ⚠ **ההגדלה הגלובלית מנוטרלת כאן · 17 בספטמבר 2026** · בקשה של
