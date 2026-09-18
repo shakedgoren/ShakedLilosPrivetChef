@@ -12,6 +12,7 @@
       "supportsTablet": true,
       "infoPlist": {
         "ExpoLocalization_supportsRTL": true,
+        "NSFaceIDUsageDescription": "כדי לאפשר לך להיכנס לחשבון במהירות ובאופן מאובטח באמצעות Face ID.",
         "ExpoLocalization_forcesRTL": true,
         "CFBundleLocalizations": [
           "he"

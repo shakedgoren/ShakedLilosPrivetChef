@@ -4,7 +4,7 @@ import { INPUT_START } from '../theme/rtl';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
-import { LEGAL_DOCS, LEGAL_PLACEHOLDER, LOGIN_COPY as T } from '../screens/loginCopy';
+import { LEGAL_DOCS, LOGIN_COPY as T } from '../screens/loginCopy';
 import { Mail, Send } from './LoginIcons';
 import { NO_TOUCH } from '../theme/pointerEvents';
 
@@ -65,10 +65,6 @@ export function TermsSheet({ onClose, onAgree }: { onClose: () => void; onAgree:
       <Text style={s.title}>{T.termsLink}</Text>
       <Text style={s.sub}>{T.termsUpdated}</Text>
       <ScrollView style={s.doc} showsVerticalScrollIndicator={false}>
-        {/* ⚠ **חובה להחליף לפני שחרור** · הנוסח המשפטי מגיע משקד */}
-        <View style={s.ph}>
-          <Text style={s.phText}>{LEGAL_PLACEHOLDER}</Text>
-        </View>
         {LEGAL_DOCS.map((d) => (
           <View key={d.title}>
             <Text style={s.docTitle}>{d.title}</Text>
@@ -198,17 +194,6 @@ const s = StyleSheet.create({
   sub: { fontSize: 12, fontWeight: '300', color: surface.faint, marginTop: 2, marginBottom: 12 },
 
   doc: { flexGrow: 0 },
-  ph: {
-    backgroundColor: '#FFF7E9',
-    borderWidth: 1,
-    borderColor: '#E7C990',
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-    marginBottom: 8,
-  },
-  phText: { fontSize: 11.5, fontWeight: '600', color: '#8A5A2A' },
   docTitle: { fontSize: 15, fontWeight: '700', color: surface.ink, marginTop: 16, marginBottom: 2 },
   docH: { fontSize: 13, fontWeight: '700', color: surface.ink, marginTop: 12 },
   docB: { fontSize: 12.5, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
