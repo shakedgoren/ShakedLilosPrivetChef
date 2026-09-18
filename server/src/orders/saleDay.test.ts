@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { qtyOfCustomerDetails } from '../admin/sold.ts';
-import { evaluateCustomerSaleDay, isIsoDate, soldOutDishes } from './saleDay.ts';
+import { evaluateCustomerSaleDay, isIsoDate, saleDayState, soldOutDishes } from './saleDay.ts';
 
 const openCous = {
   date: '2026-09-15',
@@ -9,6 +9,7 @@ const openCous = {
   sale: 'cous',
   exceptCat: '',
   open: true,
+  opened: true,
   quotas: { veg: 5, chick: 3 },
   waste: { veg: 1 },
   sold: { veg: 3, chick: 3 },
@@ -177,46 +178,51 @@ test('מנות שאזלו · מזהים בלבד', () => {
  * ⚠ **הבאג שדווח ב-18 בספטמבר 2026** · ״המכירה של השניצל סגורה
  * אבל זה נותן להכניס הזמנות של שניצלים״. יום מכירה נשאר `open`
  * במסד גם אחרי שהמכירה נגמרה, ולכן השרת המשיך לקבל הזמנות.
+ *
+ * הגבול הוא **החלון** של שקד, לא שעון · ראו `saleWindow`.
  */
-test('יום מכירה שהחלון שלו עבר נסגר מעצמו', () => {
+test('מכירה מחוץ לחלון אינה מקבלת הזמנות', () => {
   const day = { ...openCous, quotas: { veg: 50 }, sold: {}, waste: {} };
 
-  /* לפני שעת הסגירה · פתוח */
+  /* בתוך החלון · פתוח */
   assert.equal(
     evaluateCustomerSaleDay({
       rec: day,
       category: 'cous',
       requested: { veg: 1 },
       today: '2026-09-15',
-      hour: 17,
+      windowDate: '2026-09-15',
     }),
     null,
   );
 
-  /* בשעת הסגירה ואחריה · נסגר */
-  for (const hour of [18, 21, 23]) {
-    assert.equal(
-      evaluateCustomerSaleDay({
-        rec: day,
-        category: 'cous',
-        requested: { veg: 1 },
-        today: '2026-09-15',
-        hour,
-      })?.code,
-      'day_closed',
-      `שעה ${hour}`,
-    );
-  }
-
-  /* ⚠ יום **אחר** שפתוח אינו נסגר בגלל השעה של היום */
+  /* החלון כבר על המכירה הבאה · היום הזה נסגר */
   assert.equal(
     evaluateCustomerSaleDay({
       rec: day,
       category: 'cous',
       requested: { veg: 1 },
-      today: '2026-09-14',
-      hour: 23,
-    }),
-    null,
+      today: '2026-09-15',
+      windowDate: '2026-09-22',
+    })?.code,
+    'day_closed',
+  );
+});
+
+/** שלושת הכיתובים · ראו `SaleState` */
+test('טרם נפתחה · החלה · נסגרה', () => {
+  const base = { ...openCous, quotas: { veg: 50 }, sold: {}, waste: {} };
+  const args = { category: 'cous', today: '2026-09-15', windowDate: '2026-09-15' };
+
+  assert.equal(saleDayState({ ...args, rec: { ...base, open: true } }), 'open');
+  /* נסגרה · `opened` מגיע מ-`openedAt` שנכתב בפתיחה הראשונה */
+  assert.equal(
+    saleDayState({ ...args, rec: { ...base, open: false, opened: true } }),
+    'closed',
+  );
+  /* טרם נפתחה · מעולם לא נפתחה */
+  assert.equal(
+    saleDayState({ ...args, rec: { ...base, open: false, opened: false } }),
+    'pending',
   );
 });

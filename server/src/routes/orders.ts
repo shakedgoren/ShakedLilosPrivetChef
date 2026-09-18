@@ -26,6 +26,7 @@ import { serializeOrder } from '../orders/serialize.ts';
 import { readJson } from '../json.ts';
 import { deliveryFee } from '../../../mobile/src/data/shared.ts';
 import { notifyLater, notifyOrderConfirmed } from '../whatsapp/notify.ts';
+import { saleWindow } from '../../../mobile/src/data/saleWeek.ts';
 
 export const ordersRouter = Router();
 
@@ -182,21 +183,21 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
           select: { id: true },
         })) !== null
       : false;
-    /* ⚠ אותה שעה לשני החישובים · ראו `evaluateCustomerSaleDay` */
-    const hour = new Date().getHours();
+    /* ⚠ אותו חלון לשני החישובים · ראו `saleWindow` */
+    const windowDate = saleWindow(new Date()).date;
     const problem = evaluateCustomerSaleDay({
       rec,
       category,
       requested: {},
       today: isoDate(new Date()),
-      hour,
+      windowDate,
     });
     res.json({
       category,
       date,
       open: problem === null,
       /* ⚠ שלושת המצבים · ראו `saleDayState` */
-      state: saleDayState({ rec, category, today: isoDate(new Date()), hour }),
+      state: saleDayState({ rec, category, today: isoDate(new Date()), windowDate }),
       /* ⚠ מזהים בלבד · ראו `soldOutDishes` · הלקוחה לא רואה מספרים */
       soldOut: soldOutDishes(rec, category),
       reminder,

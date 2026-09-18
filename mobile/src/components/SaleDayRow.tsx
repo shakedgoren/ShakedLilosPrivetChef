@@ -39,17 +39,18 @@ import {
 const STATE_INK: Record<SaleState, string> = {
   open: '#2C5A3E',
   pending: '#7A3D18',
-  sold_out: '#8E3A32',
+  closed: '#8E3A32',
 };
 const STATE_RGB: Record<SaleState, string> = {
   open: '67,124,89',
   pending: '168,90,40',
-  sold_out: '185,83,73',
+  closed: '185,83,73',
 };
 const STATE_TEXT: Record<SaleState, string> = {
   open: 'המכירה החלה',
-  pending: 'המכירה טרם החלה',
-  sold_out: 'המכירה נסגרה',
+  /* ⚠ הנוסח של שקד · 18.9.2026 · ״המכירה טרם נפתחה״ */
+  pending: 'המכירה טרם נפתחה',
+  closed: 'המכירה נסגרה',
 };
 
 /** הנוסחים של המתג · בקשה של שקד */

@@ -162,10 +162,19 @@ adminDaysRouter.put('/:date', async (req, res, next) => {
       body.waste !== undefined ? JSON.stringify(body.waste) : (existing?.wasteJson ?? '{}');
 
     const wasOpen = existing?.open ?? false;
+    /**
+     * ⚠ **חותמת הפתיחה · 18 בספטמבר 2026** · בלעדיה `open: false`
+     * אינו מבדיל בין ״המכירה טרם נפתחה״ ל״המכירה נסגרה״, ושקד
+     * ביקשה את שני הכיתובים · ראו `SaleState`.
+     *
+     * ⚠ **נכתבת פעם אחת ולא נמחקת** · סגירה ופתיחה מחדש של אותו
+     * יום לא מאפסות אותה, כי המכירה אכן כבר נפתחה.
+     */
+    const openedAt = existing?.openedAt ?? (open ? new Date() : null);
     const row = await prisma.saleDay.upsert({
       where: { date },
-      create: { date, blocked, sale, exceptCat, open, quotasJson, wasteJson },
-      update: { blocked, sale, exceptCat, open, quotasJson, wasteJson },
+      create: { date, blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt },
+      update: { blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt },
     });
     const cat = row.blocked ? row.exceptCat : row.sale;
 

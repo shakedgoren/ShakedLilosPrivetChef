@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import { CATS, impliedWeekdayRecord, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
-import { addDaysIso, SALE_SWITCH_HOUR, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
+import { addDaysIso, saleWindow, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
 import type { CustomerDetails } from '../catalog/quote.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { badRequest, conflict } from '../errors.ts';
@@ -13,6 +13,8 @@ export type SaleDayView = {
   sale: string;
   exceptCat: string;
   open: boolean;
+  /** האם המכירה נפתחה אי־פעם · מבדיל ״טרם נפתחה״ מ״נסגרה״ */
+  opened: boolean;
   quotas: Record<string, number>;
   waste: Record<string, number>;
   sold: QtyMap;
@@ -62,11 +64,11 @@ export function evaluateCustomerSaleDay(opts: {
   requested: QtyMap;
   today: string;
   /**
-   * השעה הנוכחית · רק כשהיום הנבדק הוא **היום עצמו**.
-   * ⚠ ברירת המחדל היא ״לפני הסגירה״, כדי שבדיקות קיימות שלא
-   * מעבירות שעה ימשיכו לבדוק את מה שהן נכתבו לבדוק.
+   * יום המכירה של **החלון הנוכחי** · ראו `saleWindow`.
+   * ⚠ בלעדיו אין בדיקת חלון, כדי שבדיקות שבודקות רק את היום
+   * עצמו ימשיכו לבדוק את מה שהן נכתבו לבדוק.
    */
-  hour?: number;
+  windowDate?: string;
 }): SaleDayError | null {
   const { rec, category, requested, today } = opts;
   const saleCat = SALE_CATS.has(category);
@@ -76,29 +78,23 @@ export function evaluateCustomerSaleDay(opts: {
   }
 
   /**
-   * ⚠ **מכירה שהסתיימה · 18 בספטמבר 2026** · שקד דיווחה: ״המכירה
-   * של השניצל סגורה אבל זה נותן להכניס הזמנות של שניצלים״.
+   * ⚠ **מחוץ לחלון · 18 בספטמבר 2026** · שקד דיווחה: ״המכירה של
+   * השניצל סגורה אבל זה נותן להכניס הזמנות של שניצלים״. הסיבה
+   * הייתה שיום מכירה **לא נסגר מעצמו לעולם**: שישי 18.9 נשאר
+   * `open: true` במסד גם בשעה 21:49.
    *
-   * מה שקרה בפועל: יום מכירה **לא נסגר מעצמו לעולם**. יום שישי
-   * 18.9 נשאר `open: true` במסד גם בשעה 21:30, שעות אחרי שהמכירה
-   * נגמרה, ולכן השרת המשיך לקבל הזמנות שניצל. באפליקציה עצמה
-   * החלון כבר עבר: `upcomingSale` מחליף לקוסקוס ב-18:00, ודף
-   * הבית כבר הציג את המכירה הבאה. שני חלקים של אותה אפליקציה
-   * אמרו שני דברים סותרים.
+   * החלון של שקד הוא הגבול: מרגע שהחלון מתחלף (שבת 07:00 או
+   * רביעי 07:00) המכירה הקודמת אינה מקבלת עוד הזמנות, בלי קשר
+   * למה שכתוב בשורה במסד.
    *
-   * ⚠ **הסגירה הידנית שלך גוברת ולא מוחלפת** · זו רק רשת ביטחון
-   * ליום שנשאר פתוח בטעות.
-   *
-   * ⚠ **השעה היא שלך** · `SALE_SWITCH_HOUR` הוא אותו קבוע שמחליף
-   * את המכירה הקרובה באפליקציה, ולכן בחרתי בו — אבל אם ההזמנות
-   * צריכות להיסגר מוקדם או מאוחר יותר, זה **מספר אחד**
-   * ב-`mobile/src/data/saleWeek.ts`.
+   * ⚠ **בתוך החלון הסגירה היא שלך** · ״מהרגע שאסגור אותה״ —
+   * `open: false` הוא מה שעוצר, לא שעון.
    *
    * ⚠ **לקוחות בלבד** · ההזמנה הידנית של מסך הניהול אינה עוברת
    * כאן, ולכן תמיד אפשר להוסיף הזמנה טלפונית באיחור.
    */
-  if (saleCat && rec && rec.date === today && (opts.hour ?? 0) >= SALE_SWITCH_HOUR) {
-    return { code: 'day_closed', message: 'המכירה של היום נסגרה' };
+  if (saleCat && rec && opts.windowDate && rec.date !== opts.windowDate) {
+    return { code: 'day_closed', message: 'המכירה הזו כבר נסגרה' };
   }
 
   if (!rec) {
@@ -146,38 +142,37 @@ export function evaluateCustomerSaleDay(opts: {
 }
 
 /**
- * שלושת מצבי יום המכירה שהלקוחה רואה בדף הבית.
+ * שלושת מצבי המכירה שהלקוחה רואה.
  *
- * ⚠ **נוסף ב-16 בספטמבר 2026** · שקד ביקשה שדף הבית יציג ״טרם
- * נפתחה / החלה / נסגרה״ בשלושה צבעים. עד עכשיו השרת החזיר `open`
- * בלבד, ולכן אי אפשר היה להבחין בין יום שעוד לא נפתח לבין יום
- * שנפתח ואזל.
+ * ⚠ **החוק של שקד · 18 בספטמבר 2026** · בלשונה: ״בד״כ אני פותחת
+ * את המכירה ביום שני אז משבת-שני יופיע עם הכיתוב ׳המכירה טרם
+ * נפתחה׳ עד הרגע שאני אפתח אותה ואז יהיה כתוב ׳המכירה החלה׳
+ * ומהרגע שאני סוגרת את המכירה עד יום רביעי ב-07 בבוקר יופיע
+ * הכיתוב ׳המכירה נסגרה׳״.
  *
- * ⚠ **ההבחנה היא לפי המכסות** · אין בבסיס הנתונים שדה ״היה פתוח״.
- * יום שכל המנות שלו מוקצות במלואן נחשב **נסגר**; כל יתר המקרים
- * שאינם פתוחים הם ״טרם החלה״. זו הקירוב הנאמן ביותר למה שהלקוחה
- * רואה, ובלי שינוי סכימה.
+ * ⚠ **`closed` החליף את `sold_out`** · קודם ״נסגרה״ נגזר מהמכסות:
+ * יום שכל המנות שלו אזלו נחשב סגור. זה לא מה שהיא ביקשה — הסגירה
+ * היא **פעולה שלה**, לא תוצאה של המלאי. מנה שאזלה כבר מסומנת
+ * בנפרד · ראו `soldOutDishes`.
+ *
+ * ⚠ **לכן נוסף `openedAt` לסכימה** · בלי לדעת שהמכירה **נפתחה
+ * פעם**, `open: false` אינו מבדיל בין ״עוד לא נפתחה״ ל״נסגרה״.
  */
-export type SaleState = 'open' | 'pending' | 'sold_out';
+export type SaleState = 'open' | 'pending' | 'closed';
 
 export function saleDayState(opts: {
   rec: SaleDayView | null;
   category: string;
   today: string;
   /* ⚠ חייב לעבור הלאה · אחרת המסך יאמר ״פתוח״ וההזמנה תידחה בסוף */
-  hour?: number;
+  windowDate?: string;
 }): SaleState {
-  const { rec, category, today, hour } = opts;
-  if (evaluateCustomerSaleDay({ rec, category, requested: {}, today, hour }) === null) return 'open';
-  if (!rec) return 'pending';
-
-  const dishes = CATS[category as DayCatKey]?.dishes ?? [];
-  const quoted = dishes
-    .map((d) => ({ quota: rec.quotas[d.id] ?? d.q, used: (rec.sold[d.id] ?? 0) + (rec.waste[d.id] ?? 0) }))
-    .filter((x) => x.quota !== undefined);
-
-  if (quoted.length > 0 && quoted.every((x) => x.used >= (x.quota as number))) return 'sold_out';
-  return 'pending';
+  const { rec, category, today, windowDate } = opts;
+  if (evaluateCustomerSaleDay({ rec, category, requested: {}, today, windowDate }) === null) {
+    return 'open';
+  }
+  /* ⚠ נפתחה ונסגרה · ראו ההערה ב-`SaleState` */
+  return rec?.opened ? 'closed' : 'pending';
 }
 
 export function throwSaleDayError(err: SaleDayError): never {
@@ -200,12 +195,13 @@ export async function resolveCustomerSaleDate(
     where: { open: true, date: { gte: today } },
     orderBy: { date: 'asc' },
   });
-  /* ⚠ יום פתוח שהחלון שלו כבר עבר אינו ״המכירה הקרובה״ · ראו
-     ההערה ב-`evaluateCustomerSaleDay` */
-  const past = new Date().getHours() >= SALE_SWITCH_HOUR;
-  const match = open.find(
-    (d) => activeCategory(d) === category && !(past && d.date === today),
-  );
+  /**
+   * ⚠ **יום המכירה של החלון הנוכחי** · ולא ״היום הפתוח הבא״.
+   * שורה שנשארה `open` מחלון קודם אינה מועמדת · ראו `saleWindow`.
+   */
+  const win = saleWindow(new Date());
+  if (win.cat === category) return win.date;
+  const match = open.find((d) => activeCategory(d) === category);
   if (match) return match.date;
 
   if (category === 'cous' || category === 'schn') {
@@ -228,6 +224,7 @@ export async function loadSaleDayView(db: Db, date: string, category: string): P
     sale: row ? row.sale : (implied?.sale ?? ''),
     exceptCat: row ? row.exceptCat : (implied?.except ?? ''),
     open: row ? row.open : !!implied?.open,
+    opened: row ? row.openedAt !== null : false,
     quotas: row ? readJson<Record<string, number>>(row.quotasJson, {}) : { ...(implied?.q ?? {}) },
     waste: row ? readJson<Record<string, number>>(row.wasteJson, {}) : {},
     sold: {},
@@ -255,7 +252,7 @@ export async function assertCustomerOrderDay(
     category: opts.category,
     requested: qtyOfCustomerDetails(opts.details),
     today: isoDate(new Date()),
-    hour: new Date().getHours(),
+    windowDate: saleWindow(new Date()).date,
   });
   if (err) throwSaleDayError(err);
   return date;

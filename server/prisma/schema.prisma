@@ -149,6 +149,8 @@ model SaleDay {
   wasteJson  String  @default("{}")
   /// תיקון ידני למספר שנמכר · שקד מקלידה מספר והוא גובר על הספירה מההזמנות
   soldJson   String  @default("{}")
+  /// מתי המכירה נפתחה בפעם הראשונה · מבדיל בין ״טרם נפתחה״ ל״נסגרה״
+  openedAt   DateTime?
   updatedAt  DateTime @updatedAt
 }
 

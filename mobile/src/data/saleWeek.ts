@@ -28,34 +28,78 @@ export function eachIsoDate(from: string, to: string): string[] {
 }
 
 /**
- * חלון יום המכירה שמוצג בדף הניהול.
+ * חלון המכירה · **שבת 07:00 ורביעי 07:00 הם הגבולות**.
  *
- * ⚠ **חוק של שקד (15 בספטמבר 2026)** · משישי ב-18:00 ועד שלישי
- * ב-18:00 מוצג יום המכירה של הקוסקוס, ומשלישי ב-18:00 ועד שישי
- * ב-18:00 מוצג יום המכירה של השניצל. כלומר ברגע שיום מכירה נסגר
- * בערב, הדף כבר מצביע על הבא אחריו.
+ * ⚠ **חוק של שקד (18 בספטמבר 2026)** · בלשונה: ״מיום שבת בשעה
+ * 07:00 בבוקר עד רביעי ב-07:00 יופיע המכירה של הקוסקוס… מיום
+ * רביעי ב-07:00 בבוקר ועד שבת ב-07:00 בבוקר יופיע המכירה של
+ * השניצל״.
  *
- * ⚠ **שעון מקומי** · הגבול הוא 18:00 אצל שקד, ולא ב-UTC. שאר
+ * ⚠ **החליף את המודל הקודם** · קודם הגבול היה 18:00 בשלישי
+ * ובשישי — כלומר **יום המכירה עצמו**. לכן ברגע שהמכירה נגמרה
+ * החלון כבר קפץ לקטגוריה הבאה, ולא נשאר זמן להציג ״המכירה
+ * נסגרה״. עכשיו לכל מכירה יש זנב: מרגע הסגירה ועד גבול החלון.
+ *
+ * ⚠ **שעון מקומי** · הגבול הוא 07:00 אצל שקד, ולא ב-UTC. שאר
  * הקובץ עובד ב-UTC כי שם מדובר בתאריכים בלבד.
  */
-export const SALE_SWITCH_HOUR = 18;
+export const SALE_SWITCH_HOUR = 7;
 
 /** דקות מתחילת השבוע · ראשון ב-00:00 הוא אפס */
 const weekMinutes = (d: Date) => d.getDay() * 1440 + d.getHours() * 60 + d.getMinutes();
 
-const TUE = 2;
-const FRI = 5;
-const SWITCH_TUE = TUE * 1440 + SALE_SWITCH_HOUR * 60;
-const SWITCH_FRI = FRI * 1440 + SALE_SWITCH_HOUR * 60;
+const WED = 3;
+const SAT = 6;
+const SWITCH_WED = WED * 1440 + SALE_SWITCH_HOUR * 60;
+const SWITCH_SAT = SAT * 1440 + SALE_SWITCH_HOUR * 60;
 
-/** יום המכירה הקרוב לפי החלון · הקטגוריה והתאריך שאליו היא שייכת */
-export function upcomingSale(now: Date): { cat: 'cous' | 'schn'; date: string } {
+/** כמה ימים מתחילת החלון ועד יום המכירה · שבת→שלישי, רביעי→שישי */
+const LEAD = { cous: 3, schn: 2 } as const;
+/** כמה ימים מתחילת החלון ועד סופו · שבת→רביעי, רביעי→שבת */
+const SPAN = { cous: 4, schn: 3 } as const;
+
+const isoOf = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+export type SaleWindow = {
+  cat: 'cous' | 'schn';
+  /** יום המכירה עצמו · שלישי לקוסקוס, שישי לשניצל */
+  date: string;
+  /** תחילת החלון · שבת או רביעי ב-07:00 */
+  start: string;
+  /** סוף החלון · היום שבו החלון מתחלף, ב-07:00 */
+  end: string;
+};
+
+/**
+ * החלון שבו אנחנו נמצאים עכשיו.
+ *
+ * ⚠ **`date` יכול להיות אתמול** · וזה בכוונה. שישי בערב, ושבת עד
+ * 07:00, עדיין שייכים לחלון של השניצל — שם מוצג ״המכירה נסגרה״
+ * על המכירה שכבר הייתה.
+ */
+export function saleWindow(now: Date): SaleWindow {
   const t = weekMinutes(now);
-  const cat: 'cous' | 'schn' = t >= SWITCH_TUE && t < SWITCH_FRI ? 'schn' : 'cous';
-  const target = cat === 'cous' ? TUE : FRI;
-  /* ⚠ בתוך החלון היעד תמיד לפנים · שלישי אחרי 18:00 כבר בחלון
-     של שישי, ולכן ההפרש לעולם אינו ״היום שכבר עבר״. */
-  const ahead = (target - now.getDay() + 7) % 7;
-  const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  return { cat, date: addDaysIso(local, ahead) };
+  const day = now.getDay();
+  const schn = t >= SWITCH_WED && t < SWITCH_SAT;
+  const cat: 'cous' | 'schn' = schn ? 'schn' : 'cous';
+  /* כמה ימים אחורה מהיום ועד תחילת החלון · ראו טבלת הימים בהערה */
+  const back = schn ? day - WED : day === SAT ? 0 : day + 1;
+  const start = addDaysIso(isoOf(now), -back);
+  return { cat, date: addDaysIso(start, LEAD[cat]), start, end: addDaysIso(start, SPAN[cat]) };
+}
+
+/**
+ * יום המכירה של החלון הנוכחי · הקטגוריה והתאריך.
+ * ⚠ נשאר בשם הזה כי הוא קרוא בכל האפליקציה · ראו `saleWindow`.
+ */
+export function upcomingSale(now: Date): { cat: 'cous' | 'schn'; date: string } {
+  const w = saleWindow(now);
+  return { cat: w.cat, date: w.date };
+}
+
+/** האם החלון של התאריך הזה כבר נגמר · לפי השעון של עכשיו */
+export function saleWindowEnded(saleDate: string, now: Date): boolean {
+  const w = saleWindow(now);
+  return saleDate !== w.date;
 }

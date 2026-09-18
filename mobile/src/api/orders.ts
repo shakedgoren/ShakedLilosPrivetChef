@@ -14,7 +14,13 @@ export const listMyOrders = () => api<{ orders: Order[] }>('/orders');
  * שלושת מצבי יום המכירה · ראו `saleDayState` בשרת.
  * ⚠ `state` אופציונלי · שרת ישן שעדיין לא עודכן מחזיר `open` בלבד.
  */
-export type SaleState = 'open' | 'pending' | 'sold_out';
+/**
+ * ⚠ **`closed` החליף את `sold_out` · 18 בספטמבר 2026** · שקד:
+ * ״מהרגע שאני סוגרת את המכירה … יופיע הכיתוב ׳המכירה נסגרה׳״.
+ * הסגירה היא פעולה שלה ולא תוצאה של המלאי · ראו `SaleState`
+ * בשרת.
+ */
+export type SaleState = 'open' | 'pending' | 'closed';
 
 export const saleDayStatus = (category: string) =>
   api<{
