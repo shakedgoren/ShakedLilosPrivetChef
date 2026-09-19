@@ -41,6 +41,8 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
  *
  * ⚠ **מספר אחד ולא שניים** · הם עומדים זה לצד זה עם `flex: 1`;
  * שני גבהים שונים היו מיישרים אותם לגבוה ומשאירים לנמוך שוליים.
+ *
+ * ⚠ **מינימום, לא תקרה · 19 בספטמבר 2026** · ראו `profitCard`.
  */
 const CHART_CARD_H = 202;
 /** רוחב העוגה · היה 127, וההגדלה היא כל מה שהכרטיס הגבוה מרשה */
@@ -383,7 +385,7 @@ const s = StyleSheet.create({
   expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
-  donutCard: { flex: 1, height: CHART_CARD_H, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
+  donutCard: { flex: 1, minHeight: CHART_CARD_H, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
   pieWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   /**
    * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״
@@ -401,9 +403,24 @@ const s = StyleSheet.create({
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendName: { fontSize: 12, fontWeight: '500', color: LAV.soft },
 
+  /**
+   * ⚠ **גובה מינימלי ולא גובה קבוע · 19 בספטמבר 2026** · בקשה של
+   * שקד: ״המד התקדמות איפה שמוצג הרווח החודשי עולה על הכיתוב,
+   * צריך להגדיל לגובה את הכרטיסייה״.
+   *
+   * הגובה 202 נמדד מהקנבס, אבל הכתב באפליקציה גדל פעמיים מאז:
+   * `FONT_BUMP` הוסיף 4 לכל גודל, ו-iOS מגדיל עוד לפי ״גודל טקסט״
+   * שבהגדרות המכשיר. נמדד בסימולטור ב-`extra-large`: התוכן צריך
+   * יותר מ-202, ה-`spacer` הצטמק לאפס, והעמודות נדחקו אל שורת
+   * ״הוצאות״ ונחתכו בתחתית הכרטיס.
+   *
+   * עם `minHeight` הכרטיס גדל לפי מה שבתוכו. הכרטיס שלצידו
+   * (העוגה) מקבל את אותו מינימום, ו-`alignItems: 'stretch'`
+   * שבשורה משווה את השניים — כך הם נשארים תאומים בכל גודל כתב.
+   */
   profitCard: {
     flex: 1,
-    height: CHART_CARD_H,
+    minHeight: CHART_CARD_H,
     borderRadius: 26,
     paddingTop: 14,
     paddingHorizontal: 16,
@@ -414,5 +431,7 @@ const s = StyleSheet.create({
   rule: { height: 1, backgroundColor: LAV.edge, marginVertical: 7 },
   grossRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 },
   gross: { fontSize: 14.5, fontWeight: '600', color: LAV.soft },
-  spacer: { flex: 1 },
+  /* ⚠ **רווח אמיתי מעל העמודות** · `flex: 1` לבדו מצטמק לאפס
+     כשהתוכן גדול, והעמודות נדבקות לכיתוב. */
+  spacer: { flex: 1, minHeight: 10 },
 });
