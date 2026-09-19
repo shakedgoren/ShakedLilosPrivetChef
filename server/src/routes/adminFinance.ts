@@ -489,6 +489,45 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       where: { createdAt: { gte: monthFrom, lt: end } },
       _sum: { amount: true },
     });
+    /**
+     * ⚠ **מגמת הרווח · 19 בספטמבר 2026** · בקשה של שקד: העמודות
+     * בכרטיס ״רווח החודש״ ״צריכות להיות פונקציונליות בהתאם
+     * לנתונים״. עד עכשיו הן היו ציור קבוע מהקנבס
+     * (`PROFIT.bars`) — שישה מלבנים בגבהים כתובים מראש, שלא זזו
+     * לעולם.
+     *
+     * ⚠ **שישה חודשים, כולל הנוכחי** · אותו טווח של גרף המחזור
+     * שמעליו, כדי שהשניים יספרו את אותו סיפור.
+     *
+     * ⚠ **שדות רזים** · רק `createdAt` ו-`total`, בלי עמודות
+     * ה-JSON הכבדות · ראו ההערה ב-`/money`.
+     */
+    const trendFrom = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const [trendOrders, trendExp] = await Promise.all([
+      prisma.order.findMany({
+        where: {
+          createdAt: { gte: trendFrom, lt: end },
+          status: { not: CANCELLED },
+          category: { not: 'fruit' },
+        },
+        select: { createdAt: true, total: true },
+      }),
+      prisma.expense.findMany({
+        where: { createdAt: { gte: trendFrom, lt: end } },
+        select: { createdAt: true, amount: true },
+      }),
+    ]);
+    const bucket = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
+    const rev6 = new Map<string, number>();
+    const exp6 = new Map<string, number>();
+    for (const o of trendOrders) rev6.set(bucket(o.createdAt), (rev6.get(bucket(o.createdAt)) ?? 0) + o.total);
+    for (const e of trendExp) exp6.set(bucket(e.createdAt), (exp6.get(bucket(e.createdAt)) ?? 0) + e.amount);
+    const profitTrend = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      const k = bucket(d);
+      return { k: MONTH_SHORT[d.getMonth()] ?? '', v: (rev6.get(k) ?? 0) - (exp6.get(k) ?? 0) };
+    });
+
     const people = await prisma.user.count({ where: { role: 'customer' } });
     const openShop = await prisma.shoppingList.findFirst({ where: { closedAt: null } });
     const shopItems = openShop ? readJson<{ done: boolean }[]>(openShop.itemsJson, []) : [];
@@ -613,6 +652,8 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
         revenue: todayOrders.reduce((s, o) => s + o.total, 0),
       },
       month: { revenue, expenses, profit: revenue - expenses },
+      /* ⚠ מגמת הרווח · ששת החודשים האחרונים · ראו ההערה למעלה */
+      profitTrend,
       badges: {
         orders: newOrders,
         days: nextSale

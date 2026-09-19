@@ -210,7 +210,18 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
   const cy = ry + 5;
   const height = cy + ry + depth + 4;
 
-  const sum = parts.reduce((t, p) => t + p.pct, 0) || 1;
+  /**
+   * ⚠ **עוגה ריקה במקום עוגה נעלמת · 19 בספטמבר 2026** · שקד:
+   * ״ולאן נעלמה העוגה? שתציג את ההוצאות אבל פשוט שהעוגה תהיה
+   * ריקה״.
+   *
+   * כשכל הנתחים אפס כל הזוויות יצאו 0, לא צויר כלום, והרכיב
+   * פשוט נעלם מהמסך — נראה כמו תקלה ולא כמו ״אין עדיין מכירות״.
+   * עכשיו מצוירת אותה עוגה בדיוק, בגוון ניטרלי ובלי חלוקה.
+   */
+  const total = parts.reduce((t, p) => t + p.pct, 0);
+  const empty = total === 0;
+  const sum = total || 1;
   let at = -Math.PI / 2;
   const wedges = parts.map((p) => {
     const span = (p.pct / sum) * 2 * Math.PI;
@@ -245,6 +256,17 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
 
       {/* הצל · אליפסה רכה **מתחת** לעוגה בלבד, לא עליה */}
       <Ellipse cx={cx} cy={cy + ry + depth - 2} rx={rx * 0.92} ry={ry * 0.26} fill="#5A4A70" opacity={0.14} />
+
+      {/* ⚠ עוגה ריקה · אותה צורה, בלי חלוקה · ראו ההערה למעלה */}
+      {empty ? (
+        <>
+          <Path
+            d={`M${(cx - rx).toFixed(2)},${cy.toFixed(2)} A${rx.toFixed(2)},${ry.toFixed(2)} 0 0 0 ${(cx + rx).toFixed(2)},${cy.toFixed(2)} L${(cx + rx).toFixed(2)},${(cy + depth).toFixed(2)} A${rx.toFixed(2)},${ry.toFixed(2)} 0 0 1 ${(cx - rx).toFixed(2)},${(cy + depth).toFixed(2)} Z`}
+            fill="#CFC6DE"
+          />
+          <Ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="#E7E1F0" stroke="#CFC6DE" strokeWidth={1} />
+        </>
+      ) : null}
 
       {/* הדופן · רק החלק שנראה מלפנים */}
       {wedges.map((w, i) => {
@@ -332,8 +354,31 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
  * יוצאות גבוהות יותר בלי לשנות את הרוחב — שממילא תפוס על ידי
  * הכרטיס שלצידו.
  */
-export function ProfitBars({ grow = 1 }: { grow?: number }) {
+/**
+ * עמודות הרווח בכרטיס ״רווח החודש״ · **ששת החודשים האחרונים**.
+ *
+ * ⚠ **היו ציור קבוע · תוקן ב-19 בספטמבר 2026** · בקשה של שקד:
+ * ״זה צריך להיות פונקציונלי בהתאם לנתונים״. עד עכשיו זה היה
+ * `PROFIT.bars` — שישה מלבנים בגבהים כתובים מראש בקנבס, שלא זזו
+ * לעולם. עם מסד ריק הם עדיין הראו תנועה ירוקה.
+ *
+ * ⚠ **קו אפס אמיתי** · חודש הפסד יורד **מתחת** לקו ונצבע באדום.
+ * לחתוך אותו לאפס היה מציג הפסד בדיוק כמו חודש בלי פעילות.
+ *
+ * ⚠ **הכול אפס = קו שטוח, לא ריק** · מסד ריק צריך להיראות כמו
+ * אפס, ולא כמו רכיב שנשבר.
+ */
+export function ProfitBars({ points, grow = 1 }: { points?: number[]; grow?: number }) {
   const h = 30 * grow;
+  const vals = points && points.length ? points : PROFIT.bars.map((b) => b.h);
+  const peak = Math.max(...vals.map(Math.abs), 1);
+  const down = vals.some((v) => v < 0);
+  /* קו האפס · יורד לשני שלישים רק כשיש למה לרדת */
+  const zero = down ? h * 0.66 : h;
+  const room = down ? h * 0.62 : h * 0.94;
+  /* ⚠ עמודה דקה גם באפס · אחרת חודש ריק נעלם לגמרי */
+  const MIN = 1.5;
+
   return (
     <Svg width="100%" height={h} viewBox={`0 0 148 ${h}`}>
       <Defs>
@@ -342,17 +387,23 @@ export function ProfitBars({ grow = 1 }: { grow?: number }) {
           <Stop offset="100%" stopColor="#437C59" stopOpacity={0.35} />
         </LinearGradient>
       </Defs>
-      {PROFIT.bars.map((b, i) => (
-        <Rect
-          key={b.x}
-          x={b.x}
-          y={b.y * grow}
-          width={18}
-          height={b.h * grow}
-          rx={4}
-          fill={i === PROFIT.bars.length - 1 ? '#437C59' : 'url(#profbar)'}
-        />
-      ))}
+      {vals.map((v, i) => {
+        const size = Math.max((Math.abs(v) / peak) * room, MIN);
+        const last = i === vals.length - 1;
+        const loss = v < 0;
+        return (
+          <Rect
+            key={PROFIT.bars[i]?.x ?? i}
+            x={PROFIT.bars[i]?.x ?? 2 + i * 24}
+            y={loss ? zero : zero - size}
+            width={18}
+            height={size}
+            rx={4}
+            fill={loss ? '#B95349' : last ? '#437C59' : 'url(#profbar)'}
+            opacity={loss ? 0.75 : 1}
+          />
+        );
+      })}
     </Svg>
   );
 }

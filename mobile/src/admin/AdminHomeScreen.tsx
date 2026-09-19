@@ -250,7 +250,11 @@ export function AdminHomeScreen() {
             </View>
           </View>
           <View style={s.spacer} />
-          <ProfitBars grow={BARS_GROW} />
+          {/* ⚠ נתונים אמיתיים · נופל לציור הקנבס רק בלי שרת */}
+          <ProfitBars
+            grow={BARS_GROW}
+            points={home.live ? home.profitTrend.map((p) => p.v) : undefined}
+          />
         </GlassCard>
       </View>
 

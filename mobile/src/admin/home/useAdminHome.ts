@@ -95,6 +95,8 @@ export function useAdminHome() {
     total: REVENUE.total,
     points: REVENUE.months.map((m, i) => ({ k: m, v: fromCanvasDot(REVENUE.dots[i]?.cy) })),
   });
+  /* ⚠ מגמת הרווח מהשרת · ריק = נופלים לציור הקנבס · ראו `ProfitBars` */
+  const [profitTrend, setProfitTrend] = useState<{ k: string; v: number }[]>([]);
   const [donut, setDonut] = useState<{ total: number; shares: { name: string; color: string; v: number }[] } | null>(
     null,
   );
@@ -106,6 +108,7 @@ export function useAdminHome() {
     setSale(s.sale);
     setBadges(s.badges);
     setMonth(s.month);
+    setProfitTrend(s.profitTrend ?? []);
     setDonut(s.donut);
   }, [live]);
 
@@ -241,6 +244,7 @@ export function useAdminHome() {
     subtitle,
     badges,
     month,
+    profitTrend,
     donut,
     shares,
   };

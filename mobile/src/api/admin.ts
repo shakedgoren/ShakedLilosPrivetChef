@@ -156,6 +156,8 @@ export const adminSummary = () =>
       revenue: number;
     };
     month: { revenue: number; expenses: number; profit: number };
+    /** מגמת הרווח · ששת החודשים האחרונים · מזינה את `ProfitBars` */
+    profitTrend: { k: string; v: number }[];
     badges: Record<string, number | string | boolean>;
     donut: { total: number; shares: { name: string; color: string; v: number }[] };
   }>('/admin/summary');
