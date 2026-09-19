@@ -1367,7 +1367,8 @@ export const COSTS_AUTO_TAG = 'אוטומטי';
 export const COSTS_FROM_LABEL = 'נשאב מקטגוריות אחרות';
 export const COSTS_PART_PH = 'שם המצרך';
 /* ⚠ שני הנוסחים האלה נכתבו על ידי Claude · 19.9.2026 · ממתינים לאישור */
-export const COSTS_PART_ADD = '+ הוספת מצרך';
+/* ⚠ תווית נגישות בלבד · הכפתור עצמו הוא ״+״ · בקשה של שקד */
+export const COSTS_PART_ADD = 'הוספת מצרך';
 export const COSTS_PART_DEL = 'הסרת';
 export const COSTS_COLS = { name: 'מוצר', price: 'מחיר', qty: 'כמות', sum: 'סה״כ' } as const;
 export const COSTS_FOOT = 'המחיר שנקבע כאן הוא המחיר בכל האפליקציה, כולל אצל הלקוחה. העלות עוברת אוטומטית למסך התפריט.';

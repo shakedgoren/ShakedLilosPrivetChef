@@ -51,6 +51,13 @@ const BARS_GROW = 1.55;
 /** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
 const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
 
+/**
+ * ⚠ **שני הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · שקד
+ * ביקשה ״בלי כותרות שמסבירות״, ולכן הם מילה אחת כל אחד.
+ */
+const MONTH_REVENUE = 'הכנסות';
+const MONTH_COST = 'הוצאות';
+
 const money = (n: number) => n.toLocaleString('en-US');
 
 /** ‎2026-09-15 → ‎15.9 · כמו התג של ״ימי מכירה״ בקנבס */
@@ -130,25 +137,34 @@ export function AdminHomeScreen() {
         quota={home.quotaTotal}
       />
 
-      {/* ⚠ **שני הכרטיסים של יום המכירה** · שקד ביקשה שיופיעו זה
-          לצד זה, ושכל אחד ינקוב בתאריך המכירה עצמו ולא ב״היום״. */}
+      {/**
+        * ⚠ **החודש · קוסקוס ושניצל בלבד · 19 בספטמבר 2026** ·
+        * בקשה של שקד: ״בכרטיסייה מצד ימין רק את ההכנסות של אותו
+        * החודש של המכירות של הקוסקוס והשניצל ושבצד שמאל יהיה רק
+        * את ההוצאות של אותו החודש של המכירות של הקוסקוס והשניצל.
+        * אין צורך בכותרות שמסבירות״.
+        *
+        * קודם הכרטיסים הראו **יום מכירה אחד** — מספר הזמנות
+        * והכנסות ליום — ועם כותרת שנקבה בתאריך.
+        *
+        * ⚠ **״הוצאות של המכירות״ = עלות הייצור של מה שנמכר** ·
+        * טבלת ההוצאות מסווגת לפי סוג ההוצאה ולא לפי קטגוריית
+        * מכירה, ולכן אי אפשר לסנן אותה ל״קוסקוס ושניצל״. מה
+        * שניתן לחשב הוא כמה עלה לייצר את מה שנמכר · ראו
+        * `saleMonth` בשרת.
+        */}
       <View style={s.statRow}>
-        {/* ⚠ **הזמנות ומנות יחד** · שקד ביקשה (15 בספטמבר 2026)
-            לראות גם כמה הזמנות התקבלו וגם כמה מנות נמכרו בהן —
-            עשר הזמנות של עשר מנות יופיעו ״10 | 100״. */}
         <GlassCard style={[s.stat, s.tint1]}>
-          <Text style={s.statLabel}>{`הזמנות ומנות עבור ${shortDate(home.sale.date)}`}</Text>
-          <View style={s.pair}>
-            <Text style={s.statValue}>{home.sale.orders}</Text>
-            <Text style={s.pipe}>|</Text>
-            <Text style={s.statValue}>{home.sale.meals}</Text>
+          <Text style={s.statLabel}>{MONTH_COST}</Text>
+          <View style={s.statMoney}>
+            <Text style={s.statValue}>{money(home.saleMonth.cost)}</Text>
+            <Text style={s.currency}>₪</Text>
           </View>
         </GlassCard>
         <GlassCard style={[s.stat, s.tint1]}>
-          {/* ⚠ ״הכנסות״ ולא ״מחזור״ · בקשה של שקד (15 בספטמבר 2026) */}
-          <Text style={s.statLabel}>{`הכנסות עבור ${shortDate(home.sale.date)}`}</Text>
+          <Text style={s.statLabel}>{MONTH_REVENUE}</Text>
           <View style={s.statMoney}>
-            <Text style={s.statValue}>{money(home.sale.revenue)}</Text>
+            <Text style={s.statValue}>{money(home.saleMonth.revenue)}</Text>
             <Text style={s.currency}>₪</Text>
           </View>
         </GlassCard>

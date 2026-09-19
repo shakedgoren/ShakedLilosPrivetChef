@@ -231,7 +231,23 @@ const s = StyleSheet.create({
   knobOn: { start: 2.5 },
   knobOff: { start: 19.5 },
 
-  body: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 },
+  /**
+   * ⚠ **גובה מובטח · 19 בספטמבר 2026** · שקד: ״המד התקדמות עולה
+   * על הכיתוב, צריך להגדיל לגובה את הכרטיסייה״.
+   *
+   * הטבעת היא בקוטר קבוע (116), ושורות המנות נערמות לפי מספרן.
+   * עם ארבע מנות הן יוצאות בערך באותו גובה, ובקצה הן נגעו זו
+   * בזו. `minHeight` מבטיח שהכרטיס תמיד גבוה מהטבעת, וה-`gap`
+   * גדל כדי שיהיה גם אוויר ביניהן.
+   */
+  body: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginTop: 12,
+    minHeight: RING + 16,
+    paddingBottom: 4,
+  },
   ringBox: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   ringText: { position: 'absolute', alignItems: 'center' },
   /**
@@ -244,7 +260,7 @@ const s = StyleSheet.create({
   ringPct: { fontSize: 20 - FONT_BUMP, fontWeight: '300', color: LAV.ink },
   ringNote: { fontSize: 9.5 - FONT_BUMP, fontWeight: '600', letterSpacing: 0.8, color: LAV.faint },
 
-  rows: { flex: 1, gap: 9 },
+  rows: { flex: 1, gap: 11, paddingVertical: 2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
   name: { flex: 1, fontSize: 12.5, fontWeight: '400', color: LAV.soft },

@@ -13,7 +13,6 @@ import {
   COSTS_COLS,
   COSTS_DUE_SUB,
   COSTS_DUE_TITLE,
-  COSTS_FOOT,
   COSTS_FROM_LABEL,
   COSTS_IMP_NONE,
   COSTS_IMP_SUB,
@@ -382,9 +381,11 @@ export function AdminCostsScreen() {
                    */}
                   <Pressable
                     onPress={() => patch(d.id, { parts: [...d.parts, { n: '', price: 0, qty: 1 }] })}
+                    accessibilityLabel={COSTS_PART_ADD}
+                    hitSlop={10}
                     style={s.partAdd}
                   >
-                    <Text style={s.partAddText}>{COSTS_PART_ADD}</Text>
+                    <Text style={s.partAddText}>+</Text>
                   </Pressable>
                   {/* ⚠ **שני השדות זה לצד זה** · כך זה בקנבס, ושקד
                       שלחה בדיוק את הצילום הזה (15 בספטמבר 2026).
@@ -430,7 +431,6 @@ export function AdminCostsScreen() {
             </View>
           );
         })}
-        <Text style={s.foot}>{COSTS_FOOT}</Text>
       </ScrollView>
 
       {impOpen ? (
@@ -501,16 +501,20 @@ const s = StyleSheet.create({
   },
   partDel: { width: 24, alignItems: 'center', justifyContent: 'center' },
   partDelText: { fontSize: 19, lineHeight: 22, color: '#B95349' },
+  /* ⚠ **קומפקטי** · שקד: ״שיהיה כפתור קטן וקומפקטי ׳+׳ זה הכל
+     זה מובן״. הכיתוב נשאר כתווית נגישות בלבד. */
   partAdd: {
     alignSelf: 'flex-start',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 999,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: 'rgba(130,112,162,0.45)',
   },
-  partAddText: { fontSize: 13, fontWeight: '600', color: '#6E4FA8' },
+  partAddText: { fontSize: 17, lineHeight: 19, fontWeight: '600', color: '#6E4FA8' },
   /* שני השדות · flex-end כדי שהשדה הבודד יישר לתחתית */
   fields: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   field: { flex: 1, minWidth: 0 },

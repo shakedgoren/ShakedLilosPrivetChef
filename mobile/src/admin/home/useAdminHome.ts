@@ -95,6 +95,8 @@ export function useAdminHome() {
     total: REVENUE.total,
     points: REVENUE.months.map((m, i) => ({ k: m, v: fromCanvasDot(REVENUE.dots[i]?.cy) })),
   });
+  /* ⚠ החודש · קוסקוס ושניצל בלבד · שתי הכרטיסיות בדף הבית */
+  const [saleMonth, setSaleMonth] = useState({ revenue: 0, cost: 0 });
   /* ⚠ מגמת הרווח מהשרת · ריק = נופלים לציור הקנבס · ראו `ProfitBars` */
   const [profitTrend, setProfitTrend] = useState<{ k: string; v: number }[]>([]);
   const [donut, setDonut] = useState<{ total: number; shares: { name: string; color: string; v: number }[] } | null>(
@@ -109,6 +111,7 @@ export function useAdminHome() {
     setBadges(s.badges);
     setMonth(s.month);
     setProfitTrend(s.profitTrend ?? []);
+    setSaleMonth(s.saleMonth ?? { revenue: 0, cost: 0 });
     setDonut(s.donut);
   }, [live]);
 
@@ -244,6 +247,7 @@ export function useAdminHome() {
     subtitle,
     badges,
     month,
+    saleMonth,
     profitTrend,
     donut,
     shares,

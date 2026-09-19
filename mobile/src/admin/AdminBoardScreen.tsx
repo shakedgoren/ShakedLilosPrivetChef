@@ -289,8 +289,28 @@ export function AdminBoardScreen() {
   };
   const tableW = w.time + w.who + w.item * BOARD_CAT.items.length + w.sum + w.pay + w.status;
 
+  /**
+   * ⚠ **העמוד כולו נגלל כששוכבים · 19 בספטמבר 2026** · בקשה של
+   * שקד: ״שכשאני מסובבת את הטלפון לרוחב, שהלמעלה של העמוד לא
+   * יהיה תקוע — שאני אוכל לגלול והטבלה תעלה למעלה כדי שאוכל
+   * לראות אותה במלואה״.
+   *
+   * בשכיבה יש 402 נקודות גובה בלבד, והכותרת עם רצועת הקטגוריות
+   * אוכלות כמחצית. קודם הן היו **קבועות** והטבלה נדחסה למה
+   * שנשאר, עם גלילה פנימית משלה.
+   *
+   * ⚠ **רק בשכיבה** · זקוף נשאר בדיוק כפי שהיה — כותרת קבועה
+   * וגלילה בתוך הטבלה. שם יש מספיק גובה, וכותרת שנגללת החוצה
+   * הייתה הרעה.
+   *
+   * ⚠ **אסור גליל בתוך גליל** · כשהעמוד נגלל, הגלילה הפנימית של
+   * הטבלה יורדת והיא נפרשת במלואה.
+   */
+  const Page = landscape ? ScrollView : View;
+
   return (
-    <View
+    <Page
+      {...(landscape ? { contentContainerStyle: s.turnPad } : {})}
       style={[
         s.root,
         {
@@ -390,7 +410,7 @@ export function AdminBoardScreen() {
         * מקבל גובה מחולק ביחס ההקטנה — אחרת הטבלה הייתה נגמרת
         * באמצע המסך ומתחתיה שטח ריק.
         */}
-      <View style={s.fitBox}>
+      <View style={landscape ? undefined : s.fitBox}>
         <View>
       <ScrollView horizontal>
         {/* ⚠ **הרוחב נגזר מהעמודות בפועל** · קודם הוא הוזמן לפי
@@ -415,7 +435,8 @@ export function AdminBoardScreen() {
             <Text style={[s.col, { width: w.pay }]}>{TAIL_COLS.pay}</Text>
             <Text style={[s.col, { width: w.status }]}>{TAIL_COLS.status}</Text>
           </View>
-          <ScrollView style={s.list}>
+          {/* ⚠ בשכיבה אין גלילה פנימית · ראו ההערה ליד `Page` */}
+          <ScrollView style={landscape ? undefined : s.list} scrollEnabled={!landscape}>
             {shown.length === 0 ? (
               <Text style={s.empty}>{BOARD_EMPTY}</Text>
             ) : (
@@ -529,7 +550,7 @@ export function AdminBoardScreen() {
           onConfirm={doCancel}
         />
       ) : null}
-    </View>
+    </Page>
   );
 }
 
@@ -538,6 +559,8 @@ const s = StyleSheet.create({
   root: { flex: 1, gap: 8, backgroundColor: surface.ground },
   /* ⚠ חותך את מה שגולש אחרי ההקטנה · ראו ההערה ליד הטבלה */
   fitBox: { flex: 1, overflow: 'hidden' },
+  /* ⚠ אוויר בתחתית הגלילה בשכיבה · אחרת הסה״כ נדבק לקצה */
+  turnPad: { paddingBottom: 28 },
   tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   head: { justifyContent: 'center', minHeight: 44 },
   backWrap: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },

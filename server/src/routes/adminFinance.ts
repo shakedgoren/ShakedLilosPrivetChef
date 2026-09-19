@@ -530,6 +530,35 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       return { k: MONTH_SHORT[d.getMonth()] ?? '', v: (rev6.get(k) ?? 0) - (exp6.get(k) ?? 0) };
     });
 
+    /**
+     * ⚠ **שתי הכרטיסיות בדף הבית · 19 בספטמבר 2026** · בקשה של
+     * שקד: ״בכרטיסייה מצד ימין רק את ההכנסות של אותו החודש של
+     * המכירות של הקוסקוס והשניצל, ושבצד שמאל רק את ההוצאות של
+     * אותו החודש של המכירות של הקוסקוס והשניצל״.
+     *
+     * ⚠ **״הוצאות של המכירות״ = עלות הייצור של מה שנמכר** · טבלת
+     * ההוצאות מסווגת לפי סוג ההוצאה (חומרי גלם, אריזות) ולא לפי
+     * קטגוריית מכירה, ולכן אי אפשר לסנן אותה ל״קוסקוס ושניצל״.
+     * מה שכן ניתן לחשב — וזה גם מה שהיא ביקשה בפועל — הוא **כמה
+     * עלה לייצר את מה שנמכר**, לפי עלויות הייצור שהיא מזינה
+     * במסך העלויות.
+     *
+     * ⚠ **0 עד שהיא תזין עלויות** · וזה נכון: בלי עלות ייצור
+     * אין מה לדעת כמה עלה לייצר.
+     */
+    const saleCatOrders = monthOrders.filter((o) => o.category === 'cous' || o.category === 'schn');
+    const saleRevenueMonth = saleCatOrders.reduce((s2, o) => s2 + o.total, 0);
+    const dishViews = sortDishes(await prisma.productionDish.findMany()).map(viewOf);
+    const saleCostMonth = saleCatOrders.reduce((s2, o) => {
+      const qty = qtyOfOrder(o);
+      let cost = 0;
+      for (const [id, n] of Object.entries(qty)) {
+        const dish = dishViews.find((d) => d.id === id);
+        if (dish) cost += compareCost(dish, dishViews) * n;
+      }
+      return s2 + cost;
+    }, 0);
+
     const people = await prisma.user.count({ where: { role: 'customer' } });
     const openShop = await prisma.shoppingList.findFirst({ where: { closedAt: null } });
     const shopItems = openShop ? readJson<{ done: boolean }[]>(openShop.itemsJson, []) : [];
@@ -654,6 +683,11 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
         revenue: todayOrders.reduce((s, o) => s + o.total, 0),
       },
       month: { revenue, expenses, profit: revenue - expenses },
+      /* ⚠ קוסקוס ושניצל בלבד · ראו ההערה למעלה */
+      saleMonth: {
+        revenue: Math.round(saleRevenueMonth),
+        cost: Math.round(saleCostMonth),
+      },
       /* ⚠ מגמת הרווח · ששת החודשים האחרונים · ראו ההערה למעלה */
       profitTrend,
       badges: {
