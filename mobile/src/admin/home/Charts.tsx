@@ -13,7 +13,7 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { surface } from '../../theme/tokens';
-import { DONUT, PROFIT, REVENUE } from '../../data/adminHome';
+import { DONUT, REVENUE } from '../../data/adminHome';
 
 /** מד המכסה · טבעת לכל יום מכירה פתוח, גדולה לראשון וקטנה לשני */
 export function QuotaRings({
@@ -194,7 +194,7 @@ export type Share = { name: string; color: string; pct: number };
  * נגזרים מהצבע עצמו — כל צבע שיגיע יעבוד, והמקרא תואם לפרוסה.
  */
 const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
-const shade = (hex: string, by: number): string => {
+export const shade = (hex: string, by: number): string => {
   const h = hex.replace('#', '');
   const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
   const n = parseInt(full, 16);
@@ -206,6 +206,17 @@ const shade = (hex: string, by: number): string => {
 };
 /** בהיר ל-45% כלפי לבן, כהה ל-22% כלפי שחור */
 const faceOf = (hex: string): [string, string] => [shade(hex, 0.45), shade(hex, -0.22)];
+
+/**
+ * גוון למנה אחת מתוך גוון הקטגוריה · בהיר לראשונה, כהה לאחרונה.
+ *
+ * ⚠ **נבנה ב-19 בספטמבר 2026** · הפילוח בתחתית דף הבית הוא לפי
+ * **מנה** בתוך קטגוריה אחת, ולכן אין לכל פרוסה צבע משלה מהקנבס.
+ * הגוונים נגזרים מגוון הקטגוריה כדי שהעוגה תיקרא כמשפחה אחת,
+ * ושפרוסה ועמודה של אותה מנה יחלקו צבע.
+ */
+export const tintOf = (hex: string, i: number, n: number): string =>
+  n <= 1 ? hex : shade(hex, 0.4 - (i / (n - 1)) * 0.68);
 
 /** פרוסה צרה · הכתב קטן יותר ויוצא אל החלק הרחב שלה */
 const NARROW = 14;
@@ -356,62 +367,52 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
 }
 
 /**
- * עמודות הרווח · ששת החודשים, האחרונה מודגשת.
+ * פילוח ההוצאות לפי מנה · עמודה לכל מנה, בצבע של פרוסת העוגה שלה.
  *
- * ⚠ **`grow` · 18 בספטמבר 2026** · בקשה של שקד: ״תגדיל את שתי
- * הדיאגרמות בתוכן״. הקואורדינטות של העמודות מחולצות מהקנבס ואי
- * אפשר לגעת בהן, ולכן ההגדלה היא **מתיחה אנכית של מערכת הצירים**:
- * גם תיבת התצוגה וגם כל ערכי ה-y מוכפלים באותו מספר, והעמודות
- * יוצאות גבוהות יותר בלי לשנות את הרוחב — שממילא תפוס על ידי
- * הכרטיס שלצידו.
+ * ⚠ **נבנה ב-19 בספטמבר 2026** · בקשה של שקד: ״איפה שהיה את
+ * הדיאגרמה השנייה העמודות — שיוצג שם פילוח רק של ההוצאות
+ * מהמכירות של הקוסקוס והשניצל בכל החודש״.
+ *
+ * ⚠ **החליף את `ProfitBars`** · שם היו שש עמודות קבועות, אחת לכל
+ * חודש, במקומות x שחולצו מהקנבס. כאן מספר העמודות הוא מספר המנות
+ * בקטגוריה, ולכן הרוחב והמרווח מחושבים ממנו.
+ *
+ * ⚠ **הצבע מגיע מבחוץ** · אותו גוון בדיוק כמו פרוסת העוגה של אותה
+ * מנה, כדי שהמקרא שמתחת לעוגה ישרת גם את העמודות.
+ *
+ * ⚠ **עמודה דקה גם באפס** · אחרת מנה שלא נמכרה נעלמת לגמרי,
+ * והפילוח נראה כאילו הוא שבור ולא כאילו הוא ריק.
  */
-/**
- * עמודות הרווח בכרטיס ״רווח החודש״ · **ששת החודשים האחרונים**.
- *
- * ⚠ **היו ציור קבוע · תוקן ב-19 בספטמבר 2026** · בקשה של שקד:
- * ״זה צריך להיות פונקציונלי בהתאם לנתונים״. עד עכשיו זה היה
- * `PROFIT.bars` — שישה מלבנים בגבהים כתובים מראש בקנבס, שלא זזו
- * לעולם. עם מסד ריק הם עדיין הראו תנועה ירוקה.
- *
- * ⚠ **קו אפס אמיתי** · חודש הפסד יורד **מתחת** לקו ונצבע באדום.
- * לחתוך אותו לאפס היה מציג הפסד בדיוק כמו חודש בלי פעילות.
- *
- * ⚠ **הכול אפס = קו שטוח, לא ריק** · מסד ריק צריך להיראות כמו
- * אפס, ולא כמו רכיב שנשבר.
- */
-export function ProfitBars({ points, grow = 1 }: { points?: number[]; grow?: number }) {
+const SPLIT_W = 148;
+const SPLIT_GAP = 5;
+
+export function SplitBars({
+  rows,
+  grow = 1,
+}: {
+  rows: { id: string; name: string; v: number; color: string }[];
+  grow?: number;
+}) {
   const h = 30 * grow;
-  const vals = points && points.length ? points : PROFIT.bars.map((b) => b.h);
-  const peak = Math.max(...vals.map(Math.abs), 1);
-  const down = vals.some((v) => v < 0);
-  /* קו האפס · יורד לשני שלישים רק כשיש למה לרדת */
-  const zero = down ? h * 0.66 : h;
-  const room = down ? h * 0.62 : h * 0.94;
-  /* ⚠ עמודה דקה גם באפס · אחרת חודש ריק נעלם לגמרי */
+  const n = rows.length || 1;
+  const bw = Math.max(6, (SPLIT_W - SPLIT_GAP * (n - 1)) / n);
+  const peak = Math.max(...rows.map((r) => Math.abs(r.v)), 1);
+  const room = h * 0.94;
   const MIN = 1.5;
 
   return (
-    <Svg width="100%" height={h} viewBox={`0 0 148 ${h}`}>
-      <Defs>
-        <LinearGradient id="profbar" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0%" stopColor="#437C59" stopOpacity={0.95} />
-          <Stop offset="100%" stopColor="#437C59" stopOpacity={0.35} />
-        </LinearGradient>
-      </Defs>
-      {vals.map((v, i) => {
-        const size = Math.max((Math.abs(v) / peak) * room, MIN);
-        const last = i === vals.length - 1;
-        const loss = v < 0;
+    <Svg width="100%" height={h} viewBox={`0 0 ${SPLIT_W} ${h}`}>
+      {rows.map((r, i) => {
+        const size = Math.max((Math.abs(r.v) / peak) * room, MIN);
         return (
           <Rect
-            key={PROFIT.bars[i]?.x ?? i}
-            x={PROFIT.bars[i]?.x ?? 2 + i * 24}
-            y={loss ? zero : zero - size}
-            width={18}
+            key={r.id}
+            x={i * (bw + SPLIT_GAP)}
+            y={h - size}
+            width={bw}
             height={size}
-            rx={4}
-            fill={loss ? '#B95349' : last ? '#437C59' : 'url(#profbar)'}
-            opacity={loss ? 0.75 : 1}
+            rx={Math.min(4, bw / 2)}
+            fill={r.color}
           />
         );
       })}

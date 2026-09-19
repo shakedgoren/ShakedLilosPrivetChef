@@ -5,6 +5,40 @@ import { upcomingSale } from '../../data/saleWeek';
 import { apiEnabled } from '../../api/config';
 import { adminGetDay, adminPutDay, adminRevenue, adminSetSold, adminSummary } from '../../api/admin';
 import { useNav } from '../../navigation/store';
+import { tintOf } from './Charts';
+import { COST_CATS, COST_DISHES } from '../../data/adminCosts';
+
+/** פילוח קטגוריה אחת לפי מנה · כפי שהשרת מחזיר אותו */
+export type SplitRow = { id: string; name: string; sold: number; revenue: number; cost: number };
+export type SplitCat = { id: string; n: string; hue: string; rows: SplitRow[] };
+
+/** גוון ברירת מחדל · רק כשהשרת עוד לא ענה בכלל */
+const LAV_FALLBACK = '#7B5CBC';
+
+/** שתי הקטגוריות שהבורר מחליף ביניהן · אותן שתיים כמו בשרת */
+const SPLIT_IDS = ['cous', 'schn'];
+
+/**
+ * הפילוח לפני שהשרת ענה · כל המנות, באפסים.
+ *
+ * ⚠ **לא רשימה ריקה** · בלי זה הבורר יוצא בלי כפתורים והמקרא
+ * נעלם, והמסך נראה שבור בשנייה שלפני התשובה. עם אפסים הוא נראה
+ * בדיוק כמו שהוא נראה כשאין מכירות — וזה גם המצב האמיתי היום.
+ *
+ * ⚠ **`adminCosts` נוצר אוטומטית מהקנבס** · נקרא ממנו בלבד.
+ */
+const SPLIT_FALLBACK: SplitCat[] = SPLIT_IDS.map((id) => ({
+  id,
+  n: COST_CATS.find((c) => c.id === id)?.n ?? '',
+  hue: COST_CATS.find((c) => c.id === id)?.hue ?? LAV_FALLBACK,
+  rows: COST_DISHES.filter((d) => d.c === id).map((d) => ({
+    id: d.id,
+    name: d.name,
+    sold: 0,
+    revenue: 0,
+    cost: 0,
+  })),
+}));
 
 /**
  * ⚠ **המכסות עברו למנה ולא לקטגוריה** · שקד ביקשה (15 בספטמבר 2026)
@@ -99,6 +133,17 @@ export function useAdminHome() {
   const [saleMonth, setSaleMonth] = useState({ revenue: 0, cost: 0 });
   /* ⚠ מגמת הרווח מהשרת · ריק = נופלים לציור הקנבס · ראו `ProfitBars` */
   const [profitTrend, setProfitTrend] = useState<{ k: string; v: number }[]>([]);
+  /**
+   * פילוח החודש לפי מנה · קוסקוס ושניצל בנפרד.
+   *
+   * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״איפה שהדיאגרמת עוגה —
+   * פילוח רק של ההכנסות מהמכירות של הקוסקוס והשניצל בכל החודש.
+   * ואיפה שהיה את הדיאגרמה השנייה העמודות — פילוח רק של
+   * ההוצאות״, ובנפרד לכל קטגוריה דרך כפתור מחליף.
+   */
+  const [saleSplit, setSaleSplit] = useState<SplitCat[]>([]);
+  /** הקטגוריה שהכפתור בחר · קוסקוס או שניצל */
+  const [splitCat, setSplitCat] = useState<string>('cous');
   const [donut, setDonut] = useState<{ total: number; shares: { name: string; color: string; v: number }[] } | null>(
     null,
   );
@@ -112,6 +157,7 @@ export function useAdminHome() {
     setMonth(s.month);
     setProfitTrend(s.profitTrend ?? []);
     setSaleMonth(s.saleMonth ?? { revenue: 0, cost: 0 });
+    setSaleSplit(s.saleSplit ?? []);
     setDonut(s.donut);
   }, [live]);
 
@@ -227,6 +273,41 @@ export function useAdminHome() {
     return rows.map((r) => ({ name: r.name, color: r.color, pct: Math.round((r.v / sum) * 100) }));
   }, [donut]);
 
+  /**
+   * הקטגוריה המצוירת כרגע · עם גוון לכל מנה.
+   *
+   * ⚠ **גוון לכל מנה מתוך גוון הקטגוריה** · כך פרוסת העוגה והעמודה
+   * של אותה מנה חולקות צבע, והמקרא שמתחת לעוגה משרת את שתיהן.
+   *
+   * ⚠ **מסד ריק מחזיר את כל המנות עם אפס** · ולא רשימה ריקה · כך
+   * שתי הדיאגרמות נשארות על המסך ורק ריקות · בקשה מפורשת של שקד.
+   */
+  const split = useMemo(() => {
+    const rows = saleSplit.length ? saleSplit : SPLIT_FALLBACK;
+    const cat = rows.find((c) => c.id === splitCat) ?? rows[0];
+    if (!cat) return { id: splitCat, n: '', hue: LAV_FALLBACK, rows: [] };
+    const n = cat.rows.length || 1;
+    return {
+      ...cat,
+      rows: cat.rows.map((r, i) => ({ ...r, color: tintOf(cat.hue, i, n) })),
+    };
+  }, [saleSplit, splitCat]);
+
+  /**
+   * פרוסות העוגה · ההכנסה של כל מנה באחוזים.
+   *
+   * ⚠ **מסד ריק מחזיר סכום 0** · `CategoryPie` מצייר אז עוגה ריקה
+   * ונייטרלית במקום להיעלם · בקשה מפורשת של שקד.
+   */
+  const splitShares = useMemo(
+    () =>
+      split.rows.map((r) => {
+        const sum = split.rows.reduce((t, x) => t + x.revenue, 0);
+        return { name: r.name, color: r.color, pct: sum ? Math.round((r.revenue / sum) * 100) : 0 };
+      }),
+    [split],
+  );
+
   const sold = sale.dishes.reduce((s, d) => s + d.sold, 0);
   const quota = sale.dishes.reduce((s, d) => s + d.quota, 0);
 
@@ -248,6 +329,13 @@ export function useAdminHome() {
     badges,
     month,
     saleMonth,
+    saleSplit,
+    /** הכפתורים של הבורר · תמיד שניים, גם לפני שהשרת ענה */
+    splitTabs: saleSplit.length ? saleSplit : SPLIT_FALLBACK,
+    splitCat,
+    setSplitCat,
+    split,
+    splitShares,
     profitTrend,
     donut,
     shares,

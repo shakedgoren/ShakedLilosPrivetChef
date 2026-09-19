@@ -4,6 +4,7 @@ import { prisma } from '../db.ts';
 import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { EXPENSES, MONEY_CATS, PERIODS } from '../../../mobile/src/data/adminMoney.ts';
 import { sortDishes, compareCost, menuRowsOf, unitCost, viewOf, type CostPart } from '../admin/costsMath.ts';
+import { splitByDish, type SoldMap } from '../admin/saleSplit.ts';
 import { hebrewDayLabel, hebrewMonthYear, isoDate, monthKey } from '../admin/sold.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
@@ -559,6 +560,21 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       return s2 + cost;
     }, 0);
 
+    /**
+     * ⚠ **פילוח לפי מנה · 19 בספטמבר 2026** · שתי הדיאגרמות
+     * שבתחתית הדף · בקשה של שקד: ״איפה שהדיאגרמת עוגה — פילוח רק
+     * של ההכנסות מהמכירות של הקוסקוס והשניצל בכל החודש. ואיפה
+     * שהיה את הדיאגרמה השנייה העמודות — פילוח רק של ההוצאות״.
+     * הפיצול לקוסקוס ולשניצל הוא כפתור במסך · ראו `saleSplit`.
+     */
+    const soldMonth: SoldMap = {};
+    for (const o of saleCatOrders) {
+      for (const [id, n] of Object.entries(qtyOfOrder(o))) {
+        soldMonth[id] = (soldMonth[id] ?? 0) + n;
+      }
+    }
+    const saleSplit = splitByDish(dishViews, soldMonth);
+
     const people = await prisma.user.count({ where: { role: 'customer' } });
     const openShop = await prisma.shoppingList.findFirst({ where: { closedAt: null } });
     const shopItems = openShop ? readJson<{ done: boolean }[]>(openShop.itemsJson, []) : [];
@@ -690,6 +706,8 @@ adminFinanceRouter.get('/summary', async (_req, res, next) => {
       },
       /* ⚠ מגמת הרווח · ששת החודשים האחרונים · ראו ההערה למעלה */
       profitTrend,
+      /* ⚠ פילוח החודש לפי מנה · קוסקוס ושניצל · ראו `saleSplit` */
+      saleSplit,
       badges: {
         orders: newOrders,
         days: nextSale

@@ -160,6 +160,17 @@ export const adminSummary = () =>
     profitTrend: { k: string; v: number }[];
     /** החודש · קוסקוס ושניצל בלבד · הכנסות ועלות הייצור שלהן */
     saleMonth: { revenue: number; cost: number };
+    /**
+     * פילוח החודש לפי מנה · קוסקוס ושניצל, כל אחד בנפרד.
+     * מזין את העוגה (הכנסות) ואת העמודות (הוצאות) שבתחתית הדף,
+     * והכפתור שמעליהן בוחר איזו קטגוריה מצוירת.
+     */
+    saleSplit: {
+      id: string;
+      n: string;
+      hue: string;
+      rows: { id: string; name: string; sold: number; revenue: number; cost: number }[];
+    }[];
     badges: Record<string, number | string | boolean>;
     donut: { total: number; shares: { name: string; color: string; v: number }[] };
   }>('/admin/summary');

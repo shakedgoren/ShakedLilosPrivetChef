@@ -13,7 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { CategoryPie, ProfitBars, REV_CHART_H, RevenueChart } from './home/Charts';
+import { CategoryPie, REV_CHART_H, RevenueChart, SplitBars } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
@@ -222,17 +222,51 @@ export function AdminHomeScreen() {
         </View>
       </GlassCard>
 
+      {/**
+        * ⚠ **פילוח לפי מנה · 19 בספטמבר 2026** · בקשה של שקד:
+        * ״איפה שהדיאגרמת עוגה — שיוצג שם פילוח רק של ההכנסות
+        * מהמכירות של הקוסקוס והשניצל בכל החודש. ואיפה שהיה את
+        * הדיאגרמה השנייה העמודות — שיוצג שם פילוח רק של ההוצאות
+        * מהמכירות של הקוסקוס והשניצל בכל החודש״.
+        *
+        * ובתשובה לשאלה איך לפלח: ״לפי מנה… אבל שהקוסקוס והשניצל
+        * יהיה מופרד בכפתור שיחליף ביניהם, וכל פעם יציג הוצאות
+        * והכנסות של קטגוריה אחרת״ — ומכאן הבורר שמעל השורה.
+        *
+        * ⚠ **בורר אחד לשתי הכרטיסיות** · שתיהן מציגות את אותה
+        * קטגוריה, אחת את ההכנסות והשנייה את ההוצאות.
+        *
+        * ⚠ **כל ההכנסות וכל ההוצאות נשארו במקומן** · שורות
+        * ״הכנסות״ ו״הוצאות״ שבכרטיס הרווח הן של **כל**
+        * הקטגוריות · בקשה מפורשת שלה.
+        */}
+      <View style={s.splitTabs}>
+        {home.splitTabs.map((c) => {
+          const on = home.splitCat === c.id;
+          return (
+            <Pressable
+              key={c.id}
+              onPress={() => home.setSplitCat(c.id)}
+              style={[s.range, on && s.rangeOn]}
+            >
+              <Text style={[s.rangeText, on && s.rangeTextOn]}>{c.n}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       <View style={s.row}>
         {/* ⚠ **עוגה מוטה בלי כותרת** · בחירה של שקד (15 בספטמבר
-            2026). האחוזים יושבים בתוך הפרוסות, ומתחת מקרא בשתי
-            שורות ממורכזות — קוסקוס מעל ספיישל, שניצל מעל שף. */}
+            2026). האחוזים יושבים בתוך הפרוסות, ומתחת מקרא.
+            ⚠ **המקרא עבר לעמודה אחת** · שמות המנות ארוכים משמות
+            הקטגוריות (״קוסקוס עם מפרום״), ובשתי עמודות הם נחתכו. */}
         <GlassCard style={[s.donutCard, s.tint4]}>
           <View style={s.pieWrap}>
-            <CategoryPie parts={home.shares} width={PIE_W} />
+            <CategoryPie parts={home.splitShares} width={PIE_W} />
           </View>
           <View style={s.legend}>
-            {home.shares.map((l) => (
-              <View key={l.name} style={s.legendCell}>
+            {home.split.rows.map((l) => (
+              <View key={l.id} style={s.legendCell}>
                 <View style={[s.legendDot, { backgroundColor: l.color }]} />
                 <Text style={s.legendName} numberOfLines={1}>
                   {l.name}
@@ -264,10 +298,10 @@ export function AdminHomeScreen() {
             </View>
           </View>
           <View style={s.spacer} />
-          {/* ⚠ נתונים אמיתיים · נופל לציור הקנבס רק בלי שרת */}
-          <ProfitBars
+          {/* ⚠ פילוח ההוצאות · עמודה לכל מנה, בצבע פרוסת העוגה שלה */}
+          <SplitBars
             grow={BARS_GROW}
-            points={home.live ? home.profitTrend.map((p) => p.v) : undefined}
+            rows={home.split.rows.map((r) => ({ id: r.id, name: r.name, v: r.cost, color: r.color }))}
           />
         </GlassCard>
       </View>
@@ -368,6 +402,16 @@ const s = StyleSheet.create({
     backgroundColor: LAV.pill,
   },
 
+  /* ⚠ **בורר הקטגוריה של הפילוח** · אותה גלולה של בורר הטווחים,
+     רק בלי ה-`marginTop` שלו · היא יושבת בשורה משל עצמה. */
+  splitTabs: {
+    flexDirection: 'row',
+    gap: 4,
+    padding: 3,
+    borderRadius: 999,
+    backgroundColor: LAV.pill,
+  },
+
   /* ⚠ בורר מפולח · גלולה לבנה עם צל לנבחר, כמו בשאר המסכים */
   ranges2: {},
   range: {
@@ -404,13 +448,11 @@ const s = StyleSheet.create({
    * שווה מיישרות את הנקודות אחת מתחת לשנייה בדיוק.
    */
   legend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignSelf: 'center',
+    alignSelf: 'stretch',
     marginTop: 9,
     rowGap: 5,
   },
-  legendCell: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingEnd: 5 },
+  legendCell: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendName: { fontSize: 12, fontWeight: '500', color: LAV.soft },
 
