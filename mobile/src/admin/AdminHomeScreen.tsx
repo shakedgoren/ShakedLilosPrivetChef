@@ -13,7 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { CategoryPie, ProfitBars, RevenueChart } from './home/Charts';
+import { CategoryPie, ProfitBars, REV_CHART_H, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
@@ -155,18 +155,22 @@ export function AdminHomeScreen() {
         * שניתן לחשב הוא כמה עלה לייצר את מה שנמכר · ראו
         * `saleMonth` בשרת.
         */}
+      {/* ⚠ **ההכנסות ראשונות · 19 בספטמבר 2026** · האפליקציה כפויה
+          ל-RTL, ולכן הילד הראשון בשורה יושב מ**ימין**. שקד ביקשה
+          ״בכרטיסייה מצד ימין רק את ההכנסות… ושבצד שמאל יהיה רק את
+          ההוצאות״, וקודם הסדר כאן היה הפוך. */}
       <View style={s.statRow}>
-        <GlassCard style={[s.stat, s.tint1]}>
-          <Text style={s.statLabel}>{MONTH_COST}</Text>
-          <View style={s.statMoney}>
-            <Text style={s.statValue}>{money(home.saleMonth.cost)}</Text>
-            <Text style={s.currency}>₪</Text>
-          </View>
-        </GlassCard>
         <GlassCard style={[s.stat, s.tint1]}>
           <Text style={s.statLabel}>{MONTH_REVENUE}</Text>
           <View style={s.statMoney}>
             <Text style={s.statValue}>{money(home.saleMonth.revenue)}</Text>
+            <Text style={s.currency}>₪</Text>
+          </View>
+        </GlassCard>
+        <GlassCard style={[s.stat, s.tint1]}>
+          <Text style={s.statLabel}>{MONTH_COST}</Text>
+          <View style={s.statMoney}>
+            <Text style={s.statValue}>{money(home.saleMonth.cost)}</Text>
             <Text style={s.currency}>₪</Text>
           </View>
         </GlassCard>
@@ -344,7 +348,18 @@ const s = StyleSheet.create({
   currencyBig: { fontSize: 14, color: surface.faint },
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
-  revCard: { height: 196, borderRadius: 26, paddingTop: 14, paddingHorizontal: 16, paddingBottom: 8 },
+  /**
+   * ⚠ **גובה מינימלי ולא גובה קבוע · 19 בספטמבר 2026** · בקשה של
+   * שקד: ״בכרטיסייה איפה שמוצג המחזור יום שבוע חודש חצי שנה —
+   * בדיאגרמה המד התקדמות עולה על הכיתוב, צריך להגדיל לגובה את
+   * הכרטיסייה״.
+   *
+   * 196 נמדד מהקנבס. מאז `FONT_BUMP` הוסיף 4 לכל גודל כתב, והכותרת
+   * עם בורר הטווחים תפחו — נשארו לגרף כ-75 במקום 102. `chart` הוא
+   * היחיד עם `flex: 1`, ולכן **הוא** זה שהצטמק, בעוד ה-SVG שבתוכו
+   * נשאר 102 וגלש אל שורת החודשים שמתחתיו.
+   */
+  revCard: { minHeight: 196, borderRadius: 26, paddingTop: 14, paddingHorizontal: 16, paddingBottom: 8 },
   /* חמש מדרגות הגרדיאנט · אותו כרטיס, גוון אחר לפי מקומו בדף */
   tint1: { backgroundColor: LAV.tints[1], borderColor: LAV.edge },
   tint3: { backgroundColor: LAV.tints[2], borderColor: LAV.edge, overflow: 'hidden' },
@@ -376,7 +391,8 @@ const s = StyleSheet.create({
   cardHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
   cardTitle: { fontSize: 14.5, fontWeight: '600', color: LAV.dim },
   revTotal: { fontSize: 17, fontWeight: '700', color: LAV.ink },
-  chart: { flex: 1, marginTop: 4 },
+  /* ⚠ **רצפה בגובה הגרף** · בלעדיה `flex: 1` מצטמק וה-SVG גולש */
+  chart: { flex: 1, minHeight: REV_CHART_H, marginTop: 4 },
   months: { flexDirection: LTR_ROW, alignItems: 'center' },
   axisPad: { width: 30 },
   /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */

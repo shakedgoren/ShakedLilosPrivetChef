@@ -74,6 +74,17 @@ export type RevPoint = { k: string; v: number };
 /* מערכת הקואורדינטות של הקנבס · 322×110, עם 30 פיקסלים לציר המספרים */
 const CHART = { w: 322, h: 110, left: 30, right: 320, top: 8, base: 96 } as const;
 
+/**
+ * הגובה שגרף המחזור תופס במסך.
+ *
+ * ⚠ **מיוצא · 19 בספטמבר 2026** · הוא היה כתוב כאן בלבד, ומסך
+ * הבית נתן לתיבה שמסביבו `flex: 1` בלי רצפה. כשהתוכן שמעל גדל
+ * התיבה הצטמקה מתחת ל-102, ה-SVG (שאינו מצטמק) גלש החוצה, והגרף
+ * צויר **על** שמות החודשים. עכשיו שני המקומות קוראים את אותו
+ * מספר · ראו `chart` ב-`AdminHomeScreen`.
+ */
+export const REV_CHART_H = 102;
+
 /** ‎12000 → ‎12k · כמו בקנבס */
 const axisLabel = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(Math.round(n)));
 
@@ -111,7 +122,7 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
     : '';
 
   return (
-    <Svg width="100%" height={102} viewBox={`0 0 ${CHART.w} ${CHART.h}`}>
+    <Svg width="100%" height={REV_CHART_H} viewBox={`0 0 ${CHART.w} ${CHART.h}`}>
       <Defs>
         <LinearGradient id="revfill" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0%" stopColor={ink} stopOpacity={night ? 0.5 : 0.42} />
