@@ -186,7 +186,7 @@ Authorization: Bearer <token>
 |---|---|---|---|
 | `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `order_pickup_confirmed` | Utility | יצירת הזמנת איסוף (`ship=self`) |
-| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_delivary_confirmed` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **delivary** |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_dely` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **dely** |
 | `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `order_pick_up` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
 | `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `order_dalivery` | Utility | סטטוס **נמסרה** בהזמנת משלוח · **dalivery** |
 
@@ -204,7 +204,7 @@ WHATSAPP_PHONE_NUMBER_ID="123456789012345"
 WHATSAPP_WABA_ID="123456789012345"
 WHATSAPP_TEMPLATE_OTP="bite_otp"
 WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="order_pickup_confirmed"
-WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_delivary_confirmed"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_dely"
 WHATSAPP_TEMPLATE_ORDER_READY_PICKUP="order_pick_up"
 WHATSAPP_TEMPLATE_ORDER_DELIVERED="order_dalivery"
 WHATSAPP_TEMPLATE_LANG="he"
