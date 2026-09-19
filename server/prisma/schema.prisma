@@ -3,11 +3,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ספק ברירת מחדל: sqlite. ל-Postgres מקומי (docker compose) ראו README · npm run db:postgres:push
+// ⚠ **עבר מ-SQLite ל-Postgres ב-19 בספטמבר 2026.**
+//
+// SQLite הוא קובץ אחד בלי כתיבה מקבילה: שתי לקוחות שמזמינות באותה
+// שנייה נועלות זו את זו. זה החזיק בפיתוח ולא היה מחזיק באוויר.
+//
+// ⚠ **הסכימה זהה לחלוטין** · שום שדה לא השתנה במעבר. מה שכן
+// השתנה: יש עכשיו **היסטוריית מיגרציות** תחת `prisma/migrations`
+// במקום `db push`. `db push` משנה את המסד בלי תיעוד ויכול למחוק
+// עמודה בלי לשאול — בפרודקשן זה לא מקובל.
+//
+// להרמת מסד מקומי: `npm run db:up` ואז `npm run db:migrate`.
 
 /// לקוחה או מנהלת · email ו/או phone, כמו בשדה ״טלפון או אימייל״ באפליקציה
 model User {
