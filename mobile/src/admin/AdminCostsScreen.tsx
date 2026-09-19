@@ -22,6 +22,8 @@ import {
   COST_MONTHS,
   COSTS_PACK_TITLE,
   COSTS_PARTS_TITLE,
+  COSTS_PART_ADD,
+  COSTS_PART_DEL,
   COSTS_PART_PH,
   COSTS_PRICE_KG,
   COSTS_PRICE_UNIT,
@@ -46,10 +48,37 @@ const num = (v: string | number) => {
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const money = (n: number) => (Math.round(n * 10) / 10).toFixed(1);
 
-type Dish = CostDish & { parts: CostPart[] };
+/**
+ * ⚠ **`ref` · שורה שמצביעה על מנה אחרת · 19 בספטמבר 2026** ·
+ * בקשה של שקד: ההרכבה צריכה להופיע **כשורות מוצר ברשימה** ולא
+ * כקישור נסתר. שורה כזו מציגה את **עלות הייצור המחושבת** של
+ * המנה שאליה היא מצביעה, והמחיר בה אינו מוקלד.
+ *
+ * ⚠ **הטיפוס מורחב כאן ולא ב-`adminCosts.ts`** · אותו קובץ נוצר
+ * אוטומטית מהקנבס ואין לערוך אותו ביד.
+ */
+type Part = CostPart & { ref?: string };
+/* ⚠ `Omit` · חיתוך רגיל משאיר את `parts` המקורי ומאבד את `ref` */
+type Dish = Omit<CostDish, 'parts'> & { parts: Part[] };
 
+/** מצרכים גולמיים בלבד · אלה שמתחלקים בתפוקה */
 function partsSum(d: Dish) {
-  return d.parts.reduce((s, p) => s + num(p.price) * num(p.qty), 0);
+  return d.parts.filter((p) => !p.ref).reduce((s, p) => s + num(p.price) * num(p.qty), 0);
+}
+
+/** מחיר שורה · מוקלד, או מחושב כשהיא מצביעה על מנה אחרת */
+function rowPrice(p: Part, all: Dish[], depth = 0): number {
+  if (!p.ref) return num(p.price);
+  const src = all.find((x) => x.id === p.ref);
+  return src ? unitCost(src, all, depth + 1) : 0;
+}
+
+/**
+ * שורות הרכבה · **לא מתחלקות בתפוקה**. מצרך גולמי נקנה למנה
+ * שלמה ומתחלק במספר המנות; שורת הרכבה היא כבר עלות למנה אחת.
+ */
+function refsSum(d: Dish, all: Dish[], depth = 0): number {
+  return d.parts.filter((p) => p.ref).reduce((s, p) => s + rowPrice(p, all, depth) * num(p.qty), 0);
 }
 
 function unitCost(d: Dish, all: Dish[], depth = 0): number {
@@ -65,6 +94,8 @@ function unitCost(d: Dish, all: Dish[], depth = 0): number {
     const src = all.find((x) => x.id === f.id);
     if (src) base += unitCost(src, all, depth + 1) * f.m;
   }
+  /* ⚠ שורות הרכבה · מחוץ לחלוקה בתפוקה · ראו `refsSum` */
+  base += refsSum(d, all, depth);
   const own = partsSum(d);
   const y = num(d.yld);
   if (d.mode === 'weight') return y > 0 ? own / (y / 100) : 0;
@@ -270,29 +301,49 @@ export function AdminCostsScreen() {
                     <Text style={[s.col, s.w48]}>{COSTS_COLS.sum}</Text>
                   </View>
                   {d.parts.map((p, pi) => (
-                    <View key={`${p.n}-${pi}`} style={s.part}>
-                      <TextInput
-                        value={p.n}
-                        placeholder={COSTS_PART_PH}
-                        placeholderTextColor="#B3ABBD"
-                        onChangeText={(v) => {
-                          const hit = COST_PANTRY.find((x) => x.name === v);
-                          const parts = d.parts.map((x, k) =>
-                            k === pi ? { ...x, n: v, price: hit ? hit.price : x.price } : x,
-                          );
-                          patch(d.id, { parts });
-                        }}
-                        style={[s.inp, { flex: 1 }]}
-                      />
-                      <TextInput
-                        value={String(p.price)}
-                        keyboardType="numeric"
-                        onChangeText={(v) => {
-                          const parts = d.parts.map((x, k) => (k === pi ? { ...x, price: num(v) } : x));
-                          patch(d.id, { parts });
-                        }}
-                        style={[s.inp, s.w40]}
-                      />
+                    <View key={`${p.ref ?? p.n}-${pi}`} style={s.part}>
+                      {/**
+                        * ⚠ **שורת הרכבה · 19 בספטמבר 2026** · שורה
+                        * שמצביעה על מנה אחרת. השם והמחיר בה
+                        * **אינם ניתנים להקלדה**: המחיר הוא עלות
+                        * הייצור המחושבת של אותה מנה, ומתעדכן לבד
+                        * בכל שינוי שם. רק הכמות נערכת.
+                        */}
+                      {p.ref ? (
+                        <>
+                          <Text style={[s.inp, s.refCell, { flex: 1 }]} numberOfLines={1}>
+                            {p.n}
+                          </Text>
+                          <Text style={[s.inp, s.refCell, s.w40]}>
+                            {money(rowPrice(p, dishes))}
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <TextInput
+                            value={p.n}
+                            placeholder={COSTS_PART_PH}
+                            placeholderTextColor="#B3ABBD"
+                            onChangeText={(v) => {
+                              const hit = COST_PANTRY.find((x) => x.name === v);
+                              const parts = d.parts.map((x, k) =>
+                                k === pi ? { ...x, n: v, price: hit ? hit.price : x.price } : x,
+                              );
+                              patch(d.id, { parts });
+                            }}
+                            style={[s.inp, { flex: 1 }]}
+                          />
+                          <TextInput
+                            value={String(p.price)}
+                            keyboardType="numeric"
+                            onChangeText={(v) => {
+                              const parts = d.parts.map((x, k) => (k === pi ? { ...x, price: num(v) } : x));
+                              patch(d.id, { parts });
+                            }}
+                            style={[s.inp, s.w40]}
+                          />
+                        </>
+                      )}
                       <TextInput
                         value={String(p.qty)}
                         keyboardType="numeric"
@@ -302,9 +353,39 @@ export function AdminCostsScreen() {
                         }}
                         style={[s.inp, s.w52]}
                       />
-                      <Text style={[s.partSum, s.w48]}>{nf(num(p.price) * num(p.qty))}</Text>
+                      <Text style={[s.partSum, s.w48]}>
+                        {nf(rowPrice(p, dishes) * num(p.qty))}
+                      </Text>
+                      {/* ⚠ הסרת מצרך · ראו ההערה ליד ״הוספת מצרך״ */}
+                      <Pressable
+                        onPress={() => patch(d.id, { parts: d.parts.filter((_, k) => k !== pi) })}
+                        accessibilityLabel={`${COSTS_PART_DEL} ${p.n || ''}`.trim()}
+                        hitSlop={8}
+                        style={s.partDel}
+                      >
+                        <Text style={s.partDelText}>×</Text>
+                      </Pressable>
                     </View>
                   ))}
+
+                  {/**
+                   * ⚠ **הוספה והסרה · נוספו ב-19 בספטמבר 2026** ·
+                   * שקד: ״יש בדף עלויות את הכותרת הזו אבל אין
+                   * אופציה להוסיף או להסיר מוצרים ואז אין אופציה
+                   * לעדכן את המחירים״.
+                   *
+                   * המסך ידע **לערוך** מצרכים קיימים בלבד. כל עוד
+                   * הקנבס זרע מתכונים אף אחד לא הרגיש; ברגע
+                   * שהמתכונים אופסו נשארה רשימה ריקה **בלי שום
+                   * דרך להוסיף שורה** — כלומר אי אפשר היה להזין
+                   * עלות אף פעם.
+                   */}
+                  <Pressable
+                    onPress={() => patch(d.id, { parts: [...d.parts, { n: '', price: 0, qty: 1 }] })}
+                    style={s.partAdd}
+                  >
+                    <Text style={s.partAddText}>{COSTS_PART_ADD}</Text>
+                  </Pressable>
                   {/* ⚠ **שני השדות זה לצד זה** · כך זה בקנבס, ושקד
                       שלחה בדיוק את הצילום הזה (15 בספטמבר 2026).
                       קודם הם ישבו אחד מתחת לשני ברוחב מלא. */}
@@ -412,6 +493,24 @@ const s = StyleSheet.create({
   w52: { width: 52, textAlign: 'center' },
   w48: { width: 48, textAlign: TEXT_END },
   partSum: { fontSize: 14, color: surface.ink },
+  /* ⚠ שורת הרכבה · נראית כשדה אבל אינה נערכת */
+  refCell: {
+    backgroundColor: 'rgba(130,112,162,0.10)',
+    color: '#4A4254',
+    paddingVertical: 9,
+  },
+  partDel: { width: 24, alignItems: 'center', justifyContent: 'center' },
+  partDelText: { fontSize: 19, lineHeight: 22, color: '#B95349' },
+  partAdd: {
+    alignSelf: 'flex-start',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(130,112,162,0.45)',
+  },
+  partAddText: { fontSize: 13, fontWeight: '600', color: '#6E4FA8' },
   /* שני השדות · flex-end כדי שהשדה הבודד יישר לתחתית */
   fields: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   field: { flex: 1, minWidth: 0 },

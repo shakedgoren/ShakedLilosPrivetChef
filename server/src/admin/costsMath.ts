@@ -2,7 +2,20 @@ import type { ProductionDish } from '@prisma/client';
 import { readJson } from '../json.ts';
 import { COST_DISHES } from '../../../mobile/src/data/adminCosts.ts';
 
-export type CostPart = { n: string; price: number; qty: number };
+/**
+ * שורת מצרך במתכון.
+ *
+ * ⚠ **`ref` נוסף ב-19 בספטמבר 2026** · בקשה של שקד: ההרכבה צריכה
+ * להופיע **כשורות מוצר ברשימה עצמה**, ולא כקישור נסתר. בלשונה:
+ * ״במנת עוף · מוצר: קוסקוס ירקות, כמות 1, מחיר כמה שיצא העלות
+ * ייצור בחישוב של הקוסקוס צמחוני · מוצר: עוף, כמות 1, מחיר כמה
+ * שיצא בחישוב של תוספת עוף״.
+ *
+ * שורה עם `ref` מצביעה על **מנה אחרת**, והמחיר שלה אינו מוקלד
+ * אלא **מחושב** מעלות הייצור של אותה מנה. שורה בלי `ref` היא
+ * מצרך גולמי רגיל שהמחיר שלו מוקלד.
+ */
+export type CostPart = { n: string; price: number; qty: number; ref?: string };
 export type CostFrom = { id: string; m: number };
 
 export type DishView = {
@@ -54,8 +67,39 @@ export function viewOf(row: ProductionDish): DishView {
   };
 }
 
+/** מצרכים גולמיים בלבד · אלה שמתחלקים בתפוקה */
 export function partsSum(d: DishView): number {
-  return d.parts.reduce((s, p) => s + Number(p.price) * Number(p.qty), 0);
+  return d.parts
+    .filter((p) => !p.ref)
+    .reduce((s, p) => s + Number(p.price) * Number(p.qty), 0);
+}
+
+/**
+ * מחיר שורה · מוקלד, או מחושב כשהיא מצביעה על מנה אחרת.
+ * ⚠ **לתצוגה** · המספר שמופיע בעמודת ״מחיר״ באותה שורה.
+ */
+export function rowPrice(p: CostPart, all: DishView[], depth = 0): number {
+  if (!p.ref) return Number(p.price);
+  const src = all.find((x) => x.id === p.ref);
+  return src ? unitCost(src, all, depth + 1) : 0;
+}
+
+/**
+ * שורות שמצביעות על מנות אחרות.
+ *
+ * ⚠ **לא מתחלקות בתפוקה** · מצרך גולמי נקנה למנה שלמה ומתחלק
+ * במספר המנות שיוצאות ממנה. שורת הרכבה היא כבר **עלות למנה
+ * אחת** של המנה שאליה היא מצביעה, ולכן היא נכנסת כמו שהיא.
+ */
+export function refsSum(d: DishView, all: DishView[], depth = 0): number {
+  return d.parts
+    .filter((p) => p.ref)
+    .reduce((s, p) => s + rowPrice(p, all, depth) * Number(p.qty), 0);
+}
+
+/** סכום כל השורות · **לתצוגה בלבד** · ראו `unitCost` לחישוב האמיתי */
+export function rowsSum(d: DishView, all: DishView[]): number {
+  return d.parts.reduce((s, p) => s + rowPrice(p, all) * Number(p.qty), 0);
 }
 
 export function unitCost(d: DishView, all: DishView[], depth = 0): number {
@@ -69,6 +113,8 @@ export function unitCost(d: DishView, all: DishView[], depth = 0): number {
     const src = all.find((x) => x.id === f.id);
     if (src) base += unitCost(src, all, depth + 1) * f.m;
   }
+  /* ⚠ שורות הרכבה · נכנסות מחוץ לחלוקה בתפוקה · ראו `refsSum` */
+  base += refsSum(d, all, depth);
   const own = partsSum(d);
   const y = Number(d.yld) || 0;
   if (d.mode === 'weight') return y > 0 ? own / (y / 100) : 0;

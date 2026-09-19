@@ -53,17 +53,29 @@ import { normalizePhone } from '../src/auth/identity.ts';
 import { COST_DISHES } from '../../mobile/src/data/adminCosts.ts';
 
 /**
- * ממה מורכבת כל מנה · `{ id, m }` = מנה אחרת כפול מכפיל.
- * קוסקוס עם עוף = צמחוני + תוספת עוף · וכך גם המפרום.
+ * ממה מורכבת כל מנה · **כשורות מוצר ברשימה**.
+ *
+ * ⚠ בקשה של שקד (19 בספטמבר 2026): ״במנת עוף · מוצר: קוסקוס
+ * ירקות, כמות 1, מחיר כמה שיצא העלות ייצור בחישוב של הקוסקוס
+ * צמחוני · מוצר: עוף, כמות 1, מחיר כמה שיצא בחישוב של תוספת
+ * עוף. ואז לבצע את החישוב של עלות ייצור המנה ועלות הרווח שלה״.
+ *
+ * ⚠ **`ref` ולא `from`** · קודם ההרכבה ישבה בשדה `from`, שהוא
+ * קישור **נסתר** — היא לא הופיעה ברשימת המצרכים. עכשיו כל רכיב
+ * הוא שורה שרואים, עם שם וכמות, ומחיר שמתעדכן לבד מעלות הייצור
+ * של המנה שאליה הוא מצביע.
+ *
+ * ⚠ **המחיר 0 והכמות 1** · המחיר בשורת `ref` מחושב ואינו נשמר,
+ * ו-0 כאן הוא רק מציין מקום.
  */
-const COMPOSED: Record<string, { id: string; m: number }[]> = {
+const COMPOSED: Record<string, { n: string; ref: string; qty: number; price: number }[]> = {
   cousChick: [
-    { id: 'cousVeg', m: 1 },
-    { id: 'addChick', m: 1 },
+    { n: 'קוסקוס ירקות', ref: 'cousVeg', qty: 1, price: 0 },
+    { n: 'עוף', ref: 'addChick', qty: 1, price: 0 },
   ],
   cousMafr: [
-    { id: 'cousVeg', m: 1 },
-    { id: 'addMafr', m: 1 },
+    { n: 'קוסקוס ירקות', ref: 'cousVeg', qty: 1, price: 0 },
+    { n: 'מפרום', ref: 'addMafr', qty: 1, price: 0 },
   ],
 };
 
@@ -100,8 +112,8 @@ async function main() {
       /* ⚠ העלות מתחילה מאפס · ראו ההערה בראש הקובץ */
       yieldQty: 0,
       note: '',
-      fromJson: JSON.stringify(COMPOSED[d.id] ?? []),
-      partsJson: '[]',
+      fromJson: '[]',
+      partsJson: JSON.stringify(COMPOSED[d.id] ?? []),
     };
     await prisma.productionDish.upsert({
       where: { id: d.id },
