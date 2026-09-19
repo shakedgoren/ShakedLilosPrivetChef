@@ -11,6 +11,7 @@ import { serializeAdminCard, serializeOrder } from '../orders/serialize.ts';
 import { FLOW as BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
+import { dayQuotas } from '../admin/dayQuotas.ts';
 import { CATS, MONTHS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { notifyLater, notifyOrderConfirmed, notifyOrderStatus } from '../whatsapp/notify.ts';
 
@@ -306,21 +307,12 @@ adminRouter.get('/board', async (req, res, next) => {
     const cat = CATS[category as DayCatKey];
     const day = date ? await prisma.saleDay.findUnique({ where: { date } }) : null;
     /**
-     * ⚠ **בלי מכסות ברירת מחדל · 19 בספטמבר 2026** · שקד דיווחה:
-     * ״זה מציג נתונים לא נכונים, 100 מתוך 100, כשאין אף הזמנה
-     * במערכת״.
-     *
-     * המכסה נפלה עד היום ל-`d.q` — המספר שמופיע ב-`adminDays.ts`,
-     * שנוצר אוטומטית מהקנבס. כלומר הלוח הציג מלאי שהיא מעולם לא
-     * הזינה, בדיוק כמו הנתונים הפיקטיביים שביקשה למחוק מהמסד.
-     *
-     * ⚠ **0 הוא התשובה הנכונה** · מכסה נקבעת בדף יום המכירה. עד
-     * שהיא נקבעת אין מלאי, והלוח יראה ״0 מתוך 0״.
-     * ⚠ **רק הלוח הניהולי** · הגריעה של מלאי מהלקוחה נשענת על
-     * המכסות של `/admin/summary` ולא על הנתיב הזה.
+     * ⚠ **אותה מכסה כמו בדף המלאי · 19 בספטמבר 2026** · ראו את
+     * ההסבר המלא ב-`admin/dayQuotas.ts`. הלוח נפל ל-0 ודף המלאי
+     * נפל ל-`d.q`, ולכן אותו יום הוצג בשני מספרים שונים.
      */
     const saved = readJson<Record<string, number>>(day?.quotasJson ?? '', {});
-    const quotas = Object.fromEntries((cat?.dishes ?? []).map((d) => [d.id, saved[d.id] ?? 0]));
+    const quotas = dayQuotas(cat?.dishes ?? [], saved);
 
     res.json({
       orders: rows.map(serializeOrder),

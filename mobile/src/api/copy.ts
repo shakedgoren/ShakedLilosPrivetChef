@@ -26,6 +26,9 @@ export const COPY = {
   /* ⚠ עודכן · שקד קבעה (16.9.2026) שהאיפוס נשלח למייל, לא בוואטסאפ */
   resetSentBody: 'אם יש חשבון עם הכתובת הזו, הקישור לאיפוס נשלח אליה · תקף ל-10 דקות.',
   otpInvalid: 'הקוד לא תקין או שפג תוקפו',
+  /* ⚠ **חדש · נכתב על ידי Claude ב-19 בספטמבר 2026** · שקד לא כתבה
+     את הנוסח הזה. הוא מופיע רק כששרת המייל עצמו לא הצליח לשלוח. */
+  mailFailed: 'שרת המייל לא הצליח לשלוח כרגע · נסי שוב עוד מעט',
 };
 
 /**
@@ -50,6 +53,7 @@ export function authError(code: string, serverMessage?: string): string {
   if (code === 'google_not_configured') return COPY.google;
   if (code === 'google_token_required' || code === 'invalid_google_token') return COPY.google;
   if (code === 'otp_invalid') return COPY.otpInvalid;
+  if (code === 'mail_failed') return COPY.mailFailed;
   return COPY.net;
 }
 

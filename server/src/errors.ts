@@ -13,3 +13,8 @@ export const unauthorized = (code = 'unauthorized', message?: string) => new Htt
 export const forbidden = (code = 'forbidden', message?: string) => new HttpError(403, code, message);
 export const notFound = (code = 'not_found') => new HttpError(404, code);
 export const conflict = (code: string, message?: string) => new HttpError(409, code, message);
+/**
+ * שירות חיצוני לא ענה · לא אשמת מי ששלח את הבקשה.
+ * ⚠ נוסף ב-19 בספטמבר 2026 בשביל שליחת מייל האיפוס · ראו `auth.ts`.
+ */
+export const badGateway = (code: string, message?: string) => new HttpError(502, code, message);

@@ -329,21 +329,40 @@ export function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={s.hero}>
-          <Pressable
-            onPress={onPickPhoto}
-            disabled={photoBusy}
-            style={[s.avatar, photoBusy && s.avatarBusy]}
-          >
-            {avatarSrc ? (
-              <Image source={{ uri: avatarSrc }} style={s.avatarImg} />
-            ) : (
-              <Text style={s.avatarGlyph}>☺</Text>
-            )}
-            <View style={s.cam}>
+          {/**
+            * ⚠ **תג המצלמה יצא מתוך העיגול · 19 בספטמבר 2026** ·
+            * בקשה של שקד: ״יש אייקון של מצלמה, הוא צריך להיות מעל
+            * העיגול של התמונה ואטום״.
+            *
+            * שתי הסיבות שהוא נראה שקוף ומתחת:
+            * · `iconOrbShadow` של **העיגול** כולל `inset` לבן חזק,
+            *   ו-iOS מצייר צל פנימי **מעל** ילדי התצוגה. הקשת
+            *   הלבנה של העיגול עברה ממש על גבי התג.
+            * · ל**תג עצמו** היה אותו צל פנימי, שהלבין את המילוי
+            *   מבפנים והפך אותו לשקוף למראה.
+            *
+            * לכן הוא יושב עכשיו **אחיו** של העיגול ולא ילד שלו —
+            * כך שום דבר לא נמרח מעליו — עם מילוי אטום וצל חיצוני
+            * בלבד.
+            */}
+          <View style={s.avatarWrap}>
+            <Pressable
+              onPress={onPickPhoto}
+              disabled={photoBusy}
+              style={[s.avatar, photoBusy && s.avatarBusy]}
+            >
+              {avatarSrc ? (
+                <Image source={{ uri: avatarSrc }} style={s.avatarImg} />
+              ) : (
+                <Text style={s.avatarGlyph}>☺</Text>
+              )}
+            </Pressable>
+            {/* ⚠ `pointerEvents` · הלחיצה ממשיכה להגיע לעיגול שמתחת */}
+            <View style={s.cam} pointerEvents="none">
               {/* ⚠ היה אמוג׳י · עכשיו camera.fill כפי שביקשה שקד */}
-              <S k="camera" size={15} />
+              <S k="camera" size={15} color="#FFFFFF" />
             </View>
-          </Pressable>
+          </View>
           <Text style={s.displayName}>{displayName}</Text>
           {since ? <Text style={s.since}>{since}</Text> : null}
           {photoErr ? <Text style={s.photoErr}>{photoErr}</Text> : null}
@@ -597,20 +616,28 @@ const s = StyleSheet.create({
   genderText: { fontSize: 13, color: surface.inkSoft },
   genderTextOn: { color: '#43307A', fontWeight: '600' },
   avatarGlyph: { fontSize: 36, color: '#43307A' },
+  /* ⚠ המכל שמחזיק את העיגול ואת התג · ראו ההערה ליד ההרכבה */
+  avatarWrap: { width: 92, height: 92 },
+  /**
+   * ⚠ **אטום ומעל · בקשה של שקד (19 בספטמבר 2026)** · מילוי מלא
+   * בלי צל פנימי, וסמל לבן שנקרא גם על גבי תמונה כהה. המיקום
+   * הוזז פנימה כדי שהתג יישב **על** העיגול ולא ייחתך על שפתו.
+   */
   cam: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
+    /* ⚠ 10 · נמדד · בזה התג יושב **כולו** בתוך העיגול ולא נחתך על שפתו */
+    bottom: 10,
+    left: 10,
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#B9A4E4',
+    backgroundColor: '#7B5CBC',
     borderWidth: 2,
-    borderColor: '#FCFBFB',
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  boxShadow: iconOrbShadow('123,92,188'),
-  },
+    boxShadow: '0 4px 10px -4px rgba(60,44,92,0.55)',
+  } as never,
   camGlyph: { fontSize: 11 },
   displayName: { fontSize: 19, fontWeight: '600', color: surface.ink },
   since: { fontSize: 12.5, fontWeight: '300', color: surface.faint },

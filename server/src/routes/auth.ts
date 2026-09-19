@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { env } from '../env.ts';
-import { badRequest, unauthorized } from '../errors.ts';
+import { badGateway, badRequest, unauthorized } from '../errors.ts';
 import { parseWho, publicUser } from '../auth/identity.ts';
 import { signupEmail } from '../auth/signupEmail.ts';
 import { signToken } from '../auth/jwt.ts';
@@ -246,7 +246,21 @@ authRouter.post('/forgot-password', async (req, res, next) => {
           const mail = buildResetEmail({ name: user.name, token, appUrl: env.appUrl });
           /* ⚠ לא `res` · זה שם התשובה של אקספרס, והצללה כאן מסוכנת */
           const sent = await sendMail({ to: user.email, ...mail });
-          if (!sent.sent) console.warn(`[איפוס] המייל לא יצא · ${sent.reason}`);
+          /**
+           * ⚠ **כישלון שליחה נאמר בקול · 19 בספטמבר 2026** · שקד
+           * דיווחה: ״באיפוס סיסמה במייל הוא לא באמת שולח שום הודעת
+           * איפוס למייל, רק מציג התראה ששלח״. וכך זה באמת היה —
+           * הכישלון נרשם ביומן בלבד, והלקוחה קיבלה ״נשלח״.
+           *
+           * ⚠ **זה אינו מסגיר האם יש חשבון** · כתובת שאין מאחוריה
+           * חשבון כלל אינה מגיעה לכאן, ולכן היא תמשיך לקבל בדיוק
+           * את אותה תשובה חיובית. מה שנאמר כאן הוא רק שהשרת עצמו
+           * לא הצליח לשלוח — תקלה שלנו, ולא מידע עליה.
+           */
+          if (!sent.sent) {
+            console.warn(`[איפוס] המייל לא יצא · ${sent.reason}`);
+            throw badGateway('mail_failed');
+          }
         } else if (user.phone) {
           const otp = generateOtp();
           await prisma.passwordReset.create({

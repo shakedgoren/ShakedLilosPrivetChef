@@ -27,7 +27,7 @@ import { ApiError, type Session } from '../api/types';
 import { BlobField } from '../components/BlobField';
 import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
-import { Mail, WhatsApp } from '../components/LoginIcons';
+import { GoogleG, Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
 import { User } from '../icons';
 import { disarmFace, enrollFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
@@ -386,7 +386,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         return;
       }
       setResetErr('');
-      if (apiEnabled) await forgotPassword(resetMail.trim());
+      /**
+       * ⚠ **״נשלח״ רק כשבאמת נשלח · 19 בספטמבר 2026** · בקשה של
+       * שקד: ״הוא לא באמת שולח שום הודעת איפוס למייל, רק מציג
+       * התראה ששלח״. השרת מחזיר עכשיו 502 כששרת המייל נכשל, וכאן
+       * זה נכנס ליריעה עצמה ולא לשורת השגיאה שמאחוריה.
+       */
+      if (apiEnabled) {
+        try {
+          await forgotPassword(resetMail.trim());
+        } catch (e) {
+          setResetErr(e instanceof ApiError ? authError(e.code, e.message) : COPY.net);
+          return;
+        }
+      }
       setResetSent(true);
     });
 
@@ -578,7 +591,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
     step === 'up1' ? onSendCode : step === 'up2' ? onVerify : step === 'up3' ? onRegister : onLogin;
   const showCta = step !== 'ask' && step !== 'face';
   /* ⚠ בשלב הקוד אין שורת קישורים · בקשה של שקד */
-  const showLinks = step !== 'up2' && step !== 'face';
+  /**
+   * ⚠ **לא בחלונית זיהוי הפנים · בקשה של שקד (19 בספטמבר 2026)** ·
+   * ״אם התחברנו כבר וזה שואל אותנו על הזיהוי פנים, לא צריך לראות
+   * למטה את ׳שכחתי סיסמא, הרשמה, להסתכל בלי חשבון׳ — אנחנו כבר
+   * מחוברים״. היא צודקת: בשלב `ask` הכניסה כבר הצליחה והאסימון
+   * ביד, ושלושת הקישורים האלה שייכים למי שעוד לא נכנס.
+   */
+  const showLinks = step !== 'up2' && step !== 'face' && step !== 'ask';
+  /**
+   * ⚠ **רק בשלב `ask`** · ״להסתכל בלי חשבון״ ממשיך להופיע בשלב
+   * הקוד ובסריקה, כי שם עוד לא נכנסנו. הנימוק שלה — ״אנחנו כבר
+   * מחוברים״ — נכון לחלונית הזאת בלבד.
+   */
+  const showGuest = step !== 'ask';
 
   return (
     <View style={s.page}>
@@ -617,12 +643,23 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                   <Text style={s.orText}>{OR_LABEL}</Text>
                   <View style={s.orLine} />
                 </View>
+                {/**
+                  * ⚠ **כפתור גוגל אמיתי · בקשה של שקד (19 בספטמבר
+                  * 2026)** · ״העיצוב של הכניסה עם גוגל לא נראה כמו
+                  * שהוא אמור להראות עם הצבע של גוגל״. הוא היה טקסט
+                  * אפור בלי סמל.
+                  *
+                  * ⚠ **המידות של גוגל** · לבן, מסגרת #747775, כיתוב
+                  * #1F1F1F, וסמל 18. כך הוא מוגדר במסמכי המותג,
+                  * וזה מה שמותר להציג.
+                  */}
                 <Pressable
                   onPress={onGoogle}
                   disabled={busy || (apiEnabled && !google.ready)}
-                  style={[s.ghost, apiEnabled && !google.ready && s.ghostOff]}
+                  style={[s.gbtn, apiEnabled && !google.ready && s.ghostOff]}
                 >
-                  <Text style={s.ghostText}>{GOOGLE_LABEL}</Text>
+                  <GoogleG size={18} />
+                  <Text style={s.gbtnText}>{GOOGLE_LABEL}</Text>
                 </Pressable>
               </>
             ) : null}
@@ -644,9 +681,13 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
             </View>
           ) : null}
 
-          <Pressable onPress={() => (loginOverlay ? closeLogin() : go('guest'))}>
-            <Text style={s.link}>{GUEST_LABEL}</Text>
-          </Pressable>
+          {/* ⚠ **גם ״להסתכל בלי חשבון״ · ראו `showGuest`** · הוא ישב
+              מחוץ לגוש הקישורים ולכן נשאר על המסך כשהשאר נעלמו. */}
+          {showGuest ? (
+            <Pressable onPress={() => (loginOverlay ? closeLogin() : go('guest'))}>
+              <Text style={s.link}>{GUEST_LABEL}</Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -843,6 +884,19 @@ const s = StyleSheet.create({
     gap: 8,
   },
   ghostText: { fontSize: 14.5, fontWeight: '600', color: '#6E6480' },
+  /* ⚠ כפתור גוגל · המידות של גוגל · ראו את ההערה ליד הכפתור */
+  gbtn: {
+    height: 46,
+    borderRadius: radius.pill,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#747775',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  gbtnText: { fontSize: 14.5, fontWeight: '600', color: '#1F1F1F' },
 
   links: { flexDirection: 'row', gap: 18, justifyContent: 'center', marginTop: 12 },
   /* ⚠ בבולט · בקשה של שקד */

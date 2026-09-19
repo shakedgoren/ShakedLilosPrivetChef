@@ -5,6 +5,7 @@ import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { hebrewDayLabel, soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
+import { dayQuotas } from '../admin/dayQuotas.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { notFound } from '../errors.ts';
 
@@ -28,7 +29,8 @@ adminStockRouter.get('/sale', async (_req, res, next) => {
         ...readJson<Record<string, number>>(row.soldJson, {}),
       };
       const waste = readJson<Record<string, number>>(row.wasteJson, {});
-      const quotas = readJson<Record<string, number>>(row.quotasJson, {});
+      /* ⚠ מקור אחד למכסה · אותו חישוב בדיוק כמו בלוח ההזמנות */
+      const quotas = dayQuotas(cat.dishes, readJson<Record<string, number>>(row.quotasJson, {}));
       days.push({
         cat: catKey,
         date: row.date,
@@ -41,7 +43,7 @@ adminStockRouter.get('/sale', async (_req, res, next) => {
         items: cat.dishes.map((d) => ({
           id: d.id,
           name: d.n,
-          quota: quotas[d.id] ?? d.q,
+          quota: quotas[d.id],
           sold: sold[d.id] ?? 0,
           waste: waste[d.id] ?? 0,
         })),

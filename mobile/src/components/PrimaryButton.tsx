@@ -29,6 +29,21 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  * ״שכדי לעבור הלאה אליו יהיה איזו אנימציה מגניבה של גרירה של החץ
  * שמאלה״. הכפתור אינו נלחץ סתם — מושכים את הידית לאורך המסלול.
  *
+ * ⚠ **החלקה אמיתית · 19 בספטמבר 2026** · בקשה של שקד: ״הוא אמור
+ * להיות כפתור שמחליקים אותו מימין לשמאל, ואז זה עובר כמו שהיה
+ * בפתיחה הישנה של האייפון״. שני דברים היו חסרים:
+ *
+ * · **לחיצה פתחה אותו.** עד היום מגע שכמעט לא זז נספר כ״לחיצה״
+ *   והפעיל את הכפתור, ולכן הוא לא היה באמת כפתור החלקה. עכשיו
+ *   לחיצה רק **מרמזת** — הידית קופצת שמאלה וחוזרת — וההחלקה היא
+ *   הדרך היחידה לעבור. בדיוק כמו במסך הנעילה הישן.
+ * · **הכיתוב לא הבהב.** הברק שעובר על ״slide to unlock״ הוא
+ *   החתימה של אותו כפתור, והוא מה שאומר לעין שיש כאן מה לגרור.
+ *   `SHEEN` למטה הוא אותו פס אור.
+ *
+ * ⚠ **קורא מסך אינו מחליק** · `onAccessibilityTap` ממשיך להפעיל
+ * את הכפתור ישירות, ולכן המחווה אינה חוסמת אף אחד.
+ *
  * ⚠ **הידית עברה מהקצה השמאלי לימני** · בקנבס היא יושבת בשמאל.
  * גרירה שמאלה חייבת להתחיל מימין — שם העין מתחילה לקרוא בעברית —
  * ולכן זו מנוחה חדשה. זה **שינוי לעומת הקנבס**, ונובע ישירות
@@ -55,8 +70,15 @@ const BACK_MS = 260;
 const HINT_PX = 7;
 const HINT_MS = 620;
 const HINT_REST_MS = 1500;
-/** מתחת לזה זו לחיצה ולא גרירה */
+/** מתחת לזה זו לחיצה ולא גרירה · ולחיצה רק מרמזת, ראו `nudge` */
 const TAP_PX = 6;
+/** פס האור שעובר על הכיתוב · רוחבו, זמן המעבר והמנוחה שבין סבב לסבב */
+const SHEEN_W = 62;
+const SHEEN_MS = 1250;
+const SHEEN_REST_MS = 1700;
+/** הקפיצה שמקבלת לחיצה · מלמדת שגוררים, ולא מפעילה */
+const NUDGE_PX = 18;
+const NUDGE_MS = 150;
 
 type Props = { label: string; onPress: () => void };
 
@@ -72,6 +94,8 @@ export function PrimaryButton({ label, onPress }: Props) {
   /** רמז התנועה · נפרד מ-`x` כדי שגרירה לא תילחם בו */
   const hint = React.useRef(new Animated.Value(0)).current;
   const hintLoop = React.useRef<Animated.CompositeAnimation | null>(null);
+  /** הברק · לולאה עצמאית שאינה מושפעת מהגרירה */
+  const sheen = React.useRef(new Animated.Value(0)).current;
   const [reduce, setReduce] = React.useState(false);
   const done = React.useRef(false);
 
@@ -119,6 +143,24 @@ export function PrimaryButton({ label, onPress }: Props) {
     return stopHint;
   }, [startHint, stopHint]);
 
+  /* הברק · רץ כל עוד לא ביקשו פחות תנועה */
+  React.useEffect(() => {
+    if (reduce) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sheen, {
+          toValue: 1,
+          duration: SHEEN_MS,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.delay(SHEEN_REST_MS),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [reduce, sheen]);
+
   /** חזרה למנוחה · אחרי גרירה שלא הושלמה, ואחרי שהפעולה רצה */
   const springBack = React.useCallback(() => {
     Animated.timing(x, {
@@ -147,6 +189,24 @@ export function PrimaryButton({ label, onPress }: Props) {
     });
   }, [onPress, springBack, stopHint, x]);
 
+  /**
+   * ⚠ **לחיצה מרמזת · אינה מפעילה** · הידית קופצת שמאלה וחוזרת.
+   * כך מי שלחץ מבין מיד שצריך לגרור, במקום ללחוץ שוב ושוב.
+   */
+  const nudge = React.useCallback(() => {
+    if (done.current) return;
+    stopHint();
+    Animated.sequence([
+      Animated.timing(x, {
+        toValue: -NUDGE_PX,
+        duration: NUDGE_MS,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.spring(x, { toValue: 0, useNativeDriver: true, bounciness: 12 }),
+    ]).start(() => startHint());
+  }, [startHint, stopHint, x]);
+
   const pan = React.useMemo(
     () =>
       PanResponder.create({
@@ -163,23 +223,24 @@ export function PrimaryButton({ label, onPress }: Props) {
           if (done.current) return;
           if (-g.dx >= TRAVEL * DONE_AT) complete();
           /**
-           * ⚠ **הלחיצה מטופלת כאן ולא ב-`Pressable`** · נמדד בדפדפן
+           * ⚠ **לחיצה מרמזת · 19 בספטמבר 2026** · כאן היא קראה
+           * ל-`complete()`, ולכן הכפתור נפתח בלחיצה ולא היה באמת
+           * כפתור החלקה. ראו את ההערה בראש הקובץ.
+           *
+           * ⚠ **המגע מטופל כאן ולא ב-`Pressable`** · נמדד בדפדפן
            * (16 בספטמבר 2026) שכש-`panHandlers` נפרשׂ על `Pressable`
-           * המחוון של הלחיצה גובר, הידית לא זזה כלל, ומה שרץ היה
-           * לחיצה רגילה. לכן הכפתור הוא `View` והלחיצה היא פשוט
-           * מחווה שכמעט לא זזה.
+           * המחוון של הלחיצה גובר והידית לא זזה כלל.
            */
-          else if (Math.abs(g.dx) < TAP_PX && Math.abs(g.dy) < TAP_PX) complete();
+          else if (Math.abs(g.dx) < TAP_PX && Math.abs(g.dy) < TAP_PX) nudge();
           else springBack();
         },
         onPanResponderTerminate: () => springBack(),
       }),
-    [complete, springBack, stopHint, x],
+    [complete, nudge, springBack, stopHint, x],
   );
 
-  /* ⚠ **לחיצה רגילה גם עובדת** · מי שלא יגלה את הגרירה עדיין צריך
-     להצליח להזמין, וזו גם הדרך של קורא מסך. היא מטופלת בתוך
-     `onPanResponderRelease` — ראו ההערה שם. */
+  /* ⚠ **לחיצה אינה מפעילה יותר** · היא מרמזת בלבד, ראו `nudge`.
+     הדרך של קורא מסך היא `onAccessibilityTap` שעל הכפתור. */
 
   const slide = Animated.add(x, hint);
   /* הכיתוב נמוג כשהידית יוצאת לדרך */
@@ -187,6 +248,11 @@ export function PrimaryButton({ label, onPress }: Props) {
     inputRange: [-TRAVEL * 0.55, 0],
     outputRange: [0, 1],
     extrapolate: 'clamp',
+  });
+  /* הברק · מהקצה הימני אל מחוץ לקצה השמאלי */
+  const sheenX = sheen.interpolate({
+    inputRange: [0, 1],
+    outputRange: [W, -SHEEN_W],
   });
   /* השובל · לוח בהיר שנחשף מימין לשמאל מאחורי הידית */
   const trail = x.interpolate({
@@ -243,6 +309,18 @@ export function PrimaryButton({ label, onPress }: Props) {
 
           <Animated.Text style={[s.label, { opacity: labelOpacity }]}>{label}</Animated.Text>
 
+          {/* ⚠ **הברק** · פס אור מוטה שעובר על הכיתוב, כמו במסך
+              הנעילה הישן. נמוג יחד עם הכיתוב ברגע שגוררים. */}
+          {reduce ? null : (
+            <Animated.View
+              style={[
+                s.sheen,
+                NO_TOUCH,
+                { opacity: labelOpacity, transform: [{ translateX: sheenX }, { skewX: '-16deg' }] },
+              ]}
+            />
+          )}
+
           <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
             <S k="arrowLeft" size={ARROW} color={CTA_INK} />
           </Animated.View>
@@ -267,6 +345,14 @@ const s = StyleSheet.create({
   },
   label: { fontSize: 18, fontWeight: '600', color: CTA_INK },
   fill: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
+  /* ⚠ פס האור · נחתך על ידי `overflow: 'hidden'` של הכפתור */
+  sheen: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: SHEEN_W,
+    backgroundColor: 'rgba(255,255,255,0.30)',
+  },
   /**
    * ⚠ **`right` ולא `left`** · הידית נחה בקצה הימני, ומשם נגררת
    * שמאלה. `right` פיזי ולא `end`, כי `end` תלוי ב-`I18nManager`

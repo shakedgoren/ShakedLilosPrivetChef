@@ -44,6 +44,8 @@ const ROOT_PAD = 14;
 const REFRESH_MS = 20000;
 /** הריפוד מעל הכותרת · מתווסף לאזור הבטוח */
 const ROOT_TOP = 10;
+/** הרווח בין גושי העמוד כששוכבים · ראו את ההערה ליד `contentContainerStyle` */
+const TURN_GAP = 14;
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -225,9 +227,10 @@ export function AdminBoardScreen() {
       (t, id) => t + liveRows.reduce((s2, o) => s2 + (o.q[id] || 0), 0),
       0,
     );
-    /* ⚠ **בלי מכסת קנבס כשיש שרת · 19 בספטמבר 2026** · ראו את
-       ההערה המלאה ב-`/admin/board`. בלי שרת נשארת הדגמת הקנבס. */
-    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? (live ? 0 : dishQuota(saleCat, id))), 0);
+    /* ⚠ **אותה מכסה שבדף המלאי · 19 בספטמבר 2026** · ראו את ההסבר
+       ב-`server/src/admin/dayQuotas.ts`. הלוח הראה ״0 מתוך 0״ בעוד
+       שדף המלאי הראה מספר אמיתי, ושקד דיווחה על הפער. */
+    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(saleCat, id)), 0);
     return {
       id: p.id,
       sub: p.name,
@@ -342,9 +345,26 @@ export function AdminBoardScreen() {
              *
              * ⚠ הריפוד של `View` בזקוף נשאר כפי שהיה · שם זה עובד.
              */
+            /**
+             * ⚠ **גם הרווחים עברו לתוכן · 19 בספטמבר 2026** · בקשה
+             * של שקד: ״כשאני הופכת את הטלפון לרוחב צריך להוסיף רווח
+             * בין ׳הכל, איסוף, משלוחים׳ לבין הכמויות של המנות, וגם
+             * רווח בין הכמויות של המנות לטבלה״.
+             *
+             * אותו שורש בדיוק כמו הריפוד ממש כאן למטה: ה-`gap: 8`
+             * יושב ב-`s.root`, שבשכיבה הוא ה-`style` של ה-`ScrollView`
+             * — כלומר מסגרת הגלילה. הילדים יושבים במכל התוכן, ולכן
+             * הרווח פשוט לא חל עליהם והשורות נדבקו זו לזו.
+             *
+             * ⚠ **14 ולא 8** · בשכיבה הכל נמוך ודחוס, ו-8 נקראו
+             * כדבוק. נמדד על המסך.
+             */
             contentContainerStyle: [
               s.turnPad,
-              { paddingHorizontal: ROOT_PAD + Math.max(insets.left, insets.right) },
+              {
+                gap: TURN_GAP,
+                paddingHorizontal: ROOT_PAD + Math.max(insets.left, insets.right),
+              },
             ],
             style: [s.root, { paddingTop: insets.top + ROOT_TOP }],
           }
@@ -610,7 +630,17 @@ const s = StyleSheet.create({
   fitBox: { flex: 1, overflow: 'hidden' },
   /* ⚠ אוויר בתחתית הגלילה בשכיבה · אחרת הסה״כ נדבק לקצה */
   turnPad: { paddingBottom: 28 },
-  tools: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  /* ⚠ **ממורכז · בקשה של שקד (19 בספטמבר 2026)** · ״תשים גם את
+     הכרטיסייה של ׳הכל, איסוף, משלוחים׳ ממורכזת לאמצע״. הבורר
+     נצמד עד היום להתחלה, כלומר לימין, בעוד שהכותרת מעליו
+     והכמויות שמתחתיו כבר היו באמצע. */
+  tools: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
   head: { justifyContent: 'center', minHeight: 44 },
   backWrap: { position: 'absolute', right: 0, top: 0, bottom: 0, justifyContent: 'center' },
   back: {
