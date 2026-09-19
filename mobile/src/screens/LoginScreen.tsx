@@ -30,7 +30,14 @@ import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
 import { GoogleG, Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
 import { User } from '../icons';
-import { disarmFace, enrollFace, faceArmed, faceAvailable, unlockWithFace } from '../lib/faceUnlock';
+import {
+  disarmFace,
+  enrollFace,
+  faceArmed,
+  faceAvailable,
+  unlockWithFace,
+  type EnrollWhy,
+} from '../lib/faceUnlock';
 import { maskPhone, normalizePhone } from '../lib/phone';
 import { useGoogleIdToken } from '../lib/googleAuth';
 import { DISPLAY_FAMILY } from '../theme/fonts';
@@ -162,6 +169,25 @@ function Dots({ at }: { at: number }) {
   );
 }
 
+/**
+ * ⚠ **מה בדיוק נכשל בזיהוי הפנים · 19 בספטמבר 2026** · שקד דיווחה
+ * שלוש פעמים על ״לא ניתן לסרוק את הפנים״, ובכל פעם ההודעה הייתה
+ * אותה הודעה כללית — גם כשהסיבה הייתה אחרת לגמרי. כאן כל סיבה
+ * מקבלת את ההסבר שלה, וממילא גם אני רואה מהמסך מה קרה.
+ * הנוסחים ב-`loginCopy` · נכתבו על ידי Claude.
+ */
+const FACE_HELP: Record<EnrollWhy, string> = {
+  cancel: '',
+  notEnrolled: T.faceNoEnroll,
+  denied: T.faceDenied,
+  noPasscode: T.faceNoPasscode,
+  lockout: T.faceLockout,
+  failed: T.faceFailed,
+};
+
+/** לאלה הפתרון נמצא בהגדרות המכשיר · ולכן מוצג הקישור אליהן */
+const FACE_SETTINGS = new Set<EnrollWhy>(['notEnrolled', 'denied', 'noPasscode']);
+
 export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const { go, signIn, closeLogin, loginOverlay } = useNav();
   /* ⚠ חייב להיקרא בראש הרכיב · זה הוק · ראו `lib/googleAuth.ts` */
@@ -170,7 +196,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   /* ⚠ למה הגדרת זיהוי הפנים נכשלה · null = אין מה להגיד */
-  const [faceHelp, setFaceHelp] = useState<'settings' | 'failed' | null>(null);
+  const [faceHelp, setFaceHelp] = useState<EnrollWhy | null>(null);
   const [showPass, setShowPass] = useState(false);
 
   const [phone, setPhone] = useState('');
@@ -457,10 +483,9 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
             נכתבו על ידי Claude · ראו `loginCopy`. */}
         {faceHelp ? (
           <>
-            <Text style={s.faceHelp}>
-              {faceHelp === 'settings' ? T.faceBlocked : T.faceFailed}
-            </Text>
-            {faceHelp === 'settings' ? (
+            <Text style={s.faceHelp}>{FACE_HELP[faceHelp]}</Text>
+            {/* ⚠ קישור להגדרות רק כשהפתרון באמת נמצא שם */}
+            {FACE_SETTINGS.has(faceHelp) ? (
               <Pressable onPress={openSettings} style={s.askGhost}>
                 <Text style={s.faceLink}>{T.faceSettings}</Text>
               </Pressable>

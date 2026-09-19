@@ -16,7 +16,6 @@ import {
   CTA_INK,
   CTA_KNOB_RADIUS,
   CTA_KNOB_SHADOW,
-  CTA_RADIUS,
   CTA_SHADOW,
 } from '../theme/glass';
 import { stopOf } from '../theme/tokens';
@@ -50,11 +49,16 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  * מהבקשה; אם שקד מעדיפה שהידית תישאר בשמאל צריך להפוך את הגרירה.
  */
 /**
- * ⚠ **המידות · סבב שלישי, 16 בספטמבר 2026** · הרוחב ירד 250 → 220 →
- * 196 בשלוש בקשות נפרדות של שקד, אחרי שהכיתוב קוצר ל״להתחברות״.
- * `TRAVEL` נגזר מ-W ולכן הגרירה מתקצרת איתו.
+ * ⚠ **המידות · סבב רביעי, 19 בספטמבר 2026** · הרוחב ירד 250 → 220 →
+ * 196 → 168 בארבע בקשות נפרדות של שקד. `TRAVEL` נגזר מ-W ולכן
+ * הגרירה מתקצרת איתו — וזה גם עוזר למחווה, כי המסלול קצר יותר.
+ *
+ * ⚠ **הפינות מעוגלות יותר** · ״טיפה טיפה תעגל לו את הקצוות״ ·
+ * 14 ⟵ 18. `RADIUS` מקומי ולא `CTA_RADIUS`, כי הכפתור הזה הוא
+ * היחיד שמשתמש בו וכך שאר הערכת הזכוכית נשארת כפי שהיא בקנבס.
  */
-const W = 196;
+const W = 168;
+const RADIUS = 18;
 const H = 48;
 const KNOB = 38;
 const KNOB_INSET = 5;
@@ -63,7 +67,7 @@ const ARROW = 16;
 /** אורך המסלול · מקצה לקצה, פחות הידית ושני הריפודים */
 const TRAVEL = W - KNOB - KNOB_INSET * 2;
 /** מאיזה חלק מהמסלול זה נחשב ״הושלם״ · מתחת לזה הידית חוזרת */
-const DONE_AT = 0.62;
+const DONE_AT = 0.55;
 const SNAP_MS = 170;
 const BACK_MS = 260;
 /** רמז התנועה במנוחה · דחיפה קטנה שמאלה כדי שיהיה ברור שגוררים */
@@ -212,7 +216,23 @@ export function PrimaryButton({ label, onPress }: Props) {
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         /* ⚠ נתפס רק על תנועה אופקית · אחרת הכפתור בולע גלילה אנכית */
-        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 3,
+        onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 2,
+        /**
+         * ⚠ **תופסים לפני הגלילה · 19 בספטמבר 2026** · שקד דיווחה:
+         * ״הכפתור כאילו לא קולט טוב את האצבע, לא מובן לי מה קורה
+         * שם״. זו הסיבה, ויש לה שני חלקים:
+         *
+         * · דף הבית הוא `ScrollView`. ברגע שהאצבע זזה, הגלילה
+         *   **מבקשת את המחווה בחזרה** — ו-`PanResponder` מוותר לה
+         *   כברירת מחדל. הידית פשוט נעצרה באמצע הגרירה.
+         *   `onPanResponderTerminationRequest` שמחזיר `false` הוא
+         *   מה שמסרב לוותר.
+         * · הלכידה (`Capture`) תופסת את התנועה האופקית **לפני**
+         *   שהגלילה מספיקה להתחיל, ולא אחריה.
+         */
+        onMoveShouldSetPanResponderCapture: (_e, g) =>
+          Math.abs(g.dx) > Math.abs(g.dy) && Math.abs(g.dx) > 2,
+        onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => stopHint(),
         onPanResponderMove: (_e, g) => {
           if (done.current) return;
@@ -287,7 +307,7 @@ export function PrimaryButton({ label, onPress }: Props) {
                 ))}
               </LinearGradient>
             </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" rx={CTA_RADIUS} fill={`url(#${id}g)`} />
+            <Rect x="0" y="0" width="100%" height="100%" rx={RADIUS} fill={`url(#${id}g)`} />
           </Svg>
 
           {/* ⚠ **המילוי בלילך של אופציה 01** · בקשה מפורשת של שקד.
@@ -333,17 +353,36 @@ export function PrimaryButton({ label, onPress }: Props) {
 const s = StyleSheet.create({
   wrap: { width: W, height: H, alignItems: 'center', justifyContent: 'center' },
   /** נושאת את הצל החיצוני · בלי חיתוך */
-  shade: { width: W, height: H, borderRadius: CTA_RADIUS, boxShadow: CTA_DROP },
+  shade: { width: W, height: H, borderRadius: RADIUS, boxShadow: CTA_DROP },
   button: {
     width: W,
     height: H,
-    borderRadius: CTA_RADIUS,
+    borderRadius: RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: CTA_SHADOW,
     overflow: 'hidden',
   },
-  label: { fontSize: 18, fontWeight: '600', color: CTA_INK },
+  /**
+   * ⚠ **הכיתוב ממורכז במסלול ולא בכפתור · 19 בספטמבר 2026** · אחרי
+   * שהרוחב ירד ל-168 הידית כיסתה את האות האחרונה של ״להתחברות״.
+   * השארת מקום לידית והמרכוז בתוך מה שנשאר פותרים את זה בלי
+   * להקטין את הגופן ובלי להחזיר רוחב.
+   * ⚠ `lineHeight: H` הוא מה שממרכז לגובה · `textAlignVertical`
+   * אינו קיים ב-iOS.
+   */
+  label: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: KNOB + KNOB_INSET * 2,
+    textAlign: 'center',
+    lineHeight: H,
+    fontSize: 18,
+    fontWeight: '600',
+    color: CTA_INK,
+  },
   fill: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
   /* ⚠ פס האור · נחתך על ידי `overflow: 'hidden'` של הכפתור */
   sheen: {

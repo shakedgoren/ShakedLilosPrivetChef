@@ -378,6 +378,17 @@ export function ProfileScreen() {
             bad={errors.name}
             hint="צריך שם כדי שאדע למי לקרוא"
           />
+          {/**
+            * ⚠ **הטלפון נעול · בקשה של שקד (19 בספטמבר 2026)** ·
+            * ״אמרנו שטלפון אי אפשר לעדכן, זה צריך להיות נעול״.
+            *
+            * ⚠ **גם בשרת** · `PATCH /users/me` דוחה שינוי מספר.
+            * נעילה במסך בלבד היא קישוט — המספר הוא המזהה שאיתו
+            * נכנסים לחשבון, והוא מאומת בקוד חד-פעמי בהרשמה.
+            *
+            * ⚠ הכיתוב ״המספר משמש לכניסה לחשבון״ נכתב על ידי
+            * Claude, שקד לא כתבה אותו.
+            */}
           <Field
             label="טלפון"
             ph="050-0000000"
@@ -386,6 +397,14 @@ export function ProfileScreen() {
             bad={errors.phone}
             hint="מספר טלפון לא תקין"
             keyboardType="phone-pad"
+            /**
+             * ⚠ **נעול רק כשיש מספר** · מי שנרשם בגוגל נכנס בלי
+             * טלפון. נעילה גורפת הייתה נועלת אותו בלי מספר לתמיד,
+             * ועם מסגרת אדומה שאי אפשר לתקן. השרת מתנהג בדיוק כך
+             * — ראו `auth/phoneLock.ts`.
+             */
+            locked={Boolean(user?.phone)}
+            note={user?.phone ? 'המספר משמש לכניסה לחשבון ולכן אי אפשר לשנות אותו' : undefined}
           />
           <Field
             label="אימייל"
@@ -529,6 +548,8 @@ function Field({
   hint,
   keyboardType,
   secure,
+  locked,
+  note,
 }: {
   label: string;
   ph: string;
@@ -538,6 +559,10 @@ function Field({
   hint?: string;
   keyboardType?: 'phone-pad' | 'email-address';
   secure?: boolean;
+  /** ⚠ נעול · ראו את שדה הטלפון */
+  locked?: boolean;
+  /** שורת הסבר קטנה מתחת לשדה */
+  note?: string;
 }) {
   return (
     <View style={s.fieldWrap}>
@@ -550,9 +575,12 @@ function Field({
         keyboardType={keyboardType}
         secureTextEntry={secure}
         autoCapitalize="none"
-        style={[s.input, { borderColor: bad ? BAD_BD : IDLE_BD }]}
+        editable={!locked}
+        /* ⚠ שדה נעול לעולם לא נצבע באדום · אין בו מה לתקן */
+        style={[s.input, { borderColor: !locked && bad ? BAD_BD : IDLE_BD }, locked && s.inputLocked]}
       />
-      {bad && hint ? <Text style={s.hint}>{hint}</Text> : null}
+      {!locked && bad && hint ? <Text style={s.hint}>{hint}</Text> : null}
+      {note ? <Text style={s.note}>{note}</Text> : null}
     </View>
   );
 }
@@ -683,6 +711,9 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     textAlign: INPUT_START,
   },
+  /* ⚠ שדה נעול · אפור ורך, כדי שיהיה ברור שאין מה להקליד בו */
+  inputLocked: { backgroundColor: 'rgba(130,112,162,0.07)', color: '#8A8194' },
+  note: { fontSize: 11.5, fontWeight: '300', color: '#8A8194', marginTop: 4, paddingHorizontal: 4 },
   hint: { fontSize: 11.5, color: '#B95349' },
 
   passRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },

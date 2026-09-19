@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { isEmail, isPhone, normalizePhone, publicUser } from '../auth/identity.ts';
+import { phoneChangeBlocked } from '../auth/phoneLock.ts';
 import { badRequest } from '../errors.ts';
 import { parseImagePayload, saveAvatar } from '../uploads/avatar.ts';
 
@@ -72,6 +73,8 @@ usersRouter.patch('/me', requireAuth, maybeMultipart, async (req, res, next) => 
     /* העיר נשמרת כמו שהוקלדה · אזהרת המשלוח היא במסך, לא 400 */
     if (body.city !== undefined) data.city = body.city.trim();
     if (body.phone !== undefined) {
+      /* ⚠ **המספר נעול · 19 בספטמבר 2026** · ראו `auth/phoneLock.ts` */
+      if (phoneChangeBlocked(req.user!.phone ?? null, body.phone)) throw badRequest('phone_locked');
       const p = body.phone.trim();
       if (p && !isPhone(p)) throw badRequest('invalid_phone');
       const phone = p ? normalizePhone(p) : null;

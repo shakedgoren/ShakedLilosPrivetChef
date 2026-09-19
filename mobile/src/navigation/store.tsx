@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { apiEnabled } from '../api/config';
 import { me } from '../api/auth';
 import { tokenStore } from '../api/storage';
+import { registerForPush } from '../lib/push';
 import type { PublicUser } from '../api/types';
 import { StackActions } from '@react-navigation/native';
 import { navReady, navigationRef } from './ref';
@@ -287,6 +288,25 @@ export function NavProvider({ children }: { children: React.ReactNode }) {
       if (session) {
         setUser(session.user);
         void tokenStore.set(session.token);
+        /**
+         * ⚠ **רישום המכשיר להתראות · 19 בספטמבר 2026** · בקשה של
+         * שקד: ״שמישהו רוצה תזכורת כשנפתחת המכירה, אני רוצה שזה
+         * ישלח לו התראה לנייד מהאפליקציה גם אם הוא לא נמצא בתוכה״.
+         *
+         * כל השרשרת כבר נבנתה ב-18 בספטמבר — `lib/push` בצד
+         * האפליקציה ו-`push/saleOpen` בשרת — אבל **אף אחד לא קרא
+         * ל-`registerForPush`**, ולכן לא נשמר אף אסימון ולא הייתה
+         * למי לשלוח. זו החוליה שהייתה חסרה.
+         *
+         * ⚠ **כאן ולא במסך ההתחברות** · דרך הפונקציה הזו עוברות כל
+         * הכניסות — סיסמה, גוגל וזיהוי פנים — ולכן אין דרך להתחבר
+         * בלי להירשם.
+         *
+         * ⚠ **שקט כשאי אפשר** · בלי `projectId` של EAS, בלי הרשאה
+         * או בבילד בלי המודול הילידי זה מחזיר `false` ולא מטריד
+         * את הלקוחה. ראו את שלוש החוליות ב-`lib/push`.
+         */
+        void registerForPush();
       }
       setLoggedIn(true);
       /* התחברות מתוך שכבה · המסך שמאחוריה נשאר בדיוק כפי שהיה */

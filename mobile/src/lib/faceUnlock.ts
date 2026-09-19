@@ -76,15 +76,28 @@ export async function armFace(token: string): Promise<boolean> {
  * ⚠ **כישלון אינו חוסם כניסה** · היא כבר הוכיחה מי היא עם הסיסמה.
  * זיהוי הפנים הוא קיצור דרך לפעם הבאה, לא תנאי.
  */
-export type EnrollResult =
-  /** נסרקה ונשמרה */
-  | { ok: true }
+/**
+ * ⚠ **סיבה מדויקת · 19 בספטמבר 2026** · שקד דיווחה בשלישית
+ * ש״לוחצים כן ומקבלים שגיאה שלא ניתן לסרוק את הפנים״. שלוש
+ * הקבוצות הקודמות (`cancel` / `settings` / `failed`) כיווצו את כל
+ * הסיבות לשתי הודעות, ולכן אי אפשר היה לדעת **מה** בדיוק נכשל —
+ * לא לה ולא לי. עכשיו כל סיבה עומדת בפני עצמה ויש לה הסבר משלה.
+ */
+export type EnrollWhy =
   /** נסגר על ידי המשתמשת · אין מה להגיד לה */
-  | { ok: false; why: 'cancel' }
-  /** המערכת סירבה · הפתרון נמצא בהגדרות ולא באפליקציה */
-  | { ok: false; why: 'settings' }
-  /** נכשל סתם · אפשר לנסות שוב */
-  | { ok: false; why: 'failed' };
+  | 'cancel'
+  /** אין פנים רשומות במכשיר עצמו */
+  | 'notEnrolled'
+  /** האפליקציה לא קיבלה רשות · או שהחיישן אינו זמין */
+  | 'denied'
+  /** אין קוד נעילה למכשיר · בלעדיו אין ביומטריה */
+  | 'noPasscode'
+  /** יותר מדי ניסיונות · צריך קוד מכשיר כדי לשחרר */
+  | 'lockout'
+  /** הסריקה רצה ולא זיהתה · אפשר לנסות שוב */
+  | 'failed';
+
+export type EnrollResult = { ok: true } | { ok: false; why: EnrollWhy };
 
 /**
  * ⚠ **קודי השגיאה של iOS** · `authenticateAsync` מחזיר מחרוזת.
@@ -96,16 +109,17 @@ export type EnrollResult =
  * · `passcode_not_set` — בלי קוד מכשיר אין ביומטריה.
  * · `lockout` / `user_lockout` — יותר מדי כישלונות.
  */
-const SETTINGS_ERRORS = new Set([
-  'not_enrolled',
-  'not_available',
-  'not_supported',
-  'passcode_not_set',
-  'lockout',
-  'user_lockout',
-]);
-
-const CANCEL_ERRORS = new Set(['user_cancel', 'app_cancel', 'system_cancel']);
+const WHY_OF: Record<string, EnrollWhy> = {
+  user_cancel: 'cancel',
+  app_cancel: 'cancel',
+  system_cancel: 'cancel',
+  not_enrolled: 'notEnrolled',
+  not_available: 'denied',
+  not_supported: 'denied',
+  passcode_not_set: 'noPasscode',
+  lockout: 'lockout',
+  user_lockout: 'lockout',
+};
 
 /**
  * הגדרת הכניסה בזיהוי פנים · **סורקת פעם אחת ורק אז שומרת**.
@@ -126,7 +140,8 @@ const CANCEL_ERRORS = new Set(['user_cancel', 'app_cancel', 'system_cancel']);
  * אפילו פעם אחת.
  */
 export async function enrollFace(token: string): Promise<EnrollResult> {
-  if (!NATIVE || !token) return { ok: false, why: 'settings' };
+  /* ⚠ דפדפן או בלי אסימון · אין חיישן ואין מה לשמור */
+  if (!NATIVE || !token) return { ok: false, why: 'denied' };
   try {
     const res = await LocalAuthentication.authenticateAsync({
       promptMessage: LOGIN_COPY.facePrompt,
@@ -135,9 +150,7 @@ export async function enrollFace(token: string): Promise<EnrollResult> {
     });
     if (res.success) return (await armFace(token)) ? { ok: true } : { ok: false, why: 'failed' };
     const code = 'error' in res ? String(res.error) : '';
-    if (CANCEL_ERRORS.has(code)) return { ok: false, why: 'cancel' };
-    if (SETTINGS_ERRORS.has(code)) return { ok: false, why: 'settings' };
-    return { ok: false, why: 'failed' };
+    return { ok: false, why: WHY_OF[code] ?? 'failed' };
   } catch {
     return { ok: false, why: 'failed' };
   }
