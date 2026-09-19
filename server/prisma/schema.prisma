@@ -107,8 +107,11 @@ model PasswordReset {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// הקוד בן שש הספרות שנשלח במייל · ראו auth/resetCode.ts
   token     String    @unique
   expiresAt DateTime
+  /// ניסיונות הקלדה שנכשלו · נועל אחרי חמישה, כמו באימות הטלפון
+  attempts  Int       @default(0)
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 

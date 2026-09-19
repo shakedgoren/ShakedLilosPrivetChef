@@ -29,6 +29,11 @@ export const COPY = {
   /* ⚠ **חדש · נכתב על ידי Claude ב-19 בספטמבר 2026** · שקד לא כתבה
      את הנוסח הזה. הוא מופיע רק כששרת המייל עצמו לא הצליח לשלוח. */
   mailFailed: 'שרת המייל לא הצליח לשלוח כרגע · נסי שוב עוד מעט',
+  /* ⚠ **שלוש אלה נכתבו על ידי Claude ב-19.9.2026** · שלב הקוד
+     באיפוס הסיסמה · שקד לא כתבה אותן. */
+  resetWrong: 'הקוד לא נכון · אפשר לנסות שוב',
+  resetExpired: 'הקוד פג · אפשר לשלוח קוד חדש',
+  resetLocked: 'יותר מדי ניסיונות · אפשר לשלוח קוד חדש',
 };
 
 /**
@@ -54,6 +59,10 @@ export function authError(code: string, serverMessage?: string): string {
   if (code === 'google_token_required' || code === 'invalid_google_token') return COPY.google;
   if (code === 'otp_invalid') return COPY.otpInvalid;
   if (code === 'mail_failed') return COPY.mailFailed;
+  if (code === 'reset_wrong') return COPY.resetWrong;
+  if (code === 'reset_expired') return COPY.resetExpired;
+  if (code === 'reset_locked') return COPY.resetLocked;
+  if (code === 'reset_invalid') return COPY.resetExpired;
   return COPY.net;
 }
 

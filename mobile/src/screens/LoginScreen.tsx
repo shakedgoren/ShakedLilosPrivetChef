@@ -15,6 +15,7 @@ import { useNav } from '../navigation/store';
 import { apiEnabled } from '../api/config';
 import {
   forgotPassword,
+  resetPassword,
   googleSignIn,
   login,
   me,
@@ -27,7 +28,7 @@ import { ApiError, type Session } from '../api/types';
 import { BlobField } from '../components/BlobField';
 import { Photo } from '../components/Photo';
 import { EyeToggle } from '../components/EyeToggle';
-import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
+import { ForgotSheet, TermsSheet, type ResetForm } from '../components/LoginSheets';
 import { GoogleG, Mail, WhatsApp } from '../components/LoginIcons';
 import { S } from '../components/Sym';
 import { User } from '../icons';
@@ -216,6 +217,9 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [sheet, setSheet] = useState<null | 'doc' | 'forgot'>(null);
   const [resetMail, setResetMail] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  /* ⚠ שלב הקוד · ראו `server/src/auth/resetCode.ts` */
+  const [resetForm, setResetForm] = useState<ResetForm>({ code: '', pass: '', pass2: '' });
+  const [resetDone, setResetDone] = useState(false);
 
   /** האם כבר נשמר אסימון · אז לחיצה על הסיסמה פותחת סריקה */
   const [armed, setArmed] = useState(false);
@@ -429,6 +433,34 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       }
       setResetSent(true);
     });
+
+  /**
+   * ⚠ **בחירת סיסמה חדשה · 19 בספטמבר 2026** · שקד בחרה קוד במייל
+   * במקום קישור. כל השלב קורה בתוך היריעה, ולכן גם השגיאה נשארת
+   * בתוכה ולא נוחתת על המסך שמאחוריה.
+   */
+  const onResetSave = () =>
+    run(async () => {
+      setResetErr('');
+      if (!apiEnabled) {
+        setResetDone(true);
+        return;
+      }
+      try {
+        await resetPassword(resetMail.trim(), resetForm.code.trim(), resetForm.pass);
+        setResetDone(true);
+      } catch (e) {
+        setResetErr(e instanceof ApiError ? authError(e.code, e.message) : COPY.net);
+      }
+    });
+
+  /** חזרה לטופס הכתובת · ״לשלוח לכתובת אחרת״ */
+  const onResetAgain = () => {
+    setResetSent(false);
+    setResetDone(false);
+    setResetErr('');
+    setResetForm({ code: '', pass: '', pass2: '' });
+  };
 
   const onLogout = () => void disarmFace();
   useEffect(() => onLogout, []);
@@ -707,7 +739,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           {showLinks ? (
             <View style={s.links}>
               {!isUp ? (
-                <Pressable onPress={() => { setResetSent(false); setResetErr(''); setSheet('forgot'); }}>
+                <Pressable onPress={() => { onResetAgain(); setSheet('forgot'); }}>
                   {/* ⚠ בבולט · בקשה של שקד */}
                   <Text style={s.linkStrong}>{FORGOT_LABEL}</Text>
                 </Pressable>
@@ -740,7 +772,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           sent={resetSent}
           busy={busy}
           err={resetErr}
-          onAgain={() => { setResetSent(false); setResetErr(''); }}
+          onAgain={onResetAgain}
+          form={resetForm}
+          onField={(k, v) => { setResetForm((f) => ({ ...f, [k]: v })); setResetErr(''); }}
+          onSave={onResetSave}
+          saved={resetDone}
         />
       ) : null}
     </View>

@@ -78,8 +78,6 @@ export const env = {
   smtpUser: process.env.SMTP_USER ?? '',
   smtpPass: process.env.SMTP_PASS ?? '',
   mailFrom: process.env.MAIL_FROM ?? '',
-  /** הכתובת שאליה מפנה הקישור במייל · בפיתוח זה שרת ה-Expo בדפדפן */
-  appUrl: process.env.APP_URL ?? 'http://localhost:8081',
   uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
   /** WhatsApp Cloud API · נקרא בזמן אמת כדי שבדיקות יוכלו לשנות env */
   get whatsapp() {

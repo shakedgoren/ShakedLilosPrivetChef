@@ -19,6 +19,14 @@ export const register = (
 export const forgotPassword = (who: string) =>
   api<{ ok: true }>('/auth/forgot-password', { body: { who }, auth: false });
 
+/**
+ * בחירת סיסמה חדשה עם הקוד מהמייל.
+ * ⚠ **גם `who` ולא רק הקוד** · שש ספרות לבדן הן פרצה — ראו
+ * `server/src/routes/auth.ts`.
+ */
+export const resetPassword = (who: string, code: string, password: string) =>
+  api<{ ok: true }>('/auth/reset-password', { body: { who, code, password }, auth: false });
+
 export const requestOtp = (who: string) =>
   api<{ ok: true; code?: string }>('/auth/otp/request', { body: { who }, auth: false });
 

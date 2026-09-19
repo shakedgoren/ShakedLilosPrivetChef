@@ -1,63 +1,57 @@
 /**
- * מייל איפוס הסיסמה.
+ * מייל איפוס הסיסמה · **קוד בן שש ספרות, בלי שום קישור**.
  *
- * ⚠ **החלטה של שקד** (16 בספטמבר 2026) · לשאלה ״לאן האיפוס נשלח?״
- * היא ענתה: ״שיישלח קישור לאיפוס למייל״.
+ * ⚠ **החלטה של שקד · 19 בספטמבר 2026** · היא בחרה מבין שלוש
+ * אפשרויות את הקוד. מה שהיה כאן קודם — כפתור עם קישור — היה שבור
+ * משורש, וההסבר המלא נמצא ב-`auth/resetCode.ts`: הכתובת נבנתה
+ * מ-`APP_URL` שלא הוגדר ולכן הצביעה על `localhost`, באפליקציה לא
+ * היה מסך שמקבל אותה, וגוגל סימנה את ההודעה כספאם בדיוק בגללה.
  *
- * ⚠ **כל הנוסח כאן נכתב על ידי קלוד ולא על ידי שקד** · הוא אינו
- * מהקנבס, ואין לו מקור בשום מסך קיים. אם היא רוצה ניסוח אחר —
- * זה הקובץ היחיד שצריך לגעת בו.
+ * ⚠ **בלי קישורים בכלל** · זו גם הסיבה שההודעה כבר לא נראית
+ * כהתחזות: אין למה ללחוץ, ולכן אין מה לזייף.
  *
- * ⚠ **האסימון לעולם לא בשורת הנושא** · שורות נושא נשמרות ביומנים,
- * בהתראות של המכשיר ובתצוגה המקדימה של תיבת הדואר. הוא רק בקישור.
+ * ⚠ **כל הנוסח כאן נכתב על ידי Claude ולא על ידי שקד** · הוא אינו
+ * מהקנבס. אם היא רוצה ניסוח אחר — זה הקובץ היחיד שצריך לגעת בו.
+ *
+ * ⚠ **הקוד לעולם לא בשורת הנושא** · שורות נושא נשמרות ביומנים,
+ * בהתראות של המכשיר ובתצוגה המקדימה של תיבת הדואר.
  */
+import { RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
 
-/**
- * תוקף האסימון · חייב להיות זהה למה ש-`/auth/forgot-password` כותב.
- * ⚠ עשר דקות · החלטה של שקד (16 בספטמבר 2026).
- */
-export const RESET_TTL_MINUTES = 10;
+/** תוקף הקוד בדקות · נגזר מהמקור היחיד ולא נכתב פעמיים */
+export const RESET_TTL_MINUTES = RESET_CODE_TTL_MS / 60000;
 
-export type ResetMail = { subject: string; text: string; html: string; link: string };
+export type ResetMail = { subject: string; text: string; html: string; code: string };
 
 /** ״10 דקות״ / ״שעה אחת״ · נגזר מהקבוע, כדי שלא ייווצר פער בין הטקסט למציאות */
 export const ttlLabel = (): string =>
   RESET_TTL_MINUTES % 60 === 0
-    ? (RESET_TTL_MINUTES === 60 ? 'שעה אחת' : `${RESET_TTL_MINUTES / 60} שעות`)
+    ? RESET_TTL_MINUTES === 60
+      ? 'שעה אחת'
+      : `${RESET_TTL_MINUTES / 60} שעות`
     : `${RESET_TTL_MINUTES} דקות`;
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/**
- * הקישור שנשלח · נופל על מסך האיפוס באפליקציה.
- * חנות הניווט קוראת `?screen=` מכתובת הדפדפן, ולכן זה הפרמטר.
- */
-export function resetLink(appUrl: string, token: string): string {
-  const base = appUrl.trim().replace(/\/+$/, '');
-  const url = new URL(`${base}/`);
-  url.searchParams.set('screen', 'reset');
-  url.searchParams.set('token', token);
-  return url.toString();
-}
-
-export function buildResetEmail(opts: { name: string; token: string; appUrl: string }): ResetMail {
-  const link = resetLink(opts.appUrl, opts.token);
+export function buildResetEmail(opts: { name: string; code: string }): ResetMail {
   const name = opts.name.trim();
   const hello = name ? `שלום ${name},` : 'שלום,';
   const ttl = ttlLabel();
+  const code = opts.code;
 
-  const subject = 'איפוס הסיסמה שלך · BITE & TELL';
+  const subject = 'קוד לאיפוס הסיסמה · BITE & TELL';
 
   const text = [
     hello,
     '',
     'קיבלנו בקשה לאפס את הסיסמה לחשבון שלך ב-BITE & TELL.',
-    'כדי לבחור סיסמה חדשה אפשר להיכנס לקישור הזה:',
+    'הקוד לאיפוס הוא:',
     '',
-    link,
+    code,
     '',
-    `הקישור תקף ${ttl} מרגע השליחה, ואפשר להשתמש בו פעם אחת בלבד.`,
+    `הקוד תקף ${ttl} מרגע השליחה, ואפשר להשתמש בו פעם אחת בלבד.`,
+    'מקלידים אותו באפליקציה, במסך ״שכחתי סיסמה״, ובוחרים סיסמה חדשה.',
     'אם לא ביקשת לאפס סיסמה אפשר פשוט להתעלם מההודעה — הסיסמה הנוכחית נשארת כמו שהיא.',
     '',
     'BITE & TELL · שף פרטית · יבנה והשפלה',
@@ -70,13 +64,11 @@ export function buildResetEmail(opts: { name: string; token: string; appUrl: str
     <hr style="border:0;border-top:1px solid rgba(130,112,162,0.16);margin:18px 0">
     <p style="font-size:15px;margin:0 0 10px">${esc(hello)}</p>
     <p style="font-size:14px;line-height:1.6;color:#4A4254;margin:0 0 18px">
-      קיבלנו בקשה לאפס את הסיסמה לחשבון שלך. הכפתור למטה מוביל למסך שבו בוחרים סיסמה חדשה.
+      קיבלנו בקשה לאפס את הסיסמה לחשבון שלך. זה הקוד להקלדה באפליקציה:
     </p>
-    <p style="margin:0 0 18px">
-      <a href="${link}" style="display:inline-block;background:#BCA7E6;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:999px">בחירת סיסמה חדשה</a>
-    </p>
+    <div style="font-size:34px;font-weight:700;letter-spacing:10px;color:#43307A;background:rgba(130,112,162,0.08);border-radius:16px;padding:16px 10px;text-align:center;margin:0 0 18px" dir="ltr">${esc(code)}</div>
     <p style="font-size:12.5px;line-height:1.6;color:#7D7488;margin:0 0 6px">
-      הקישור תקף ${ttl} מרגע השליחה, ואפשר להשתמש בו פעם אחת בלבד.
+      הקוד תקף ${ttl} מרגע השליחה, ואפשר להשתמש בו פעם אחת בלבד.
     </p>
     <p style="font-size:12.5px;line-height:1.6;color:#7D7488;margin:0">
       אם לא ביקשת לאפס סיסמה אפשר להתעלם מההודעה — הסיסמה הנוכחית נשארת כמו שהיא.
@@ -84,5 +76,5 @@ export function buildResetEmail(opts: { name: string; token: string; appUrl: str
   </div>
 </div>`;
 
-  return { subject, text, html, link };
+  return { subject, text, html, code };
 }

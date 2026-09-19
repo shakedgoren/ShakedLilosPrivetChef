@@ -19,9 +19,22 @@ const LAV = '#BCA7E6';
  * ⚠ **שלושת הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · הם
  * מסך האישור שביקשה שקד, ולא היה קודם מה להעתיק ממנו.
  */
-const DONE_SUB = 'שלחנו קישור לאיפוס';
-const DONE_NOTE = 'הקישור תקף ל-10 דקות. אם הוא לא מגיע — כדאי לבדוק גם בתיבת הספאם.';
+const DONE_SUB = 'שלחנו קוד לאיפוס';
+const DONE_NOTE = 'הקוד תקף ל-10 דקות. אם הוא לא מגיע — כדאי לבדוק גם בתיבת הספאם.';
 const DONE_AGAIN = 'לשלוח לכתובת אחרת';
+/**
+ * ⚠ **שלב הקוד · נכתב על ידי Claude ב-19.9.2026** · שקד בחרה קוד
+ * במקום קישור (ראו `server/src/auth/resetCode.ts`), וזה המסך שבו
+ * מקלידים אותו. היא לא כתבה את הנוסחים האלה.
+ */
+const CODE_PH = '6 ספרות מהמייל';
+const PASS_PH = 'סיסמה חדשה · לפחות 8 תווים';
+const PASS2_PH = 'שוב, כדי לוודא';
+const SAVE_CTA = 'שמירת הסיסמה';
+const SAVED_SUB = 'הסיסמה הוחלפה';
+const SAVED_NOTE = 'אפשר להיכנס עכשיו עם הסיסמה החדשה.';
+/** אורך מינימלי · זהה לשרת ולמסך ההרשמה */
+const PASS_MIN = 8;
 const DEEP = '#43307A';
 
 /**
@@ -102,6 +115,9 @@ export function TermsSheet({ onClose, onAgree }: { onClose: () => void; onAgree:
  * איפוס סיסמה · קישור למייל.
  * ⚠ החלטה של שקד · ולכן אין כאן בורר ערוץ.
  */
+/** שלושת השדות של שלב הקוד */
+export type ResetForm = { code: string; pass: string; pass2: string };
+
 export function ForgotSheet({
   email,
   onEmail,
@@ -111,18 +127,33 @@ export function ForgotSheet({
   busy,
   err,
   onAgain,
+  form,
+  onField,
+  onSave,
+  saved,
 }: {
   email: string;
   onEmail: (v: string) => void;
   onSend: () => void;
   onClose: () => void;
+  /** הקוד נשלח · מציגים את שלב ההקלדה */
   sent: boolean;
   busy: boolean;
   /** שגיאה שמוצגת **בתוך** היריעה · לא על המסך שמאחוריה */
   err: string;
-  /** חזרה לטופס · ״לא קיבלתי״ */
+  /** חזרה לטופס · ״לשלוח לכתובת אחרת״ */
   onAgain: () => void;
+  form: ResetForm;
+  onField: (k: keyof ResetForm, v: string) => void;
+  onSave: () => void;
+  /** הסיסמה הוחלפה בפועל */
+  saved: boolean;
 }) {
+  /* ⚠ אותם תנאים שהשרת אוכף · אחרת הכפתור מבטיח ונכשל */
+  const ready =
+    form.code.trim().length >= 4 &&
+    form.pass.length >= PASS_MIN &&
+    form.pass2 === form.pass;
   return (
     /* ⚠ נפתחת באמצע · ראו `raised` */
     <Sheet onClose={onClose} raised>
@@ -143,7 +174,7 @@ export function ForgotSheet({
       </Pressable>
 
       <Text style={s.title}>{T.forgotTitle}</Text>
-      <Text style={s.sub}>{sent ? DONE_SUB : T.forgotBody}</Text>
+      <Text style={s.sub}>{saved ? SAVED_SUB : sent ? DONE_SUB : T.forgotBody}</Text>
 
       {/**
         * ⚠ **מסך אישור · בקשה של שקד (19 בספטמבר 2026)** · ״לא מציג
@@ -153,13 +184,68 @@ export function ForgotSheet({
         * ⚠ **לא נחשף אם החשבון קיים** · הנוסח מדבר על מה שנעשה
         * ולא על מה שנמצא, וזה מכוון.
         */}
-      {sent ? (
+      {saved ? (
         <View style={s.done}>
           <View style={s.doneOrb}>
             <S k="check" size={22} color="#FFFFFF" />
           </View>
+          <Text style={s.doneNote}>{SAVED_NOTE}</Text>
+        </View>
+      ) : sent ? (
+        /**
+         * ⚠ **שלב הקוד · 19 בספטמבר 2026** · כאן היה קודם רק אישור
+         * ש״נשלח קישור״, והקישור עצמו היה שבור. עכשיו זה המסך שבו
+         * הלקוחה מקלידה את הקוד מהמייל ובוחרת סיסמה חדשה — הכול
+         * באותה יריעה, בלי לצאת מהאפליקציה.
+         */
+        <View style={s.done}>
           <Text style={s.doneMail}>{email.trim()}</Text>
           <Text style={s.doneNote}>{DONE_NOTE}</Text>
+
+          <View style={s.field}>
+            <TextInput
+              value={form.code}
+              onChangeText={(v) => onField('code', v.replace(/[^\d]/g, '').slice(0, 6))}
+              placeholder={CODE_PH}
+              placeholderTextColor="#B3ABBD"
+              keyboardType="number-pad"
+              style={[s.input, s.bare, s.codeInput]}
+            />
+          </View>
+          <View style={s.field}>
+            <TextInput
+              value={form.pass}
+              onChangeText={(v) => onField('pass', v)}
+              placeholder={PASS_PH}
+              placeholderTextColor="#B3ABBD"
+              secureTextEntry
+              autoCapitalize="none"
+              style={[s.input, s.bare]}
+            />
+          </View>
+          <View style={s.field}>
+            <TextInput
+              value={form.pass2}
+              onChangeText={(v) => onField('pass2', v)}
+              placeholder={PASS2_PH}
+              placeholderTextColor="#B3ABBD"
+              secureTextEntry
+              autoCapitalize="none"
+              style={[s.input, s.bare]}
+            />
+          </View>
+
+          {err ? <Text style={s.sheetErr}>{err}</Text> : null}
+
+          <Pressable
+            onPress={onSave}
+            disabled={busy || !ready}
+            style={[s.cta, s.ctaSlim, (busy || !ready) && s.ctaOff]}
+          >
+            <S k="check" size={17} color="#FFFFFF" />
+            <Text style={s.ctaText}>{SAVE_CTA}</Text>
+          </Pressable>
+
           <Pressable onPress={onAgain} hitSlop={8}>
             <Text style={s.doneAgain}>{DONE_AGAIN}</Text>
           </Pressable>
@@ -210,6 +296,8 @@ const s = StyleSheet.create({
    */
   layerMid: { justifyContent: 'flex-start', paddingTop: 110, paddingHorizontal: 16 },
   scrim: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), backgroundColor: 'rgba(36,28,48,0.34)' },
+  /* ⚠ הקוד באמצע ומרווח · ספרות נקראות כך הרבה יותר טוב */
+  codeInput: { textAlign: 'center', letterSpacing: 6, fontSize: 18, fontWeight: '600' },
   sheet: {
     maxHeight: '78%',
     borderTopLeftRadius: 28,
@@ -249,7 +337,11 @@ const s = StyleSheet.create({
   docB: { fontSize: 12.5, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
   tail: { height: 10 },
 
-  field: { position: 'relative', marginBottom: 6 },
+  /* ⚠ `stretch` · בתוך `done` ההורה ממרכז, ובלעדיו כל שדה
+     מתכווץ לרוחב הכיתוב שלו · נמדד על המסך */
+  field: { position: 'relative', marginBottom: 6, alignSelf: 'stretch' },
+  /* ⚠ שדה בלי אייקון · בלי המקום שנשמר לו בצד */
+  bare: { paddingRight: 14 },
   input: {
     height: 48,
     borderRadius: radius.field,

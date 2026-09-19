@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
@@ -10,7 +9,8 @@ import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
 import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
-import { buildResetEmail, RESET_TTL_MINUTES } from '../mail/resetEmail.ts';
+import { buildResetEmail } from '../mail/resetEmail.ts';
+import { checkResetCode, newResetCode, RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
 import { sendMail } from '../mail/mailer.ts';
 import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
 import { notifyOtp } from '../whatsapp/notify.ts';
@@ -209,6 +209,20 @@ authRouter.post('/login', async (req, res, next) => {
   }
 });
 
+/**
+ * קוד פנוי · העמודה ייחודית במסד, ושש ספרות הן מיליון אפשרויות.
+ * התנגשות היא נדירה, אבל ״נדיר״ אינו ״לא קורה״ — ולכן מנסים שוב.
+ * ⚠ אחרי חמישה ניסיונות עדיף להיכשל מלהיתקע בלולאה.
+ */
+async function freshCode(): Promise<string> {
+  for (let i = 0; i < 5; i += 1) {
+    const code = newResetCode();
+    const taken = await prisma.passwordReset.findUnique({ where: { token: code } });
+    if (!taken) return code;
+  }
+  throw new Error('reset code collision');
+}
+
 authRouter.post('/forgot-password', async (req, res, next) => {
   try {
     const body = z.object({ who: z.string().min(3) }).parse(req.body);
@@ -221,8 +235,18 @@ authRouter.post('/forgot-password', async (req, res, next) => {
           ? await prisma.user.findUnique({ where: { email: who.email } })
           : await prisma.user.findUnique({ where: { phone: who.phone } });
       if (user) {
-        const token = randomBytes(24).toString('hex');
-        const expiresAt = new Date(Date.now() + RESET_TTL_MINUTES * 60 * 1000);
+        /**
+         * ⚠ **קוד בן שש ספרות · 19 בספטמבר 2026** · ראו
+         * `auth/resetCode.ts`. קודם נוצר כאן אסימון של 48 תווים
+         * שנועד לקישור — וקישור כבר אין.
+         *
+         * ⚠ **הקודים הישנים של אותה לקוחה נמחקים** · ״לא קיבלתי,
+         * תשלחי שוב״ לא אמור להשאיר חמישה קודים תקפים במקביל,
+         * והטבלה לא אמורה לתפוח.
+         */
+        await prisma.passwordReset.deleteMany({ where: { userId: user.id, usedAt: null } });
+        const token = await freshCode();
+        const expiresAt = new Date(Date.now() + RESET_CODE_TTL_MS);
         await prisma.passwordReset.create({
           data: { userId: user.id, token, expiresAt },
         });
@@ -243,7 +267,7 @@ authRouter.post('/forgot-password', async (req, res, next) => {
          */
         let via: 'otp' | 'token' = 'token';
         if (user.email) {
-          const mail = buildResetEmail({ name: user.name, token, appUrl: env.appUrl });
+          const mail = buildResetEmail({ name: user.name, code: token });
           /* ⚠ לא `res` · זה שם התשובה של אקספרס, והצללה כאן מסוכנת */
           const sent = await sendMail({ to: user.email, ...mail });
           /**
@@ -292,20 +316,53 @@ authRouter.post('/forgot-password', async (req, res, next) => {
 
 authRouter.post('/reset-password', async (req, res, next) => {
   try {
-    const body = z.object({ token: z.string().min(4), password: z.string().min(6) }).parse(req.body);
-    const row = await prisma.passwordReset.findUnique({ where: { token: body.token } });
-    if (!row || row.usedAt || row.expiresAt.getTime() < Date.now()) {
-      throw badRequest('reset_invalid');
+    /**
+     * ⚠ **מי · קוד · סיסמה · 19 בספטמבר 2026** · קודם הגיע לכאן
+     * אסימון לבדו. קוד בן שש ספרות לבדו היה פרצה: מי שמנחש קוד
+     * כלשהו היה מאפס את הסיסמה של **מישהו**, בלי לדעת של מי.
+     * עכשיו צריך גם את החשבון, וגם חמישה ניסיונות סוגרים אותו.
+     */
+    const body = z
+      .object({
+        who: z.string().min(3),
+        code: z.string().min(4).max(10),
+        password: z.string().min(6),
+      })
+      .parse(req.body);
+
+    const who = parseWho(body.who);
+    if (!who) throw badRequest('invalid_who');
+    const user =
+      who.kind === 'email'
+        ? await prisma.user.findUnique({ where: { email: who.email } })
+        : await prisma.user.findUnique({ where: { phone: who.phone } });
+
+    const row = user
+      ? await prisma.passwordReset.findFirst({
+          where: { userId: user.id, usedAt: null },
+          orderBy: { createdAt: 'desc' },
+        })
+      : null;
+
+    const verdict = checkResetCode(row, body.code, Date.now());
+    if (verdict === 'wrong') {
+      /* ⚠ המונה עולה גם כשהקוד שגוי · זה מה שסוגר את הסריקה */
+      await prisma.passwordReset.update({
+        where: { id: row!.id },
+        data: { attempts: { increment: 1 } },
+      });
+      throw badRequest('reset_wrong');
     }
+    if (verdict === 'expired') throw badRequest('reset_expired');
+    if (verdict === 'locked') throw badRequest('reset_locked');
+    if (verdict !== 'ok' || !row || !user) throw badRequest('reset_invalid');
+
     await prisma.$transaction([
       prisma.user.update({
-        where: { id: row.userId },
+        where: { id: user.id },
         data: { passwordHash: await hashPassword(body.password) },
       }),
-      prisma.passwordReset.update({
-        where: { id: row.id },
-        data: { usedAt: new Date() },
-      }),
+      prisma.passwordReset.update({ where: { id: row.id }, data: { usedAt: new Date() } }),
     ]);
     res.json({ ok: true });
   } catch (err) {

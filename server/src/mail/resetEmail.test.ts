@@ -1,73 +1,58 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildResetEmail, resetLink, ttlLabel, RESET_TTL_MINUTES } from './resetEmail.ts';
+import { buildResetEmail, ttlLabel, RESET_TTL_MINUTES } from './resetEmail.ts';
+import { RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
 
 /**
- * מייל איפוס הסיסמה · החלטה של שקד (16 בספטמבר 2026):
- * ״שיישלח קישור לאיפוס למייל״.
+ * מייל איפוס הסיסמה · החלטה של שקד (19 בספטמבר 2026): קוד בן שש
+ * ספרות במייל, בלי שום קישור. ראו `auth/resetCode.ts`.
  */
+const CODE = '481902';
 
-const TOKEN = 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6';
-
-test('הקישור מפנה למסך האיפוס ונושא את האסימון', () => {
-  const link = resetLink('https://bite.example', TOKEN);
-  const url = new URL(link);
-  assert.equal(url.searchParams.get('screen'), 'reset');
-  assert.equal(url.searchParams.get('token'), TOKEN);
-});
-
-test('לוכסן מיותר בכתובת הבסיס אינו יוצר // בקישור', () => {
-  const link = resetLink('https://bite.example/', TOKEN);
-  assert.ok(!link.includes('example//'), link);
-  assert.equal(new URL(link).searchParams.get('token'), TOKEN);
-});
-
-test('אסימון עם תווים מיוחדים מקודד ונפתח בחזרה זהה', () => {
-  const odd = 'ab+cd/ef=gh&ij';
-  const link = resetLink('https://bite.example', odd);
-  assert.equal(new URL(link).searchParams.get('token'), odd);
-});
-
-test('הנושא בעברית, מזכיר איפוס, ואינו נושא את האסימון', () => {
-  const mail = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
+test('הנושא בעברית, מזכיר איפוס, ואינו נושא את הקוד', () => {
+  const mail = buildResetEmail({ name: 'שקד', code: CODE });
   assert.match(mail.subject, /איפוס/);
-  assert.ok(!mail.subject.includes(TOKEN), 'האסימון דלף לשורת הנושא');
+  assert.ok(!mail.subject.includes(CODE), 'הקוד דלף לשורת הנושא');
 });
 
-test('גוף הטקסט נושא את הקישור ואת משך התוקף', () => {
-  const mail = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
-  assert.ok(mail.text.includes(mail.link), 'הקישור חסר בגוף הטקסט');
+test('הקוד מופיע בגוף הטקסט וגם ב-HTML', () => {
+  const mail = buildResetEmail({ name: 'שקד', code: CODE });
+  assert.ok(mail.text.includes(CODE), 'הקוד חסר בגוף הטקסט');
+  assert.ok(mail.html.includes(CODE), 'הקוד חסר בגוף ה-HTML');
+});
+
+test('אין שום קישור בהודעה · זה מה שהוציא אותה מהספאם', () => {
+  const mail = buildResetEmail({ name: 'שקד', code: CODE });
+  assert.ok(!mail.html.includes('href='), 'נשאר קישור ב-HTML');
+  assert.ok(!/https?:\/\//.test(mail.text), 'נשארה כתובת בגוף הטקסט');
+  assert.ok(!/https?:\/\//.test(mail.html), 'נשארה כתובת ב-HTML');
+});
+
+test('משך התוקף מופיע בשני הגופים', () => {
+  const mail = buildResetEmail({ name: 'שקד', code: CODE });
   assert.ok(mail.text.includes(ttlLabel()), `משך התוקף (${ttlLabel()}) חסר בגוף`);
+  assert.ok(mail.html.includes(ttlLabel()), 'משך התוקף חסר ב-HTML');
 });
 
-test('גוף ה-HTML הוא RTL והקישור מופיע בו כ-href', () => {
-  const mail = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
-  assert.match(mail.html, /dir="rtl"/);
-  assert.ok(mail.html.includes(`href="${mail.link}"`), 'הקישור אינו href תקין');
+test('גוף ה-HTML הוא RTL', () => {
+  assert.match(buildResetEmail({ name: 'שקד', code: CODE }).html, /dir="rtl"/);
 });
 
 test('פנייה בשם כשיש שם, ובלי שם כשאין · בלי ״שלום undefined״', () => {
-  const withName = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
+  const withName = buildResetEmail({ name: 'שקד', code: CODE });
   assert.match(withName.text, /שקד/);
-  const noName = buildResetEmail({ name: '', token: TOKEN, appUrl: 'https://bite.example' });
+  const noName = buildResetEmail({ name: '', code: CODE });
   assert.ok(!noName.text.includes('undefined'), noName.text);
   assert.ok(!noName.text.includes('null'), noName.text);
 });
 
 test('שם עם תווי HTML אינו נשבר לתוך ה-HTML', () => {
-  const mail = buildResetEmail({ name: '<script>x</script>', token: TOKEN, appUrl: 'https://bite.example' });
+  const mail = buildResetEmail({ name: '<script>x</script>', code: CODE });
   assert.ok(!mail.html.includes('<script>'), 'שם לא עבר בריחה ונכנס כתגית');
 });
 
-test('תוקף הקישור הוא עשר דקות · ההחלטה של שקד', () => {
+test('תוקף הקוד הוא עשר דקות · ההחלטה של שקד, ממקור אחד', () => {
   assert.equal(RESET_TTL_MINUTES, 10);
   assert.equal(ttlLabel(), '10 דקות');
-  const mail = buildResetEmail({ name: 'שקד', token: TOKEN, appUrl: 'https://bite.example' });
-  assert.match(mail.text, /10 דקות/);
-  assert.match(mail.html, /10 דקות/);
-});
-
-test('תוקף האיפוס במסד זהה למה שהמייל מבטיח · מקור אמת אחד', async () => {
-  const { RESET_TTL_MS } = await import('../whatsapp/otp.ts');
-  assert.equal(RESET_TTL_MS, RESET_TTL_MINUTES * 60 * 1000);
+  assert.equal(RESET_CODE_TTL_MS, 10 * 60 * 1000);
 });
