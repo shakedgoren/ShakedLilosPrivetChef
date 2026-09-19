@@ -16,6 +16,7 @@ import { STATE } from '../../../mobile/src/data/adminHome.ts';
 import { type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
 import { dishPrices } from '../admin/prices.ts';
 import { EXPENSE_CATS } from '../admin/expenseCats.ts';
+import { appliesTo, monthsToFill, sourceOf, startPeriod } from '../admin/fixedExpenses.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 
 /** קיצורי החודשים לתוויות הגרף · שלוש אותיות כמו בדף הבית */
@@ -232,8 +233,125 @@ function dateOfIso(iso: string): Date {
   return new Date(y, m - 1, d, 12, 0, 0);
 }
 
+
+/**
+ * ממלא את שורות ההוצאה של ההוצאות הקבועות עד החודש הנוכחי.
+ *
+ * ⚠ **נקרא לפני כל קריאה של רשימת ההוצאות** · כך ״החודש הבא״
+ * מתעדכן מעצמו בלי שאף אחד ילחץ על כלום. ראו
+ * `admin/fixedExpenses.ts` להסבר למה זה תבנית שמתממשת ולא
+ * חישוב בזמן אמת.
+ *
+ * ⚠ **`source` הוא המנעול** · שורה נוצרת רק אם אין כבר שורה עם
+ * אותו מקור לאותו חודש, ולכן קריאות חוזרות אינן מכפילות.
+ */
+export async function fillFixedExpenses(): Promise<void> {
+  const fixed = await prisma.fixedExpense.findMany();
+  if (fixed.length === 0) return;
+  const now = monthKey(new Date());
+  for (const f of fixed) {
+    const months = monthsToFill(startPeriod(f), now).filter((m) => appliesTo(f, m));
+    if (months.length === 0) continue;
+    const src = sourceOf(f.id);
+    const have = new Set(
+      (
+        await prisma.expense.findMany({
+          where: { source: src, period: { in: months } },
+          select: { period: true },
+        })
+      ).map((e: { period: string }) => e.period),
+    );
+    /* ⚠ הסמן מתקדם גם אם כלום לא נוצר · אחרת חודש שנמחק יחזור */
+    await prisma.fixedExpense.update({
+      where: { id: f.id },
+      data: { lastPeriod: months[months.length - 1] },
+    });
+    for (const period of months) {
+      if (have.has(period)) continue;
+      const [y, m] = period.split('-').map(Number);
+      await prisma.expense.create({
+        data: {
+          category: f.category,
+          amount: f.amount,
+          period,
+          note: f.note,
+          source: src,
+          /* ⚠ הראשון בחודש · כדי שהשורה תיפול בחודש הנכון בכל אזור זמן */
+          createdAt: new Date(y, m - 1, 1, 12, 0, 0),
+        },
+      });
+    }
+  }
+}
+
+const fixedBody = z.object({
+  category: z.string().min(1).max(60),
+  amount: z.number().int().positive().max(1_000_000),
+  note: z.string().max(200).default(''),
+  /** yyyy-mm · החודש שממנו היא מתחילה */
+  fromPeriod: z.string().regex(/^\d{4}-\d{2}$/),
+});
+
+adminFinanceRouter.get('/fixed-expenses', async (_req, res, next) => {
+  try {
+    const rows = await prisma.fixedExpense.findMany({ orderBy: { createdAt: 'asc' } });
+    res.json({
+      rows: rows.map((f) => ({
+        id: f.id,
+        category: f.category,
+        amount: f.amount,
+        note: f.note,
+        fromPeriod: f.fromPeriod,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminFinanceRouter.post('/fixed-expenses', async (req, res, next) => {
+  try {
+    const body = fixedBody.parse(req.body);
+    if (!EXPENSE_CATS.includes(body.category)) {
+      res.status(400).json({ error: 'unknown_category', message: 'קטגוריה לא מוכרת' });
+      return;
+    }
+    const row = await prisma.fixedExpense.create({
+      data: {
+        category: body.category,
+        amount: body.amount,
+        note: body.note,
+        fromPeriod: body.fromPeriod,
+      },
+    });
+    /* ⚠ מתמלא מיד · אחרת היא לא רואה את ההוצאה שהרגע הוסיפה */
+    await fillFixedExpenses();
+    res.status(201).json({ id: row.id });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * הפסקת הוצאה קבועה.
+ * ⚠ **ההיסטוריה נשארת** · השורות שכבר נוצרו הן הוצאות אמיתיות
+ * שקרו, ומחיקת התבנית אינה משנה את העבר.
+ */
+adminFinanceRouter.delete('/fixed-expenses/:id', async (req, res, next) => {
+  try {
+    const found = await prisma.fixedExpense.findUnique({ where: { id: req.params.id } });
+    if (!found) throw notFound();
+    await prisma.fixedExpense.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 adminFinanceRouter.get('/expenses', async (req, res, next) => {
   try {
+    /* ⚠ ההוצאות הקבועות של החודש נוצרות כאן · ראו `fillFixedExpenses` */
+    await fillFixedExpenses();
     const limit = Math.min(Number(req.query.limit) || 120, 500);
     const rows = await prisma.expense.findMany({ orderBy: { createdAt: 'desc' }, take: limit });
     res.json({

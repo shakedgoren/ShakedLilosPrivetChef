@@ -10,7 +10,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
-    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/saleSplit.test.ts src/admin/dayQuotas.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/auth/resetCode.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts src/whatsapp/payloads.test.ts src/whatsapp/client.test.ts src/auth/phoneVerify.test.ts src/auth/signupEmail.test.ts src/auth/phoneLock.test.ts src/push/expo.test.ts src/http/page.test.ts",
+    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/fixedExpenses.test.ts src/admin/saleSplit.test.ts src/admin/dayQuotas.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/auth/resetCode.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts src/whatsapp/payloads.test.ts src/whatsapp/client.test.ts src/auth/phoneVerify.test.ts src/auth/signupEmail.test.ts src/auth/phoneLock.test.ts src/push/expo.test.ts src/http/page.test.ts",
     "db:up": "docker compose --env-file /dev/null up -d",
     "db:down": "docker compose --env-file /dev/null down",
     "db:deploy": "prisma migrate deploy"

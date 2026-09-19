@@ -18,7 +18,9 @@ export function LogoutConfirm({ open, onCancel, onConfirm }: Props) {
       <Pressable style={s.scrim} onPress={onCancel}>
         <Pressable style={s.card} onPress={() => {}}>
           <Text style={s.title}>להתנתק מהחשבון?</Text>
-          <Text style={s.body}>ההזמנות והפרטים שלך יישמרו. תוכלי להיכנס שוב מתי שתרצי.</Text>
+          {/* ⚠ **ירידת שורה אחרי הנקודה · בקשה של שקד (19.9.2026)** ·
+              הנוסח שלה לא השתנה, רק נשבר לשתי שורות. */}
+          <Text style={s.body}>{'ההזמנות והפרטים שלך יישמרו.\nתוכלי להיכנס שוב מתי שתרצי.'}</Text>
           <View style={s.row}>
             <Pressable onPress={onCancel} style={s.cancel}>
               <Text style={s.cancelText}>ביטול</Text>

@@ -210,6 +210,22 @@ model ProductionDish {
 }
 
 /// הוצאה לפי קטגוריית כספים · גם ידנית וגם מסגירת קנייה
+/// הוצאה קבועה חודשית · תבנית שיוצרת שורת Expense בכל חודש
+/// ראו server/src/admin/fixedExpenses.ts
+model FixedExpense {
+  id          String   @id @default(cuid())
+  category    String
+  amount      Int
+  note        String   @default("")
+  /// החודש הראשון שבו היא חלה · yyyy-mm
+  fromPeriod  String
+  /// החודש האחרון · מחרוזת ריקה = ממשיכה בלי סוף
+  untilPeriod String   @default("")
+  /// החודש האחרון שכבר נוצרה עבורו שורה · כדי שמחיקה ידנית תישאר מחוקה
+  lastPeriod  String   @default("")
+  createdAt   DateTime @default(now())
+}
+
 model Expense {
   id        String   @id @default(cuid())
   category  String

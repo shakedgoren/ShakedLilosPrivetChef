@@ -247,6 +247,30 @@ export const adminAddExpense = (body: { category: string; amount: number; date: 
 export const adminDeleteExpense = (id: string) =>
   api<{ ok: true }>(`/admin/expenses/${id}`, { method: 'DELETE' });
 
+/* ── הוצאות קבועות חודשיות · בקשה של שקד, 19 בספטמבר 2026 ── */
+
+export type FixedExpenseRow = {
+  id: string;
+  category: string;
+  amount: number;
+  note: string;
+  /** yyyy-mm · החודש שממנו היא מתחילה */
+  fromPeriod: string;
+};
+
+export const adminFixedExpenses = () =>
+  api<{ rows: FixedExpenseRow[] }>('/admin/fixed-expenses');
+
+export const adminAddFixedExpense = (body: {
+  category: string;
+  amount: number;
+  note: string;
+  fromPeriod: string;
+}) => api<{ id: string }>('/admin/fixed-expenses', { method: 'POST', body });
+
+export const adminDeleteFixedExpense = (id: string) =>
+  api<{ ok: true }>(`/admin/fixed-expenses/${id}`, { method: 'DELETE' });
+
 export type IncomeRow = {
   id: string;
   date: string;

@@ -12,7 +12,16 @@ import { Field } from './ui/Field';
 import { Sheet } from './ui/Sheet';
 import { Cart, Plus } from '../icons';
 import { apiEnabled } from '../api/config';
-import { adminAddExpense, adminDeleteExpense, adminExpenses, type ExpenseRow } from '../api/admin';
+import {
+  adminAddExpense,
+  adminAddFixedExpense,
+  adminDeleteExpense,
+  adminDeleteFixedExpense,
+  adminExpenses,
+  adminFixedExpenses,
+  type ExpenseRow,
+  type FixedExpenseRow,
+} from '../api/admin';
 import { useNav } from '../navigation/store';
 
 /**
@@ -25,6 +34,14 @@ import { useNav } from '../navigation/store';
  */
 
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
+
+/**
+ * ⚠ **שני הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · שקד לא
+ * כתבה אותם. הם מתג ההוצאה הקבועה.
+ */
+const FIXED_LABEL = 'הוצאה קבועה · חוזרת בכל חודש';
+const FIXED_SUB = 'תיווצר מעצמה בכל חודש חדש, בלי להקליד שוב';
+const FIXED_TITLE = 'הוצאות קבועות';
 const AMBER = '#A65E2A';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -73,12 +90,22 @@ export function AdminExpensesScreen() {
   const [amount, setAmount] = useState('');
   const [when, setWhen] = useState('');
   const [note, setNote] = useState('');
+  /**
+   * ⚠ **הוצאה קבועה חודשית · בקשה של שקד (19 בספטמבר 2026)** ·
+   * ״חודש הבא אני לא אצטרך להקליד את כל החלק הזה שוב, הוא
+   * אוטומטית יתעדכן״. ההסבר המלא ב-`server/src/admin/fixedExpenses.ts`.
+   */
+  const [fixed, setFixed] = useState(false);
+  const [fixedRows, setFixedRows] = useState<FixedExpenseRow[] | null>(null);
 
   const load = useCallback(() => {
     if (!live) return;
     void adminExpenses()
       .then((r) => setRows(r.rows))
       .catch(() => setRows([]));
+    void adminFixedExpenses()
+      .then((r) => setFixedRows(r.rows))
+      .catch(() => setFixedRows([]));
   }, [live]);
 
   useEffect(load, [load]);
@@ -89,6 +116,7 @@ export function AdminExpensesScreen() {
     setAmount('');
     setWhen(`${pad2(now.getDate())}.${pad2(now.getMonth() + 1)}.${now.getFullYear()}`);
     setNote('');
+    setFixed(false);
     setAdding(true);
   };
 
@@ -99,13 +127,27 @@ export function AdminExpensesScreen() {
   const save = () => {
     if (!ready || busy) return;
     setBusy(true);
-    void adminAddExpense({ category: cat, amount: sum, date: iso, note: note.trim() })
+    /* ⚠ קבועה נשמרת כתבנית · והיא יוצרת את שורת החודש בעצמה */
+    const call = fixed
+      ? adminAddFixedExpense({
+          category: cat,
+          amount: sum,
+          note: note.trim(),
+          fromPeriod: iso.slice(0, 7),
+        })
+      : adminAddExpense({ category: cat, amount: sum, date: iso, note: note.trim() });
+    void call
       .then(() => {
         setAdding(false);
         load();
       })
       .catch(() => undefined)
       .finally(() => setBusy(false));
+  };
+
+  /** הפסקת הוצאה קבועה · ההיסטוריה נשארת */
+  const stopFixed = (id: string) => {
+    void adminDeleteFixedExpense(id).then(load).catch(() => undefined);
   };
 
   const remove = (id: string) => {
@@ -138,6 +180,29 @@ export function AdminExpensesScreen() {
         {!live ? <Text style={s.empty}>ההוצאות נטענות מהשרת · אין חיבור כרגע</Text> : null}
         {live && rows && rows.length === 0 ? (
           <Text style={s.empty}>עוד אין הוצאות · אפשר להוסיף בכפתור ה-+</Text>
+        ) : null}
+
+        {/**
+          * ⚠ **רשימת ההוצאות הקבועות · 19 בספטמבר 2026** · היא
+          * למעלה כי זה מה שמסביר למה מופיעות שורות שלא הוקלדו.
+          * הסרה כאן עוצרת את החודשים הבאים ואינה נוגעת בהיסטוריה.
+          */}
+        {fixedRows && fixedRows.length > 0 ? (
+          <View style={s.fixedCard}>
+            <Text style={s.fixedHead}>{FIXED_TITLE}</Text>
+            {fixedRows.map((f) => (
+              <View key={f.id} style={s.fixedItem}>
+                <View style={s.rowText}>
+                  <Text style={s.rowCat}>{f.category}</Text>
+                  {f.note ? <Text style={s.rowSub}>{f.note}</Text> : null}
+                </View>
+                <Text style={s.rowVal}>{`${nf(f.amount)} ₪`}</Text>
+                <Pressable onPress={() => stopFixed(f.id)} style={s.kill} hitSlop={8}>
+                  <S k="close" size={13} color="#B95349" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
         ) : null}
 
         {months.map((m) => (
@@ -190,44 +255,67 @@ export function AdminExpensesScreen() {
 
       {adding ? (
         <Sheet title="הוצאה חדשה" sub="נכנסת לדוח הכספים של החודש שבתאריך" onClose={() => setAdding(false)} centerTitle>
-          <ChipRail>
-            {CATS.map((c) => (
-              <Chip
-                key={c.k}
-                label={c.k}
-                on={cat === c.k}
-                tint={PLUM}
-                fontSize={11.5}
-                height={32}
-                radius={11}
-                onPress={() => setCat(c.k)}
-              />
-            ))}
-          </ChipRail>
-          {SUB_OF[cat] ? <Text style={s.catHint}>{SUB_OF[cat]}</Text> : null}
+          {/* ⚠ **רווחים · בקשה של שקד (19 בספטמבר 2026)** · ״הכל שם
+              צפוף מדי״. ליריעה עצמה אין `gap`, ולכן כל שדה נגע בשכנו. */}
+          <View style={s.form}>
+            <ChipRail>
+              {CATS.map((c) => (
+                <Chip
+                  key={c.k}
+                  label={c.k}
+                  on={cat === c.k}
+                  tint={PLUM}
+                  fontSize={11.5}
+                  height={32}
+                  radius={11}
+                  onPress={() => setCat(c.k)}
+                />
+              ))}
+            </ChipRail>
+            {SUB_OF[cat] ? <Text style={s.catHint}>{SUB_OF[cat]}</Text> : null}
 
-          <View style={s.pair}>
-            <View style={s.half}>
-              <Field label="סכום ₪" value={amount} onChange={setAmount} placeholder="0" keyboardType="number-pad" />
+            <View style={s.pair}>
+              <View style={s.half}>
+                <Field label="סכום ₪" value={amount} onChange={setAmount} placeholder="0" keyboardType="number-pad" />
+              </View>
+              <View style={s.half}>
+                <Field
+                  label={fixed ? 'מאיזה חודש' : 'תאריך'}
+                  value={when}
+                  onChange={setWhen}
+                  placeholder="15.09.2026"
+                  borderColor={when && !iso ? '#B95349' : undefined}
+                  note={when && !iso ? 'תאריך לא תקין' : undefined}
+                  noteColor="#B95349"
+                />
+              </View>
             </View>
-            <View style={s.half}>
-              <Field
-                label="תאריך"
-                value={when}
-                onChange={setWhen}
-                placeholder="15.09.2026"
-                borderColor={when && !iso ? '#B95349' : undefined}
-                note={when && !iso ? 'תאריך לא תקין' : undefined}
-                noteColor="#B95349"
-              />
+
+            <Field label="הערה" value={note} onChange={setNote} placeholder="למשל: קצביית אבו חסן" />
+
+            {/**
+              * ⚠ **הוצאה קבועה · בקשה של שקד (19 בספטמבר 2026)** ·
+              * ״הוצאות כלליות חודשיות שהן קבועות — חודש הבא אני לא
+              * אצטרך להקליד את כל החלק הזה שוב״.
+              * ⚠ הכיתוב נכתב על ידי Claude.
+              */}
+            <Pressable onPress={() => setFixed((v) => !v)} style={s.fixedRow}>
+              <View style={[s.check, fixed && s.checkOn]}>
+                {fixed ? <S k="check" size={13} color="#FFFFFF" /> : null}
+              </View>
+              <View style={s.fixedText}>
+                <Text style={s.fixedTitle}>{FIXED_LABEL}</Text>
+                <Text style={s.fixedSub}>{FIXED_SUB}</Text>
+              </View>
+            </Pressable>
+
+            {/* ⚠ **ברוחב מינימלי · בקשת שקד** · ממורכז ולא נמתח */}
+            <View style={s.saveWrap}>
+              <Pressable onPress={save} style={[s.save, !ready && s.saveOff]} disabled={!ready || busy}>
+                <Text style={s.saveText}>{busy ? 'שומרת…' : 'שמירה'}</Text>
+              </Pressable>
             </View>
           </View>
-
-          <Field label="הערה" value={note} onChange={setNote} placeholder="למשל: קצביית אבו חסן" />
-
-          <Pressable onPress={save} style={[s.save, !ready && s.saveOff]} disabled={!ready || busy}>
-            <Text style={s.saveText}>{busy ? 'שומרת…' : 'שמירת ההוצאה'}</Text>
-          </Pressable>
         </Sheet>
       ) : null}
     </AdminShell>
@@ -283,16 +371,46 @@ const s = StyleSheet.create({
   miniYesText: { fontSize: 12.5, fontWeight: '600', color: '#B95349' },
 
   catHint: { fontSize: 12.5, fontWeight: '300', color: surface.faint, marginTop: -4 },
+  /* ⚠ הרווח בין כל שדה לשכנו · ראו ההערה ביריעה */
+  form: { gap: 14 },
   pair: { flexDirection: 'row', gap: 10 },
   half: { flex: 1 },
+  /* ⚠ מתג ההוצאה הקבועה */
+  fixedRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 2 },
+  check: {
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: 'rgba(130,112,162,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkOn: { backgroundColor: PLUM.hue, borderColor: PLUM.hue },
+  fixedText: { flex: 1, gap: 1 },
+  fixedTitle: { fontSize: 14, fontWeight: '600', color: surface.ink },
+  fixedSub: { fontSize: 11.5, fontWeight: '300', color: surface.faint },
+  /* ⚠ ממורכז · כדי שהכפתור הצר לא ייצמד לצד */
+  saveWrap: { alignItems: 'center', marginTop: 2 },
   save: {
-    height: 48,
+    height: 44,
+    paddingHorizontal: 30,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#C6B3EC',
-    marginTop: 2,
   },
   saveOff: { opacity: 0.45 },
   saveText: { fontSize: 16, fontWeight: '700', color: '#2E2148' },
+  /* ⚠ רשימת ההוצאות הקבועות · מעל רשימת החודשים */
+  fixedCard: {
+    borderRadius: 20,
+    padding: 14,
+    backgroundColor: 'rgba(123,92,188,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(123,92,188,0.14)',
+    gap: 8,
+  },
+  fixedHead: { fontSize: 14, fontWeight: '700', color: PLUM.deep },
+  fixedItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
 });
