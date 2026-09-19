@@ -80,7 +80,13 @@ export function AdminHistoryScreen() {
       });
   }, [lists, filter]);
 
-  const rows = liveRows ?? demo;
+  /**
+   * ⚠ **מחובר לשרת · אין נפילה להדגמה · 19 בספטמבר 2026** · כאן
+   * עמד `liveRows ?? demo`, ולכן כישלון טעינה החליף את היסטוריית
+   * הקניות האמיתית בקניות של הקנבס — בלי שום סימן. אותו באג
+   * בדיוק כמו במסך הכספים · ראו `AdminMoneyScreen`.
+   */
+  const rows = live ? (liveRows ?? []) : demo;
   const total = rows.reduce((s, b) => s + b.sum, 0);
 
   return (

@@ -24,6 +24,14 @@ import { adminMoney } from '../api/admin';
 import { useNav } from '../navigation/store';
 
 const nf = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+/**
+ * ⚠ **שלושת הנוסחים האלה נכתבו על ידי Claude ולא על ידי שקד** ·
+ * 19 בספטמבר 2026. הם מופיעים במקום מספרי כסף כשהשרת לא עונה.
+ */
+const MONEY_FAIL = 'לא ניתן לטעון את נתוני הכספים · נסי לרענן';
+const MONEY_FAIL_SUB = 'אין נתונים';
+const MONEY_LOADING = 'טוען…';
+
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 /* ⚠ לא מהקנבס · האריח השלישי שביקשה שקד (15 בספטמבר 2026) */
 const TILE_REV = 'הכנסות';
@@ -73,9 +81,34 @@ export function AdminMoneyScreen() {
     expenseRows: { k: string; sub: string; v: number }[];
   } | null>(null);
 
+  /**
+   * ⚠ **נפילה לנתוני קנבס במסך כספים · תוקן ב-19 בספטמבר 2026** ·
+   * כאן עמד `catch(() => setData(null))` ואחריו `data ?? demo`,
+   * כלומר **כל כישלון קריאה החליף את המספרים האמיתיים במספרי
+   * הדגמה** — ובלי שום סימן על המסך.
+   *
+   * נתפס בפועל: אחרי המעבר ל-Postgres הטוקן הישן נפסל, המסך הציג
+   * ״אוגוסט 2026 · מחזור 40,900 ₪״, וזה **נתון פיקטיבי שיושב
+   * ב-`data/adminMoney`**. במסך שמציג כסף זו לא תקלה נראית — זו
+   * החלטה עסקית על מספר שלא קיים.
+   *
+   * ⚠ **ההדגמה נשארת, אבל רק כשאין שרת** · בתצוגת הקנבס (בלי API)
+   * היא עדיין מה שמאפשר לראות את המסך.
+   */
+  const [err, setErr] = useState(false);
+
   useEffect(() => {
     if (!live) return;
-    void adminMoney(period).then(setData).catch(() => setData(null));
+    setErr(false);
+    void adminMoney(period)
+      .then((d) => {
+        setData(d);
+        setErr(false);
+      })
+      .catch(() => {
+        setData(null);
+        setErr(true);
+      });
   }, [live, period]);
 
   const demo = useMemo(() => {
@@ -121,15 +154,16 @@ export function AdminMoneyScreen() {
     };
   }, [period]);
 
-  const view = data ?? demo;
-  const maxCat = Math.max(...view.cats.map((c) => c.v), 1);
+  /* ⚠ מחובר לשרת · אין נפילה להדגמה · ראו ההערה למעלה */
+  const view = data ?? (live ? null : demo);
+  const maxCat = view ? Math.max(...view.cats.map((c) => c.v), 1) : 1;
 
   return (
     /* ⚠ **דלת למסך ההוצאות** · בקשה של שקד (15 בספטמבר 2026)
        שהגישה תהיה דרך הכספים. גם האריח ״הוצאות״ עצמו נלחץ. */
     <AdminShell
       title={MONEY_TITLE}
-      sub={view.label}
+      sub={view ? view.label : MONEY_FAIL_SUB}
       actions={[
         { label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: SymFileText },
         { label: 'פנקס ההכנסות', onPress: () => go('adminIncome'), icon: PayCash },
@@ -148,6 +182,12 @@ export function AdminMoneyScreen() {
         ))}
       </View>
 
+      {/* ⚠ **מוטב ריק מאשר מספר שקרי** · ראו ההערה ליד `err` */}
+      {view === null ? (
+        <View style={s.failWrap}>
+          <Text style={s.failText}>{err ? MONEY_FAIL : MONEY_LOADING}</Text>
+        </View>
+      ) : (
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
         {/* ⚠ **רצועת ״הגלים״** · הבחירה של שקד (15 בספטמבר 2026)
             מתוך חמש הצעות, ובבקשה שלה גם בלי המילה ״מחזור״ ובלי
@@ -233,11 +273,14 @@ export function AdminMoneyScreen() {
           })}
         </View>
       </ScrollView>
+      )}
     </AdminShell>
   );
 }
 
 const s = StyleSheet.create({
+  failWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  failText: { fontSize: 14, color: '#B95349', textAlign: 'center' },
   tabs: { flexDirection: 'row', gap: 6 },
   tab: { flex: 1 },
   body: { flex: 1 },
