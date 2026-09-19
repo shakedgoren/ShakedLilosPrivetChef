@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { EXPENSES, MONEY_CATS, PERIODS } from '../../../mobile/src/data/adminMoney.ts';
-import { compareCost, menuRowsOf, unitCost, viewOf, type CostPart } from '../admin/costsMath.ts';
+import { sortDishes, compareCost, menuRowsOf, unitCost, viewOf, type CostPart } from '../admin/costsMath.ts';
 import { hebrewDayLabel, hebrewMonthYear, isoDate, monthKey } from '../admin/sold.ts';
 import { CANCELLED } from '../catalog/status.ts';
 import { CATS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
@@ -289,7 +289,8 @@ adminFinanceRouter.delete('/expenses/:id', async (req, res, next) => {
 
 adminFinanceRouter.get('/menu', async (_req, res, next) => {
   try {
-    const rows = await prisma.productionDish.findMany();
+    /* ⚠ הסדר הקנוני · ראו `sortDishes` */
+    const rows = sortDishes(await prisma.productionDish.findMany());
     const views = rows.map(viewOf);
     res.json({ items: menuRowsOf(views) });
   } catch (err) {
@@ -299,7 +300,8 @@ adminFinanceRouter.get('/menu', async (_req, res, next) => {
 
 adminFinanceRouter.get('/costs', async (_req, res, next) => {
   try {
-    const rows = await prisma.productionDish.findMany();
+    /* ⚠ הסדר הקנוני · ראו `sortDishes` */
+    const rows = sortDishes(await prisma.productionDish.findMany());
     const views = rows.map(viewOf);
     res.json({
       dishes: views.map((d) => ({
@@ -335,7 +337,7 @@ adminFinanceRouter.put('/costs/:id', async (req, res, next) => {
         ...(body.note !== undefined ? { note: body.note } : {}),
       },
     });
-    const all = (await prisma.productionDish.findMany()).map(viewOf);
+    const all = sortDishes(await prisma.productionDish.findMany()).map(viewOf);
     const view = viewOf(row);
     res.json({ dish: { ...view, unit: unitCost(view, all), cost: compareCost(view, all) } });
   } catch (err) {

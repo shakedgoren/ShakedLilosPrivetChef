@@ -1,5 +1,6 @@
 import type { ProductionDish } from '@prisma/client';
 import { readJson } from '../json.ts';
+import { COST_DISHES } from '../../../mobile/src/data/adminCosts.ts';
 
 export type CostPart = { n: string; price: number; qty: number };
 export type CostFrom = { id: string; m: number };
@@ -16,6 +17,27 @@ export type DishView = {
   from: CostFrom[];
   parts: CostPart[];
 };
+
+/**
+ * הסדר הקנוני של המנות · לפי `adminCosts.ts`.
+ *
+ * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״בעלויות ייצור תסדר שזה
+ * יהיה לפי הסדר: קוסקוס צמחוני, קוסקוס עם עוף, קוסקוס עם מפרום,
+ * תוספת ירקות, תוספת עוף, תוספת מפרום״.
+ *
+ * ⚠ **זה בדיוק הסדר שכבר קיים בקובץ המקור** · `findMany` בלי
+ * `orderBy` מחזיר בסדר שרירותי של המסד, ולכן המסך הציג אותן
+ * מעורבבות. אין צורך ברשימה חדשה — רק למיין לפי מה שכבר יש.
+ *
+ * ⚠ **מנה שאינה בקובץ יורדת לסוף** · לא נעלמת.
+ */
+const ORDER = new Map(COST_DISHES.map((d, i) => [d.id, i]));
+
+export function sortDishes<T extends { id: string }>(rows: T[]): T[] {
+  return [...rows].sort(
+    (a, b) => (ORDER.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (ORDER.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
 
 export function viewOf(row: ProductionDish): DishView {
   return {
