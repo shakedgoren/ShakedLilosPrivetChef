@@ -32,6 +32,7 @@ import {
   type CostDish,
   type CostPart,
 } from '../data/adminCosts';
+import { shortById } from '../data/shortNames';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
@@ -157,7 +158,10 @@ export function AdminCostsScreen() {
   const [seen, setSeen] = useState(false);
   const [impOpen, setImpOpen] = useState(false);
   const [impDone, setImpDone] = useState('');
-  const [dishes, setDishes] = useState<Dish[]>(() => COST_DISHES.map((d) => ({ ...d, parts: d.parts.map((p) => ({ ...p })) })));
+  /* ⚠ נפילה לקנבס · שמות קצרים כמו במסד · ראו `shortNames` */
+  const [dishes, setDishes] = useState<Dish[]>(() =>
+    COST_DISHES.map((d) => ({ ...d, name: shortById(d.id, d.name), parts: d.parts.map((p) => ({ ...p })) })),
+  );
   const [buys, setBuys] = useState<{ id: string; title: string }[]>([]);
 
   const reload = useCallback(async () => {

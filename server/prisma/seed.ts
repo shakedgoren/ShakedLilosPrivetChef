@@ -51,6 +51,7 @@ import { env } from '../src/env.ts';
 import { hashPassword } from '../src/auth/passwords.ts';
 import { normalizePhone } from '../src/auth/identity.ts';
 import { COST_DISHES } from '../../mobile/src/data/adminCosts.ts';
+import { shortById } from '../../mobile/src/data/shortNames.ts';
 
 /**
  * ממה מורכבת כל מנה · **כשורות מוצר ברשימה**.
@@ -105,7 +106,8 @@ async function main() {
     const fields = {
       category: d.c,
       sub: d.sub,
-      name: d.name,
+      /* ⚠ שם קצר למנות השניצל · בקשה של שקד · ראו `shortNames` */
+      name: shortById(d.id, d.name),
       mode: d.mode,
       /* המחיר ללקוחה · הדבר היחיד שאמיתי כאן */
       price: d.price,

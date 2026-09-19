@@ -7,6 +7,7 @@ import { adminGetDay, adminPutDay, adminRevenue, adminSetSold, adminSummary } fr
 import { useNav } from '../../navigation/store';
 import { tintOf } from './Charts';
 import { COST_CATS, COST_DISHES } from '../../data/adminCosts';
+import { shortById } from '../../data/shortNames';
 
 /** פילוח קטגוריה אחת לפי מנה · כפי שהשרת מחזיר אותו */
 export type SplitRow = { id: string; name: string; sold: number; revenue: number; cost: number };
@@ -14,25 +15,6 @@ export type SplitCat = { id: string; n: string; hue: string; rows: SplitRow[] };
 
 /** גוון ברירת מחדל · רק כשהשרת עוד לא ענה בכלל */
 const LAV_FALLBACK = '#7B5CBC';
-
-/**
- * שמות קצרים לכרטיס הפילוח · **בלשון של שקד** (19 בספטמבר 2026):
- * ״שניצל דק · שניצל טמפורה · מארז דק · מארז טמפורה · אקסטרה רוטב״.
- *
- * השמות המלאים (״חלת פילה עוף טמפורה״) ארוכים מעמודת השם ברוחב
- * של טלפון ונשברו לשתי שורות.
- *
- * ⚠ **תצוגה בכרטיס הזה בלבד** · שם המנה במסד לא משתנה, ומסכי
- * העלויות, התפריט והלוח מציגים אותו כפי שהוא. אם שקד תרצה את
- * השמות הקצרים בכל מקום — זה שינוי במסד ולא כאן.
- */
-const SHORT_NAME: Record<string, string> = {
-  schThin: 'שניצל דק',
-  schTemp: 'שניצל טמפורה',
-  boxThin: 'מארז דק',
-  boxTemp: 'מארז טמפורה',
-  cocotte: 'אקסטרה רוטב',
-};
 
 /**
  * הלשונית השלישית · **הכל**.
@@ -66,7 +48,8 @@ const SPLIT_FALLBACK: SplitCat[] = SPLIT_IDS.map((id) => ({
   hue: COST_CATS.find((c) => c.id === id)?.hue ?? LAV_FALLBACK,
   rows: COST_DISHES.filter((d) => d.c === id).map((d) => ({
     id: d.id,
-    name: d.name,
+    /* ⚠ רק כאן · במסד השמות כבר קצרים · ראו `shortNames` */
+    name: shortById(d.id, d.name),
     sold: 0,
     revenue: 0,
     cost: 0,
@@ -321,7 +304,6 @@ export function useAdminHome() {
       const n = cat.rows.length || 1;
       return cat.rows.map((r, i) => ({
         ...r,
-        name: SHORT_NAME[r.id] ?? r.name,
         color: tintOf(cat.hue, i, n),
       }));
     };
