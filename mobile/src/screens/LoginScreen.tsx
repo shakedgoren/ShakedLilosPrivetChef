@@ -337,8 +337,20 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
 
   const onSendCode = () =>
     run(async () => {
-      if (apiEnabled) await registerPhone(phone.trim());
-      setCode('');
+      /**
+       * ⚠ **מילוי הקוד בפיתוח בלבד · 19 בספטמבר 2026** · קוד
+       * האימות נשלח **רק בוואטסאפ**. כל עוד אין `WHATSAPP_TOKEN`
+       * אי אפשר להירשם כלקוחה בכלל — לא בסימולטור ולא באוויר.
+       *
+       * השרת כבר מחזיר את הקוד בתשובה כש-`RESET_DEBUG=1`, אבל
+       * המסך התעלם ממנו, ולכן גם בפיתוח ההרשמה נתקעה.
+       *
+       * ⚠ **לא ידלוף לפרודקשן** · `resetDebug` כבוי בכוח כש-
+       * `NODE_ENV=production` (ראו `env.ts`), ולכן שם השדה `code`
+       * פשוט אינו קיים בתשובה והתנאי הזה לא מתקיים לעולם.
+       */
+      const sent = apiEnabled ? await registerPhone(phone.trim()) : null;
+      setCode(sent?.code ?? '');
       setStep('up2');
     });
 
