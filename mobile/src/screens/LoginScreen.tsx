@@ -25,6 +25,7 @@ import {
 import { authError, COPY } from '../api/copy';
 import { ApiError, type Session } from '../api/types';
 import { BlobField } from '../components/BlobField';
+import { Photo } from '../components/Photo';
 import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet } from '../components/LoginSheets';
 import { GoogleG, Mail, WhatsApp } from '../components/LoginIcons';
@@ -646,6 +647,17 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           scrollEnabled={!sheet}
         >
           <View style={s.brandBlock}>
+            {/**
+              * ⚠ **הלוגו · בחירה של שקד (19 בספטמבר 2026)** · היא
+              * ראתה שבע אפשרויות בתצוגה מקדימה ובחרה את הראשונה:
+              * הסמל מעל הכיתוב ״BITE & TELL״, במסך ההתחברות.
+              *
+              * ⚠ **הכיתוב נשאר** · הלוגו מכיל את שם העסק בתוכו,
+              * אבל היא ביקשה במפורש את האופציה שבה שניהם מופיעים.
+              * ⚠ **בלי הגדלה בלחיצה** · `zoom={false}` · זו כותרת
+              * ולא תמונה של אוכל שיש טעם לפתוח.
+              */}
+            <Photo name="logo" style={s.logo} zoom={false} resizeMode="contain" />
             <Text style={s.brand}>{BRAND}</Text>
             <Text style={s.brandSub}>{BRAND_SUB}</Text>
           </View>
@@ -748,6 +760,8 @@ const s = StyleSheet.create({
    * השם 21 → 26, והכיתוב עבר לדיו הרך במשקל 400.
    */
   brandBlock: { alignItems: 'center', marginBottom: 14 },
+  /* ⚠ המידות של הקובץ הן 180×176 · היחס נשמר כדי שלא יימתח */
+  logo: { width: 96, height: 94, marginBottom: 8 },
   /* ⚠ שם המשפחה ולא 'Anton' · ב-React Native כל משקל הוא משפחה נפרדת */
   brand: { fontFamily: DISPLAY_FAMILY, fontSize: 26, letterSpacing: 1.3, color: surface.ink },
   brandSub: { fontSize: 13, fontWeight: '400', color: surface.inkSoft, marginTop: 3 },
