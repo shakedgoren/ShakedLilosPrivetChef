@@ -225,7 +225,9 @@ export function AdminBoardScreen() {
       (t, id) => t + liveRows.reduce((s2, o) => s2 + (o.q[id] || 0), 0),
       0,
     );
-    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(saleCat, id)), 0);
+    /* ⚠ **בלי מכסת קנבס כשיש שרת · 19 בספטמבר 2026** · ראו את
+       ההערה המלאה ב-`/admin/board`. בלי שרת נשארת הדגמת הקנבס. */
+    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? (live ? 0 : dishQuota(saleCat, id))), 0);
     return {
       id: p.id,
       sub: p.name,
@@ -276,7 +278,22 @@ export function AdminBoardScreen() {
    * ⚠ **רק מותח, לעולם לא מכווץ** · כשהטבלה רחבה מהמסך (אייפון
    * זקוף) המקדם נשאר 1 והגלילה לרוחב נשארת כפי שהייתה.
    */
-  const inner = width - (ROOT_PAD + insets.left) - (ROOT_PAD + insets.right);
+  /**
+   * ⚠ **הרוחב נמדד ולא מחושב · 19 בספטמבר 2026** · בקשה של שקד:
+   * ״כשאני הופכת את הטלפון לרוחב, הטבלה כאילו צמודה לימין ולא
+   * נמצאת באמצע של המסך ועל כולו״.
+   *
+   * הרוחב הוזמן עד היום מ-`width` פחות הריפודים והמגרעות —
+   * חישוב שלא תאם את מה שהיה בפועל, כי בין החלון לטבלה יושבות
+   * עוד שכבות עם ריפוד משלהן. ההפרש נשאר כרצועה מתה בקצה.
+   *
+   * `onLayout` נותן את הרוחב האמיתי של הרצועה הגוללת, ולכן
+   * המתיחה מדויקת בכל מכשיר ובכל כיוון.
+   *
+   * ⚠ **נופל לחישוב עד המדידה הראשונה** · פריים אחד בלבד.
+   */
+  const [deckW, setDeckW] = useState(0);
+  const inner = deckW || width - (ROOT_PAD + insets.left) - (ROOT_PAD + insets.right);
   const grow = baseW < inner ? inner / baseW : 1;
   const px = (n: number) => Math.floor(n * grow);
   const w = {
@@ -310,16 +327,37 @@ export function AdminBoardScreen() {
 
   return (
     <Page
-      {...(landscape ? { contentContainerStyle: s.turnPad } : {})}
-      style={[
-        s.root,
-        {
-          paddingTop: insets.top + ROOT_TOP,
-          /* ⚠ שוכב · המגרעת ופס הבית עוברים לצדדים */
-          paddingLeft: ROOT_PAD + insets.left,
-          paddingRight: ROOT_PAD + insets.right,
-        },
-      ]}
+      {...(landscape
+        ? {
+            /**
+             * ⚠ **הריפוד עבר לתוכן · 19 בספטמבר 2026** · בקשה של
+             * שקד: ״כשאני הופכת את הטלפון לרוחב, הטבלה כאילו
+             * צמודה לימין ולא נמצאת באמצע של המסך ועל כולו״.
+             *
+             * ⚠ **נמדד בסימולטור** · עם הריפוד על ה-`style` השורה
+             * יצאה מ-164 עד 865 מתוך 874 נקודות — כלומר **כל**
+             * הריפוד נערם בצד אחד. בשכיבה `Page` הוא `ScrollView`,
+             * ובו ריפוד על ה-`style` אינו מרפד את התוכן אלא את
+             * מסגרת הגלילה, ותחת RTL הוא נוחת בצד אחד.
+             *
+             * ⚠ הריפוד של `View` בזקוף נשאר כפי שהיה · שם זה עובד.
+             */
+            contentContainerStyle: [
+              s.turnPad,
+              { paddingHorizontal: ROOT_PAD + Math.max(insets.left, insets.right) },
+            ],
+            style: [s.root, { paddingTop: insets.top + ROOT_TOP }],
+          }
+        : {
+            style: [
+              s.root,
+              {
+                paddingTop: insets.top + ROOT_TOP,
+                paddingLeft: ROOT_PAD + insets.left,
+                paddingRight: ROOT_PAD + insets.right,
+              },
+            ],
+          })}
     >
       {/* ⚠ **הכותרת בשורת החץ** · שקד ביקשה (15 בספטמבר 2026) להסיר
           את הרווח שהיה מעל הכותרת בכל מסכי הניהול. הכותרת ממורכזת
@@ -392,7 +430,14 @@ export function AdminBoardScreen() {
                 ״שניצל דק (לרדת שורה) חלה (לרדת שורה) כמות מתוך
                 מלאי״ — וכך לארבעתם. ראו `boardPrepLines`. */}
             <Text style={[s.stockName, { color: fg }]} numberOfLines={1}>{it.lines[0]}</Text>
-            <Text style={[s.stockForm, { color: fg }]} numberOfLines={1}>{it.lines[1]}</Text>
+            {/* ⚠ **השורה השנייה רק כשיש בה משהו · 19 בספטמבר 2026** ·
+                בקשה של שקד: ״תסיר את הרווח שיש בין השם של המנה לבין
+                הכמות״. למנות הקוסקוס אין שורת צורה (״חלה״/״מארז״),
+                ו-`boardPrepLines` החזיר להן מחרוזת ריקה — שצוירה
+                כשורה ריקה בגובה מלא. זה היה ה״רווח״. */}
+            {it.lines[1] ? (
+              <Text style={[s.stockForm, { color: fg }]} numberOfLines={1}>{it.lines[1]}</Text>
+            ) : null}
             <Text style={[s.stockLeft, { color: fg }]}>{`${it.left} מתוך ${it.quota}`}</Text>
           </View>
           );
@@ -412,7 +457,11 @@ export function AdminBoardScreen() {
         */}
       <View style={landscape ? undefined : s.fitBox}>
         <View>
-      <ScrollView horizontal>
+      <ScrollView
+        horizontal
+        /* ⚠ הרוחב האמיתי של הרצועה · ראו `deckW` */
+        onLayout={(e) => setDeckW(Math.round(e.nativeEvent.layout.width))}
+      >
         {/* ⚠ **הרוחב נגזר מהעמודות בפועל** · קודם הוא הוזמן לפי
             `tableWidth` של הקנבס (1126) בעוד שהעמודות הצטמצמו,
             ונשאר פס ריק של יותר מ-300 פיקסלים בקצה הטבלה. */}
@@ -443,7 +492,7 @@ export function AdminBoardScreen() {
               shown.map((x) => {
                 const band = BOARD_BAND[x.o.status] ?? BOARD_BAND['חדשה'];
                 return (
-                  <View key={x.o.id ?? x.i} style={[s.row, { backgroundColor: band.row, borderColor: band.edge }]}>
+                  <View key={x.o.id ?? x.i} style={[s.row, landscape && s.rowWide, { backgroundColor: band.row, borderColor: band.edge }]}>
                     <Text style={[s.cell, { width: w.time, color: band.ink }]}>{x.o.time}</Text>
                     {/* ⚠ **בלי שורת המקור** · שקד ביקשה (15 בספטמבר
                         2026) להוריד את ״וואטסאפ״ מתחת לשם. */}
@@ -622,8 +671,14 @@ const s = StyleSheet.create({
    */
   gone: { fontSize: 14.5, fontWeight: '600', color: '#B95349', marginTop: 10 },
   stock: { flexGrow: 0 },
-  stockRow: { flexGrow: 1, justifyContent: 'center', alignItems: 'stretch' },
+  /* ⚠ **רווח בין שורות · בקשה של שקד (19 בספטמבר 2026)** · ״להוסיף
+     רווח בין כל כרטיסייה שנמצאת שורה אחרת, כי הם נהיים פתאום
+     צמודים כשהם מוצגים לרוחב״. */
+  stockRow: { flexGrow: 1, justifyContent: 'center', alignItems: 'stretch', rowGap: 8 },
   /* ⚠ שתי שורות · הגובה נגזר מהתוכן ולא קבוע · ראו הכרית למעלה */
+  /* ⚠ **ממורכז · בקשה של שקד (19 בספטמבר 2026)** · ״תמרכז את כל
+     המנות שיהיו כתובות באמצע״. קודם הכיתוב נצמד להתחלה, כלומר
+     לימין, והכרטיסיות נראו לא מיושרות זו מול זו. */
   stockChip: {
     marginEnd: 6,
     paddingHorizontal: 10,
@@ -631,13 +686,14 @@ const s = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'rgba(123,92,188,0.1)',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   /* ⚠ **גובה שורה צמוד · בקשה של שקד (18 בספטמבר 2026)** · ״להוריד
      את הרווח בין השם של המנה לבין הכמות״. ברירת המחדל של iOS היא
      כ-1.4 מגודל הגופן, וזה מה שיצר את הרווח. */
-  stockName: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' },
-  stockForm: { fontSize: 12, lineHeight: 14, fontWeight: '400', color: '#43307A' },
-  stockLeft: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' },
+  stockName: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' , textAlign: 'center' },
+  stockForm: { fontSize: 12, lineHeight: 14, fontWeight: '400', color: '#43307A' , textAlign: 'center' },
+  stockLeft: { fontSize: 12.5, lineHeight: 15, fontWeight: '600', color: '#43307A' , textAlign: 'center' },
   cols: { flexDirection: 'row', paddingVertical: 6, alignItems: 'flex-end' },
   /**
    * ⚠ **ההגדלה הגלובלית מנוטרלת כאן · 17 בספטמבר 2026** · בקשה של
@@ -658,6 +714,8 @@ const s = StyleSheet.create({
   empty: { fontSize: 17, color: '#A79FB2', textAlign: 'center', padding: 70 },
   /* ⚠ ריפוד הדוק יותר · חלק מהצמצום שביקשה שקד */
   row: { flexDirection: 'row', alignItems: 'center', borderRadius: 11, borderWidth: 1, paddingVertical: 4, marginBottom: 3 },
+  /* ⚠ בשכיבה השורות גבוהות יותר, ו-3 נקודות ביניהן נקראו כדבוקות */
+  rowWide: { marginBottom: 7 },
   cell: { fontSize: 14, textAlign: 'center', color: surface.ink },
   who: { fontSize: 15, fontWeight: '600' },
   note: { fontSize: 11.5, color: surface.faint },

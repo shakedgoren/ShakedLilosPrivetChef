@@ -305,10 +305,22 @@ adminRouter.get('/board', async (req, res, next) => {
      */
     const cat = CATS[category as DayCatKey];
     const day = date ? await prisma.saleDay.findUnique({ where: { date } }) : null;
+    /**
+     * ⚠ **בלי מכסות ברירת מחדל · 19 בספטמבר 2026** · שקד דיווחה:
+     * ״זה מציג נתונים לא נכונים, 100 מתוך 100, כשאין אף הזמנה
+     * במערכת״.
+     *
+     * המכסה נפלה עד היום ל-`d.q` — המספר שמופיע ב-`adminDays.ts`,
+     * שנוצר אוטומטית מהקנבס. כלומר הלוח הציג מלאי שהיא מעולם לא
+     * הזינה, בדיוק כמו הנתונים הפיקטיביים שביקשה למחוק מהמסד.
+     *
+     * ⚠ **0 הוא התשובה הנכונה** · מכסה נקבעת בדף יום המכירה. עד
+     * שהיא נקבעת אין מלאי, והלוח יראה ״0 מתוך 0״.
+     * ⚠ **רק הלוח הניהולי** · הגריעה של מלאי מהלקוחה נשענת על
+     * המכסות של `/admin/summary` ולא על הנתיב הזה.
+     */
     const saved = readJson<Record<string, number>>(day?.quotasJson ?? '', {});
-    const quotas = Object.fromEntries(
-      (cat?.dishes ?? []).map((d) => [d.id, saved[d.id] ?? d.q]),
-    );
+    const quotas = Object.fromEntries((cat?.dishes ?? []).map((d) => [d.id, saved[d.id] ?? 0]));
 
     res.json({
       orders: rows.map(serializeOrder),
