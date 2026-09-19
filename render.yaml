@@ -1,0 +1,107 @@
+# BITE & TELL · פריסה ל-Render
+#
+# ⚠ **שורש המאגר, לא `server/`.** השרת מייבא 20 קבצים מתוך
+# `mobile/src` — קטלוג המנות, חישוב המחיר, חלונות המכירה ולוח
+# השנה. אלה מקור אמת אחד לשני הצדדים, ולכן אסור שהפריסה תכלול
+# רק את `server/`. מכאן ה-`cd server` בכל פקודה.
+#
+# ⚠ **`migrate deploy` ולא `migrate dev`** · `deploy` מריץ רק
+# מיגרציות שכבר נכתבו ונבדקו, ולעולם אינו מייצר חדשה ואינו
+# מאפס. זו הפקודה היחידה שמותר להריץ על מסד חי.
+#
+# ⚠ **אין `db:seed` בפריסה** · הזריעה תיצור חשבון ניהול עם
+# הסיסמה שב-`ADMIN_PASSWORD`. להריץ פעם אחת ידנית מה-Shell של
+# Render, ולא בכל פריסה.
+#
+# להעלאה: Render → New → Blueprint → לחבר את המאגר.
+
+databases:
+  - name: bite-and-tell-db
+    databaseName: biteandtell
+    user: bite
+    # ⚠ התוכנית החינמית נמחקת אחרי 30 יום · לעסק אמיתי צריך בתשלום
+    plan: basic-256mb
+
+services:
+  - type: web
+    name: bite-and-tell-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    branch: main
+    healthCheckPath: /health
+    buildCommand: cd server && npm ci && npx prisma generate && npx prisma migrate deploy
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # ⚠ מגיע מהמסד שלמעלה · Render ממלא אותו לבד
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bite-and-tell-db
+          property: connectionString
+
+      # ⚠ נוצר אוטומטית · אסור שיהיה זהה לזה של הפיתוח.
+      # החלפה שלו מנתקת את כל המשתמשות המחוברות.
+      - key: JWT_SECRET
+        generateValue: true
+
+      # ⚠ **חובה** · בלעדיו הגבלת הקצב רואה את כל העולם ככתובת
+      # אחת וחוסמת את כולם יחד · ראו `http/rateLimit`
+      - key: TRUST_PROXY
+        value: "1"
+
+      - key: PORT
+        value: "3001"
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_EXPIRES_HOURS
+        value: "168"
+
+      # ⚠ **חובה** · מקורות שמותר להם לפנות מדפדפן. ריק בפרודקשן
+      # = שום דפדפן. האפליקציה הנייטיבית לא מושפעת.
+      - key: CORS_ORIGINS
+        sync: false
+
+      # חשבון הניהול · נקרא רק כשמריצים זריעה
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PHONE
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+
+      # כניסה עם גוגל · בלעדיו /auth/google מחזיר 501
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+      # מייל · איפוס סיסמה. בלעדיו המסלול הזה מת בשקט
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
+
+      # וואטסאפ · בלי TOKEN השרת רץ והשליחות מדולגות
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_WABA_ID
+        sync: false
+      - key: WHATSAPP_WEBHOOK_VERIFY_TOKEN
+        sync: false
+
+      # ⚠ **לא להגדיר RESET_DEBUG** · הוא מחזיר את אסימון איפוס
+      # הסיסמה בגוף התשובה. הקוד כבר כובה אותו בפרודקשן, וזו
+      # שכבה שנייה.
