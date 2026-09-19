@@ -13,7 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { CategoryPie, REV_CHART_H, RevenueChart, SplitBars } from './home/Charts';
+import { CategoryPie, REV_CHART_H, RevenueChart, SplitPyramid } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
@@ -32,23 +32,8 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
   hist: 'adminHistory',
 };
 
-/**
- * גובה שני כרטיסי הדיאגרמות · **אחד לשניהם**.
- *
- * ⚠ **הוגדל · 18 בספטמבר 2026** · בקשה של שקד: ״תוסיף מעט גובה
- * לכרטיסיות של דיאגרמת העוגה שמחלקת לפי קטגוריות ולרווח החודש
- * ותגדיל את שתי הדיאגרמות בתוכן״. היה 176 בשניהם.
- *
- * ⚠ **מספר אחד ולא שניים** · הם עומדים זה לצד זה עם `flex: 1`;
- * שני גבהים שונים היו מיישרים אותם לגבוה ומשאירים לנמוך שוליים.
- *
- * ⚠ **מינימום, לא תקרה · 19 בספטמבר 2026** · ראו `profitCard`.
- */
-const CHART_CARD_H = 202;
 /** רוחב העוגה · היה 127, וההגדלה היא כל מה שהכרטיס הגבוה מרשה */
 const PIE_W = 148;
-/** מתיחת עמודות הרווח · ראו `ProfitBars` */
-const BARS_GROW = 1.55;
 
 /** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
 const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
@@ -59,6 +44,17 @@ const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
  */
 const MONTH_REVENUE = 'הכנסות';
 const MONTH_COST = 'הוצאות';
+
+/**
+ * ⚠ **כותרות טבלת הפילוח · נכתבו על ידי Claude · 19.9.2026** ·
+ * שקד תיארה את העמודות במילים שלה: ״השם מנה, כמות הפעמים שנמכרה
+ * החודש, סה״כ ייצור שהיא עלתה וסה״כ רווח שנכנס ממנה״. הכותרות
+ * כאן הן הקיצור שלהן לרוחב של טלפון.
+ */
+const SPLIT_COLS = ['מנה', 'כמות', 'ייצור', 'רווח'];
+
+/** ⚠ ארבעת הסיכומים · בדיוק בלשון שלה */
+const SPLIT_SUM = ['כמות מנות', 'סה״כ הכנסות', 'סה״כ הוצאות', 'סה״כ רווח'];
 
 const money = (n: number) => n.toLocaleString('en-US');
 
@@ -223,88 +219,93 @@ export function AdminHomeScreen() {
       </GlassCard>
 
       {/**
-        * ⚠ **פילוח לפי מנה · 19 בספטמבר 2026** · בקשה של שקד:
-        * ״איפה שהדיאגרמת עוגה — שיוצג שם פילוח רק של ההכנסות
-        * מהמכירות של הקוסקוס והשניצל בכל החודש. ואיפה שהיה את
-        * הדיאגרמה השנייה העמודות — שיוצג שם פילוח רק של ההוצאות
-        * מהמכירות של הקוסקוס והשניצל בכל החודש״.
+        * ⚠ **כרטיס הפילוח · 19 בספטמבר 2026** · בקשה של שקד:
+        * ״נשים את הכל באותה הכרטיסייה, מצד ימין תופיע העוגה
+        * שמחלקת לפי מנות את ההכנסות ואז בצד שמאל תופיע הפרמידה
+        * שמחלקת לפי מנות את ההוצאות. ואז מתחת יופיע השם מנה,
+        * כמות הפעמים שנמכרה החודש, סה״כ ייצור שהיא עלתה וסה״כ
+        * רווח שנכנס ממנה. ולמטה יהיה סיכום של הכל״.
         *
-        * ובתשובה לשאלה איך לפלח: ״לפי מנה… אבל שהקוסקוס והשניצל
-        * יהיה מופרד בכפתור שיחליף ביניהם, וכל פעם יציג הוצאות
-        * והכנסות של קטגוריה אחרת״ — ומכאן הבורר שמעל השורה.
+        * ⚠ **החליף שני כרטיסים** · העוגה וכרטיס ״רווח החודש״ ישבו
+        * זה לצד זה, כל אחד בכרטיס משלו.
         *
-        * ⚠ **בורר אחד לשתי הכרטיסיות** · שתיהן מציגות את אותה
-        * קטגוריה, אחת את ההכנסות והשנייה את ההוצאות.
+        * ⚠ **הבורר בוחר קטגוריה אחת** · ״שהקוסקוס והשניצל יהיה
+        * מופרד בכפתור שיחליף ביניהם״. הטבלה והסיכום הם של
+        * הקטגוריה שנבחרה, לא של שתיהן יחד.
         *
-        * ⚠ **כל ההכנסות וכל ההוצאות נשארו במקומן** · שורות
-        * ״הכנסות״ ו״הוצאות״ שבכרטיס הרווח הן של **כל**
-        * הקטגוריות · בקשה מפורשת שלה.
+        * ⚠ **צבע אחד לכל מנה** · פרוסת העוגה, רצועת הפירמידה
+        * והנקודה שבטבלה חולקות גוון, ולכן אין צורך במקרא נפרד.
         */}
-      <View style={s.splitTabs}>
-        {home.splitTabs.map((c) => {
-          const on = home.splitCat === c.id;
-          return (
-            <Pressable
-              key={c.id}
-              onPress={() => home.setSplitCat(c.id)}
-              style={[s.range, on && s.rangeOn]}
-            >
-              <Text style={[s.rangeText, on && s.rangeTextOn]}>{c.n}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <GlassCard style={[s.splitCard, s.tint4]}>
+        <View style={s.splitTabs}>
+          {home.splitTabs.map((c) => {
+            const on = home.splitCat === c.id;
+            return (
+              <Pressable
+                key={c.id}
+                onPress={() => home.setSplitCat(c.id)}
+                style={[s.range, on && s.rangeOn]}
+              >
+                <Text style={[s.rangeText, on && s.rangeTextOn]}>{c.n}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <View style={s.row}>
-        {/* ⚠ **עוגה מוטה בלי כותרת** · בחירה של שקד (15 בספטמבר
-            2026). האחוזים יושבים בתוך הפרוסות, ומתחת מקרא.
-            ⚠ **המקרא עבר לעמודה אחת** · שמות המנות ארוכים משמות
-            הקטגוריות (״קוסקוס עם מפרום״), ובשתי עמודות הם נחתכו. */}
-        <GlassCard style={[s.donutCard, s.tint4]}>
-          <View style={s.pieWrap}>
+        <View style={s.splitCharts}>
+          <View style={s.splitHalf}>
             <CategoryPie parts={home.splitShares} width={PIE_W} />
+            <Text style={s.splitCap}>{MONTH_REVENUE}</Text>
           </View>
-          <View style={s.legend}>
-            {home.split.rows.map((l) => (
-              <View key={l.id} style={s.legendCell}>
-                <View style={[s.legendDot, { backgroundColor: l.color }]} />
-                <Text style={s.legendName} numberOfLines={1}>
-                  {l.name}
+          <View style={s.splitHalf}>
+            <SplitPyramid
+              rows={home.split.rows.map((r) => ({ id: r.id, name: r.name, v: r.cost, color: r.color }))}
+            />
+            <Text style={s.splitCap}>{MONTH_COST}</Text>
+          </View>
+        </View>
+
+        <View style={s.tHead}>
+          <Text style={[s.tHeadText, s.tDish]}>{SPLIT_COLS[0]}</Text>
+          <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[1]}</Text>
+          <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[2]}</Text>
+          <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[3]}</Text>
+        </View>
+
+        {home.split.rows.map((r) => {
+          const gain = r.revenue - r.cost;
+          return (
+            <View key={r.id} style={s.tRow}>
+              <View style={s.tDish}>
+                <View style={[s.legendDot, { backgroundColor: r.color }]} />
+                <Text style={s.tDishName} numberOfLines={1}>
+                  {r.name}
                 </Text>
               </View>
-            ))}
-          </View>
-        </GlassCard>
+              <Text style={[s.tCell, s.tNum]}>{r.sold}</Text>
+              <Text style={[s.tCell, s.tNum]}>{money(r.cost)}</Text>
+              {/* ⚠ הפסד באדום · מנה שעלתה יותר ממה שהכניסה */}
+              <Text style={[s.tCell, s.tNum, gain < 0 && s.tLoss]}>{money(gain)}</Text>
+            </View>
+          );
+        })}
 
-        <GlassCard style={[s.profitCard, s.tint4]}>
-          <Text style={s.cardTitle}>{PROFIT.title}</Text>
-          <View style={s.statMoney}>
-            <Text style={s.profitNet}>{money(home.live ? home.month.profit : PROFIT.net)}</Text>
-            <Text style={s.currencyBig}>₪</Text>
-          </View>
-          <View style={s.rule} />
-          <View style={s.grossRow}>
-            <Text style={s.profitNote}>{PROFIT.revLabel}</Text>
-            <View style={s.statMoney}>
-              <Text style={s.gross}>{money(home.live ? home.month.revenue : PROFIT.rev)}</Text>
-              <Text style={s.currencySm}>₪</Text>
+        <View style={s.sumBox}>
+          {[
+            home.splitSum.sold,
+            home.splitSum.revenue,
+            home.splitSum.cost,
+            home.splitSum.profit,
+          ].map((v, i) => (
+            <View key={SPLIT_SUM[i]} style={s.sumCell}>
+              <Text style={s.sumLabel}>{SPLIT_SUM[i]}</Text>
+              <Text style={[s.sumValue, i === 3 && v < 0 && s.tLoss]}>
+                {i === 0 ? v : `${money(v)} ₪`}
+              </Text>
             </View>
-          </View>
-          <View style={[s.grossRow, s.expRow]}>
-            <Text style={s.profitNote}>{PROFIT.expLabel}</Text>
-            <View style={s.statMoney}>
-              <Text style={s.gross}>{money(home.live ? home.month.expenses : PROFIT.exp)}</Text>
-              <Text style={s.currencySm}>₪</Text>
-            </View>
-          </View>
-          <View style={s.spacer} />
-          {/* ⚠ פילוח ההוצאות · עמודה לכל מנה, בצבע פרוסת העוגה שלה */}
-          <SplitBars
-            grow={BARS_GROW}
-            rows={home.split.rows.map((r) => ({ id: r.id, name: r.name, v: r.cost, color: r.color }))}
-          />
-        </GlassCard>
-      </View>
+          ))}
+        </View>
+      </GlassCard>
 
       {/* ⚠ שורה אחת · תפריט · עלויות · לקוחות · מלאי, בסדר הזה.
           השאר עברו לנאב-בר לבקשת שקד (15 בספטמבר 2026). */}
@@ -373,7 +374,6 @@ const s = StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: '700', color: LAV.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   currency: { fontSize: 12.5, color: surface.faint },
-  currencySm: { fontSize: 11.5, color: surface.faint },
   currencyBig: { fontSize: 14, color: surface.faint },
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
@@ -437,54 +437,55 @@ const s = StyleSheet.create({
   /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */
   monthRow: { flex: 1, flexDirection: LTR_ROW, justifyContent: 'space-around' },
   month: { fontSize: 11.5, fontWeight: '300', color: '#9A93A6' },
-  expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
-  donutCard: { flex: 1, minHeight: CHART_CARD_H, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
-  pieWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  /**
+   * ⚠ **כרטיס אחד לפילוח · 19 בספטמבר 2026** · שתי הדיאגרמות,
+   * הטבלה והסיכום · ראו את ההערה המלאה במקום שבו הוא מצויר.
+   */
+  splitCard: { borderRadius: 26, paddingTop: 12, paddingHorizontal: 14, paddingBottom: 12, gap: 10 },
+  splitCharts: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  /* ⚠ שני חצאים שווים · העוגה מימין והפירמידה משמאל */
+  splitHalf: { flex: 1, alignItems: 'center', gap: 6 },
+  splitCap: { fontSize: 12.5, fontWeight: '600', color: LAV.dim },
   /**
    * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״
    * הארוך הזיז את הנקודה שלו ביחס ל״קוסקוס״. שתי עמודות ברוחב
    * שווה מיישרות את הנקודות אחת מתחת לשנייה בדיוק.
    */
-  legend: {
-    alignSelf: 'stretch',
-    marginTop: 9,
-    rowGap: 5,
-  },
-  legendCell: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendName: { fontSize: 12, fontWeight: '500', color: LAV.soft },
 
-  /**
-   * ⚠ **גובה מינימלי ולא גובה קבוע · 19 בספטמבר 2026** · בקשה של
-   * שקד: ״המד התקדמות איפה שמוצג הרווח החודשי עולה על הכיתוב,
-   * צריך להגדיל לגובה את הכרטיסייה״.
-   *
-   * הגובה 202 נמדד מהקנבס, אבל הכתב באפליקציה גדל פעמיים מאז:
-   * `FONT_BUMP` הוסיף 4 לכל גודל, ו-iOS מגדיל עוד לפי ״גודל טקסט״
-   * שבהגדרות המכשיר. נמדד בסימולטור ב-`extra-large`: התוכן צריך
-   * יותר מ-202, ה-`spacer` הצטמק לאפס, והעמודות נדחקו אל שורת
-   * ״הוצאות״ ונחתכו בתחתית הכרטיס.
-   *
-   * עם `minHeight` הכרטיס גדל לפי מה שבתוכו. הכרטיס שלצידו
-   * (העוגה) מקבל את אותו מינימום, ו-`alignItems: 'stretch'`
-   * שבשורה משווה את השניים — כך הם נשארים תאומים בכל גודל כתב.
-   */
-  profitCard: {
-    flex: 1,
-    minHeight: CHART_CARD_H,
-    borderRadius: 26,
-    paddingTop: 14,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+  /* ⚠ **הטבלה** · שם המנה תופס את מה שנשאר, והמספרים ברוחב קבוע
+     כדי שהעמודות יישארו מיושרות משורה לשורה. */
+  tHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: LAV.edge,
   },
-  profitNet: { fontSize: 26, fontWeight: '300', color: LAV.ink },
-  profitNote: { fontSize: 12, fontWeight: '300', color: LAV.faint },
-  rule: { height: 1, backgroundColor: LAV.edge, marginVertical: 7 },
-  grossRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 },
-  gross: { fontSize: 14.5, fontWeight: '600', color: LAV.soft },
-  /* ⚠ **רווח אמיתי מעל העמודות** · `flex: 1` לבדו מצטמק לאפס
-     כשהתוכן גדול, והעמודות נדבקות לכיתוב. */
-  spacer: { flex: 1, minHeight: 10 },
+  tHeadText: { fontSize: 11.5, fontWeight: '600', color: LAV.faint },
+  tRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5 },
+  tDish: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tDishName: { flex: 1, fontSize: 12.5, fontWeight: '500', color: LAV.soft },
+  tCell: { fontSize: 12.5, fontWeight: '600', color: LAV.ink },
+  tNum: { width: 58, textAlign: 'center' },
+  /* ⚠ הפסד באדום · הצבע של ההוצאות במסך הכספים */
+  tLoss: { color: '#B95349' },
+
+  /* ⚠ **הסיכום** · ארבעה תאים בשתי שורות · בלשון של שקד */
+  sumBox: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 2,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: LAV.edge,
+    rowGap: 8,
+  },
+  sumCell: { width: '50%', gap: 2 },
+  sumLabel: { fontSize: 11.5, fontWeight: '400', color: LAV.faint },
+  sumValue: { fontSize: 15, fontWeight: '700', color: LAV.ink },
+
 });

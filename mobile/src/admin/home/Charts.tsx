@@ -367,52 +367,56 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
 }
 
 /**
- * פילוח ההוצאות לפי מנה · עמודה לכל מנה, בצבע של פרוסת העוגה שלה.
+ * פילוח ההוצאות לפי מנה · **פירמידה**.
  *
- * ⚠ **נבנה ב-19 בספטמבר 2026** · בקשה של שקד: ״איפה שהיה את
- * הדיאגרמה השנייה העמודות — שיוצג שם פילוח רק של ההוצאות
- * מהמכירות של הקוסקוס והשניצל בכל החודש״.
+ * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״בצד שמאל תופיע הפרמידה
+ * שמחלקת לפי מנות את ההוצאות״. קודם היו כאן עמודות
+ * (`SplitBars`), ולפניהן עמודות הרווח של ששת החודשים.
  *
- * ⚠ **החליף את `ProfitBars`** · שם היו שש עמודות קבועות, אחת לכל
- * חודש, במקומות x שחולצו מהקנבס. כאן מספר העמודות הוא מספר המנות
- * בקטגוריה, ולכן הרוחב והמרווח מחושבים ממנו.
+ * ⚠ **הרוחב הוא הערך** · כל מנה היא רצועה אופקית ממורכזת שרוחבה
+ * יחסי לעלות הייצור שלה. המיון מהקטנה למעלה אל הגדולה למטה הוא
+ * מה שהופך את הערימה לפירמידה — בלעדיו זו רק ערימת מלבנים.
  *
- * ⚠ **הצבע מגיע מבחוץ** · אותו גוון בדיוק כמו פרוסת העוגה של אותה
- * מנה, כדי שהמקרא שמתחת לעוגה ישרת גם את העמודות.
+ * ⚠ **הצבע מגיע מבחוץ** · אותו גוון בדיוק כמו פרוסת העוגה ונקודת
+ * הטבלה של אותה מנה.
  *
- * ⚠ **עמודה דקה גם באפס** · אחרת מנה שלא נמכרה נעלמת לגמרי,
- * והפילוח נראה כאילו הוא שבור ולא כאילו הוא ריק.
+ * ⚠ **בלי נתונים מצוירת פירמידה אפורה** · ולא רצועות בעובי אפס
+ * ולא היעלמות · שקד ביקשה מפורשות (19 בספטמבר) שדיאגרמה ריקה
+ * תישאר על המסך ותיראה ריקה.
  */
-const SPLIT_W = 148;
-const SPLIT_GAP = 5;
+const PYR_GAP = 3;
 
-export function SplitBars({
+export function SplitPyramid({
   rows,
-  grow = 1,
+  width = 148,
+  height = 96,
 }: {
   rows: { id: string; name: string; v: number; color: string }[];
-  grow?: number;
+  width?: number;
+  height?: number;
 }) {
-  const h = 30 * grow;
   const n = rows.length || 1;
-  const bw = Math.max(6, (SPLIT_W - SPLIT_GAP * (n - 1)) / n);
+  const total = rows.reduce((t, r) => t + Math.abs(r.v), 0);
   const peak = Math.max(...rows.map((r) => Math.abs(r.v)), 1);
-  const room = h * 0.94;
-  const MIN = 1.5;
+  const band = height / n;
+  /* ⚠ מהקטנה למעלה אל הגדולה למטה · זה מה שיוצר את הצורה */
+  const sorted = [...rows].sort((a, b) => Math.abs(a.v) - Math.abs(b.v));
 
   return (
-    <Svg width="100%" height={h} viewBox={`0 0 ${SPLIT_W} ${h}`}>
-      {rows.map((r, i) => {
-        const size = Math.max((Math.abs(r.v) / peak) * room, MIN);
+    <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
+      {sorted.map((r, i) => {
+        /* בלי נתונים · מדרגות שוות שמציירות פירמידה אפורה */
+        const part = total ? Math.abs(r.v) / peak : (i + 1) / n;
+        const w = Math.max(part * width, 6);
         return (
           <Rect
             key={r.id}
-            x={i * (bw + SPLIT_GAP)}
-            y={h - size}
-            width={bw}
-            height={size}
-            rx={Math.min(4, bw / 2)}
-            fill={r.color}
+            x={(width - w) / 2}
+            y={i * band}
+            width={w}
+            height={Math.max(band - PYR_GAP, 2)}
+            rx={2.5}
+            fill={total ? r.color : 'rgba(130,112,162,0.16)'}
           />
         );
       })}

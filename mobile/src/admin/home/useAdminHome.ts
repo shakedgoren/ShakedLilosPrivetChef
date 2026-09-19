@@ -308,6 +308,23 @@ export function useAdminHome() {
     [split],
   );
 
+  /**
+   * סיכום הקטגוריה שנבחרה · ארבעת המספרים שבתחתית הכרטיס.
+   *
+   * ⚠ **של הקטגוריה שמוצגת, לא של שתיהן** · הטבלה שמעליו היא של
+   * קטגוריה אחת, והסיכום חייב להסתכם לה.
+   */
+  const splitSum = useMemo(() => {
+    const revenue = split.rows.reduce((t, r) => t + r.revenue, 0);
+    const cost = split.rows.reduce((t, r) => t + r.cost, 0);
+    return {
+      sold: split.rows.reduce((t, r) => t + r.sold, 0),
+      revenue,
+      cost,
+      profit: revenue - cost,
+    };
+  }, [split]);
+
   const sold = sale.dishes.reduce((s, d) => s + d.sold, 0);
   const quota = sale.dishes.reduce((s, d) => s + d.quota, 0);
 
@@ -336,6 +353,7 @@ export function useAdminHome() {
     setSplitCat,
     split,
     splitShares,
+    splitSum,
     profitTrend,
     donut,
     shares,
