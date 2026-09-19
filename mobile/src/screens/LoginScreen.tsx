@@ -21,7 +21,6 @@ import {
   register,
   registerPhone,
   registerVerify,
-  updateMe,
 } from '../api/auth';
 import { authError, COPY } from '../api/copy';
 import { ApiError, type Session } from '../api/types';
@@ -181,6 +180,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [mail, setMail] = useState('');
   const [code, setCode] = useState('');
   const [gender, setGender] = useState<Gender>('');
+  /* ⚠ שגיאת יריעת האיפוס · נפרדת מ-`err` של המסך שמאחוריה */
+  const [resetErr, setResetErr] = useState('');
 
   const [terms, setTerms] = useState(false);
   /* ⚠ אי אפשר לאשר לפני שפותחים · בקשה מפורשת של שקד */
@@ -363,19 +364,29 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const onRegister = () =>
     run(async () => {
       if (!apiEnabled) return signIn();
-      const session = await register(phone.trim(), pass, name.trim());
+      /* ⚠ המייל והמגדר בתוך ההרשמה · ראו `register` */
+      const session = await register(phone.trim(), pass, name.trim(), {
+        email: mail.trim() || null,
+        gender,
+      });
       signIn(session);
-      /* המייל והמגדר אינם בנתיב ההרשמה · נשלחים מיד אחריו */
-      try {
-        await updateMe({ email: mail.trim() || null, gender });
-      } catch {
-        /* החשבון כבר קיים · אפשר להשלים באזור האישי */
-      }
     });
 
+  /**
+   * ⚠ **תשובה אמיתית · בקשה של שקד (19 בספטמבר 2026)** · ״כשאני
+   * שולחת איפוס סיסמא למייל לא נעשה כלום, לא מציג שגיאה, לא מציג
+   * הצלחה, פשוט אין כלום״. היא צודקת: הדבר היחיד שהשתנה היה
+   * שורת ״תקף ל-10 דקות״ שקיבלה ״· נשלח״ בסוף, באפור קטן.
+   * עכשיו היריעה מחליפה גוף ואומרת לאן נשלח.
+   */
   const onForgot = () =>
     run(async () => {
-      if (apiEnabled && okMail(resetMail)) await forgotPassword(resetMail.trim());
+      if (!okMail(resetMail)) {
+        setResetErr('כתובת אימייל לא תקינה');
+        return;
+      }
+      setResetErr('');
+      if (apiEnabled) await forgotPassword(resetMail.trim());
       setResetSent(true);
     });
 
@@ -573,7 +584,16 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
     <View style={s.page}>
       <BlobField />
       <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        {/* ⚠ **נעול כשיריעה פתוחה · בקשה של שקד (19 בספטמבר 2026)** ·
+            ״המסך מאחורה עולה אחורה והוא לא צריך להעלות, כי הוא במצב
+            שהוא לא קשור בכלל למה שקורה״. המקלדת של היריעה פתחה גם
+            את ה-`KeyboardAvoidingView` של המסך שמתחת, והוא נגלל. */}
+        <ScrollView
+          contentContainerStyle={s.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={!sheet}
+        >
           <View style={s.brandBlock}>
             <Text style={s.brand}>{BRAND}</Text>
             <Text style={s.brandSub}>{BRAND_SUB}</Text>
@@ -613,7 +633,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           {showLinks ? (
             <View style={s.links}>
               {!isUp ? (
-                <Pressable onPress={() => { setResetSent(false); setSheet('forgot'); }}>
+                <Pressable onPress={() => { setResetSent(false); setResetErr(''); setSheet('forgot'); }}>
                   {/* ⚠ בבולט · בקשה של שקד */}
                   <Text style={s.linkStrong}>{FORGOT_LABEL}</Text>
                 </Pressable>
@@ -636,11 +656,13 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       {sheet === 'forgot' ? (
         <ForgotSheet
           email={resetMail}
-          onEmail={setResetMail}
+          onEmail={(v) => { setResetMail(v); setResetErr(''); }}
           onSend={onForgot}
           onClose={() => setSheet(null)}
           sent={resetSent}
-          busy={busy || !okMail(resetMail)}
+          busy={busy}
+          err={resetErr}
+          onAgain={() => { setResetSent(false); setResetErr(''); }}
         />
       ) : null}
     </View>

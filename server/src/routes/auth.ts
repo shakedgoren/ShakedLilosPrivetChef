@@ -5,6 +5,7 @@ import { prisma } from '../db.ts';
 import { env } from '../env.ts';
 import { badRequest, unauthorized } from '../errors.ts';
 import { parseWho, publicUser } from '../auth/identity.ts';
+import { signupEmail } from '../auth/signupEmail.ts';
 import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
@@ -23,10 +24,22 @@ import {
 
 export const authRouter = Router();
 
+/**
+ * ⚠ **המייל והמגדר נשמרים בהרשמה עצמה · 19 בספטמבר 2026** · שקד
+ * דיווחה: ״ביצירת משתמש חדש, זה לא שומר את האימייל ואת המגדר
+ * שסימנתי בדף ההרשמה״.
+ *
+ * הם נשלחו עד היום בקריאה **שנייה** ל-`PATCH /users/me` מיד אחרי
+ * ההרשמה, והיא נעטפה ב-`catch` ריק במסך — כלומר כל כישלון שלה היה
+ * בלתי נראה. עכשיו הם חלק מאותה בקשה: או שהחשבון נוצר עם הכול, או
+ * שהוא לא נוצר.
+ */
 const whoBody = z.object({
   who: z.string().min(3),
   password: z.string().min(6),
   name: z.string().optional(),
+  email: z.union([z.string().max(80), z.null()]).optional(),
+  gender: z.enum(['female', 'male', 'other', '']).optional(),
 });
 
 const sessionOf = (user: { id: string; role: string }) => ({
@@ -62,12 +75,17 @@ authRouter.post('/register', async (req, res, next) => {
       verifiedPhone = who.phone;
     }
 
+    /* ⚠ המייל שיישמר · ראו `signupEmail` */
+    const typedMail = who.kind === 'phone' ? body.email ?? null : null;
+    const taken = typedMail ? !!(await prisma.user.findUnique({ where: { email: typedMail.trim() } })) : false;
+
     const user = await prisma.user.create({
       data: {
-        email: who.kind === 'email' ? who.email : null,
+        email: signupEmail(who, typedMail, taken),
         phone: who.kind === 'phone' ? who.phone : null,
         passwordHash: await hashPassword(body.password),
         name: body.name?.trim() ?? '',
+        gender: body.gender ?? '',
         role: 'customer',
       },
     });

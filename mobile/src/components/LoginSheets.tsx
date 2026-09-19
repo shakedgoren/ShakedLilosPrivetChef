@@ -14,6 +14,14 @@ import { NO_TOUCH } from '../theme/pointerEvents';
  */
 
 const LAV = '#BCA7E6';
+
+/**
+ * ⚠ **שלושת הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · הם
+ * מסך האישור שביקשה שקד, ולא היה קודם מה להעתיק ממנו.
+ */
+const DONE_SUB = 'שלחנו קישור לאיפוס';
+const DONE_NOTE = 'הקישור תקף ל-10 דקות. אם הוא לא מגיע — כדאי לבדוק גם בתיבת הספאם.';
+const DONE_AGAIN = 'לשלוח לכתובת אחרת';
 const DEEP = '#43307A';
 
 /**
@@ -78,8 +86,13 @@ export function TermsSheet({ onClose, onAgree }: { onClose: () => void; onAgree:
         ))}
         <View style={s.tail} />
       </ScrollView>
-      <Pressable onPress={onAgree} style={s.cta}>
-        <Text style={s.ctaText}>{T.termsLabel}</Text>
+      {/* ⚠ **רוחב מצומצם ושתי שורות · בקשה של שקד (19 בספטמבר 2026)** ·
+          ״הכפתור בתוך תנאי השימוש חורג מהכרטיסייה, תצמצם לו את הרוחב
+          והכיתוב ייכתב באמצע על שתי שורות״. הכיתוב באורך 48 תווים
+          ולא נכנס בשורה אחת ברוחב טלפון, וגובה קבוע של 52 מנע ממנו
+          לגלוש לשורה שנייה — אז הוא פשוט חרג החוצה. */}
+      <Pressable onPress={onAgree} style={[s.cta, s.ctaTerms]}>
+        <Text style={[s.ctaText, s.ctaTextTerms]}>{T.termsLabel}</Text>
       </Pressable>
     </Sheet>
   );
@@ -96,6 +109,8 @@ export function ForgotSheet({
   onClose,
   sent,
   busy,
+  err,
+  onAgain,
 }: {
   email: string;
   onEmail: (v: string) => void;
@@ -103,6 +118,10 @@ export function ForgotSheet({
   onClose: () => void;
   sent: boolean;
   busy: boolean;
+  /** שגיאה שמוצגת **בתוך** היריעה · לא על המסך שמאחוריה */
+  err: string;
+  /** חזרה לטופס · ״לא קיבלתי״ */
+  onAgain: () => void;
 }) {
   return (
     /* ⚠ נפתחת באמצע · ראו `raised` */
@@ -124,8 +143,29 @@ export function ForgotSheet({
       </Pressable>
 
       <Text style={s.title}>{T.forgotTitle}</Text>
-      <Text style={s.sub}>{T.forgotBody}</Text>
+      <Text style={s.sub}>{sent ? DONE_SUB : T.forgotBody}</Text>
 
+      {/**
+        * ⚠ **מסך אישור · בקשה של שקד (19 בספטמבר 2026)** · ״לא מציג
+        * שגיאה, לא מציג הצלחה, פשוט אין כלום״. עד היום השליחה שינתה
+        * רק את שורת התוקף שבתחתית, באפור קטן. עכשיו הגוף מתחלף.
+        *
+        * ⚠ **לא נחשף אם החשבון קיים** · הנוסח מדבר על מה שנעשה
+        * ולא על מה שנמצא, וזה מכוון.
+        */}
+      {sent ? (
+        <View style={s.done}>
+          <View style={s.doneOrb}>
+            <S k="check" size={22} color="#FFFFFF" />
+          </View>
+          <Text style={s.doneMail}>{email.trim()}</Text>
+          <Text style={s.doneNote}>{DONE_NOTE}</Text>
+          <Pressable onPress={onAgain} hitSlop={8}>
+            <Text style={s.doneAgain}>{DONE_AGAIN}</Text>
+          </Pressable>
+        </View>
+      ) : (
+      <>
       <View style={s.field}>
         <TextInput
           value={email}
@@ -141,6 +181,8 @@ export function ForgotSheet({
         </View>
       </View>
 
+      {err ? <Text style={s.sheetErr}>{err}</Text> : null}
+
       {/* ⚠ ברוחב מינימלי · ראו `ctaSlim` */}
       <Pressable onPress={onSend} disabled={busy} style={[s.cta, s.ctaSlim, busy && s.ctaOff]}>
         <Send size={18} color="#FFFFFF" />
@@ -149,8 +191,10 @@ export function ForgotSheet({
 
       <View style={s.ttl}>
         <S k="clock" size={13} color={surface.faint} />
-        <Text style={s.ttlText}>{sent ? `${T.forgotTtl} · נשלח` : T.forgotTtl}</Text>
+        <Text style={s.ttlText}>{T.forgotTtl}</Text>
       </View>
+      </>
+      )}
     </Sheet>
   );
 }
@@ -158,7 +202,13 @@ export function ForgotSheet({
 const s = StyleSheet.create({
   layer: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), zIndex: 20, justifyContent: 'flex-end' },
   /* ⚠ באמצע · ראו `raised` */
-  layerMid: { justifyContent: 'center', paddingHorizontal: 16 },
+  /**
+   * ⚠ **גבוה יותר מהאמצע · בקשה של שקד (19 בספטמבר 2026)** · ״את
+   * הכרטיסייה עצמה של איפוס סיסמא תעלה יותר למעלה בדף״.
+   * ⚠ `flex-start` עם ריפוד ולא `center` · במרכז היא ירדה עם גובה
+   * המסך, וכאן היא תמיד באותו מרחק מהראש.
+   */
+  layerMid: { justifyContent: 'flex-start', paddingTop: 110, paddingHorizontal: 16 },
   scrim: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), backgroundColor: 'rgba(36,28,48,0.34)' },
   sheet: {
     maxHeight: '78%',
@@ -233,11 +283,38 @@ const s = StyleSheet.create({
    * התנאים נשאר רחב, כי הוא הפעולה היחידה שם.
    */
   ctaSlim: { alignSelf: 'center', paddingHorizontal: 30 },
+  /**
+   * ⚠ **כפתור התנאים · ראו את ההערה ליד הכפתור עצמו** · בלי גובה
+   * קבוע הוא גדל לפי הכיתוב, ו-`maxWidth` שומר אותו בתוך היריעה.
+   */
+  ctaTerms: {
+    height: undefined,
+    alignSelf: 'center',
+    maxWidth: '88%',
+    paddingHorizontal: 22,
+    paddingVertical: 11,
+  },
+  ctaTextTerms: { textAlign: 'center', lineHeight: 20, flexShrink: 1 },
   ctaOff: { opacity: 0.5 },
   ctaText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
 
   ttl: { flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', marginTop: 10 },
   ttlText: { fontSize: 12, color: surface.faint },
+  sheetErr: { fontSize: 12.5, color: '#B95349', textAlign: 'center', marginTop: 8 },
+
+  /* מסך האישור · ראו את ההערה ליד הגוף */
+  done: { alignItems: 'center', gap: 8, paddingTop: 6, paddingBottom: 2 },
+  doneOrb: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#6FAF84',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneMail: { fontSize: 15, fontWeight: '700', color: DEEP, marginTop: 2 },
+  doneNote: { fontSize: 12.5, fontWeight: '300', lineHeight: 19, color: surface.inkSoft, textAlign: 'center' },
+  doneAgain: { fontSize: 13, fontWeight: '600', color: DEEP, marginTop: 4 },
   /* ⚠ ה-X של יריעת הסיסמה · ראו ההערה ליד הכפתור */
   x: {
     position: 'absolute',

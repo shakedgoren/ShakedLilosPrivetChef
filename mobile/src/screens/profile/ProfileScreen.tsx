@@ -184,11 +184,16 @@ export function ProfileScreen() {
     setErr('');
   };
 
+  /**
+   * ⚠ **הכתובת אינה חובה · 19 בספטמבר 2026** · בקשה של שקד:
+   * ״שלא יחייב למלא כתובת מגורים — זה לא חובה״. היא חסמה את
+   * השמירה, ולכן מי שרצתה רק לתקן שם או מייל לא יכלה.
+   * ⚠ באיסוף עצמי אין בה צורך בכלל, ובמשלוח היא נשאלת בהזמנה.
+   */
   const errors = {
     name: trim(form.name) === '',
     phone: !okPhone(form.phone),
     mail: trim(form.mail) !== '' && !okMail(form.mail),
-    addr: trim(form.addr) === '',
   };
   const dirty = (Object.keys(base) as (keyof Form)[]).some((k) => form[k] !== base[k]);
   const ok = !Object.values(errors).some(Boolean);
@@ -400,15 +405,13 @@ export function ProfileScreen() {
         <View style={s.card}>
           <View style={s.addrHead}>
             <Text style={s.cardLabel}>כתובת מגורים</Text>
-            <Text style={s.addrNote}>לשימוש במשלוחים</Text>
+            <Text style={s.addrNote}>לשימוש במשלוחים · לא חובה</Text>
           </View>
           <Field
             label=""
             ph="רחוב, מספר ועיר"
             value={form.addr}
             onChange={(v) => set('addr', v)}
-            bad={errors.addr}
-            hint="יש להזין כתובת מלאה"
           />
           {suggestions.length > 0 ? (
             <View style={s.sug}>

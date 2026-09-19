@@ -4,8 +4,17 @@ import type { PublicUser, Session } from './types';
 export const login = (who: string, password: string) =>
   api<Session>('/auth/login', { body: { who, password }, auth: false });
 
-export const register = (who: string, password: string, name?: string) =>
-  api<Session>('/auth/register', { body: { who, password, name }, auth: false });
+/**
+ * ⚠ **המייל והמגדר נשלחים כאן · 19 בספטמבר 2026** · הם נשלחו עד
+ * היום בקריאה שנייה ל-`updateMe` מיד אחרי ההרשמה, שנעטפה ב-`catch`
+ * ריק — כלומר כשלון היה בלתי נראה, ושקד דיווחה שהם לא נשמרים.
+ */
+export const register = (
+  who: string,
+  password: string,
+  name?: string,
+  extra?: { email?: string | null; gender?: PublicUser['gender'] },
+) => api<Session>('/auth/register', { body: { who, password, name, ...extra }, auth: false });
 
 export const forgotPassword = (who: string) =>
   api<{ ok: true }>('/auth/forgot-password', { body: { who }, auth: false });
