@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
-import { HOME_SUBTITLE, HOME_TITLE, type TileKey } from '../data/adminHome';
+import { DONUT, HOME_SUBTITLE, HOME_TITLE, PROFIT, type TileKey } from '../data/adminHome';
 import { NewOrderSheet } from './NewOrderSheet';
 import { LogoutConfirm } from '../components/LogoutConfirm';
 import { SentNotice } from './SentNotice';
@@ -13,7 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { REV_CHART_H, RevenueChart } from './home/Charts';
+import { CategoryPie, ProfitBars, REV_CHART_H, RevenueChart } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
@@ -31,6 +31,24 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
   costs: 'adminCosts',
   hist: 'adminHistory',
 };
+
+/**
+ * גובה שני כרטיסי הדיאגרמות · **אחד לשניהם**.
+ *
+ * ⚠ **הוגדל · 18 בספטמבר 2026** · בקשה של שקד: ״תוסיף מעט גובה
+ * לכרטיסיות של דיאגרמת העוגה שמחלקת לפי קטגוריות ולרווח החודש
+ * ותגדיל את שתי הדיאגרמות בתוכן״. היה 176 בשניהם.
+ *
+ * ⚠ **מספר אחד ולא שניים** · הם עומדים זה לצד זה עם `flex: 1`;
+ * שני גבהים שונים היו מיישרים אותם לגבוה ומשאירים לנמוך שוליים.
+ *
+ * ⚠ **מינימום, לא תקרה · 19 בספטמבר 2026** · ראו `profitCard`.
+ */
+const CHART_CARD_H = 202;
+/** רוחב העוגה · היה 127, וההגדלה היא כל מה שהכרטיס הגבוה מרשה */
+const PIE_W = 148;
+/** מתיחת עמודות הרווח · ראו `ProfitBars` */
+const BARS_GROW = 1.55;
 
 /** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
 const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
@@ -126,8 +144,8 @@ export function AdminHomeScreen() {
 
           ⚠ **הוחזרו · 19 בספטמבר 2026** · קראתי לא נכון את ״בשתי
           כרטיסיות מתחת״ והחלפתי דווקא אותם בהכנסות ובהוצאות של
-          החודש. שקד הראתה בתמונה שהכוונה הייתה לשורה שבתחתית
-          הדף. */}
+          החודש. שקד הראתה בתמונה שהכוונה הייתה לשורת הדיאגרמות
+          שבתחתית הדף. */}
       <View style={s.statRow}>
         {/* ⚠ **הזמנות ומנות יחד** · שקד ביקשה (15 בספטמבר 2026)
             לראות גם כמה הזמנות התקבלו וגם כמה מנות נמכרו בהן —
@@ -204,47 +222,53 @@ export function AdminHomeScreen() {
         </View>
       </GlassCard>
 
-      {/**
-        * ⚠ **החודש · קוסקוס ושניצל בלבד · 19 בספטמבר 2026** ·
-        * בקשה של שקד, שסימנה את שתי הכרטיסיות האלה בצילום מסך:
-        * ״בכרטיסייה מצד ימין רק את ההכנסות של אותו החודש של
-        * המכירות של הקוסקוס והשניצל ושבצד שמאל יהיה רק את
-        * ההוצאות של אותו החודש של המכירות של הקוסקוס והשניצל.
-        * אין צורך בכותרות שמסבירות״.
-        *
-        * ⚠ **מה ירד מכאן** · דיאגרמת העוגה לפי קטגוריות, וכרטיס
-        * ״רווח החודש״ על שלוש שורותיו ועל עמודות ששת החודשים.
-        * ״רק״ במשפט שלה מוציא אותם. הרכיבים עצמם
-        * (`CategoryPie`, `ProfitBars`) נשארים ב-`Charts` ואפשר
-        * להחזיר אותם בכל רגע.
-        *
-        * ⚠ **מילה אחת ולא כותרת** · בלי שם כלשהו אי אפשר לדעת איזו
-        * כרטיסייה היא איזו. ״כותרת שמסבירה״ היא ״ההכנסות של
-        * המכירות של הקוסקוס והשניצל החודש״ — לא מילה בודדת.
-        *
-        * ⚠ **ההכנסות ראשונות** · האפליקציה כפויה ל-RTL, ולכן הילד
-        * הראשון בשורה יושב מ**ימין**.
-        *
-        * ⚠ **״הוצאות של המכירות״ = עלות הייצור של מה שנמכר** ·
-        * טבלת ההוצאות מסווגת לפי סוג ההוצאה ולא לפי קטגוריית
-        * מכירה, ולכן אי אפשר לסנן אותה ל״קוסקוס ושניצל״. מה
-        * שניתן לחשב הוא כמה עלה לייצר את מה שנמכר · ראו
-        * `saleMonth` בשרת.
-        */}
       <View style={s.row}>
-        <GlassCard style={[s.monthCard, s.tint4]}>
-          <Text style={s.monthLabel}>{MONTH_REVENUE}</Text>
-          <View style={s.statMoney}>
-            <Text style={s.monthValue}>{money(home.saleMonth.revenue)}</Text>
-            <Text style={s.currencyBig}>₪</Text>
+        {/* ⚠ **עוגה מוטה בלי כותרת** · בחירה של שקד (15 בספטמבר
+            2026). האחוזים יושבים בתוך הפרוסות, ומתחת מקרא בשתי
+            שורות ממורכזות — קוסקוס מעל ספיישל, שניצל מעל שף. */}
+        <GlassCard style={[s.donutCard, s.tint4]}>
+          <View style={s.pieWrap}>
+            <CategoryPie parts={home.shares} width={PIE_W} />
+          </View>
+          <View style={s.legend}>
+            {home.shares.map((l) => (
+              <View key={l.name} style={s.legendCell}>
+                <View style={[s.legendDot, { backgroundColor: l.color }]} />
+                <Text style={s.legendName} numberOfLines={1}>
+                  {l.name}
+                </Text>
+              </View>
+            ))}
           </View>
         </GlassCard>
-        <GlassCard style={[s.monthCard, s.tint4]}>
-          <Text style={s.monthLabel}>{MONTH_COST}</Text>
+
+        <GlassCard style={[s.profitCard, s.tint4]}>
+          <Text style={s.cardTitle}>{PROFIT.title}</Text>
           <View style={s.statMoney}>
-            <Text style={s.monthValue}>{money(home.saleMonth.cost)}</Text>
+            <Text style={s.profitNet}>{money(home.live ? home.month.profit : PROFIT.net)}</Text>
             <Text style={s.currencyBig}>₪</Text>
           </View>
+          <View style={s.rule} />
+          <View style={s.grossRow}>
+            <Text style={s.profitNote}>{PROFIT.revLabel}</Text>
+            <View style={s.statMoney}>
+              <Text style={s.gross}>{money(home.live ? home.month.revenue : PROFIT.rev)}</Text>
+              <Text style={s.currencySm}>₪</Text>
+            </View>
+          </View>
+          <View style={[s.grossRow, s.expRow]}>
+            <Text style={s.profitNote}>{PROFIT.expLabel}</Text>
+            <View style={s.statMoney}>
+              <Text style={s.gross}>{money(home.live ? home.month.expenses : PROFIT.exp)}</Text>
+              <Text style={s.currencySm}>₪</Text>
+            </View>
+          </View>
+          <View style={s.spacer} />
+          {/* ⚠ נתונים אמיתיים · נופל לציור הקנבס רק בלי שרת */}
+          <ProfitBars
+            grow={BARS_GROW}
+            points={home.live ? home.profitTrend.map((p) => p.v) : undefined}
+          />
         </GlassCard>
       </View>
 
@@ -315,24 +339,8 @@ const s = StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: '700', color: LAV.ink },
   statMoney: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   currency: { fontSize: 12.5, color: surface.faint },
+  currencySm: { fontSize: 11.5, color: surface.faint },
   currencyBig: { fontSize: 14, color: surface.faint },
-
-  /**
-   * ⚠ **שתי כרטיסיות החודש · 19 בספטמבר 2026** · מספר אחד גדול
-   * וממורכז בכל אחת, במקום העוגה וכרטיס הרווח שישבו כאן.
-   * `minHeight` ולא `height` · ראו למה ב-`revCard`.
-   */
-  monthCard: {
-    flex: 1,
-    minHeight: 104,
-    borderRadius: 26,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-  },
-  monthLabel: { fontSize: 14.5, fontWeight: '400', color: LAV.dim, textAlign: 'center' },
-  monthValue: { fontSize: 26, fontWeight: '300', color: LAV.ink },
 
   /* ⚠ הגובה גדל ב-34 · שורת הטווחים נוספה מתחת לכותרת */
   /**
@@ -385,6 +393,56 @@ const s = StyleSheet.create({
   /* בקנבס שורת החודשים היא direction: ltr · מרץ בשמאל, אוג׳ בימין */
   monthRow: { flex: 1, flexDirection: LTR_ROW, justifyContent: 'space-around' },
   month: { fontSize: 11.5, fontWeight: '300', color: '#9A93A6' },
+  expRow: { marginTop: 3 },
   monthOn: { fontWeight: '600', color: '#7B5CBC' },
 
+  donutCard: { flex: 1, minHeight: CHART_CARD_H, borderRadius: 26, paddingVertical: 14, paddingHorizontal: 16 },
+  pieWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  /**
+   * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״
+   * הארוך הזיז את הנקודה שלו ביחס ל״קוסקוס״. שתי עמודות ברוחב
+   * שווה מיישרות את הנקודות אחת מתחת לשנייה בדיוק.
+   */
+  legend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignSelf: 'center',
+    marginTop: 9,
+    rowGap: 5,
+  },
+  legendCell: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 5, paddingEnd: 5 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendName: { fontSize: 12, fontWeight: '500', color: LAV.soft },
+
+  /**
+   * ⚠ **גובה מינימלי ולא גובה קבוע · 19 בספטמבר 2026** · בקשה של
+   * שקד: ״המד התקדמות איפה שמוצג הרווח החודשי עולה על הכיתוב,
+   * צריך להגדיל לגובה את הכרטיסייה״.
+   *
+   * הגובה 202 נמדד מהקנבס, אבל הכתב באפליקציה גדל פעמיים מאז:
+   * `FONT_BUMP` הוסיף 4 לכל גודל, ו-iOS מגדיל עוד לפי ״גודל טקסט״
+   * שבהגדרות המכשיר. נמדד בסימולטור ב-`extra-large`: התוכן צריך
+   * יותר מ-202, ה-`spacer` הצטמק לאפס, והעמודות נדחקו אל שורת
+   * ״הוצאות״ ונחתכו בתחתית הכרטיס.
+   *
+   * עם `minHeight` הכרטיס גדל לפי מה שבתוכו. הכרטיס שלצידו
+   * (העוגה) מקבל את אותו מינימום, ו-`alignItems: 'stretch'`
+   * שבשורה משווה את השניים — כך הם נשארים תאומים בכל גודל כתב.
+   */
+  profitCard: {
+    flex: 1,
+    minHeight: CHART_CARD_H,
+    borderRadius: 26,
+    paddingTop: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  profitNet: { fontSize: 26, fontWeight: '300', color: LAV.ink },
+  profitNote: { fontSize: 12, fontWeight: '300', color: LAV.faint },
+  rule: { height: 1, backgroundColor: LAV.edge, marginVertical: 7 },
+  grossRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 },
+  gross: { fontSize: 14.5, fontWeight: '600', color: LAV.soft },
+  /* ⚠ **רווח אמיתי מעל העמודות** · `flex: 1` לבדו מצטמק לאפס
+     כשהתוכן גדול, והעמודות נדבקות לכיתוב. */
+  spacer: { flex: 1, minHeight: 10 },
 });
