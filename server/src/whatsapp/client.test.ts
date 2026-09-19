@@ -148,7 +148,7 @@ test('אישור הזמנה · איסוף מול משלוח לפי ship', async 
   const delivery = await notifyOrderConfirmed(deliveryOrder);
   assert.equal(pickup.ok, true);
   assert.equal(delivery.ok, true);
-  assert.deepEqual(names, ['order_pickup_confirmed', 'order_delivary_confirmed']);
+  assert.deepEqual(names, ['order_pickup_confirmed', 'order_dely']);
   assert.deepEqual(bodies[0], ['דנה כהן']);
   assert.deepEqual(bodies[1], ['דנה כהן']);
 });

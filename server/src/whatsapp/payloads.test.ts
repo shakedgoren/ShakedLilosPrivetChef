@@ -50,7 +50,7 @@ test('פרמטר תבנית בלי ירידות שורה', () => {
 
 test('שמות Meta · כולל שגיאות הכתיב', () => {
   assert.equal(META_UTILITY_TEMPLATES.confirmPickup, 'order_pickup_confirmed');
-  assert.equal(META_UTILITY_TEMPLATES.confirmDelivery, 'order_delivary_confirmed');
+  assert.equal(META_UTILITY_TEMPLATES.confirmDelivery, 'order_dely');
   assert.equal(META_UTILITY_TEMPLATES.readyPickup, 'order_pick_up');
   assert.equal(META_UTILITY_TEMPLATES.delivered, 'order_dalivery');
 });
