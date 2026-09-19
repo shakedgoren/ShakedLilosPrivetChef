@@ -34,6 +34,20 @@ const SHORT_NAME: Record<string, string> = {
   cocotte: 'אקסטרה רוטב',
 };
 
+/**
+ * הלשונית השלישית · **הכל**.
+ *
+ * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״תוסיף עוד כפתור ליד
+ * הקוסקוס והשניצל של ׳הכל׳, ובו מה שיוצג זה רק הדיאגרמות והטבלה
+ * המסכמת, ושבה יהיה כתוב כל המנות גם של הקוסקוס וגם של השניצל״.
+ *
+ * ⚠ **כל מנה שומרת על הגוון של הקטגוריה שלה** · ולא נמתח גוון אחד
+ * על אחת עשרה מנות. כך רואים בעוגה ובעמודות איפה נגמר הקוסקוס
+ * ומתחיל השניצל.
+ */
+const ALL_ID = 'all';
+const ALL_NAME = 'הכל';
+
 /** שתי הקטגוריות שהבורר מחליף ביניהן · אותן שתיים כמו בשרת */
 const SPLIT_IDS = ['cous', 'schn'];
 
@@ -302,14 +316,22 @@ export function useAdminHome() {
    * שתי הדיאגרמות נשארות על המסך ורק ריקות · בקשה מפורשת של שקד.
    */
   const split = useMemo(() => {
-    const rows = saleSplit.length ? saleSplit : SPLIT_FALLBACK;
-    const cat = rows.find((c) => c.id === splitCat) ?? rows[0];
-    if (!cat) return { id: splitCat, n: '', hue: LAV_FALLBACK, rows: [] };
-    const n = cat.rows.length || 1;
-    return {
-      ...cat,
-      rows: cat.rows.map((r, i) => ({ ...r, name: SHORT_NAME[r.id] ?? r.name, color: tintOf(cat.hue, i, n) })),
+    const cats = saleSplit.length ? saleSplit : SPLIT_FALLBACK;
+    const paint = (cat: SplitCat) => {
+      const n = cat.rows.length || 1;
+      return cat.rows.map((r, i) => ({
+        ...r,
+        name: SHORT_NAME[r.id] ?? r.name,
+        color: tintOf(cat.hue, i, n),
+      }));
     };
+    /* ⚠ ״הכל״ · כל המנות של שתי הקטגוריות · ראו `ALL_ID` */
+    if (splitCat === ALL_ID) {
+      return { id: ALL_ID, n: ALL_NAME, hue: LAV_FALLBACK, rows: cats.flatMap(paint) };
+    }
+    const cat = cats.find((c) => c.id === splitCat) ?? cats[0];
+    if (!cat) return { id: splitCat, n: '', hue: LAV_FALLBACK, rows: [] };
+    return { ...cat, rows: paint(cat) };
   }, [saleSplit, splitCat]);
 
   /**
@@ -370,8 +392,14 @@ export function useAdminHome() {
     month,
     saleMonth,
     saleSplit,
-    /** הכפתורים של הבורר · תמיד שניים, גם לפני שהשרת ענה */
-    splitTabs: saleSplit.length ? saleSplit : SPLIT_FALLBACK,
+    /**
+     * הכפתורים של הבורר · שתי הקטגוריות ואחריהן ״הכל״.
+     * ⚠ תמיד שלושה, גם לפני שהשרת ענה.
+     */
+    splitTabs: [
+      ...(saleSplit.length ? saleSplit : SPLIT_FALLBACK).map((c) => ({ id: c.id, n: c.n })),
+      { id: ALL_ID, n: ALL_NAME },
+    ],
     splitCat,
     setSplitCat,
     split,

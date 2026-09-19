@@ -341,10 +341,27 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
         const k = small ? (w.p.label ? 0.84 : 0.74) : 0.6;
         /* ⚠ סכום ארוך מאחוז · ולכן קטן יותר · ראו `Share` */
         const size = w.p.label ? (small ? 7.5 : 9.5) : small ? 9 : 11;
+        /**
+         * ⚠ **סכום שלא נכנס אינו נכתב · 19 בספטמבר 2026** · בלשונית
+         * ״הכל״ יש אחת עשרה פרוסות, והסכומים של הצרות שבהן נדרסו
+         * זה על זה וגלשו מהעוגה.
+         *
+         * הבדיקה גיאומטרית ולא אחוז קסם: רוחב הקשת במקום שבו יושב
+         * הכתב מול רוחב הכתב עצמו. כל סכום שמופיע — נכנס.
+         * ⚠ **הטבלה שמתחת מראה את כולם** · שום מספר לא הולך לאיבוד.
+         */
+        /* ⚠ שני אומדנים · רחב יותר להצמדה, צר יותר להחלטה אם בכלל
+           לכתוב · כדי שסכום לא ייעלם בגלל אומדן שמרני */
+        const half = ((w.p.label?.length ?? 0) * size * 0.56) / 2;
+        const room = (w.a1 - w.a0) * ((rx + ry) / 2) * k;
+        if (w.p.label && room < w.p.label.length * size * 0.5) return null;
         return (
           <SvgText
             key={`t-${w.p.name}`}
-            x={cx + rx * k * Math.cos(mid)}
+            /* ⚠ **נשאר בתוך העוגה** · פרוסה צרה ליד הציר האופקי דחפה
+               את הכתב אל מעבר לשפה; הצמדה פנימה מחזירה אותו, והוא
+               עדיין בתוך הפרוסה שלו — היא נמתחת מהמרכז החוצה. */
+            x={Math.min(Math.max(cx + rx * k * Math.cos(mid), cx - rx + half + 4), cx + rx - half - 4)}
             y={cy + ry * k * Math.sin(mid) + 3.4}
             textAnchor="middle"
             fontSize={size}
