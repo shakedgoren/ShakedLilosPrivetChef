@@ -177,20 +177,22 @@ Authorization: Bearer <token>
 #### מה שקד ממלאת ב-Meta
 
 1. [developers.facebook.com](https://developers.facebook.com) → אפליקציה → WhatsApp → API Setup.
-2. מספר עסקי (או מספר בדיקה) → מעתיקים את **Phone number ID**.
+2. מספר ייצור ישראלי **+972 52-977-0915** → **Phone number ID** `1232590293281581`. מחליף את מספר הבדיקה `1378990205287782` / `+1 555 144 2344`.
 3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`).
-4. מזהה WABA (WhatsApp Business Account ID) — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
-5. יוצרים ומאשרים תבניות בעברית (`he`). **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
+4. מזהה WABA `4591151791157354` (**Bite and Tell**) — מחליף `2026174634698902`. רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
+5. יוצרים ומאשרים תבניות בעברית (`he`) **על ה-WABA החדש**. ארבע תבניות ה-Utility חייבות להיווצר מחדש שם. **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
 
 | משתנה | שם ב-Meta | קטגוריה | מתי נשלח |
 |---|---|---|---|
-| `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
+| `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה (שגיאת Meta `2388185`) · הנתיב בשרת כבר מוכן |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `order_pickup_confirmed` | Utility | יצירת הזמנת איסוף (`ship=self`) |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_delivary_confirmed` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **delivary** |
 | `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `order_pick_up` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
 | `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `order_dalivery` | Utility | סטטוס **נמסרה** בהזמנת משלוח · **dalivery** |
 
 מחרוזת ריקה במשתנה מכבה רק את התבנית הזו. בלי TOKEN לא נשלח כלום.
+
+אימות עסקי + אמצעי תשלום ב-Meta עדיין חוסמים שליחה מחוץ לחלון 24 השעות / תבניות Utility. עד שזה נסגר, וגם עד שארבע תבניות ה-Utility ייווצרו מחדש על WABA `4591151791157354`, השליחות עלולות להידחות.
 
 **גוף התבנית:** ידוע ש-`{{1}}` הוא שם הלקוחה. `{{2}}…` עדיין לא ידועים. כרגע נשלח רק שם (`UTILITY_BODY_KEYS = ['name']` ב-`server/src/whatsapp/vars.ts`). אם Meta דוחה בגלל מספר פרמטרים — להוסיף לשם `orderId` / `total` / `timeOrAddress` (כבר מחושבים ב-`orderUtilitySlots`).
 
@@ -200,8 +202,8 @@ Authorization: Bearer <token>
 
 ```
 WHATSAPP_TOKEN="EAAG..."
-WHATSAPP_PHONE_NUMBER_ID="123456789012345"
-WHATSAPP_WABA_ID="123456789012345"
+WHATSAPP_PHONE_NUMBER_ID="1232590293281581"
+WHATSAPP_WABA_ID="4591151791157354"
 WHATSAPP_TEMPLATE_OTP="bite_otp"
 WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="order_pickup_confirmed"
 WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_delivary_confirmed"
@@ -210,6 +212,8 @@ WHATSAPP_TEMPLATE_ORDER_DELIVERED="order_dalivery"
 WHATSAPP_TEMPLATE_LANG="he"
 WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
 ```
+
+בפריסה (Railway Variables וכל סביבה אחרת): להדביק את המזהים למעלה. **לא** את מספר הבדיקה הישן `1378990205287782` / WABA `2026174634698902`.
 
 #### מתי נשלח
 
