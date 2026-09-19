@@ -32,8 +32,16 @@ const TILE_ROUTES: Record<TileKey, Screen> = {
   hist: 'adminHistory',
 };
 
-/** רוחב העוגה · היה 127, וההגדלה היא כל מה שהכרטיס הגבוה מרשה */
-const PIE_W = 148;
+/**
+ * רוחב שתי הדיאגרמות.
+ *
+ * ⚠ **העוגה גדלה על חשבון העמודות · 19 בספטמבר 2026** · בקשה של
+ * שקד: ״אפשר את הדיאגרמת עמודות לצמצם מהרוחב של כל אחד מהעמודות
+ * כדי להגדיל את העוגה אם יש צורך״ — הסכומים שהיא ביקשה לכתוב על
+ * הפרוסות צריכים מקום. הייתה חלוקה שווה, 148 לכל צד.
+ */
+const PIE_W = 186;
+const COL_W = 138;
 
 /** האריחים שנשארו בדף הבית · הסדר הוא של שקד */
 const HOME_TILES: TileKey[] = ['menu', 'costs', 'people', 'stock'];
@@ -253,12 +261,13 @@ export function AdminHomeScreen() {
         </View>
 
         <View style={s.splitCharts}>
-          <View style={s.splitHalf}>
+          <View style={[s.splitHalf, s.splitPie]}>
             <CategoryPie parts={home.splitShares} width={PIE_W} />
             <Text style={s.splitCap}>{MONTH_REVENUE}</Text>
           </View>
-          <View style={s.splitHalf}>
+          <View style={[s.splitHalf, s.splitCols]}>
             <SplitColumns
+              width={COL_W}
               rows={home.split.rows.map((r) => ({ id: r.id, name: r.name, v: r.cost, color: r.color }))}
             />
             <Text style={s.splitCap}>{MONTH_COST}</Text>
@@ -468,9 +477,11 @@ const s = StyleSheet.create({
    * הטבלה והסיכום · ראו את ההערה המלאה במקום שבו הוא מצויר.
    */
   splitCard: { borderRadius: 26, paddingTop: 12, paddingHorizontal: 14, paddingBottom: 12, gap: 10 },
-  splitCharts: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  /* ⚠ שני חצאים שווים · העוגה מימין והפירמידה משמאל */
-  splitHalf: { flex: 1, alignItems: 'center', gap: 6 },
+  splitCharts: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  /* ⚠ **לא חצאים שווים** · העוגה מקבלת יותר · ראו `PIE_W` */
+  splitHalf: { alignItems: 'center', gap: 6 },
+  splitPie: { flex: 1.35 },
+  splitCols: { flex: 1 },
   splitCap: { fontSize: 12.5, fontWeight: '600', color: LAV.dim },
   /**
    * ⚠ **רשת ולא שורות** · כשכל שורה מרכזה את עצמה, ״ספיישל״

@@ -15,6 +15,25 @@ export type SplitCat = { id: string; n: string; hue: string; rows: SplitRow[] };
 /** גוון ברירת מחדל · רק כשהשרת עוד לא ענה בכלל */
 const LAV_FALLBACK = '#7B5CBC';
 
+/**
+ * שמות קצרים לכרטיס הפילוח · **בלשון של שקד** (19 בספטמבר 2026):
+ * ״שניצל דק · שניצל טמפורה · מארז דק · מארז טמפורה · אקסטרה רוטב״.
+ *
+ * השמות המלאים (״חלת פילה עוף טמפורה״) ארוכים מעמודת השם ברוחב
+ * של טלפון ונשברו לשתי שורות.
+ *
+ * ⚠ **תצוגה בכרטיס הזה בלבד** · שם המנה במסד לא משתנה, ומסכי
+ * העלויות, התפריט והלוח מציגים אותו כפי שהוא. אם שקד תרצה את
+ * השמות הקצרים בכל מקום — זה שינוי במסד ולא כאן.
+ */
+const SHORT_NAME: Record<string, string> = {
+  schThin: 'שניצל דק',
+  schTemp: 'שניצל טמפורה',
+  boxThin: 'מארז דק',
+  boxTemp: 'מארז טמפורה',
+  cocotte: 'אקסטרה רוטב',
+};
+
 /** שתי הקטגוריות שהבורר מחליף ביניהן · אותן שתיים כמו בשרת */
 const SPLIT_IDS = ['cous', 'schn'];
 
@@ -289,7 +308,7 @@ export function useAdminHome() {
     const n = cat.rows.length || 1;
     return {
       ...cat,
-      rows: cat.rows.map((r, i) => ({ ...r, color: tintOf(cat.hue, i, n) })),
+      rows: cat.rows.map((r, i) => ({ ...r, name: SHORT_NAME[r.id] ?? r.name, color: tintOf(cat.hue, i, n) })),
     };
   }, [saleSplit, splitCat]);
 
@@ -299,14 +318,18 @@ export function useAdminHome() {
    * ⚠ **מסד ריק מחזיר סכום 0** · `CategoryPie` מצייר אז עוגה ריקה
    * ונייטרלית במקום להיעלם · בקשה מפורשת של שקד.
    */
-  const splitShares = useMemo(
-    () =>
-      split.rows.map((r) => {
-        const sum = split.rows.reduce((t, x) => t + x.revenue, 0);
-        return { name: r.name, color: r.color, pct: sum ? Math.round((r.revenue / sum) * 100) : 0 };
-      }),
-    [split],
-  );
+  const splitShares = useMemo(() => {
+    const sum = split.rows.reduce((t, x) => t + x.revenue, 0);
+    return split.rows.map((r) => ({
+      name: r.name,
+      color: r.color,
+      pct: sum ? Math.round((r.revenue / sum) * 100) : 0,
+      /* ⚠ **סכום ולא אחוז · בקשה של שקד (19 בספטמבר 2026)** ·
+         ״בהכנסות גם שיהיה מחיר על העוגה ולא אחוזים״. הזווית עדיין
+         נגזרת מ-`pct`. */
+      label: `${r.revenue.toLocaleString('en-US')} ₪`,
+    }));
+  }, [split]);
 
   /**
    * סיכום הקטגוריה שנבחרה · ארבעת המספרים שבתחתית הכרטיס.

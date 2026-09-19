@@ -182,7 +182,15 @@ export function RevenueChart({ points, night = false }: { points: RevPoint[]; ni
  * מחבר), גרדיאנט על כל פרוסה, וברק לבן רך. `feDropShadow` נוסה
  * וירד — הוא צייר כתם צל עגול על הפרוסות הבהירות.
  */
-export type Share = { name: string; color: string; pct: number };
+/**
+ * נתח בעוגה.
+ *
+ * ⚠ **`label` · 19 בספטמבר 2026** · בקשה של שקד: ״בהכנסות גם
+ * שיהיה מחיר על העוגה ולא אחוזים״. הזווית עדיין נגזרת מ-`pct` —
+ * `label` הוא רק מה שנכתב על הפרוסה. בלי `label` נכתב האחוז,
+ * וכך העוגות האחרות במסך לא משתנות.
+ */
+export type Share = { name: string; color: string; pct: number; label?: string };
 
 /**
  * גוון בהיר וכהה לכל פרוסה · מה שהופך שטח שטוח לגוף.
@@ -323,27 +331,30 @@ export function CategoryPie({ parts, width = 127, depth = 12 }: { parts: Share[]
       {/* ⚠ **הברק ירד** · אליפסה לבנה רכה על פני העוגה נראתה כמו
           חור מוזר באמצע ולא כמו אור. בקשה של שקד. */}
 
-      {/* האחוזים · על מרכז המסה, ולכן תמיד בתוך הפרוסה */}
+      {/* הכיתוב · על מרכז המסה, ולכן תמיד בתוך הפרוסה */}
       {wedges.map((w) => {
         /* ⚠ קטגוריה באפס · אין מה לכתוב עליה */
         if (w.p.pct <= 0) return null;
         const small = w.p.pct < NARROW;
         const mid = (w.a0 + w.a1) / 2;
-        const k = small ? 0.74 : 0.6;
+        /* ⚠ סכום בפרוסה צרה יוצא החוצה יותר · שם היא רחבה יותר */
+        const k = small ? (w.p.label ? 0.84 : 0.74) : 0.6;
+        /* ⚠ סכום ארוך מאחוז · ולכן קטן יותר · ראו `Share` */
+        const size = w.p.label ? (small ? 7.5 : 9.5) : small ? 9 : 11;
         return (
           <SvgText
             key={`t-${w.p.name}`}
             x={cx + rx * k * Math.cos(mid)}
             y={cy + ry * k * Math.sin(mid) + 3.4}
             textAnchor="middle"
-            fontSize={small ? 9 : 11}
+            fontSize={size}
             fontWeight="700"
             fill="#FFFFFF"
             stroke="rgba(80,64,110,0.3)"
             strokeWidth={small ? 1.6 : 2}
             strokeLinejoin="round"
           >
-            {`${w.p.pct}%`}
+            {w.p.label ?? `${w.p.pct}%`}
           </SvgText>
         );
       })}
@@ -387,13 +398,16 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
  * ⚠ **עמודה דקה גם באפס** · אחרת מנה שלא נמכרה נעלמת, והדיאגרמה
  * נראית שבורה ולא ריקה.
  */
-const COL = { w: 164, h: 110, left: 24, right: 162, top: 8, base: 92 } as const;
+const COL = { h: 110, left: 22, top: 8, base: 92 } as const;
 
 export function SplitColumns({
   rows,
+  width = 132,
 }: {
   rows: { id: string; name: string; v: number; color: string }[];
+  width?: number;
 }) {
+  const right = width - 2;
   const n = rows.length || 1;
   /* ⚠ בלי נתונים · ציר בלי מספרים ועמודות אפורות, כמו העוגה הריקה */
   const empty = rows.every((r) => !r.v);
@@ -404,26 +418,29 @@ export function SplitColumns({
   const grid = [top, top / 2, 0];
   const gy = [COL.top, (COL.top + COL.base) / 2, COL.base];
 
-  const span = COL.right - COL.left;
+  const span = right - COL.left;
   const slot = span / n;
-  const bw = Math.max(5, Math.min(20, slot - 5));
+  /* ⚠ **עמודות צרות · בקשה של שקד (19 בספטמבר 2026)** · ״אפשר את
+     הדיאגרמת עמודות לצמצם מהרוחב של כל אחד מהעמודות כדי להגדיל
+     את העוגה״. היה עד 20. */
+  const bw = Math.max(5, Math.min(13, slot - 4));
   const MIN = 2;
 
   return (
-    <Svg width="100%" height={COL.h} viewBox={`0 0 ${COL.w} ${COL.h}`}>
+    <Svg width="100%" height={COL.h} viewBox={`0 0 ${width} ${COL.h}`}>
       {gy.map((y, i) => (
         <Line
           key={`g-${y}`}
           x1={COL.left}
           y1={y}
-          x2={COL.right}
+          x2={right}
           y2={y}
           stroke={i === 2 ? 'rgba(130,112,162,0.18)' : 'rgba(130,112,162,0.1)'}
           strokeWidth={1}
         />
       ))}
       {gy.map((y, i) => (
-        <SvgText key={`a-${y}`} x={20} y={y + 3} textAnchor="end" fontSize={8} fontWeight="300" fill="#9A93A6">
+        <SvgText key={`a-${y}`} x={18} y={y + 3} textAnchor="end" fontSize={8} fontWeight="300" fill="#9A93A6">
           {empty && i < 2 ? '' : axisLabel(grid[i])}
         </SvgText>
       ))}
