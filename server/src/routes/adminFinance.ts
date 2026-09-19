@@ -48,12 +48,29 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
     const period = (typeof req.query.period === 'string' ? req.query.period : 'month') as 'month' | 'quart' | 'year';
     const key = period === 'quart' || period === 'year' ? period : 'month';
     const { from, to, label } = periodRange(key);
+    /**
+     * ⚠ **רק שלושת השדות שבאמת נחוצים · 19 בספטמבר 2026** · כאן
+     * נשלפה **כל שורת הזמנה במלואה** לתקופה — כולל `itemsJson`
+     * ו-`detailsJson`, שהם בפער גדול העמודות הכבדות בטבלה. בתצוגת
+     * ״שנה״ זו כל השנה, עם כל פירוט ההזמנות, רק כדי לחבר מספרים
+     * ולפלח אותם לחודשים.
+     *
+     * ⚠ **תקרה כאן הייתה הופכת את המספרים לשקר** · זו הסיבה
+     * שהשאילתות האלה לא קיבלו `take` כמו הרשימות: מחזור חתוך הוא
+     * מחזור **שגוי**, וזה גרוע מאיטי. `select` מצמצם את המשקל בלי
+     * לשנות ולו מספר אחד.
+     *
+     * ⚠ **הטרנד הוא שמחייב שורות** · הפילוח לימים ולחודשים נגזר
+     * מ-`createdAt` של כל שורה, ו-`groupBy` של Prisma אינו יודע
+     * לקבץ לפי חלק מתאריך. לכן נשארות שורות — רק רזות.
+     */
     const orders = await prisma.order.findMany({
       where: {
         createdAt: { gte: from, lt: to },
         status: { not: CANCELLED },
         category: { not: 'fruit' },
       },
+      select: { createdAt: true, total: true, category: true },
     });
     const revenue = orders.reduce((s, o) => s + o.total, 0);
     const byCat: Record<string, number> = { cous: 0, schn: 0, box: 0, chef: 0 };
@@ -63,6 +80,7 @@ adminFinanceRouter.get('/money', async (req, res, next) => {
 
     const expenses = await prisma.expense.findMany({
       where: { createdAt: { gte: from, lt: to } },
+      select: { createdAt: true, amount: true, category: true },
     });
     const grouped: Record<string, number> = {};
     for (const e of EXPENSES) grouped[e.k] = 0;

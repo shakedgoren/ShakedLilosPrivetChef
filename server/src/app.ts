@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
 import { ZodError } from 'zod';
 import { env } from './env.ts';
 import { HttpError } from './errors.ts';
@@ -23,7 +24,48 @@ export function createApp() {
    * לזייף כתובת דרך `X-Forwarded-For`.
    */
   if (env.trustProxy) app.set('trust proxy', env.trustProxy);
-  app.use(cors({ origin: true }));
+
+  /**
+   * כותרות אבטחה.
+   *
+   * ⚠ **בלי CSP** · זה API שמחזיר JSON, ומדיניות תוכן שייכת לדף
+   * שמציג אותו ולא לשרת שמגיש אותו. CSP כאן רק היה שובר את
+   * `/uploads`.
+   *
+   * ⚠ **`crossOriginResourcePolicy: cross-origin`** · תמונות
+   * הפרופיל מוגשות מ-`/uploads` ונטענות מכתובת אחרת. ברירת
+   * המחדל של helmet היא `same-origin`, והיא הייתה חוסמת אותן.
+   */
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
+  /**
+   * ⚠ **CORS מצומצם · 19 בספטמבר 2026** · קודם עמד כאן
+   * `origin: true`, כלומר **כל אתר בעולם** יכול היה לקרוא ל-API
+   * מהדפדפן של מישהי מחוברת.
+   *
+   * ⚠ **בקשה בלי `Origin` עוברת תמיד** · האפליקציה הנייטיבית
+   * אינה שולחת את הכותרת הזו ואינה כפופה ל-CORS. חסימה שלה כאן
+   * הייתה שוברת את האפליקציה בלי להוסיף שום הגנה.
+   *
+   * ⚠ **בפיתוח הכול פתוח** · אחרת Expo Web ובדיקות מהרשת
+   * המקומית מפסיקים לעבוד. בפרודקשן צריך `CORS_ORIGINS`.
+   */
+  const allow = new Set(env.corsOrigins);
+  app.use(
+    cors({
+      origin(origin, done) {
+        if (!origin) return done(null, true);
+        if (env.node !== 'production' && allow.size === 0) return done(null, true);
+        done(null, allow.has(origin));
+      },
+    }),
+  );
+
   app.use(express.json({ limit: '4mb' }));
   app.use('/uploads', express.static(env.uploadDir));
 

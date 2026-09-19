@@ -6,6 +6,7 @@ import { readJson } from '../json.ts';
 import { splitByExpenseCat } from '../admin/expenseCats.ts';
 import { notFound } from '../errors.ts';
 import { monthKey } from '../admin/sold.ts';
+import { readPage } from '../http/page.ts';
 
 export const adminShopRouter = Router();
 adminShopRouter.use(requireAuth, requireAdmin);
@@ -65,11 +66,16 @@ adminShopRouter.get('/active', async (_req, res, next) => {
 adminShopRouter.get('/history', async (req, res, next) => {
   try {
     const area = typeof req.query.area === 'string' ? req.query.area : '';
+    /* ⚠ תקרה · ההיסטוריה גדלה בכל קנייה שנסגרת · ראו `http/page` */
+    const { take, skip } = readPage(req.query as Record<string, unknown>);
+    const where = { closedAt: { not: null }, ...(area && area !== 'all' ? { area } : {}) };
     const rows = await prisma.shoppingList.findMany({
-      where: { closedAt: { not: null }, ...(area && area !== 'all' ? { area } : {}) },
+      where,
       orderBy: { closedAt: 'desc' },
+      take,
+      skip,
     });
-    res.json({ lists: rows.map(serList) });
+    res.json({ lists: rows.map(serList), total: await prisma.shoppingList.count({ where }) });
   } catch (err) {
     next(err);
   }

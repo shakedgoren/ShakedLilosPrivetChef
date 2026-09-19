@@ -14,7 +14,7 @@
     "db:postgres:push": "node scripts/db-mode.mjs push",
     "postinstall": "prisma generate",
     "smoke": "tsx scripts/smoke.ts",
-    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts src/whatsapp/payloads.test.ts src/whatsapp/client.test.ts src/auth/phoneVerify.test.ts src/push/expo.test.ts"
+    "test": "tsx --test src/catalog/quote.test.ts src/admin/saleWeek.test.ts src/admin/prices.test.ts src/admin/expenseCats.test.ts src/admin/manualOrderWa.test.ts src/admin/apiMethods.test.ts src/orders/saleDay.test.ts src/auth/google.test.ts src/mail/resetEmail.test.ts src/mail/mailer.test.ts src/whatsapp/payloads.test.ts src/whatsapp/client.test.ts src/auth/phoneVerify.test.ts src/push/expo.test.ts src/http/page.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -28,6 +28,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.7.0",
     "google-auth-library": "^11.0.2",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.3.0",
     "nodemailer": "^10.0.10",

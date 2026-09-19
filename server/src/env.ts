@@ -44,12 +44,33 @@ export const env = {
   get googleClientId(): string {
     return (process.env.GOOGLE_CLIENT_ID ?? '').split(',')[0]?.trim() ?? '';
   },
-  resetDebug: process.env.RESET_DEBUG === '1',
+  /**
+   * ⚠ **כבוי בכוח בפרודקשן · 19 בספטמבר 2026** · הדגל הזה מחזיר
+   * את **אסימון איפוס הסיסמה בגוף התשובה** של
+   * `POST /auth/forgot-password`. הוא נועד לפיתוח, אבל `.env`
+   * אחד ששרד לפרודקשן היה הופך כל בקשת איפוס להשתלטות על חשבון.
+   * הגנה בקוד עדיפה על הבטחה לזכור.
+   */
+  resetDebug: !isProd && process.env.RESET_DEBUG === '1',
   /**
    * כמה שכבות פרוקסי לסמוך עליהן · `1` מאחורי nginx/Render/Fly.
    * ⚠ ריק = בלי אמון · ראו `http/rateLimit`.
    */
   trustProxy: Number(process.env.TRUST_PROXY ?? 0) || 0,
+  /**
+   * המקורות שמותר להם לפנות מדפדפן · מופרדים בפסיק.
+   *
+   * ⚠ **לא נוגע לאפליקציה** · אפליקציה נייטיבית אינה שולחת כותרת
+   * `Origin` ואינה כפופה ל-CORS כלל. הרשימה הזו נוגעת לגרסת
+   * הווב ולכל דפדפן אחר.
+   *
+   * ⚠ **בפיתוח ריק = הכול פתוח** · כדי ש-Expo Web ובדיקות מהרשת
+   * המקומית ימשיכו לעבוד. בפרודקשן ריק = **שום דפדפן**.
+   */
+  corsOrigins: (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean),
 
   /* שליחת מייל · איפוס סיסמה. בלי אלה לא נשלח כלום (ראו mail/mailer.ts) */
   smtpHost: process.env.SMTP_HOST ?? '',

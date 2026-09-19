@@ -27,6 +27,7 @@ import { readJson } from '../json.ts';
 import { deliveryFee } from '../../../mobile/src/data/shared.ts';
 import { notifyLater, notifyOrderConfirmed } from '../whatsapp/notify.ts';
 import { saleWindow } from '../../../mobile/src/data/saleWeek.ts';
+import { readPage } from '../http/page.ts';
 
 export const ordersRouter = Router();
 
@@ -345,11 +346,16 @@ ordersRouter.post('/', optionalAuth, async (req, res, next) => {
 
 ordersRouter.get('/', requireAuth, async (req, res, next) => {
   try {
+    /* ⚠ תקרה · לקוחה ותיקה תצבור מאות הזמנות · ראו `http/page` */
+    const { take, skip } = readPage(req.query as Record<string, unknown>);
+    const where = { userId: req.user!.id };
     const rows = await prisma.order.findMany({
-      where: { userId: req.user!.id },
+      where,
       orderBy: { createdAt: 'desc' },
+      take,
+      skip,
     });
-    res.json({ orders: rows.map(serializeOrder) });
+    res.json({ orders: rows.map(serializeOrder), total: await prisma.order.count({ where }) });
   } catch (err) {
     next(err);
   }

@@ -5,6 +5,7 @@ import { requireAdmin, requireAuth } from '../auth/middleware.ts';
 import { badRequest, notFound } from '../errors.ts';
 import { isPhone, normalizePhone, publicUser } from '../auth/identity.ts';
 import { CANCELLED, DELIVERED, FLOW, canAdvance, parseStatus } from '../catalog/status.ts';
+import { PAGE_MAX, readPage } from '../http/page.ts';
 import { defaultSaleDate, isCategory, quoteAdminDraft } from '../catalog/quote.ts';
 import { serializeAdminCard, serializeOrder } from '../orders/serialize.ts';
 import { FLOW as BOARD_FLOW } from '../../../mobile/src/data/adminBoard.ts';
@@ -47,8 +48,12 @@ adminRouter.get('/orders', async (req, res, next) => {
      * למשוך את **כל** ההזמנות מאז ומעולם רק כדי למצוא אותן.
      */
     const openOnly = req.query.open === '1' || req.query.open === 'true';
-    const take = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200) || undefined;
-    const skip = Math.max(Number(req.query.skip) || 0, 0) || undefined;
+    /**
+     * ⚠ **תקרה גם כשלא ביקשו · 19 בספטמבר 2026** · קודם היעדר
+     * `limit` החזיר את **כל ההזמנות מאז ומעולם**. `total` בתשובה
+     * אומר לקורא שיש עוד · ראו `http/page`.
+     */
+    const { take, skip } = readPage(req.query as Record<string, unknown>);
 
     const where = {
       /* ⚠ סטטוס מפורש גובר על `open` · שניהם כותבים לאותו שדה */
@@ -68,11 +73,11 @@ adminRouter.get('/orders', async (req, res, next) => {
     const rows = await prisma.order.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      ...(take ? { take } : {}),
-      ...(skip ? { skip } : {}),
+      take,
+      skip,
     });
     /* ⚠ נדרש כדי לדעת אם יש עוד · בלעדיו הגלילה לא יודעת מתי לעצור */
-    const total = take ? await prisma.order.count({ where }) : rows.length;
+    const total = await prisma.order.count({ where });
 
     res.json({
       orders: rows.map(serializeOrder),
@@ -286,6 +291,8 @@ adminRouter.get('/board', async (req, res, next) => {
         status: { not: CANCELLED },
       },
       orderBy: { time: 'asc' },
+      /* ⚠ בלי `date` זו כל ההיסטוריה של הקטגוריה · ראו `http/page` */
+      take: PAGE_MAX,
     });
     const cancelled = await prisma.order.count({
       where: { category, ...(date ? { saleDate: date } : {}), status: CANCELLED },
@@ -319,22 +326,56 @@ function sinceLabel(d: Date): string {
   return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-adminRouter.get('/customers', async (_req, res, next) => {
+/**
+ * ⚠ **היסטוריית ההזמנות לכל לקוחה · תקרה · 19 בספטמבר 2026** ·
+ * המסך מציג רשימת הזמנות אחרונות, לא ארכיון. לקוחה ותיקה עם
+ * מאות הזמנות הייתה מנפחת תשובה אחת למגה־בייטים.
+ */
+const CUSTOMER_HISTORY = 40;
+
+adminRouter.get('/customers', async (req, res, next) => {
   try {
+    /**
+     * ⚠ **היה השאילתה הכבדה ביותר בשרת · תוקן ב-19 בספטמבר 2026** ·
+     * כאן עמד `user.findMany` עם `include: { orders }` **בלי שום
+     * גבול**: כל לקוחה, וכל הזמנה שהיא ביצעה אי־פעם, נטענו לזיכרון
+     * בכל טעינת מסך. עם אלף לקוחות ועשרים הזמנות לכל אחת זה
+     * עשרים אלף שורות בבקשה אחת.
+     *
+     * ⚠ **הסכומים לא נפגעו** · הפיתוי היה פשוט לחתוך את
+     * ההזמנות — אבל אז ״סה״כ הוציאה״ היה יוצא **שגוי**, וזה גרוע
+     * מאיטי. לכן הספירה והסכום מגיעים מ-`groupBy` על כל ההזמנות
+     * של הלקוחות שבדף, וההיסטוריה המוצגת בלבד מוגבלת.
+     */
+    const { take, skip } = readPage(req.query as Record<string, unknown>);
+    const where = { role: 'customer' };
     const rows = await prisma.user.findMany({
-      where: { role: 'customer' },
+      where,
       orderBy: { createdAt: 'desc' },
-      include: { orders: { orderBy: { createdAt: 'desc' } } },
+      take,
+      skip,
+      include: { orders: { orderBy: { createdAt: 'desc' }, take: CUSTOMER_HISTORY } },
     });
+    const total = await prisma.user.count({ where });
+
+    const ids = rows.map((u) => u.id);
+    /* ⚠ סכום וספירה על **כל** ההזמנות, גם מה שמעבר לתקרת ההיסטוריה */
+    const sums = await prisma.order.groupBy({
+      by: ['userId'],
+      where: { userId: { in: ids }, status: { not: CANCELLED } },
+      _sum: { total: true },
+      _count: { _all: true },
+    });
+    const spentOf = new Map(sums.map((g) => [g.userId, g._sum.total ?? 0]));
+    const countOf = new Map(sums.map((g) => [g.userId, g._count._all]));
+
     const customers = rows.map((u) => {
-      const live = u.orders.filter((o) => o.status !== CANCELLED);
-      const spent = live.reduce((s, o) => s + o.total, 0);
       const last = u.orders[0];
       const likes = [...new Set(u.orders.map((o) => o.category))];
       return {
         ...publicUser(u),
-        orders: u.orders.length,
-        spent,
+        orders: countOf.get(u.id) ?? 0,
+        spent: spentOf.get(u.id) ?? 0,
         since: sinceLabel(u.createdAt),
         last: last
           ? `${last.saleDate || last.createdAt.toISOString().slice(0, 10)} · ${last.category}`
@@ -350,7 +391,7 @@ adminRouter.get('/customers', async (_req, res, next) => {
         })),
       };
     });
-    res.json({ customers });
+    res.json({ customers, total });
   } catch (err) {
     next(err);
   }
