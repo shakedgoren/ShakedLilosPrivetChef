@@ -13,7 +13,7 @@ import { useNav, type Screen } from '../navigation/store';
 import { GlassCard } from './home/GlassCard';
 import { SalePanel } from './home/SalePanel';
 import { TileRail } from './home/TileRail';
-import { CategoryPie, REV_CHART_H, RevenueChart, SplitPyramid } from './home/Charts';
+import { CategoryPie, REV_CHART_H, RevenueChart, SplitColumns } from './home/Charts';
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
@@ -51,7 +51,7 @@ const MONTH_COST = 'הוצאות';
  * החודש, סה״כ ייצור שהיא עלתה וסה״כ רווח שנכנס ממנה״. הכותרות
  * כאן הן הקיצור שלהן לרוחב של טלפון.
  */
-const SPLIT_COLS = ['מנה', 'כמות', 'ייצור', 'רווח'];
+const SPLIT_COLS = ['מנה', 'כמות', 'מכירה', 'ייצור', 'רווח'];
 
 /** ⚠ ארבעת הסיכומים · בדיוק בלשון שלה */
 const SPLIT_SUM = ['כמות מנות', 'סה״כ הכנסות', 'סה״כ הוצאות', 'סה״כ רווח'];
@@ -244,7 +244,7 @@ export function AdminHomeScreen() {
               <Pressable
                 key={c.id}
                 onPress={() => home.setSplitCat(c.id)}
-                style={[s.range, on && s.rangeOn]}
+                style={[s.splitTab, on && s.rangeOn]}
               >
                 <Text style={[s.rangeText, on && s.rangeTextOn]}>{c.n}</Text>
               </Pressable>
@@ -258,18 +258,23 @@ export function AdminHomeScreen() {
             <Text style={s.splitCap}>{MONTH_REVENUE}</Text>
           </View>
           <View style={s.splitHalf}>
-            <SplitPyramid
+            <SplitColumns
               rows={home.split.rows.map((r) => ({ id: r.id, name: r.name, v: r.cost, color: r.color }))}
             />
             <Text style={s.splitCap}>{MONTH_COST}</Text>
           </View>
         </View>
 
+        {/* ⚠ **הטבלה עטופה** · `splitCard` נותן `gap` בין חלקי הכרטיס,
+            ובלי העטיפה הוא היה חל גם בין שורה לשורה · בקשה של שקד
+            ״לצמצם קצת רווחים בין כל מנה ומנה״. */}
+        <View style={s.table}>
         <View style={s.tHead}>
           <Text style={[s.tHeadText, s.tDish]}>{SPLIT_COLS[0]}</Text>
           <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[1]}</Text>
           <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[2]}</Text>
           <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[3]}</Text>
+          <Text style={[s.tHeadText, s.tNum]}>{SPLIT_COLS[4]}</Text>
         </View>
 
         {home.split.rows.map((r) => {
@@ -278,17 +283,22 @@ export function AdminHomeScreen() {
             <View key={r.id} style={s.tRow}>
               <View style={s.tDish}>
                 <View style={[s.legendDot, { backgroundColor: r.color }]} />
-                <Text style={s.tDishName} numberOfLines={1}>
+                {/* ⚠ **שתי שורות ולא חיתוך** · ״חלת פילה עוף טמפורה״
+                    ארוך מהעמודה. שם של מנה לא מקצרים. */}
+                <Text style={s.tDishName} numberOfLines={2}>
                   {r.name}
                 </Text>
               </View>
               <Text style={[s.tCell, s.tNum]}>{r.sold}</Text>
+              {/* ⚠ ״מכירה״ · בקשה של שקד · ההכנסה מאותה מנה החודש */}
+              <Text style={[s.tCell, s.tNum]}>{money(r.revenue)}</Text>
               <Text style={[s.tCell, s.tNum]}>{money(r.cost)}</Text>
               {/* ⚠ הפסד באדום · מנה שעלתה יותר ממה שהכניסה */}
               <Text style={[s.tCell, s.tNum, gain < 0 && s.tLoss]}>{money(gain)}</Text>
             </View>
           );
         })}
+        </View>
 
         <View style={s.sumBox}>
           {[
@@ -402,14 +412,28 @@ const s = StyleSheet.create({
     backgroundColor: LAV.pill,
   },
 
-  /* ⚠ **בורר הקטגוריה של הפילוח** · אותה גלולה של בורר הטווחים,
-     רק בלי ה-`marginTop` שלו · היא יושבת בשורה משל עצמה. */
+  /**
+   * ⚠ **בורר הקטגוריה של הפילוח** · אותה גלולה של בורר הטווחים.
+   *
+   * ⚠ **רוחב מינימלי · בקשה של שקד (19 בספטמבר 2026)** · ״אפשר את
+   * הכפתור שמחליף בין המכירות לצמצם לרוחב מינימלי״. קודם הוא נמתח
+   * על כל רוחב הכרטיס, כי הכפתורים ירשו את `flex: 1` של בורר
+   * הטווחים. עכשיו הם מתכווצים לכיתוב, והגלולה ממורכזת.
+   */
   splitTabs: {
     flexDirection: 'row',
+    alignSelf: 'center',
     gap: 4,
     padding: 3,
     borderRadius: 999,
     backgroundColor: LAV.pill,
+  },
+  splitTab: {
+    height: 26,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   /* ⚠ בורר מפולח · גלולה לבנה עם צל לנבחר, כמו בשאר המסכים */
@@ -457,20 +481,24 @@ const s = StyleSheet.create({
 
   /* ⚠ **הטבלה** · שם המנה תופס את מה שנשאר, והמספרים ברוחב קבוע
      כדי שהעמודות יישארו מיושרות משורה לשורה. */
+  table: {},
   tHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     paddingBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: LAV.edge,
   },
-  tHeadText: { fontSize: 11.5, fontWeight: '600', color: LAV.faint },
-  tRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5 },
+  tHeadText: { fontSize: 10.5, fontWeight: '600', color: LAV.faint },
+  /* ⚠ **שורות צפופות · בקשה של שקד (19 בספטמבר 2026)** · ״לצמצם
+     קצת רווחים בין כל מנה ומנה״ · היה 5 מלמעלה ומלמטה. */
+  tRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2 },
   tDish: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  tDishName: { flex: 1, fontSize: 12.5, fontWeight: '500', color: LAV.soft },
-  tCell: { fontSize: 12.5, fontWeight: '600', color: LAV.ink },
-  tNum: { width: 58, textAlign: 'center' },
+  tDishName: { flex: 1, fontSize: 11, fontWeight: '500', color: LAV.soft },
+  tCell: { fontSize: 11.5, fontWeight: '600', color: LAV.ink },
+  /* ⚠ ארבע עמודות מספרים · רוחב קבוע כדי שיישארו מיושרות */
+  tNum: { width: 44, textAlign: 'center' },
   /* ⚠ הפסד באדום · הצבע של ההוצאות במסך הכספים */
   tLoss: { color: '#B95349' },
 
@@ -484,8 +512,10 @@ const s = StyleSheet.create({
     borderTopColor: LAV.edge,
     rowGap: 8,
   },
-  sumCell: { width: '50%', gap: 2 },
-  sumLabel: { fontSize: 11.5, fontWeight: '400', color: LAV.faint },
-  sumValue: { fontSize: 15, fontWeight: '700', color: LAV.ink },
+  /* ⚠ **ממורכזים** · בקשה של שקד: ״שכל הסה״כ בתחתית יהיו
+     ממורכזים לאמצע״ */
+  sumCell: { width: '50%', gap: 2, alignItems: 'center' },
+  sumLabel: { fontSize: 11.5, fontWeight: '400', color: LAV.faint, textAlign: 'center' },
+  sumValue: { fontSize: 15, fontWeight: '700', color: LAV.ink, textAlign: 'center' },
 
 });

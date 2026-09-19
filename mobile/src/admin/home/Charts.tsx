@@ -367,56 +367,77 @@ export function CategoryDonut({ parts }: { parts: Share[] }) {
 }
 
 /**
- * פילוח ההוצאות לפי מנה · **פירמידה**.
+ * פילוח ההוצאות לפי מנה · **דיאגרמת עמודות עם מד כסף**.
  *
- * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״בצד שמאל תופיע הפרמידה
- * שמחלקת לפי מנות את ההוצאות״. קודם היו כאן עמודות
- * (`SplitBars`), ולפניהן עמודות הרווח של ששת החודשים.
+ * ⚠ **בקשה של שקד · 19 בספטמבר 2026** · ״בפירמידה התכוונתי
+ * לדיאגרמה, והיא צריכה להיות על בסיס הנתונים של ההוצאות כאשר כל
+ * מנה מקבלת עמודה ויש מד גובה של הכסף״.
  *
- * ⚠ **הרוחב הוא הערך** · כל מנה היא רצועה אופקית ממורכזת שרוחבה
- * יחסי לעלות הייצור שלה. המיון מהקטנה למעלה אל הגדולה למטה הוא
- * מה שהופך את הערימה לפירמידה — בלעדיו זו רק ערימת מלבנים.
+ * לפני כן צוירה כאן פירמידה של רצועות ממורכזות — צורה יפה בלי
+ * סקאלה. עכשיו יש ציר: שלושה קווי רשת עם סכומים, ועמודה לכל מנה
+ * שגובהה נקרא מולם.
  *
- * ⚠ **הצבע מגיע מבחוץ** · אותו גוון בדיוק כמו פרוסת העוגה ונקודת
- * הטבלה של אותה מנה.
+ * ⚠ **הציר משמאל** · כמו בגרף המחזור שבאותו מסך.
  *
- * ⚠ **בלי נתונים מצוירת פירמידה אפורה** · ולא רצועות בעובי אפס
- * ולא היעלמות · שקד ביקשה מפורשות (19 בספטמבר) שדיאגרמה ריקה
- * תישאר על המסך ותיראה ריקה.
+ * ⚠ **הסדר הוא סדר התפריט** · ולא מיון לפי גודל. עמודה מס׳ 3
+ * היא תמיד אותה מנה, וכך היא מתיישבת עם הטבלה שמתחת.
+ *
+ * ⚠ **הצבע מגיע מבחוץ** · אותו גוון כמו פרוסת העוגה ונקודת הטבלה.
+ *
+ * ⚠ **עמודה דקה גם באפס** · אחרת מנה שלא נמכרה נעלמת, והדיאגרמה
+ * נראית שבורה ולא ריקה.
  */
-const PYR_GAP = 3;
+const COL = { w: 164, h: 110, left: 24, right: 162, top: 8, base: 92 } as const;
 
-export function SplitPyramid({
+export function SplitColumns({
   rows,
-  width = 148,
-  height = 96,
 }: {
   rows: { id: string; name: string; v: number; color: string }[];
-  width?: number;
-  height?: number;
 }) {
   const n = rows.length || 1;
-  const total = rows.reduce((t, r) => t + Math.abs(r.v), 0);
-  const peak = Math.max(...rows.map((r) => Math.abs(r.v)), 1);
-  const band = height / n;
-  /* ⚠ מהקטנה למעלה אל הגדולה למטה · זה מה שיוצר את הצורה */
-  const sorted = [...rows].sort((a, b) => Math.abs(a.v) - Math.abs(b.v));
+  /* ⚠ בלי נתונים · ציר בלי מספרים ועמודות אפורות, כמו העוגה הריקה */
+  const empty = rows.every((r) => !r.v);
+  const peak = Math.max(1, ...rows.map((r) => Math.abs(r.v)));
+  /* ⚠ סקאלה עגולה כלפי מעלה · אחרת העמודה הגבוהה נוגעת בתקרה */
+  const step = Math.pow(10, Math.max(0, String(Math.round(peak)).length - 2));
+  const top = Math.ceil(peak / step) * step || 1;
+  const grid = [top, top / 2, 0];
+  const gy = [COL.top, (COL.top + COL.base) / 2, COL.base];
+
+  const span = COL.right - COL.left;
+  const slot = span / n;
+  const bw = Math.max(5, Math.min(20, slot - 5));
+  const MIN = 2;
 
   return (
-    <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
-      {sorted.map((r, i) => {
-        /* בלי נתונים · מדרגות שוות שמציירות פירמידה אפורה */
-        const part = total ? Math.abs(r.v) / peak : (i + 1) / n;
-        const w = Math.max(part * width, 6);
+    <Svg width="100%" height={COL.h} viewBox={`0 0 ${COL.w} ${COL.h}`}>
+      {gy.map((y, i) => (
+        <Line
+          key={`g-${y}`}
+          x1={COL.left}
+          y1={y}
+          x2={COL.right}
+          y2={y}
+          stroke={i === 2 ? 'rgba(130,112,162,0.18)' : 'rgba(130,112,162,0.1)'}
+          strokeWidth={1}
+        />
+      ))}
+      {gy.map((y, i) => (
+        <SvgText key={`a-${y}`} x={20} y={y + 3} textAnchor="end" fontSize={8} fontWeight="300" fill="#9A93A6">
+          {empty && i < 2 ? '' : axisLabel(grid[i])}
+        </SvgText>
+      ))}
+      {rows.map((r, i) => {
+        const size = Math.max((Math.abs(r.v) / top) * (COL.base - COL.top), MIN);
         return (
           <Rect
             key={r.id}
-            x={(width - w) / 2}
-            y={i * band}
-            width={w}
-            height={Math.max(band - PYR_GAP, 2)}
-            rx={2.5}
-            fill={total ? r.color : 'rgba(130,112,162,0.16)'}
+            x={COL.left + slot * i + (slot - bw) / 2}
+            y={COL.base - size}
+            width={bw}
+            height={size}
+            rx={Math.min(3, bw / 2)}
+            fill={empty ? 'rgba(130,112,162,0.16)' : r.color}
           />
         );
       })}
