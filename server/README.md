@@ -174,19 +174,31 @@ Authorization: Bearer <token>
 
 בלי `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` **לא נשלח כלום** והשרת עולה כרגיל. `GET /health` מחזיר `"whatsapp": false`.
 
+#### מספר מחובר
+
+| | |
+|---|---|
+| תצוגה | **+972 52-505-6708** |
+| `WHATSAPP_PHONE_NUMBER_ID` | `1318024191397722` |
+| `WHATSAPP_WABA_ID` | `1753798195905322` |
+
+אלה המזהים של המספר המחובר. לא להשתמש במזהים הישנים `1232590293281581` / `4591151791157354` / `1378990205287782` / `2026174634698902`, ולא במספרי תצוגה ישנים (`+972 52-977-0915`, `+1 555…`).
+
+שליחה חיה עדיין חסומה: אמצעי תשלום ב-Meta ואימות עסקי. התבניות, כולל `order_dely`, מאושרות על ה-WABA הזה. `WHATSAPP_TOKEN` לא נכנס לגיט.
+
 #### מה שקד ממלאת ב-Meta
 
 1. [developers.facebook.com](https://developers.facebook.com) → אפליקציה → WhatsApp → API Setup.
-2. מספר עסקי (או מספר בדיקה) → מעתיקים את **Phone number ID**.
-3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`).
-4. מזהה WABA (WhatsApp Business Account ID) — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
-5. יוצרים ומאשרים תבניות בעברית (`he`). **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
+2. המספר המחובר **+972 52-505-6708** → **Phone number ID** `1318024191397722`.
+3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`). מדביקים רק ב-`.env` או ב-Railway Variables.
+4. מזהה WABA `1753798195905322` — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
+5. התבניות בעברית (`he`) **מאושרות על ה-WABA הזה**, כולל `order_dely`. **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
 
 | משתנה | שם ב-Meta | קטגוריה | מתי נשלח |
 |---|---|---|---|
 | `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `order_pickup_confirmed` | Utility | יצירת הזמנת איסוף (`ship=self`) |
-| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_delivary_confirmed` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **delivary** |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_dely` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **dely** |
 | `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `order_pick_up` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
 | `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `order_dalivery` | Utility | סטטוס **נמסרה** בהזמנת משלוח · **dalivery** |
 
@@ -200,16 +212,29 @@ Authorization: Bearer <token>
 
 ```
 WHATSAPP_TOKEN="EAAG..."
-WHATSAPP_PHONE_NUMBER_ID="123456789012345"
-WHATSAPP_WABA_ID="123456789012345"
+WHATSAPP_PHONE_NUMBER_ID="1318024191397722"
+WHATSAPP_WABA_ID="1753798195905322"
 WHATSAPP_TEMPLATE_OTP="bite_otp"
 WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="order_pickup_confirmed"
-WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_delivary_confirmed"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_dely"
 WHATSAPP_TEMPLATE_ORDER_READY_PICKUP="order_pick_up"
 WHATSAPP_TEMPLATE_ORDER_DELIVERED="order_dalivery"
 WHATSAPP_TEMPLATE_LANG="he"
 WHATSAPP_WEBHOOK_VERIFY_TOKEN="choose-a-long-random-string"
 ```
+
+#### Railway Variables
+
+במסך Variables של שירות ה-API (אין סודות בגיט):
+
+| משתנה | ערך |
+|---|---|
+| `WHATSAPP_PHONE_NUMBER_ID` | `1318024191397722` |
+| `WHATSAPP_WABA_ID` | `1753798195905322` |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_dely` (גם ברירת המחדל בקוד) |
+| `WHATSAPP_TOKEN` | Permanent token · מדביקים כאן בלבד |
+
+מספר התצוגה של המספר המחובר: **+972 52-505-6708**.
 
 #### מתי נשלח
 

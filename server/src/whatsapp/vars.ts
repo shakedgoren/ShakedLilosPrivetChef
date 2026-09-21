@@ -4,7 +4,7 @@
  */
 export const META_UTILITY_TEMPLATES = {
   confirmPickup: 'order_pickup_confirmed',
-  confirmDelivery: 'order_delivary_confirmed',
+  confirmDelivery: 'order_dely',
   readyPickup: 'order_pick_up',
   delivered: 'order_dalivery',
 } as const;
