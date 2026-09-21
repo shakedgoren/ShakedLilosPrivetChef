@@ -33,6 +33,8 @@ npx expo start --web
 
 פרודקשן: **Railway + Postgres**. אין סודות בגיט — שקד מדביקה אותם ב-Variables.
 
+וואטסאפ מחובר: **+972 52-505-6708** · `WHATSAPP_PHONE_NUMBER_ID=1318024191397722` · `WHATSAPP_WABA_ID=1753798195905322`. שליחה חיה עדיין חסומה: אמצעי תשלום ב-Meta ואימות עסקי. התבניות, כולל `order_dely`, מאושרות על ה-WABA הזה.
+
 פירוט מלא, רשימת משתנים ו-healthcheck: [server/README.md](server/README.md#deploy-on-railway).
 
 **צ׳קליסט**

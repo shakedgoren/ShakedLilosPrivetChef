@@ -95,11 +95,11 @@ npm run db:seed:admin
 | `HOST` | לא | ברירת מחדל בקוד `0.0.0.0`. אפשר להדביק `0.0.0.0`. |
 | `PORT` | לא | Railway **מזריק לבד**. לא חובה להדביק; השרת מאזין ל-`PORT`. |
 | `WHATSAPP_TOKEN` | לשליחת וואטסאפ | Permanent token מ-Meta. **שקד מדביקה; אף פעם לא בגיט.** בלי זה השרת חי והשליחות מדולגות. |
-| `WHATSAPP_PHONE_NUMBER_ID` | לשליחת וואטסאפ | `1378990205287782` |
-| `WHATSAPP_WABA_ID` | לא | מזהה WhatsApp Business Account — תיעוד/תבניות, לא חובה לשליחה. |
+| `WHATSAPP_PHONE_NUMBER_ID` | לשליחת וואטסאפ | `1318024191397722` · תצוגה **+972 52-505-6708** |
+| `WHATSAPP_WABA_ID` | לא | `1753798195905322` — תיעוד/תבניות, לא חובה לשליחה. |
 | `WHATSAPP_TEMPLATE_OTP` | לא | ברירת מחדל `bite_otp` |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | לא | ברירת מחדל `order_pickup_confirmed` |
-| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | לא | ברירת מחדל `order_delivary_confirmed` (הכתיב ב-Meta) |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | לא | `order_dely` |
 | `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | לא | ברירת מחדל `order_pick_up` |
 | `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | לא | ברירת מחדל `order_dalivery` (הכתיב ב-Meta) |
 | `WHATSAPP_TEMPLATE_LANG` | לא | `he` |
@@ -115,6 +115,8 @@ npm run db:seed:admin
 | `RESET_DEBUG` | לא בפרודקשן | **לא להגדיר** (או לא `1`) — אחרת טוקן איפוס חוזר ב-JSON. |
 
 **Bit / PayBox:** אין משתני סליקה בשרת הזה. קישורי תשלום, אם יתווספו, יגיעו מ-PR נפרד — לא כאן.
+
+לא להדביק מזהים ישנים (`1232590293281581`, `4591151791157354`, `1378990205287782`, `2026174634698902`) או מספרי תצוגה ישנים (`+972 52-977-0915`, `+1 555…`). שליחה חיה עדיין חסומה: אמצעי תשלום ב-Meta ואימות עסקי. התבניות, כולל `order_dely`, מאושרות על ה-WABA הזה.
 
 אחרי שינוי `schema.prisma` (sqlite): `npx prisma migrate dev` מקומית, ואז `npm run db:postgres:render` ומיגרציית Postgres חדשה תחת `prisma-pg/migrations/` (למשל `npx prisma migrate dev --schema prisma-pg/schema.prisma --name ...` מול Docker Compose). בלי זה Railway ישאר מאחורי הסכמה.
 
@@ -274,16 +276,16 @@ Authorization: Bearer <token>
 #### מה שקד ממלאת ב-Meta
 
 1. [developers.facebook.com](https://developers.facebook.com) → אפליקציה → WhatsApp → API Setup.
-2. מספר עסקי (או מספר בדיקה) → מעתיקים את **Phone number ID**.
-3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`).
-4. מזהה WABA (WhatsApp Business Account ID) — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
-5. יוצרים ומאשרים תבניות בעברית (`he`). **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
+2. המספר המחובר **+972 52-505-6708** → **Phone number ID** `1318024191397722`.
+3. System user ב-Business Manager עם הרשאה ל-WhatsApp → **Permanent token** (`whatsapp_business_messaging`, `whatsapp_business_management`). מדביקים רק ב-Railway Variables.
+4. מזהה WABA `1753798195905322` — רק לתיעוד / יצירת תבניות, לא חובה לשליחה.
+5. התבניות בעברית (`he`) **מאושרות על ה-WABA הזה**, כולל `order_dely`. שליחה חיה עדיין חסומה: אמצעי תשלום ב-Meta ואימות עסקי. **השמות למטה הם השמות ב-Meta — כולל שגיאות הכתיב, לא לתקן:**
 
 | משתנה | שם ב-Meta | קטגוריה | מתי נשלח |
 |---|---|---|---|
 | `WHATSAPP_TEMPLATE_OTP` | `bite_otp` | Authentication · Copy code | עדיין חסרה אצל שקד · הנתיב בשרת כבר מוכן |
 | `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP` | `order_pickup_confirmed` | Utility | יצירת הזמנת איסוף (`ship=self`) |
-| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_delivary_confirmed` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **delivary** |
+| `WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY` | `order_dely` | Utility | יצירת הזמנת משלוח (`ship=deliv`) · **dely** |
 | `WHATSAPP_TEMPLATE_ORDER_READY_PICKUP` | `order_pick_up` | Utility | סטטוס **מוכנה** בהזמנת איסוף |
 | `WHATSAPP_TEMPLATE_ORDER_DELIVERED` | `order_dalivery` | Utility | סטטוס **נמסרה** בהזמנת משלוח · **dalivery** |
 
@@ -297,11 +299,11 @@ Authorization: Bearer <token>
 
 ```
 WHATSAPP_TOKEN="EAAG..."
-WHATSAPP_PHONE_NUMBER_ID="123456789012345"
-WHATSAPP_WABA_ID="123456789012345"
+WHATSAPP_PHONE_NUMBER_ID="1318024191397722"
+WHATSAPP_WABA_ID="1753798195905322"
 WHATSAPP_TEMPLATE_OTP="bite_otp"
 WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP="order_pickup_confirmed"
-WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_delivary_confirmed"
+WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY="order_dely"
 WHATSAPP_TEMPLATE_ORDER_READY_PICKUP="order_pick_up"
 WHATSAPP_TEMPLATE_ORDER_DELIVERED="order_dalivery"
 WHATSAPP_TEMPLATE_LANG="he"
