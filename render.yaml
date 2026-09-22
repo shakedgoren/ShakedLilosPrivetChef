@@ -5,13 +5,20 @@
 # השנה. אלה מקור אמת אחד לשני הצדדים, ולכן אסור שהפריסה תכלול
 # רק את `server/`. מכאן ה-`cd server` בכל פקודה.
 #
-# ⚠ **`migrate deploy` ב-`preDeployCommand`, לא ב-build** ·
+# ⚠ **`migrate deploy` ב-`startCommand`, לא ב-build ולא ב-preDeploy** ·
 # סביבת ה-build ב-Render לא מגיעה ל-Postgres הפרטי (ה-hostname
 # הפנימי מ-`fromDatabase`, שגיאת P1001). אסור להריץ מיגרציה
-# בזמן build. `preDeployCommand` רץ אחרי ה-build ולפני ההחלפה,
-# בסביבה שכן מגיעה למסד. `deploy` (ולא `migrate dev`) מריץ רק
-# מיגרציות שכבר נכתבו ונבדקו, ולעולם אינו מייצר חדשה ואינו
+# בזמן build. `preDeployCommand` נכשל כאן באותה שגיאה — לכן
+# המיגרציה רצה בתחילת `startCommand`, לפני `npm start`: ה-start
+# תמיד רץ בסביבה שמגיעה למסד. `deploy` (ולא `migrate dev`) מריץ
+# רק מיגרציות שכבר נכתבו ונבדקו, ולעולם אינו מייצר חדשה ואינו
 # מאפס. זו הפקודה היחידה שמותר להריץ על מסד חי.
+#
+# ⚠ **המסד והשירות באותו אזור (`oregon`)** · רשת פרטית
+# ב-Render לא חוצה אזורים. המסד הקיים כבר ב-Oregon וה-API
+# היה ב-Frankfurt — זו שגיאת P1001. שינוי אזור ב-Blueprint
+# לא מזיז מסד שכבר הוקם, ולכן שניהם oregon עד שמוחקים
+# ויוצרים את המסד מחדש ב-Frankfurt (ואז מעבירים גם את ה-API).
 #
 # ⚠ **אין `db:seed` בפריסה** · הזריעה תיצור חשבון ניהול עם
 # הסיסמה שב-`ADMIN_PASSWORD`. להריץ פעם אחת ידנית מה-Shell של
@@ -23,6 +30,8 @@ databases:
   - name: bite-and-tell-db
     databaseName: biteandtell
     user: bite
+    # ⚠ אותו אזור כמו bite-and-tell-api · המסד הקיים ב-Oregon, Blueprint לא מזיז אותו
+    region: oregon
     # ⚠ התוכנית החינמית נמחקת אחרי 30 יום · לעסק אמיתי צריך בתשלום
     plan: basic-256mb
 
@@ -31,13 +40,12 @@ services:
     name: bite-and-tell-api
     runtime: node
     plan: starter
-    region: frankfurt
+    region: oregon
     branch: main
     healthCheckPath: /health
-    # generate בלבד · המיגרציה ב-preDeployCommand (ה-build לא רואה את המסד הפרטי)
+    # generate בלבד · המיגרציה ב-startCommand (ה-build לא רואה את המסד הפרטי)
     buildCommand: cd server && npm ci && npx prisma generate
-    preDeployCommand: cd server && npx prisma migrate deploy
-    startCommand: cd server && npm start
+    startCommand: cd server && npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_ENV
         value: production
