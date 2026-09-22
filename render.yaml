@@ -5,7 +5,11 @@
 # השנה. אלה מקור אמת אחד לשני הצדדים, ולכן אסור שהפריסה תכלול
 # רק את `server/`. מכאן ה-`cd server` בכל פקודה.
 #
-# ⚠ **`migrate deploy` ולא `migrate dev`** · `deploy` מריץ רק
+# ⚠ **`migrate deploy` ב-`preDeployCommand`, לא ב-build** ·
+# סביבת ה-build ב-Render לא מגיעה ל-Postgres הפרטי (ה-hostname
+# הפנימי מ-`fromDatabase`, שגיאת P1001). אסור להריץ מיגרציה
+# בזמן build. `preDeployCommand` רץ אחרי ה-build ולפני ההחלפה,
+# בסביבה שכן מגיעה למסד. `deploy` (ולא `migrate dev`) מריץ רק
 # מיגרציות שכבר נכתבו ונבדקו, ולעולם אינו מייצר חדשה ואינו
 # מאפס. זו הפקודה היחידה שמותר להריץ על מסד חי.
 #
@@ -30,11 +34,17 @@ services:
     region: frankfurt
     branch: main
     healthCheckPath: /health
-    buildCommand: cd server && npm ci && npx prisma generate && npx prisma migrate deploy
+    # generate בלבד · המיגרציה ב-preDeployCommand (ה-build לא רואה את המסד הפרטי)
+    buildCommand: cd server && npm ci && npx prisma generate
+    preDeployCommand: cd server && npx prisma migrate deploy
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
+
+      # engines ב-server/package.json דורשים >=22
+      - key: NODE_VERSION
+        value: "22"
 
       # ⚠ מגיע מהמסד שלמעלה · Render ממלא אותו לבד
       - key: DATABASE_URL
