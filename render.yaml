@@ -14,10 +14,11 @@
 # רק מיגרציות שכבר נכתבו ונבדקו, ולעולם אינו מייצר חדשה ואינו
 # מאפס. זו הפקודה היחידה שמותר להריץ על מסד חי.
 #
-# ⚠ **המסד והשירות באותו אזור (`frankfurt`)** · רשת פרטית
-# ב-Render לא חוצה אזורים. בלי `region` על המסד הוא עלול
-# להיווצר באזור אחר, ואז גם ה-start לא יגיע אליו (P1001).
-# שינוי אזור ב-Blueprint לא מזיז מסד שכבר הוקם.
+# ⚠ **המסד והשירות באותו אזור (`oregon`)** · רשת פרטית
+# ב-Render לא חוצה אזורים. המסד הקיים כבר ב-Oregon וה-API
+# היה ב-Frankfurt — זו שגיאת P1001. שינוי אזור ב-Blueprint
+# לא מזיז מסד שכבר הוקם, ולכן שניהם oregon עד שמוחקים
+# ויוצרים את המסד מחדש ב-Frankfurt (ואז מעבירים גם את ה-API).
 #
 # ⚠ **אין `db:seed` בפריסה** · הזריעה תיצור חשבון ניהול עם
 # הסיסמה שב-`ADMIN_PASSWORD`. להריץ פעם אחת ידנית מה-Shell של
@@ -29,8 +30,8 @@ databases:
   - name: bite-and-tell-db
     databaseName: biteandtell
     user: bite
-    # ⚠ חייב להיות אותו אזור כמו bite-and-tell-api · רשת פרטית לא חוצה אזורים
-    region: frankfurt
+    # ⚠ אותו אזור כמו bite-and-tell-api · המסד הקיים ב-Oregon, Blueprint לא מזיז אותו
+    region: oregon
     # ⚠ התוכנית החינמית נמחקת אחרי 30 יום · לעסק אמיתי צריך בתשלום
     plan: basic-256mb
 
@@ -39,7 +40,7 @@ services:
     name: bite-and-tell-api
     runtime: node
     plan: starter
-    region: frankfurt
+    region: oregon
     branch: main
     healthCheckPath: /health
     # generate בלבד · המיגרציה ב-startCommand (ה-build לא רואה את המסד הפרטי)
