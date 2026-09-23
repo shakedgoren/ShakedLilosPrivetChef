@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { ZodError } from 'zod';
 import { env } from './env.ts';
+import { mailConfigured } from './mail/mailer.ts';
 import { HttpError } from './errors.ts';
 import { apiLimiter, authLimiter } from './http/rateLimit.ts';
 import { authRouter } from './routes/auth.ts';
@@ -83,7 +84,8 @@ export function createApp() {
       whatsapp: env.whatsapp.enabled,
       cors: env.corsOrigins.length,
       google: Boolean(env.googleClientId),
-      mail: Boolean(env.smtpHost && env.smtpUser),
+      // אותה בדיקה בדיוק שהמיילר עצמו עושה · ארבעה שדות, לא שניים
+      mail: mailConfigured(),
     });
   });
 

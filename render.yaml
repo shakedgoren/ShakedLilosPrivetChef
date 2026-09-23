@@ -107,8 +107,10 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
-      - key: APP_URL
-        sync: false
+      # ⚠ **APP_URL לא נחוץ · 23 בספטמבר 2026** · הוא שימש לבניית
+      # קישור איפוס סיסמה, והקישור הזה הוסר לחלוטין ב-19 בספטמבר
+      # לטובת קוד בן שש ספרות (ראו `mail/resetEmail.ts`). שום קוד
+      # לא קורא אותו יותר, ולכן אין מה למלא בו.
 
       # וואטסאפ · בלי TOKEN השרת רץ והשליחות מדולגות
       - key: WHATSAPP_TOKEN
