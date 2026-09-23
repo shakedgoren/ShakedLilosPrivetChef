@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { S } from './Sym';
+import { useAppWidth } from '../theme/appWidth';
 import {
   Animated,
   Easing,
@@ -8,7 +9,6 @@ import {
   PanResponder,
   Pressable,
   StyleSheet,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { Text } from '../ui/text';
@@ -115,7 +115,7 @@ export function PickupMaps({ rgb, ink }: { rgb: string; ink: string }) {
    * רוחב המסך זמין כבר ברינדור הראשון. הוא גדול במקצת מהמסגרת,
    * ולכן התמונה נוסעת קצת יותר — והמסגרת חותכת ממילא.
    */
-  const { width: travel } = useWindowDimensions();
+  const travel = useAppWidth();
   const maps = PICKUP.maps;
   const i = at.i;
   const cur = maps[i];

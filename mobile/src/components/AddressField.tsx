@@ -1,6 +1,7 @@
 import React from 'react';
+import { useAppSize } from '../theme/appWidth';
 import { INPUT_START } from '../theme/rtl';
-import { ActivityIndicator, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import {
   DELIVERY_CITIES,
@@ -91,7 +92,7 @@ export function AddressField({
    */
   const wrapRef = React.useRef<View>(null);
   const [above, setAbove] = React.useState(false);
-  const win = useWindowDimensions();
+  const win = useAppSize();
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const [open, setOpen] = React.useState(false);

@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
+import { useAppSize } from '../theme/appWidth';
 import { S } from './Sym';
 import {
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -84,7 +84,7 @@ export function PhotoStrip({ names, height, ratio, tileWidth, rgb, inset = 0 }: 
   const iRef = useRef(0);
   const [pageW, setPageW] = useState(0);
   const strip = useRef<ScrollView>(null);
-  const win = useWindowDimensions();
+  const win = useAppSize();
 
   const paging = tileWidth == null;
   /**

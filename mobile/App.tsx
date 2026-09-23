@@ -19,9 +19,12 @@ import { CheerProvider } from './src/components/Cheer';
 import { AdminNav } from './src/admin/AdminNav';
 import { registerForPush } from './src/lib/push';
 import { enableRTL } from './src/theme/rtl';
+import { enableWebFrame } from './src/theme/webFrame';
 import { surface } from './src/theme/tokens';
 
 enableRTL();
+/* בדפדפן רחב · עמודה ברוחב טלפון במקום מתיחה על כל המסך */
+enableWebFrame();
 
 /** הנאב-בר הנכון למסך הנוכחי · של הניהול או של הלקוחה */
 function Chrome() {

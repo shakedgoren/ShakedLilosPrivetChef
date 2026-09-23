@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useAppWidth } from '../theme/appWidth';
 import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { brand, space, type } from '../theme/tokens';
@@ -26,7 +27,7 @@ const SUB = 'אוכל ביתי · ארוחות שף · עמדת טאבון';
 const MARK_STYLE: MarkStyleKey = 'signature';
 
 export function Masthead() {
-  const { width } = useWindowDimensions();
+  const width = useAppWidth();
   const v = MARK_STYLES[MARK_STYLE];
   /* ⚠ `HomeScreen` מרפד 18 מכל צד · הלוח צר מהמסך בדיוק בכפולה */
   const band = Math.max(0, width - space.lg * 2);

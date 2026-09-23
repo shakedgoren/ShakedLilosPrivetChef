@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAppSize } from '../theme/appWidth';
 import { S } from '../components/Sym';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { surface } from '../theme/tokens';
 import {
@@ -95,7 +96,7 @@ export function AdminBoardScreen() {
   /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
   const { toast } = useCheer();
   const BOARD_CAT = React.useMemo(() => boardCatOf(saleCat), [saleCat]);
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useAppSize();
   const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
     START_MODE as 'all' | 'pickup' | 'deliv',
   );
