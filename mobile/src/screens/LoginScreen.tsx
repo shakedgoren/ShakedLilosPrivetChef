@@ -796,8 +796,10 @@ const s = StyleSheet.create({
    * השם 21 → 26, והכיתוב עבר לדיו הרך במשקל 400.
    */
   brandBlock: { alignItems: 'center', marginBottom: 14 },
-  /* ⚠ המידות של הקובץ הן 180×176 · היחס נשמר כדי שלא יימתח */
-  logo: { width: 96, height: 94, marginBottom: 8 },
+  /* ⚠ **הלוגו החדש ריבועי · 23 בספטמבר 2026** · הקובץ הקודם היה
+     180×176 ולכן הקופסה כאן הייתה 96×94. הייצוא של שקד הוא
+     1254×1254, והקופסה חזרה להיות ריבוע כדי שלא יישאר פס ריק. */
+  logo: { width: 96, height: 96, marginBottom: 8 },
   /* ⚠ שם המשפחה ולא 'Anton' · ב-React Native כל משקל הוא משפחה נפרדת */
   brand: { fontFamily: DISPLAY_FAMILY, fontSize: 26, letterSpacing: 1.3, color: surface.ink },
   brandSub: { fontSize: 13, fontWeight: '400', color: surface.inkSoft, marginTop: 3 },
