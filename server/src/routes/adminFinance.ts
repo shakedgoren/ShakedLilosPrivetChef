@@ -16,6 +16,8 @@ import { STATE } from '../../../mobile/src/data/adminHome.ts';
 import { type AdminCatKey } from '../../../mobile/src/data/adminOrders.ts';
 import { dishPrices } from '../admin/prices.ts';
 import { EXPENSE_CATS } from '../admin/expenseCats.ts';
+import { EXPENSE_METHODS } from '../../../mobile/src/data/adminMoney.ts';
+import { payMix } from '../admin/payMix.ts';
 import { appliesTo, monthsToFill, sourceOf, startPeriod } from '../admin/fixedExpenses.ts';
 import { qtyOfOrder } from '../admin/sold.ts';
 
@@ -186,7 +188,12 @@ adminFinanceRouter.get('/income', async (req, res, next) => {
 
     const buckets = new Map<
       string,
-      { date: string; cat: string; catName: string; hue: string; deep: string; orders: number; meals: number; amount: number }
+      {
+        date: string; cat: string; catName: string; hue: string; deep: string;
+        orders: number; meals: number; amount: number;
+        /** ⚠ ההזמנות עצמן · לפיצול לפי אמצעי תשלום, ראו `admin/payMix.ts` */
+        rows: { pay: string; total: number }[];
+      }
     >();
     for (const o of orders) {
       /* ⚠ יום המכירה קודם · הזמנת שף אינה נושאת אחד ולכן נופלת על יום הפתיחה */
@@ -202,16 +209,25 @@ adminFinanceRouter.get('/income', async (req, res, next) => {
         orders: 0,
         meals: 0,
         amount: 0,
+        rows: [],
       };
       b.orders += 1;
       b.amount += o.total;
+      b.rows.push({ pay: o.pay, total: o.total });
       b.meals += Object.values(qtyOfOrder(o)).reduce((t, n) => t + n, 0);
       buckets.set(key, b);
     }
 
     const rows = [...buckets.values()]
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-      .map((b) => ({ ...b, id: `${b.date}|${b.cat}`, label: hebrewDayLabel(b.date), period: b.date.slice(0, 7) }));
+      .map(({ rows, ...b }) => ({
+        ...b,
+        id: `${b.date}|${b.cat}`,
+        label: hebrewDayLabel(b.date),
+        period: b.date.slice(0, 7),
+        /** ⚠ הפיצול לפי אמצעי תשלום · סכימה של נתונים קיימים, לא שדה חדש */
+        pays: payMix(rows),
+      }));
 
     res.json({ rows });
   } catch (err) {
@@ -226,6 +242,17 @@ const expenseBody = z.object({
   /** yyyy-mm-dd · היום שבו ההוצאה נעשתה */
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   note: z.string().max(200).default(''),
+  /**
+   * ⚠ **אמצעי התשלום · בקשת שקד, 23 בספטמבר 2026** · ריק הוא
+   * ערך תקין · היא ביקשה מפורשות שזה לא יהיה חובה.
+   */
+  method: z.enum(EXPENSE_METHODS).or(z.literal('')).default(''),
+  /**
+   * ⚠ **תדירות** · `once` שומרת שורה בודדת כרגיל. `month`/`year`
+   * יוצרות **תבנית** ב-`FixedExpense`, והיא זו שמייצרת את השורות
+   * — כך חודש הבא כבר לא צריך הקלדה חוזרת.
+   */
+  every: z.enum(['once', 'month', 'year']).default('once'),
 });
 
 function dateOfIso(iso: string): Date {
@@ -250,7 +277,10 @@ export async function fillFixedExpenses(): Promise<void> {
   if (fixed.length === 0) return;
   const now = monthKey(new Date());
   for (const f of fixed) {
-    const months = monthsToFill(startPeriod(f), now).filter((m) => appliesTo(f, m));
+    /* ⚠ התדירות עוברת ל-monthsToFill · בלעדיה תבנית שנתית
+       הייתה מייצרת שורה בכל חודש במקום פעם בשנה */
+    const every = f.every === 'year' ? 'year' : 'month';
+    const months = monthsToFill(startPeriod(f), now, every).filter((m) => appliesTo(f, m));
     if (months.length === 0) continue;
     const src = sourceOf(f.id);
     const have = new Set(
@@ -275,6 +305,7 @@ export async function fillFixedExpenses(): Promise<void> {
           amount: f.amount,
           period,
           note: f.note,
+          method: f.method,
           source: src,
           /* ⚠ הראשון בחודש · כדי שהשורה תיפול בחודש הנכון בכל אזור זמן */
           createdAt: new Date(y, m - 1, 1, 12, 0, 0),
@@ -290,6 +321,10 @@ const fixedBody = z.object({
   note: z.string().max(200).default(''),
   /** yyyy-mm · החודש שממנו היא מתחילה */
   fromPeriod: z.string().regex(/^\d{4}-\d{2}$/),
+  /** מזומן | אשראי | העברה · ריק = לא צוין */
+  method: z.enum(EXPENSE_METHODS).or(z.literal('')).default(''),
+  /** month | year · ברירת המחדל חודשי, כפי שהיה */
+  every: z.enum(['month', 'year']).default('month'),
 });
 
 adminFinanceRouter.get('/fixed-expenses', async (_req, res, next) => {
@@ -302,6 +337,8 @@ adminFinanceRouter.get('/fixed-expenses', async (_req, res, next) => {
         amount: f.amount,
         note: f.note,
         fromPeriod: f.fromPeriod,
+        method: f.method,
+        every: f.every,
       })),
     });
   } catch (err) {
@@ -322,6 +359,8 @@ adminFinanceRouter.post('/fixed-expenses', async (req, res, next) => {
         amount: body.amount,
         note: body.note,
         fromPeriod: body.fromPeriod,
+        method: body.method,
+        every: body.every,
       },
     });
     /* ⚠ מתמלא מיד · אחרת היא לא רואה את ההוצאה שהרגע הוסיפה */
@@ -362,6 +401,7 @@ adminFinanceRouter.get('/expenses', async (req, res, next) => {
         amount: e.amount,
         period: e.period,
         note: e.note,
+        method: e.method,
         /** הוצאה שנולדה מסגירת קנייה · לא הוקלדה ידנית */
         fromShop: e.source !== '',
         date: isoDate(e.createdAt),
@@ -380,16 +420,41 @@ adminFinanceRouter.post('/expenses', async (req, res, next) => {
       return;
     }
     const when = dateOfIso(body.date);
+
+    /**
+     * ⚠ **קבוע = תבנית, לא שורה** · שורה בודדת לא יודעת לחזור
+     * על עצמה. `FixedExpense` היא שמייצרת שורת הוצאה אמיתית לכל
+     * מחזור, וכך כל הדוחות ממשיכים לקרוא מטבלה אחת בלי לדעת
+     * שהתבנית קיימת. `fillFixedExpenses` יוצר מיד את המחזור
+     * הראשון, אחרת שקד לא תראה את מה שהרגע הוסיפה.
+     */
+    if (body.every !== 'once') {
+      const tpl = await prisma.fixedExpense.create({
+        data: {
+          category: body.category,
+          amount: body.amount,
+          note: body.note,
+          fromPeriod: monthKey(when),
+          method: body.method,
+          every: body.every,
+        },
+      });
+      await fillFixedExpenses();
+      res.status(201).json({ id: tpl.id, fixed: true, every: body.every });
+      return;
+    }
+
     const row = await prisma.expense.create({
       data: {
         category: body.category,
         amount: body.amount,
         period: monthKey(when),
         note: body.note,
+        method: body.method,
         createdAt: when,
       },
     });
-    res.status(201).json({ id: row.id });
+    res.status(201).json({ id: row.id, fixed: false });
   } catch (err) {
     next(err);
   }

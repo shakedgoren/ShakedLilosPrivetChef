@@ -217,6 +217,10 @@ model FixedExpense {
   category    String
   amount      Int
   note        String   @default("")
+  /// אמצעי התשלום · מזומן | אשראי | העברה · ריק = לא צוין
+  method      String   @default("")
+  /// כל כמה זמן · month | year · ברירת המחדל חודשי, כפי שהיה
+  every       String   @default("month")
   /// החודש הראשון שבו היא חלה · yyyy-mm
   fromPeriod  String
   /// החודש האחרון · מחרוזת ריקה = ממשיכה בלי סוף
@@ -233,6 +237,8 @@ model Expense {
   period    String
   note      String   @default("")
   source    String   @default("")
+  /// אמצעי התשלום · מזומן | אשראי | העברה · ריק = לא צוין
+  method    String   @default("")
   createdAt DateTime @default(now())
 
   @@index([period])

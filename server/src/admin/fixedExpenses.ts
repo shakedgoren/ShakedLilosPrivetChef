@@ -28,7 +28,18 @@ export type FixedRow = {
   untilPeriod: string;
   /** החודש האחרון שכבר מולא · ראו `startPeriod` */
   lastPeriod: string;
+  /**
+   * כל כמה זמן · `month` (ברירת המחדל, כפי שהיה) או `year`.
+   *
+   * ⚠ **שנתי חוזר באותו חודש** · ביטוח שנתי שנקבע במרץ ייווצר
+   * במרץ בכל שנה ולא בכל חודש. לכן `monthsToFill` מדלג לפי
+   * שתים־עשרה ולא לפי אחת.
+   */
+  every?: FixedEvery;
 };
+
+/** התדירויות שתבנית יכולה לשאת · ׳חד פעמי׳ אינו תבנית כלל */
+export type FixedEvery = 'month' | 'year';
 
 /** החודש שאחרי · yyyy-mm */
 export function nextPeriod(period: string): string {
@@ -41,6 +52,17 @@ export function nextPeriod(period: string): string {
   return `${y}-${String(m).padStart(2, '0')}`;
 }
 
+/** אותו חודש בשנה הבאה · yyyy-mm */
+export function nextYearPeriod(period: string): string {
+  const [y, m] = period.split('-').map(Number);
+  return `${y + 1}-${String(m).padStart(2, '0')}`;
+}
+
+/** המחזור הבא · לפי התדירות של התבנית */
+export function nextOf(period: string, every: FixedEvery): string {
+  return every === 'year' ? nextYearPeriod(period) : nextPeriod(period);
+}
+
 /**
  * מאיזה חודש להתחיל למלא.
  *
@@ -50,13 +72,24 @@ export function nextPeriod(period: string): string {
  * עד לאן כבר הגענו, ולכן ממלאים רק **קדימה**.
  */
 export function startPeriod(fixed: FixedRow): string {
-  return fixed.lastPeriod ? nextPeriod(fixed.lastPeriod) : fixed.fromPeriod;
+  if (!fixed.lastPeriod) return fixed.fromPeriod;
+  return nextOf(fixed.lastPeriod, fixed.every ?? 'month');
 }
 
-/** האם ההוצאה הקבועה חלה על החודש הזה */
+/**
+ * האם ההוצאה הקבועה חלה על החודש הזה.
+ *
+ * ⚠ **שנתי חל רק על חודש המחזור** · תבנית שנתית שהתחילה במרץ
+ * חלה על מרץ בכל שנה, ולא על אפריל. בלי הבדיקה הזו ביטוח שנתי
+ * היה נרשם שתים־עשרה פעמים בשנה.
+ */
 export function appliesTo(fixed: FixedRow, period: string): boolean {
   if (period < fixed.fromPeriod) return false;
-  return fixed.untilPeriod === '' || period <= fixed.untilPeriod;
+  if (fixed.untilPeriod !== '' && period > fixed.untilPeriod) return false;
+  if ((fixed.every ?? 'month') === 'year') {
+    return period.slice(5) === fixed.fromPeriod.slice(5);
+  }
+  return true;
 }
 
 /** מזהה המקור בשורת ההוצאה · כך יודעים שהחודש הזה כבר מולא */
@@ -66,7 +99,7 @@ export const sourceOf = (fixedId: string): string => `fixed:${fixedId}`;
  * החודשים שצריך למלא · מהחודש הראשון ועד החודש הנוכחי, כולל.
  * ⚠ מוגבל ל-`MAX_BACKFILL` האחרונים · ראו את ההערה למעלה.
  */
-export function monthsToFill(from: string, until: string): string[] {
+export function monthsToFill(from: string, until: string, every: FixedEvery = 'month'): string[] {
   const out: string[] = [];
   let [y, m] = from.split('-').map(Number);
   const key = () => `${y}-${String(m).padStart(2, '0')}`;
@@ -79,5 +112,8 @@ export function monthsToFill(from: string, until: string): string[] {
     }
     if (out.length > 1000) break;
   }
-  return out.slice(-MAX_BACKFILL);
+  /* שנתי · רק החודש שתואם לחודש ההתחלה */
+  const mm = from.slice(5);
+  const kept = every === 'year' ? out.filter((p) => p.slice(5) === mm) : out;
+  return kept.slice(-MAX_BACKFILL);
 }
