@@ -192,7 +192,16 @@ Authorization: Bearer <token>
 
 מחרוזת ריקה במשתנה מכבה רק את התבנית הזו. בלי TOKEN לא נשלח כלום.
 
-**גוף התבנית:** ידוע ש-`{{1}}` הוא שם הלקוחה. `{{2}}…` עדיין לא ידועים. כרגע נשלח רק שם (`UTILITY_BODY_KEYS = ['name']` ב-`server/src/whatsapp/vars.ts`). אם Meta דוחה בגלל מספר פרמטרים — להוסיף לשם `orderId` / `total` / `timeOrAddress` (כבר מחושבים ב-`orderUtilitySlots`).
+**גוף התבנית** (עברית, מאושרות). מספר הפרמטרים והסדר חייבים להתאים, אחרת Graph מחזיר `400 (#132000) Number of parameters does not match`. המיפוי ב-`UTILITY_BODY_KEYS` (`server/src/whatsapp/vars.ts`):
+
+| תבנית | פרמטרים |
+|---|---|
+| `order_pickup_confirmed` | {{1}} שם · {{2}} סכום · {{3}} שעת איסוף |
+| `order_delivary_confirmed` וגם `order_dely` | {{1}} שם · {{2}} כתובת · {{3}} סכום · {{4}} שעה |
+| `order_pick_up` | {{1}} שם |
+| `order_dalivery` | {{1}} שם · {{2}} כתובת |
+
+הסכום הוא `total` בשקלים שלמים, בלי סימן מטבע. הכתובת היא רחוב ואז עיר כששניהם שמורים. ברירת המחדל לאישור משלוח נשארת `order_delivary_confirmed` (אותו גוף כמו `order_dely`).
 
 6. Webhook (להמשך, סטטוסי מסירה): כתובת `https://<שרת>/webhooks/whatsapp`, verify token = `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. בדיקת חתימה עדיין לא מיושמת.
 
