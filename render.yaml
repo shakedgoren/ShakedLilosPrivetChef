@@ -148,28 +148,91 @@ services:
     name: bite-and-tell-web
     runtime: static
     branch: main
-    buildCommand: cd mobile && npm ci && npm run build:web
-    staticPublishPath: mobile/dist
+    # ⚠ **שני משטחים מבנייה אחת · 23 בספטמבר 2026** · עמוד
+    # הנחיתה בשורש, גרסת הדפדפן של האפליקציה תחת /app. הסקריפט
+    # מרכיב את שניהם ל-dist/ ומפיל את הבנייה אם אחד מהם חסר.
+    buildCommand: bash scripts/build-site.sh
+    staticPublishPath: dist
     envVars:
       - key: NODE_VERSION
         value: "22"
       - key: EXPO_PUBLIC_API_URL
         value: https://api.bite-and-tell.com
 
-    # ⚠ **אפליקציית עמוד יחיד** · בלי ההפניה הזו רענון בכל מסך
-    # שאינו הבית מחזיר 404. חייבת להיות **אחרי** קבצי הסטטיק,
-    # אחרת היא תבלע גם אותם.
+    # ⚠ **`EXPO_PUBLIC_SHOWROOM` לא מוגדר בכוונה** · הדגל הופך את
+    # כל כפתורי ההמשך ל״להזמנה״ ומוריד את כרטיסי ה-+/- — כלומר
+    # **מבטל את האפשרות להזמין מהדפדפן**. האפליקציות עוד לא
+    # בחנויות והטופס ״עדכנו אותי״ עוד לא נבנה, ולכן הדלקה עכשיו
+    # הייתה משאירה את הלקוחות בלי שום דרך להזמין. ביום שהטופס
+    # יהיה מוכן: להוסיף כאן `value: "1"`, או להפעיל רק לטלפון
+    # דרך `FLAGS` ב-landing/index.html.
+
+    # ⚠ **הכתובת ללא לוכסן** · `/app/index.html` הוא קובץ אמיתי,
+    # ולכן `/app/` נפתר לבדו. `/app` בלי לוכסן לא, ומכאן הכלל.
+    #
+    # ⚠ **אין כלל `/*`** · לאפליקציה אין ניתוב כתובות בכלל —
+    # `NavigationContainer` כאן בלי `linking`, ולכן היא תמיד
+    # נטענת מ-`/app/` ולעולם לא מייצרת נתיב עמוק שצריך תפיסה.
+    # כלל `/*` היה מסוכן: סדר הכללים לא מתועד אצל Render, והוא
+    # היה עלול לבלוע את `/app`.
     routes:
       - type: rewrite
-        source: /*
-        destination: /index.html
+        source: /app
+        destination: /app/index.html
 
     headers:
-      # הבאנדל נושא hash בשם הקובץ · אפשר לשמור אותו לנצח
-      - path: /_expo/static/*
+      # ---- אבטחה · על הכול ----
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # ⚠ **בלי X-Robots-Tag** · `static/_headers` של שאלון השף
+      # נושא `noindex, nofollow`. על עמוד שיווקי זו שורה שמסתירה
+      # את העסק מגוגל. עמוד הנחיתה מביא robots.txt משלו.
+
+      # ---- הבאנדל של האפליקציה · שם הקובץ נושא hash ----
+      - path: /app/_expo/static/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
-      # ה-HTML לעולם לא במטמון · אחרת פריסה חדשה לא מגיעה למי שכבר ביקרה
+      - path: /app/assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+
+      # ---- HTML · לעולם לא במטמון ----
+      # ⚠ **חייבים גם `/` וגם `/index.html`** · ההתאמה היא מול
+      # הנתיב שהתבקש כמו-שהוא. נמדד ב-23.9.2026 על האתר החי:
+      # הכלל `/index.html` לבדו לא חל על בקשה ל-`/`, וזו הבקשה
+      # שכל מבקרת עושה.
+      - path: /
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
       - path: /index.html
         name: Cache-Control
         value: public, max-age=0, must-revalidate
+      - path: /app
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /app/
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /app/index.html
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+
+      # ---- קבצי עמוד הנחיתה · בלי hash בשם ----
+      # ⚠ מטמון ארוך כאן היה מראה לשקד עיצוב ישן אחרי כל שינוי
+      - path: /style.css
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /data.js
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /build.js
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      # התמונות כבדות ומשתנות לעתים רחוקות · שבוע
+      - path: /img/*
+        name: Cache-Control
+        value: public, max-age=604800

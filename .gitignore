@@ -63,3 +63,8 @@ deck-final.png
 
 # בניית הווב של האפליקציה · נוצרת מחדש בכל פרסום
 mobile/dist/
+
+# תיקיית הפרסום של האתר · נבנית מחדש בכל פריסה (scripts/build-site.sh)
+/dist/
+landing-desktop.png
+landing-phone-site.png

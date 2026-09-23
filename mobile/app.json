@@ -54,6 +54,10 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-notifications"
-    ]
+    ],
+    "_baseUrlNote": "⚠ נוסף ב-23.9.2026 · הייצוא לווב יושב תחת /app כדי שעמוד הנחיתה יקבל את השורש. baseUrl נדבק כמו-שהוא לכל נתיבי הנכסים בבאנדל, ולכן בלעדיו ה-HTML ב-dist/app היה מבקש /_expo/... מהשורש ומקבל את עמוד הנחיתה במקום את הקוד. משפיע על expo export בלבד — expo start --web ממשיך להגיש מהשורש.",
+    "experiments": {
+      "baseUrl": "/app"
+    }
   }
 }

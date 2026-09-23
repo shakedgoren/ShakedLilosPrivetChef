@@ -1,0 +1,158 @@
+<!doctype html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ============================================================
+     טלפון ← גרסת האפליקציה
+     ============================================================
+     ⚠ **הרעיון של שקד · 23 בספטמבר 2026** · ״האתר צריך לשבת על
+     הכתובת הזו, ובמידה ולקוח פתח את האתר בטלפון מה שיופיע יהיה
+     התצוגה שנראית בדיוק כמו האפליקצייה״.
+
+     ⚠ **למה כאן, לפני כל `link`** · `location.replace` עוצר את
+     מנתח ה-HTML במקום, וכך שום *תמונה* של עמוד הנחיתה לא נטענת.
+
+     ⚠ **אבל זה לא חוסך הכול · נמדד ב-23.9.2026** · סורק הטעינה
+     המקדימה של הדפדפן רץ לפני המנתח, ולכן הוא כבר הזמין את
+     `style.css`, `data.js`, `build.js` והגופנים מגוגל לפני
+     שההפניה נכנסה לתוקף. נמדד בכרום עם UA של אייפון:
+     35.7KB דחוסים מבוזבזים, 4.7% מהבאנדל שהטלפון עומד להוריד
+     בכל מקרה. טענתי כאן קודם שזה אפס; זה לא.
+
+     ⚠ **למה `loading="lazy"` על הלוגו** · הסורק המקדים מדלג על
+     תמונות מושהות, ולכן הלוגו (89KB) לא נטען בטלפון בכלל.
+     בלעדיו הבזבוז היה 125KB — פי 3.5. על שולחן העבודה נמדד
+     שהלוגו בניווט מוכן תוך 1.2 שנ׳ ושלוש ההופעות מוצגות, כי
+     הוא סמל של 36px ולא התמונה הגדולה של העמוד.
+
+     ⚠ **איך מבטלים את הבזבוז לגמרי** · רק החלטה שקורית לפני
+     שה-HTML נשלח. Cloudflare כבר יושב לפני הדומיין (נמדד:
+     `server: cloudflare`), ו-Origin Rule שמחליף את הנתיב
+     ל-`/app/` לפי `http.user_agent` היה שולח לטלפון את
+     האפליקציה מיד — ובלי לשנות את הכתובת בשורה. זו הגדרה
+     בלוח הבקרה של Cloudflare, לא קוד, ולכן היא לא כאן.
+
+     ⚠ **`replace` ולא `href`** · `href` היה מוסיף רשומה
+     להיסטוריה, ואז ״חזור״ מהאפליקציה חוזר לכאן, וכאן מפנה שוב
+     לאפליקציה — לולאה שמשביתה את כפתור החזרה. `replace` מחליף
+     את הרשומה, ו״חזור״ יוצא החוצה כרגיל.
+
+     ⚠ **`Mobi` ולא רוחב המסך** · כל דפדפני הטלפון שמים את
+     האסימון הזה, ו-iPadOS משמיט אותו בכוונה. בדיקת רוחב הייתה
+     זורקת לאפליקציה גם מי שסתם הצר חלון במחשב.
+
+     ⚠ **הסורקים לא מופנים** · גוגל מדרגת היום לפי הגרסה
+     הניידת. שהיא תראה את עמוד הנחיתה המלא ולא קליפה של
+     אפליקציה שכל תוכנה מגיע מ-JavaScript.
+
+     ⚠ **דלת מילוט** · `?site=1` מציג את עמוד הנחיתה גם בטלפון.
+  -->
+<script>
+(function () {
+  var APP = '/app/';
+  /* ⚠ ריק בכוונה · ביום שהטופס ״עדכנו אותי״ יהיה מוכן, כאן
+     נכנס '?showroom=1' וזה הופך את הטלפון לחלון ראווה בלבד.
+     היום הטלפון מקבל את האפליקציה המלאה, כי כפתור שמוביל
+     לטופס שלא קיים גרוע ממצב שבו אפשר להזמין. */
+  var FLAGS = '';
+
+  var ua = navigator.userAgent || '';
+  if (/bot|crawl|spider|slurp|facebookexternalhit|whatsapp|embed|preview/i.test(ua)) return;
+  if (/[?&]site=1(&|$)/.test(location.search)) return;
+  if (!/Mobi/i.test(ua)) return;
+
+  location.replace(APP + FLAGS);
+})();
+</script>
+<title>BITE &amp; TELL</title>
+<meta name="description" content="מטבח פרטי ביבנה · שלישי של קוסקוס, שישי של מטעמים, ולכל אירוע מארזים, מגשי פירות וארוחת שף.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="#top"><img src="img/logo.webp" loading="lazy" decoding="async" alt="BITE & TELL"><b>BITE &amp; TELL</b></a>
+  <div id="nv"></div>
+  <div class="navcta">
+    <a class="btn" id="tel" href="#" data-label="להתקשר">להתקשר</a>
+    <a class="btn fill" id="wa" href="#" target="_blank" rel="noopener" data-label="וואטסאפ">וואטסאפ</a>
+    <button class="modeToggle" id="themeBtn" type="button" role="switch" aria-checked="false"
+            aria-label="החלפת מצב תצוגה">
+      <span class="mtKnob"></span>
+      <span class="mtFace">
+        <span class="mtSun" id="mtSun"></span>
+        <span class="mtMoon" id="mtMoon"></span>
+      </span>
+    </button>
+  </div>
+</div></nav>
+
+<div class="top">
+<header class="hero" id="top">
+  <div id="shots"></div>
+  <div class="veil"></div>
+  <div class="wrap">
+    <div class="slug" id="slug"></div>
+    <h1 id="h1"></h1>
+    <div class="hsay" id="hsay"></div>
+    <div class="chips" id="chips"></div>
+    <div class="hcta" id="hcta"></div>
+  </div>
+</header>
+</div>
+
+<section class="sec wrap up" id="about">
+  <div class="eye"></div>
+  <h2 class="h2"></h2>
+  <p class="abSub" id="abSub"></p>
+  <div id="abtext"></div>
+</section>
+
+<section id="menu">
+  <div class="wrap up" style="text-align:center; padding-block:4px 16px">
+    <div class="eye" id="menuEye"></div>
+    <h2 class="h2" id="menuTitle"></h2>
+  </div>
+  <div class="tabsBar"><div class="wrap"><div class="menuTabs" id="menuTabs"></div></div></div>
+  <div class="wrap" id="menuAll"></div>
+</section>
+
+<section class="sec up" id="gallery">
+  <div class="wrap" style="margin-bottom:18px">
+    <div class="eye" id="galEye"></div>
+    <h2 class="h2" id="galTitle"></h2>
+    <p class="lead" id="galSub"></p>
+  </div>
+  <div class="galleryRails" id="galleryRails"></div>
+</section>
+
+<section class="sec wrap up" id="event">
+  <div class="eye" id="evEye"></div>
+  <div class="eventCard">
+    <div class="ecText" id="ecText"></div>
+    <div class="ecForm">
+      <span class="ecMark"><img src="img/logo.webp" loading="lazy" decoding="async" alt=""></span>
+      <form id="ev" novalidate></form>
+    </div>
+  </div>
+</section>
+
+<section class="sec wrap up" id="order">
+  <div class="appBox" id="appBox"></div>
+</section>
+
+<footer class="foot" id="contact"><div class="wrap">
+  <p class="fLine"><img src="img/logo.webp" loading="lazy" decoding="async" alt=""><b>BITE &amp; TELL</b><span id="fTag"></span></p>
+  <p class="fLine fInfo" id="fnote"></p>
+</div></footer>
+
+<script src="data.js"></script>
+<script src="build.js"></script>
+<script>buildAll();</script>
+</body>
+</html>
