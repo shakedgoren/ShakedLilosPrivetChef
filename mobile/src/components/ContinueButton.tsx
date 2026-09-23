@@ -13,6 +13,8 @@ import {
 import { Text } from '../ui/text';
 import { a, radius } from '../theme/tokens';
 import { NO_TOUCH } from '../theme/pointerEvents';
+import { SHOWROOM, SHOWROOM_CTA } from '../showroom';
+import { onShowroomCta } from '../showroomCta';
 
 /**
  * כפתור ״המשך״ המשותף לכל מסכי ההזמנה.
@@ -121,6 +123,24 @@ export function ContinueButton({
   iconOnly = false,
   style,
 }: Props) {
+  /**
+   * ⚠ **גרסת הראווה · 23 בספטמבר 2026** · שקד: ״במקום כל כפתורי
+   * ההמשך יהיה כפתור ׳להזמנה׳ שיוביל להורדה של האפליקציה״.
+   * זה הרכיב היחיד שכל כפתורי ההמשך עוברים דרכו — תשעה מסכים —
+   * ולכן ההחלפה כאן מכסה את כולם בבת אחת.
+   * ⚠ החץ יורד (`bare`) · הוא מבטיח שלב הבא בתוך ההזמנה, וכאן
+   * הלחיצה יוצאת מהמסלול אל רשימת ההמתנה.
+   * ⚠ `iconOnly` מבוטל · כפתור חץ בלי מילים לא אומר ״להזמנה״.
+   */
+  if (SHOWROOM) {
+    onPress = onShowroomCta;
+    label = SHOWROOM_CTA;
+    disabled = false;
+    drag = false;
+    iconOnly = false;
+    bare = true;
+  }
+
   if (drag) return <DragButton onPress={onPress} accent={accent} label={label} disabled={disabled} style={style} />;
 
   /* ⚠ החץ בלבד · ראו `iconOnly` */

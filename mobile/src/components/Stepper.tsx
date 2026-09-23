@@ -49,6 +49,8 @@ const GLASS_RGB = '130,112,162';
  * נוחת בימין. אם הכיוון יתהפך אי פעם, `row-reverse` שומר על אותו
  * סידור ויזואלי — הכיוון לא נלקח מ-I18nManager אלא מ-rtl.ts.
  */
+import { SHOWROOM } from '../showroom';
+
 type Props = {
   value: number;
   onChange: (next: number) => void;
@@ -66,6 +68,14 @@ type Props = {
 };
 
 export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }: Props) {
+  /**
+   * ⚠ **גרסת הראווה · 23 בספטמבר 2026** · שקד: ״הכרטיסים של ה+
+   * וה- לא יהיו״. בגרסה הזו אי אפשר להזמין, ולכן בורר כמות הוא
+   * הבטחה שלא נוכל לקיים. ה-`center` כן נשאר — בספיישל הוא נושא
+   * את שם הפריט והתיאור, וזה תוכן ולא שליטה.
+   */
+  if (SHOWROOM) return center ? <>{center}</> : null;
+
   const size = tone?.key ?? KEY;
   const glyph = tone?.glyph ?? GLYPH;
   /**
