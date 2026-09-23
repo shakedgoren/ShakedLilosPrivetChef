@@ -5,6 +5,7 @@ import {
   Animated,
   Easing,
   PanResponder,
+  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -239,7 +240,7 @@ export function PrimaryButton({ label, onPress }: Props) {
           /* רק שמאלה · ולא מעבר לקצה המסלול */
           x.setValue(Math.max(-TRAVEL, Math.min(0, g.dx)));
         },
-        onPanResponderRelease: (_e, g) => {
+        onPanResponderRelease: (e, g) => {
           if (done.current) return;
           if (-g.dx >= TRAVEL * DONE_AT) complete();
           /**
@@ -251,7 +252,17 @@ export function PrimaryButton({ label, onPress }: Props) {
            * (16 בספטמבר 2026) שכש-`panHandlers` נפרשׂ על `Pressable`
            * המחוון של הלחיצה גובר והידית לא זזה כלל.
            */
-          else if (Math.abs(g.dx) < TAP_PX && Math.abs(g.dy) < TAP_PX) nudge();
+          else if (Math.abs(g.dx) < TAP_PX && Math.abs(g.dy) < TAP_PX) {
+            /**
+             * ⚠ **לחיצה בעכבר בדפדפן ממשיכה** · 23 בספטמבר 2026.
+             * באפליקציה לחיצה רק מרמזת, כי ההחלקה היא הדרך. בדפדפן
+             * השולחני אין מחווה טבעית, והכפתור נראה תקוע. מגע אצבע
+             * (`touchend`) נשאר רמז; עכבר (`mouseup`) ממשיך.
+             */
+            const kind = (e.nativeEvent as { type?: string }).type;
+            if (Platform.OS === 'web' && kind === 'mouseup') complete();
+            else nudge();
+          }
           else springBack();
         },
         onPanResponderTerminate: () => springBack(),
