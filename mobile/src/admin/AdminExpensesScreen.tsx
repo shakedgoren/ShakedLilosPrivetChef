@@ -3,10 +3,13 @@ import { S } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
-import { EXPENSES } from '../data/adminMoney';
+import {
+  EXPENSES, EXPENSE_METHODS, EXPENSE_EVERY, EXPENSE_EVERY_LABEL,
+  type ExpenseMethod, type ExpenseEvery,
+} from '../data/adminMoney';
 import { MONTHS } from '../data/adminDays';
 import { AdminShell } from './ui/AdminShell';
-import { Chip } from './ui/Chip';
+import { Chip, ChipRow } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
 import { Field } from './ui/Field';
 import { Sheet } from './ui/Sheet';
@@ -36,11 +39,32 @@ import { useNav } from '../navigation/store';
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 
 /**
+ * ⚠ **תדירות ואמצעי תשלום · בקשת שקד, 23 בספטמבר 2026** ·
+ * ״צריך שיהיה את האופציה להוסיף אם זה תשלום שנתי קבוע, חודשי
+ * קבוע, או תשלום חד פעמי — כמובן שלא חובה להוסיף את זה בכל
+ * הוצאה, וההוצאות של הקניות לא מקבלות בזה שום ערך״, וכן ״צריך
+ * להיות סוג תשלום שאני אוכל לעקוב אחרי ההוצאות שלי, האם שולם
+ * במזומן, אשראי, או העברה״.
+ *
+ * ⚠ **המתג הבוליאני הוחלף בשלוש אפשרויות** · קודם היה כאן
+ * ״הוצאה קבועה״ כן/לא. ״חד פעמי״ הוא עכשיו בחירה מפורשת ולא
+ * היעדר בחירה, כי ״שנתי״ הצטרף ואי אפשר לבטא שלושה מצבים
+ * בתיבת סימון אחת.
+ */
+const EVERY_SUB: Record<ExpenseEvery, string> = {
+  once: 'נרשמת פעם אחת בתאריך שבחרת',
+  month: 'תיווצר מעצמה בכל חודש, בלי להקליד שוב',
+  year: 'תיווצר מעצמה באותו חודש בכל שנה',
+};
+
+/** ⚠ הכיתוב הזה נכתב על ידי Claude · שקד לא כתבה אותו */
+const METHOD_LABEL = 'איך שולם';
+const METHOD_HINT = 'לא חובה · עוזר לעקוב אחרי ההוצאות';
+
+/**
  * ⚠ **שני הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · שקד לא
  * כתבה אותם. הם מתג ההוצאה הקבועה.
  */
-const FIXED_LABEL = 'הוצאה קבועה · חוזרת בכל חודש';
-const FIXED_SUB = 'תיווצר מעצמה בכל חודש חדש, בלי להקליד שוב';
 const FIXED_TITLE = 'הוצאות קבועות';
 const AMBER = '#A65E2A';
 
@@ -95,7 +119,8 @@ export function AdminExpensesScreen() {
    * ״חודש הבא אני לא אצטרך להקליד את כל החלק הזה שוב, הוא
    * אוטומטית יתעדכן״. ההסבר המלא ב-`server/src/admin/fixedExpenses.ts`.
    */
-  const [fixed, setFixed] = useState(false);
+  const [every, setEvery] = useState<ExpenseEvery>('once');
+  const [method, setMethod] = useState<ExpenseMethod>('');
   const [fixedRows, setFixedRows] = useState<FixedExpenseRow[] | null>(null);
 
   const load = useCallback(() => {
@@ -116,7 +141,8 @@ export function AdminExpensesScreen() {
     setAmount('');
     setWhen(`${pad2(now.getDate())}.${pad2(now.getMonth() + 1)}.${now.getFullYear()}`);
     setNote('');
-    setFixed(false);
+    setEvery('once');
+    setMethod('');
     setAdding(true);
   };
 
@@ -127,15 +153,18 @@ export function AdminExpensesScreen() {
   const save = () => {
     if (!ready || busy) return;
     setBusy(true);
-    /* ⚠ קבועה נשמרת כתבנית · והיא יוצרת את שורת החודש בעצמה */
-    const call = fixed
-      ? adminAddFixedExpense({
-          category: cat,
-          amount: sum,
-          note: note.trim(),
-          fromPeriod: iso.slice(0, 7),
-        })
-      : adminAddExpense({ category: cat, amount: sum, date: iso, note: note.trim() });
+    /* ⚠ קבועה נשמרת כתבנית · והיא יוצרת את שורת המחזור בעצמה */
+    const call =
+      every === 'once'
+        ? adminAddExpense({ category: cat, amount: sum, date: iso, note: note.trim(), method })
+        : adminAddFixedExpense({
+            category: cat,
+            amount: sum,
+            note: note.trim(),
+            fromPeriod: iso.slice(0, 7),
+            method,
+            every,
+          });
     void call
       .then(() => {
         setAdding(false);
@@ -193,8 +222,20 @@ export function AdminExpensesScreen() {
             {fixedRows.map((f) => (
               <View key={f.id} style={s.fixedItem}>
                 <View style={s.rowText}>
-                  <Text style={s.rowCat}>{f.category}</Text>
-                  {f.note ? <Text style={s.rowSub}>{f.note}</Text> : null}
+                  <View style={s.rowTop}>
+                    <Text style={s.rowCat}>{f.category}</Text>
+                    {/* ⚠ שנתי מסומן · חודשי הוא ברירת המחדל ולא צריך תג */}
+                    {f.every === 'year' ? (
+                      <View style={s.tag}>
+                        <Text style={s.tagText}>שנתי</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  {f.note || f.method ? (
+                    <Text style={s.rowSub} numberOfLines={1}>
+                      {[f.method, f.note].filter(Boolean).join(' · ')}
+                    </Text>
+                  ) : null}
                 </View>
                 <Text style={s.rowVal}>{`${nf(f.amount)} ₪`}</Text>
                 <Pressable onPress={() => stopFixed(f.id)} style={s.kill} hitSlop={8}>
@@ -224,8 +265,10 @@ export function AdminExpensesScreen() {
                       </View>
                     ) : null}
                   </View>
+                  {/* ⚠ אמצעי התשלום נכנס לאותה שורת משנה · הוא פרט
+                      ולא כותרת, ושורה נפרדת הייתה מרווחת את הרשימה */}
                   <Text style={s.rowSub} numberOfLines={1}>
-                    {`${toHuman(r.date)}${r.note ? ` · ${r.note}` : ''}`}
+                    {`${toHuman(r.date)}${r.method ? ` · ${r.method}` : ''}${r.note ? ` · ${r.note}` : ''}`}
                   </Text>
                 </View>
 
@@ -280,7 +323,7 @@ export function AdminExpensesScreen() {
               </View>
               <View style={s.half}>
                 <Field
-                  label={fixed ? 'מאיזה חודש' : 'תאריך'}
+                  label={every === 'once' ? 'תאריך' : 'מאיזה חודש'}
                   value={when}
                   onChange={setWhen}
                   placeholder="15.09.2026"
@@ -294,20 +337,53 @@ export function AdminExpensesScreen() {
             <Field label="הערה" value={note} onChange={setNote} placeholder="למשל: קצביית אבו חסן" />
 
             {/**
-              * ⚠ **הוצאה קבועה · בקשה של שקד (19 בספטמבר 2026)** ·
-              * ״הוצאות כלליות חודשיות שהן קבועות — חודש הבא אני לא
-              * אצטרך להקליד את כל החלק הזה שוב״.
-              * ⚠ הכיתוב נכתב על ידי Claude.
+              * ⚠ **איך שולם · בקשת שקד (23 בספטמבר 2026)** · ״סוג
+              * תשלום שאני אוכל לעקוב אחרי ההוצאות שלי״.
+              * ⚠ **לחיצה שנייה מבטלת** · היא ביקשה שזה לא יהיה חובה,
+              * ולכן חייבת להיות דרך לחזור ל״לא צוין״ אחרי בחירה.
               */}
-            <Pressable onPress={() => setFixed((v) => !v)} style={s.fixedRow}>
-              <View style={[s.check, fixed && s.checkOn]}>
-                {fixed ? <S k="check" size={13} color="#FFFFFF" /> : null}
-              </View>
-              <View style={s.fixedText}>
-                <Text style={s.fixedTitle}>{FIXED_LABEL}</Text>
-                <Text style={s.fixedSub}>{FIXED_SUB}</Text>
-              </View>
-            </Pressable>
+            <View style={s.block}>
+              <Text style={s.blockLabel}>{METHOD_LABEL}</Text>
+              <ChipRow>
+                {EXPENSE_METHODS.map((m) => (
+                  <Chip
+                    key={m}
+                    label={m}
+                    on={method === m}
+                    tint={PLUM}
+                    fontSize={12}
+                    height={34}
+                    radius={12}
+                    onPress={() => setMethod((cur) => (cur === m ? '' : m))}
+                  />
+                ))}
+              </ChipRow>
+              <Text style={s.blockHint}>{METHOD_HINT}</Text>
+            </View>
+
+            {/**
+              * ⚠ **תדירות · אותה בקשה** · ״שנתי קבוע, חודשי קבוע, או
+              * תשלום חד פעמי״. ׳חד פעמי׳ הוא ברירת המחדל.
+              * ⚠ הכיתובים נכתבו על ידי Claude.
+              */}
+            <View style={s.block}>
+              <Text style={s.blockLabel}>כל כמה זמן</Text>
+              <ChipRow>
+                {EXPENSE_EVERY.map((e) => (
+                  <Chip
+                    key={e}
+                    label={EXPENSE_EVERY_LABEL[e]}
+                    on={every === e}
+                    tint={PLUM}
+                    fontSize={12}
+                    height={34}
+                    radius={12}
+                    onPress={() => setEvery(e)}
+                  />
+                ))}
+              </ChipRow>
+              <Text style={s.blockHint}>{EVERY_SUB[every]}</Text>
+            </View>
 
             {/* ⚠ **ברוחב מינימלי · בקשת שקד** · ממורכז ולא נמתח */}
             <View style={s.saveWrap}>
@@ -323,6 +399,11 @@ export function AdminExpensesScreen() {
 }
 
 const s = StyleSheet.create({
+  /* ⚠ קבוצת שדה · כותרת, שורת צ׳יפים והסבר · 23 בספטמבר 2026 */
+  block: { gap: 7 },
+  blockLabel: { fontSize: 12.5, color: surface.muted },
+  blockHint: { fontSize: 11.5, color: surface.faint, lineHeight: 16 },
+
   body: { flex: 1 },
   pad: { paddingBottom: 120, gap: 12 },
   empty: { fontSize: 14.5, color: surface.faint, textAlign: 'center', marginTop: 24 },
@@ -375,21 +456,6 @@ const s = StyleSheet.create({
   form: { gap: 14 },
   pair: { flexDirection: 'row', gap: 10 },
   half: { flex: 1 },
-  /* ⚠ מתג ההוצאה הקבועה */
-  fixedRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 2 },
-  check: {
-    width: 22,
-    height: 22,
-    borderRadius: 7,
-    borderWidth: 1.5,
-    borderColor: 'rgba(130,112,162,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkOn: { backgroundColor: PLUM.hue, borderColor: PLUM.hue },
-  fixedText: { flex: 1, gap: 1 },
-  fixedTitle: { fontSize: 14, fontWeight: '600', color: surface.ink },
-  fixedSub: { fontSize: 11.5, fontWeight: '300', color: surface.faint },
   /* ⚠ ממורכז · כדי שהכפתור הצר לא ייצמד לצד */
   saveWrap: { alignItems: 'center', marginTop: 2 },
   save: {

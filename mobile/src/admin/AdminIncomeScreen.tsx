@@ -79,6 +79,28 @@ export function AdminIncomeScreen() {
                   <Text style={s.rowSub} numberOfLines={1}>
                     {`${r.label} · ${r.orders} הזמנות · ${r.meals} מנות`}
                   </Text>
+
+                  {/**
+                    * ⚠ **פיצול לפי אמצעי תשלום · בקשת שקד, 23.9.2026** ·
+                    * ״במכירה של הקוסקוס נכנסו 10,000 ש״ח — 2,500 בביט,
+                    * 2,500 בפייבוקס ו-5,000 במזומן, חשוב לציין את זה״.
+                    *
+                    * ⚠ **מוצג רק כשיש יותר מאמצעי אחד** · מכירה שכולה
+                    * במזומן לא צריכה שורה שאומרת ״מזומן 450״ מתחת ל-450.
+                    *
+                    * ⚠ **הסכום כאן תמיד מסתכם ל-`amount`** · השרת מחשב
+                    * אותו מההזמנות עצמן · ראו `admin/payMix.ts`.
+                    */}
+                  {r.pays.length > 1 ? (
+                    <View style={s.pays}>
+                      {r.pays.map((p) => (
+                        <View key={p.pay} style={s.pay}>
+                          <Text style={[s.payName, { color: r.deep }]}>{p.pay}</Text>
+                          <Text style={s.payVal}>{nf(p.amount)}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
                 </View>
                 <Text style={s.rowVal}>{`${nf(r.amount)} ₪`}</Text>
               </View>
@@ -113,5 +135,19 @@ const s = StyleSheet.create({
   rowText: { flex: 1, gap: 1 },
   rowCat: { fontSize: 14.5, fontWeight: '600' },
   rowSub: { fontSize: 12.5, fontWeight: '300', color: surface.faint },
+
+  /* ⚠ פיצול התשלום · שורה של תגיות קטנות שנשברת לפי הצורך */
+  pays: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+  pay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 9,
+    backgroundColor: 'rgba(130,112,162,0.08)',
+  },
+  payName: { fontSize: 11, fontWeight: '600' },
+  payVal: { fontSize: 11, fontWeight: '300', color: surface.muted, fontVariant: ['tabular-nums'] },
   rowVal: { fontSize: 15.5, fontWeight: '700', color: surface.ink },
 });

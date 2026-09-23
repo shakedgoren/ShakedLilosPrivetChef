@@ -1,5 +1,6 @@
 import { api } from './client';
 import type { AdminCard, AdminCustomer, Order } from './types';
+import type { ExpenseMethod, ExpenseEvery } from '../data/adminMoney';
 
 export const adminListCustomers = () => api<{ customers: AdminCustomer[] }>('/admin/customers');
 
@@ -233,6 +234,8 @@ export type ExpenseRow = {
   amount: number;
   period: string;
   note: string;
+  /** מזומן | אשראי | העברה · ריק = לא צוין */
+  method: ExpenseMethod;
   /** נולדה מסגירת רשימת קניות ולא הוקלדה ידנית */
   fromShop: boolean;
   date: string;
@@ -241,8 +244,19 @@ export type ExpenseRow = {
 export const adminExpenses = () => api<{ cats: string[]; rows: ExpenseRow[] }>('/admin/expenses');
 
 /** ⚠ `method` מפורש · בלי גוף `api()` שולח GET, וזה מה ששבר את סגירת הרשימה */
-export const adminAddExpense = (body: { category: string; amount: number; date: string; note: string }) =>
-  api<{ id: string }>('/admin/expenses', { method: 'POST', body });
+export const adminAddExpense = (body: {
+  category: string;
+  amount: number;
+  date: string;
+  note: string;
+  /** ריק = לא צוין · שקד ביקשה שזה לא יהיה חובה */
+  method?: ExpenseMethod;
+  /**
+   * ⚠ `month`/`year` **אינם יוצרים שורה** · הם יוצרים תבנית
+   * שמייצרת שורה לכל מחזור. התשובה מחזירה `fixed:true` במקרה כזה.
+   */
+  every?: ExpenseEvery;
+}) => api<{ id: string; fixed: boolean; every?: ExpenseEvery }>('/admin/expenses', { method: 'POST', body });
 
 export const adminDeleteExpense = (id: string) =>
   api<{ ok: true }>(`/admin/expenses/${id}`, { method: 'DELETE' });
@@ -256,6 +270,9 @@ export type FixedExpenseRow = {
   note: string;
   /** yyyy-mm · החודש שממנו היא מתחילה */
   fromPeriod: string;
+  method: ExpenseMethod;
+  /** month | year */
+  every: Exclude<ExpenseEvery, 'once'>;
 };
 
 export const adminFixedExpenses = () =>
@@ -266,6 +283,8 @@ export const adminAddFixedExpense = (body: {
   amount: number;
   note: string;
   fromPeriod: string;
+  method?: ExpenseMethod;
+  every?: Exclude<ExpenseEvery, 'once'>;
 }) => api<{ id: string }>('/admin/fixed-expenses', { method: 'POST', body });
 
 export const adminDeleteFixedExpense = (id: string) =>
@@ -283,7 +302,14 @@ export type IncomeRow = {
   orders: number;
   meals: number;
   amount: number;
+  /**
+   * ⚠ **פיצול לפי אמצעי תשלום** · מחושב מההזמנות עצמן ולא נשמר
+   * כשדה. הסכום שלו תמיד שווה ל-`amount`.
+   */
+  pays: PayShare[];
 };
+
+export type PayShare = { pay: string; amount: number };
 
 /** פנקס ההכנסות · יום מכירה וקטגוריה, מהחדש לישן */
 export const adminIncome = () => api<{ rows: IncomeRow[] }>('/admin/income');
