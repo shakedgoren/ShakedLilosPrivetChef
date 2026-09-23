@@ -69,8 +69,22 @@ export function createApp() {
   app.use(express.json({ limit: '4mb' }));
   app.use('/uploads', express.static(env.uploadDir));
 
+  /**
+   * ⚠ **מה בדיוק רץ עכשיו · 23 בספטמבר 2026** · בלי זה אי אפשר
+   * לדעת מבחוץ אם פריסה תפסה. `RENDER_GIT_COMMIT` מוזרק על ידי
+   * Render לכל פריסה. השדות האחרים מדווחים אם משתנה סביבה הגיע
+   * בפועל לשרת — **בלי לחשוף את הערך עצמו**, רק אם הוא קיים.
+   */
   app.get('/health', (_req, res) => {
-    res.json({ ok: true, service: 'bite-and-tell', whatsapp: env.whatsapp.enabled });
+    res.json({
+      ok: true,
+      service: 'bite-and-tell',
+      commit: (process.env.RENDER_GIT_COMMIT ?? '').slice(0, 7) || null,
+      whatsapp: env.whatsapp.enabled,
+      cors: env.corsOrigins.length,
+      google: Boolean(env.googleClientId),
+      mail: Boolean(env.smtpHost && env.smtpUser),
+    });
   });
 
   app.use('/webhooks/whatsapp', whatsappWebhookRouter);
