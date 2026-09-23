@@ -149,16 +149,20 @@ test('אישור הזמנה · איסוף מול משלוח לפי ship', async 
   assert.equal(pickup.ok, true);
   assert.equal(delivery.ok, true);
   assert.deepEqual(names, ['order_pickup_confirmed', 'order_delivary_confirmed']);
-  assert.deepEqual(bodies[0], ['דנה כהן']);
-  assert.deepEqual(bodies[1], ['דנה כהן']);
+  assert.deepEqual(bodies[0], ['דנה כהן', '145', '12:30']);
+  assert.deepEqual(bodies[1], ['דנה כהן', 'הרצל 5, יבנה', '145', '13:00']);
 });
 
 test('סטטוס · מוכנה לאיסוף ונמסרה במשלוח בלבד', async () => {
   enableWhatsApp();
   const names: string[] = [];
+  const bodies: string[][] = [];
   mockFetch((_url, init) => {
-    const parsed = JSON.parse(String(init.body)) as { template: { name: string } };
+    const parsed = JSON.parse(String(init.body)) as {
+      template: { name: string; components: { parameters: { text: string }[] }[] };
+    };
     names.push(parsed.template.name);
+    bodies.push(parsed.template.components[0].parameters.map((p) => p.text));
   });
 
   const readyPickup = await notifyOrderStatus({ ...pickupOrder, status: 'מוכנה' });
@@ -173,6 +177,8 @@ test('סטטוס · מוכנה לאיסוף ונמסרה במשלוח בלבד',
   assert.deepEqual(deliveredPickup, { ok: false, skipped: 'no_template' });
   assert.deepEqual(confirmed, { ok: false, skipped: 'no_template' });
   assert.deepEqual(names, ['order_pick_up', 'order_dalivery']);
+  assert.deepEqual(bodies[0], ['דנה כהן']);
+  assert.deepEqual(bodies[1], ['דנה כהן', 'הרצל 5, יבנה']);
 });
 
 test('תבנית סטטוס כבויה במחרוזת ריקה', async () => {

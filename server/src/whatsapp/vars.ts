@@ -1,6 +1,7 @@
 /**
  * תבניות Utility אצל שקד · השמות כפי שנוצרו ב-Meta, כולל שגיאות הכתיב.
  * לא לתקן ל-delivery.
+ * `order_dely` מאושרת גם היא, באותו מבנה גוף כמו `order_delivary_confirmed`.
  */
 export const META_UTILITY_TEMPLATES = {
   confirmPickup: 'order_pickup_confirmed',
@@ -9,16 +10,25 @@ export const META_UTILITY_TEMPLATES = {
   delivered: 'order_dalivery',
 } as const;
 
-/**
- * פרמטרי גוף · מה שידוע: {{1}} = שם הלקוחה.
- *
- * {{2}}… עדיין לא ידועים. אם Meta דוחה בגלל מספר פרמטרים,
- * להוסיף מפתחות ל-`UTILITY_BODY_KEYS` מהרשימה ב-`orderUtilitySlots`
- * (orderId, total, timeOrAddress) — בלי לגעת בנתיבי השליחה.
- */
-export const UTILITY_BODY_KEYS = ['name'] as const;
+export type UtilityKind = 'confirmPickup' | 'confirmDelivery' | 'readyPickup' | 'delivered';
 
-export type UtilitySlot = 'name' | 'orderId' | 'total' | 'timeOrAddress';
+export type UtilitySlot = 'name' | 'total' | 'address' | 'time';
+
+/**
+ * פרמטרי גוף לפי סוג התבנית · הסדר הוא {{1}} {{2}} …
+ * מספר הפרמטרים חייב להתאים לתבנית המאושרת, אחרת Graph מחזיר #132000.
+ *
+ * confirmPickup   · שם, סכום, שעת איסוף          (order_pickup_confirmed)
+ * confirmDelivery · שם, כתובת, סכום, שעה         (order_delivary_confirmed וגם order_dely)
+ * readyPickup     · שם                            (order_pick_up)
+ * delivered       · שם, כתובת                     (order_dalivery)
+ */
+export const UTILITY_BODY_KEYS: Record<UtilityKind, readonly UtilitySlot[]> = {
+  confirmPickup: ['name', 'total', 'time'],
+  confirmDelivery: ['name', 'address', 'total', 'time'],
+  readyPickup: ['name'],
+  delivered: ['name', 'address'],
+};
 
 export type OrderTemplateSlots = {
   name: string;
@@ -30,39 +40,27 @@ export type OrderTemplateSlots = {
   address: string;
 };
 
-export type UtilityKind = 'confirmPickup' | 'confirmDelivery' | 'readyPickup' | 'delivered';
-
 export function isDeliveryShip(ship: string): boolean {
   return ship === 'deliv';
 }
 
-export function timeOrAddress(order: {
-  ship: string;
-  time: string;
-  city: string;
-  address: string;
-}): string {
-  const time = order.time.trim();
-  if (isDeliveryShip(order.ship)) {
-    const loc = [order.address.trim(), order.city.trim()].filter(Boolean).join(', ');
-    if (loc && time) return `${loc} · ${time}`;
-    return loc || time || 'משלוח';
-  }
-  return time || 'איסוף עצמי';
+/** כתובת למשלוח · רחוב ואז עיר, כששניהם שמורים */
+export function deliveryAddress(order: { address: string; city: string }): string {
+  return [order.address.trim(), order.city.trim()].filter(Boolean).join(', ');
 }
 
 export function orderUtilitySlots(order: OrderTemplateSlots): Record<UtilitySlot, string> {
   return {
     name: order.name.trim() || '—',
-    orderId: order.id,
     total: String(order.total),
-    timeOrAddress: timeOrAddress(order),
+    address: deliveryAddress(order) || '—',
+    time: order.time.trim() || '—',
   };
 }
 
-export function orderUtilityBodyParams(order: OrderTemplateSlots): string[] {
+export function orderUtilityBodyParams(order: OrderTemplateSlots, kind: UtilityKind): string[] {
   const slots = orderUtilitySlots(order);
-  return UTILITY_BODY_KEYS.map((key) => slots[key]);
+  return UTILITY_BODY_KEYS[kind].map((key) => slots[key]);
 }
 
 export function confirmTemplateKind(ship: string): Extract<UtilityKind, 'confirmPickup' | 'confirmDelivery'> {

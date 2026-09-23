@@ -5,11 +5,12 @@ import { isWhatsAppPhone, toWhatsAppPhone } from './phone.ts';
 import { verifyWebhookChallenge } from './webhook.ts';
 import {
   confirmTemplateKind,
+  deliveryAddress,
   META_UTILITY_TEMPLATES,
   orderUtilityBodyParams,
   statusTemplateKind,
-  timeOrAddress,
   UTILITY_BODY_KEYS,
+  type UtilityKind,
 } from './vars.ts';
 
 test('מספר ישראלי מומר ל-E.164 בלי פלוס', () => {
@@ -35,12 +36,25 @@ test('תבנית Authentication · הקוד בגוף ובכפתור copy-code', 
   ]);
 });
 
-test('תבנית Utility · {{1}} שם', () => {
-  const payload = utilityTemplatePayload('972501234567', 'order_pickup_confirmed', 'he', ['דנה']);
-  const body = payload.template.components[0];
-  assert.equal(body.type, 'body');
-  if (body.type !== 'body') throw new Error('expected body');
-  assert.equal(body.parameters[0].text, 'דנה');
+test('תבנית Utility · פרמטרי גוף לפי סוג', () => {
+  const cases: { kind: UtilityKind; params: string[] }[] = [
+    { kind: 'confirmPickup', params: ['דנה', '145', '12:30'] },
+    { kind: 'confirmDelivery', params: ['דנה', 'הרצל 5, יבנה', '145', '13:00'] },
+    { kind: 'readyPickup', params: ['דנה'] },
+    { kind: 'delivered', params: ['דנה', 'הרצל 5, יבנה'] },
+  ];
+  for (const { kind, params } of cases) {
+    const payload = utilityTemplatePayload('972501234567', META_UTILITY_TEMPLATES[kind], 'he', params);
+    const body = payload.template.components[0];
+    assert.equal(body.type, 'body');
+    if (body.type !== 'body') throw new Error('expected body');
+    assert.equal(payload.template.name, META_UTILITY_TEMPLATES[kind]);
+    assert.deepEqual(
+      body.parameters.map((p) => p.text),
+      params,
+    );
+    assert.equal(body.parameters.length, UTILITY_BODY_KEYS[kind].length);
+  }
 });
 
 test('פרמטר תבנית בלי ירידות שורה', () => {
@@ -55,8 +69,12 @@ test('שמות Meta · כולל שגיאות הכתיב', () => {
   assert.equal(META_UTILITY_TEMPLATES.delivered, 'order_dalivery');
 });
 
-test('{{1}} שם · מפתחות נוספים מוכנים אם Meta ידרוש', () => {
-  assert.deepEqual([...UTILITY_BODY_KEYS], ['name']);
+test('פרמטרי גוף · ארבע תבניות Utility בסדר Meta', () => {
+  assert.deepEqual([...UTILITY_BODY_KEYS.confirmPickup], ['name', 'total', 'time']);
+  assert.deepEqual([...UTILITY_BODY_KEYS.confirmDelivery], ['name', 'address', 'total', 'time']);
+  assert.deepEqual([...UTILITY_BODY_KEYS.readyPickup], ['name']);
+  assert.deepEqual([...UTILITY_BODY_KEYS.delivered], ['name', 'address']);
+
   const pickup = {
     name: 'דנה כהן',
     id: 'ord_99',
@@ -66,12 +84,37 @@ test('{{1}} שם · מפתחות נוספים מוכנים אם Meta ידרוש'
     city: '',
     address: '',
   };
-  assert.deepEqual(orderUtilityBodyParams(pickup), ['דנה כהן']);
-  assert.equal(timeOrAddress(pickup), '12:30');
-  assert.equal(
-    timeOrAddress({ ship: 'deliv', time: '13:00', city: 'יבנה', address: 'הרצל 5' }),
-    'הרצל 5, יבנה · 13:00',
+  const delivery = {
+    ...pickup,
+    ship: 'deliv',
+    time: '13:00',
+    city: 'יבנה',
+    address: 'הרצל 5',
+  };
+
+  assert.deepEqual(orderUtilityBodyParams(pickup, 'confirmPickup'), ['דנה כהן', '145', '12:30']);
+  assert.deepEqual(orderUtilityBodyParams(delivery, 'confirmDelivery'), [
+    'דנה כהן',
+    'הרצל 5, יבנה',
+    '145',
+    '13:00',
+  ]);
+  assert.deepEqual(orderUtilityBodyParams(pickup, 'readyPickup'), ['דנה כהן']);
+  assert.deepEqual(orderUtilityBodyParams(delivery, 'delivered'), ['דנה כהן', 'הרצל 5, יבנה']);
+
+  assert.equal(deliveryAddress({ address: 'הרצל 5', city: 'יבנה' }), 'הרצל 5, יבנה');
+  assert.equal(deliveryAddress({ address: 'הרצל 5', city: '' }), 'הרצל 5');
+  assert.equal(deliveryAddress({ address: '', city: 'יבנה' }), 'יבנה');
+  assert.deepEqual(
+    orderUtilityBodyParams({ ...delivery, name: '  ', address: '', city: '', time: '  ' }, 'confirmDelivery'),
+    ['—', '—', '145', '—'],
   );
+  assert.deepEqual(orderUtilityBodyParams({ ...pickup, total: 0, time: '' }, 'confirmPickup'), [
+    'דנה כהן',
+    '0',
+    '—',
+  ]);
+
   assert.equal(confirmTemplateKind('self'), 'confirmPickup');
   assert.equal(confirmTemplateKind('deliv'), 'confirmDelivery');
   assert.equal(statusTemplateKind('מוכנה', 'self'), 'readyPickup');

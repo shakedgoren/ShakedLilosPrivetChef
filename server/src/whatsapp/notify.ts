@@ -36,9 +36,10 @@ function templateName(kind: UtilityKind): string {
 }
 
 export async function notifyOrderConfirmed(order: OrderNotifyInput): Promise<WhatsAppSendResult> {
-  const name = templateName(confirmTemplateKind(order.ship));
+  const kind = confirmTemplateKind(order.ship);
+  const name = templateName(kind);
   if (!name) return { ok: false, skipped: 'no_template' };
-  return sendUtility(order.phone, name, orderUtilityBodyParams(order));
+  return sendUtility(order.phone, name, orderUtilityBodyParams(order, kind));
 }
 
 export async function notifyOrderStatus(order: OrderNotifyInput): Promise<WhatsAppSendResult> {
@@ -46,7 +47,7 @@ export async function notifyOrderStatus(order: OrderNotifyInput): Promise<WhatsA
   if (!kind) return { ok: false, skipped: 'no_template' };
   const name = templateName(kind);
   if (!name) return { ok: false, skipped: 'no_template' };
-  return sendUtility(order.phone, name, orderUtilityBodyParams(order));
+  return sendUtility(order.phone, name, orderUtilityBodyParams(order, kind));
 }
 
 /** הזמנות · לא מעכבות את התשובה ללקוחה */
