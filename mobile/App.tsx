@@ -17,6 +17,7 @@ import { LogoutButton } from './src/components/LogoutButton';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { CheerProvider } from './src/components/Cheer';
 import { AdminNav } from './src/admin/AdminNav';
+import { ShowroomHost } from './src/showroom/ShowroomHost';
 import { registerForPush } from './src/lib/push';
 import { enableRTL } from './src/theme/rtl';
 import { enableWebFrame } from './src/theme/webFrame';
@@ -149,6 +150,12 @@ function Shell() {
           מרחף מעליה. הוא מחשב את האזור הבטוח בעצמו. */}
       <LogoutButton />
       <LoginOverlay />
+
+      {/* ⚠ **גרסת הראווה בלבד** · המאזין לכפתור ״להזמנה״, שפותח את
+          טופס השארת הפרטים. מחזיר `null` באפליקציה הרגילה.
+          חייב להיות **אחרי** שכבת ההתחברות: זו חלונית שנפתחת מעל
+          המסך, ומעליה אין מה להציג. */}
+      <ShowroomHost />
 
       {/* ⚠ **הנאב-בר מתעלם מה-SafeArea התחתון** · הקנבס מציב אותו
           ב-`bottom: 26`, ובתוך אזור בטוח ה-26 נמדדו מתחתית **האזור**
