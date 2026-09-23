@@ -51,15 +51,8 @@ const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
  * היעדר בחירה, כי ״שנתי״ הצטרף ואי אפשר לבטא שלושה מצבים
  * בתיבת סימון אחת.
  */
-const EVERY_SUB: Record<ExpenseEvery, string> = {
-  once: 'נרשמת פעם אחת בתאריך שבחרת',
-  month: 'תיווצר מעצמה בכל חודש, בלי להקליד שוב',
-  year: 'תיווצר מעצמה באותו חודש בכל שנה',
-};
-
-/** ⚠ הכיתוב הזה נכתב על ידי Claude · שקד לא כתבה אותו */
-const METHOD_LABEL = 'איך שולם';
-const METHOD_HINT = 'לא חובה · עוזר לעקוב אחרי ההוצאות';
+/** ⚠ הכיתוב היחיד במקטע הזה · שקד ביקשה בלי הסברים והארות */
+const METHOD_LABEL = 'סוג תשלום';
 
 /**
  * ⚠ **שני הנוסחים האלה נכתבו על ידי Claude · 19.9.2026** · שקד לא
@@ -337,7 +330,7 @@ export function AdminExpensesScreen() {
             <Field label="הערה" value={note} onChange={setNote} placeholder="למשל: קצביית אבו חסן" />
 
             {/**
-              * ⚠ **איך שולם · בקשת שקד (23 בספטמבר 2026)** · ״סוג
+              * ⚠ **סוג תשלום · בקשת שקד (23 בספטמבר 2026)** · ״סוג
               * תשלום שאני אוכל לעקוב אחרי ההוצאות שלי״.
               * ⚠ **לחיצה שנייה מבטלת** · היא ביקשה שזה לא יהיה חובה,
               * ולכן חייבת להיות דרך לחזור ל״לא צוין״ אחרי בחירה.
@@ -358,16 +351,15 @@ export function AdminExpensesScreen() {
                   />
                 ))}
               </ChipRow>
-              <Text style={s.blockHint}>{METHOD_HINT}</Text>
             </View>
 
             {/**
               * ⚠ **תדירות · אותה בקשה** · ״שנתי קבוע, חודשי קבוע, או
               * תשלום חד פעמי״. ׳חד פעמי׳ הוא ברירת המחדל.
-              * ⚠ הכיתובים נכתבו על ידי Claude.
+              * ⚠ **בלי כותרת ובלי הסבר** · שקד, 23.9.2026: ״אין צורך
+              * בהארות והסברים״. שמות הצ׳יפים מסבירים את עצמם.
               */}
             <View style={s.block}>
-              <Text style={s.blockLabel}>כל כמה זמן</Text>
               <ChipRow>
                 {EXPENSE_EVERY.map((e) => (
                   <Chip
@@ -382,7 +374,6 @@ export function AdminExpensesScreen() {
                   />
                 ))}
               </ChipRow>
-              <Text style={s.blockHint}>{EVERY_SUB[every]}</Text>
             </View>
 
             {/* ⚠ **ברוחב מינימלי · בקשת שקד** · ממורכז ולא נמתח */}
@@ -402,7 +393,6 @@ const s = StyleSheet.create({
   /* ⚠ קבוצת שדה · כותרת, שורת צ׳יפים והסבר · 23 בספטמבר 2026 */
   block: { gap: 7 },
   blockLabel: { fontSize: 12.5, color: surface.muted },
-  blockHint: { fontSize: 11.5, color: surface.faint, lineHeight: 16 },
 
   body: { flex: 1 },
   pad: { paddingBottom: 120, gap: 12 },
