@@ -48,7 +48,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:ios": "bash scripts/build-ios.sh"
+    "build:ios": "bash scripts/build-ios.sh",
+    "build:web": "expo export --platform web --clear"
   },
   "private": true
 }
