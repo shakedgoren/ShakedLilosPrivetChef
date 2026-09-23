@@ -141,13 +141,23 @@ authRouter.post('/register/phone', async (req, res, next) => {
     await prisma.phoneVerification.upsert({ where: { phone }, create: { phone, ...data }, update: data });
 
     /* ⚠ הקוד לעולם לא ביומן · רק ב-RESET_DEBUG, לפיתוח */
+    /**
+     * ⚠ **`notifyOtp` אינו זורק · הוא מחזיר `ok:false`** · לכן
+     * ה-try/catch שהיה כאן לעולם לא נגע בכישלון, והלקוחה קיבלה
+     * ״נשלח״ גם כשMeta דחתה. עכשיו התשובה אומרת את האמת.
+     *
+     * ⚠ **הסיבה עצמה לא חוזרת ללקוחה** · רק `sent:false`.
+     * הנוסח של Meta נשמר לאבחון ב-`GET /admin/whatsapp`.
+     */
+    let sent = false;
     try {
-      await notifyOtp(phone, code);
+      const out = await notifyOtp(phone, code);
+      sent = out.ok === true;
     } catch (err) {
       console.error('[אימות טלפון] שליחת וואטסאפ נכשלה', err);
     }
 
-    res.json(env.resetDebug ? { ok: true, code } : { ok: true });
+    res.json(env.resetDebug ? { ok: true, sent, code } : { ok: true, sent });
   } catch (err) {
     next(err);
   }

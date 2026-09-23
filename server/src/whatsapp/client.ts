@@ -6,6 +6,7 @@
 import { env } from '../env.ts';
 import { authOtpPayload, utilityTemplatePayload, type TemplateMessagePayload } from './payloads.ts';
 import { isWhatsAppPhone, toWhatsAppPhone } from './phone.ts';
+import { noteWhatsAppFailure, noteWhatsAppSent } from './lastError.ts';
 
 export type WhatsAppSendResult =
   | { ok: true; id: string; to: string }
@@ -48,6 +49,7 @@ async function postTemplate(payload: TemplateMessagePayload): Promise<WhatsAppSe
   } catch (err) {
     const message = err instanceof Error ? err.message : 'network_error';
     console.error('whatsapp graph request failed', message);
+    noteWhatsAppFailure(payload.template.name, message);
     return { ok: false, error: message };
   }
 
@@ -62,6 +64,7 @@ async function postTemplate(payload: TemplateMessagePayload): Promise<WhatsAppSe
     const errObj = body && typeof body === 'object' ? (body as { error?: { message?: string } }).error : null;
     const message = errObj?.message || `http_${res.status}`;
     console.error('whatsapp graph error', res.status, message);
+    noteWhatsAppFailure(payload.template.name, message, res.status);
     return { ok: false, error: message, status: res.status };
   }
 
@@ -73,6 +76,7 @@ async function postTemplate(payload: TemplateMessagePayload): Promise<WhatsAppSe
             '',
         )
       : '';
+  noteWhatsAppSent();
   return { ok: true, id, to: payload.to };
 }
 

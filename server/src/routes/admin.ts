@@ -14,10 +14,38 @@ import { readJson } from '../json.ts';
 import { dayQuotas } from '../admin/dayQuotas.ts';
 import { CATS, MONTHS, type DayCatKey } from '../../../mobile/src/data/adminDays.ts';
 import { notifyLater, notifyOrderConfirmed, notifyOrderStatus } from '../whatsapp/notify.ts';
+import { whatsAppStats } from '../whatsapp/lastError.ts';
+import { env } from '../env.ts';
 
 export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireAdmin);
+
+/**
+ * מצב הוואטסאפ · **מסלול אבחון, לא מסלול מוצר.**
+ *
+ * ⚠ **נולד מתקלה אמיתית · 23 בספטמבר 2026** · קוד אימות ההרשמה
+ * לא הגיע, והאפליקציה הציגה ״נשלח״. השליחה מחזירה `ok:false`
+ * ואינה זורקת, ולכן ה-try/catch במסלול ההרשמה כלל לא נגע בה
+ * והתשובה ללקוחה נשארה חיובית. בלי המסלול הזה אין שום דרך לראות
+ * מה Meta ענתה בלי גישה ליומני השרת.
+ *
+ * ⚠ **מאומת כמנהלת** · התשובה של Meta עשויה לכלול שמות תבניות
+ * ומזהים פנימיים. היא לעולם לא חוזרת ללקוחה רגילה.
+ *
+ * ⚠ **אף סוד אינו נחשף** · על הטוקן מדווח רק אם הוא קיים.
+ */
+adminRouter.get('/whatsapp', (_req, res) => {
+  const wa = env.whatsapp;
+  res.json({
+    enabled: wa.enabled,
+    hasToken: Boolean(wa.token),
+    phoneNumberId: wa.phoneNumberId ? 'מוגדר' : 'חסר',
+    templateOtp: wa.templateOtp,
+    templateLang: wa.templateLang,
+    ...whatsAppStats(),
+  });
+});
 
 adminRouter.get('/orders', async (req, res, next) => {
   try {
