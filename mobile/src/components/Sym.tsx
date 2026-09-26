@@ -170,6 +170,25 @@ export const SYM = {
   download: { ios: 'tray.and.arrow.down', other: 'download', motion: 'drawOn' },
   fileText: { ios: 'text.document.fill', other: 'description', motion: 'drawOn' },
   package: { ios: 'shippingbox.fill', other: 'inventory_2', motion: 'drawOn' },
+
+  /**
+   * ⚠ **נוספו ב-26 בספטמבר 2026 · בקשת שקד** · ״בכל מקום שצריך
+   * להופיע אייקון, לא משנה איזה — תשתמש באייקונים האמיתיים ולא
+   * בציור כמו שיש עכשיו״. אלה הסמלים שחסרו כדי להוציא מהשימוש
+   * את הציורים שב-`icons/index.tsx`.
+   */
+  login: { ios: 'rectangle.portrait.and.arrow.forward', other: 'login', motion: 'bounceWhole' },
+  user: { ios: 'person.fill', other: 'person', motion: 'bounceWhole' },
+  userSmall: { ios: 'person.fill', other: 'person', motion: 'none' },
+  gift: { ios: 'gift.fill', other: 'redeem', motion: 'bounceWhole' },
+  cart: { ios: 'cart.fill', other: 'shopping_cart', motion: 'bounceWhole' },
+  bag: { ios: 'bag.fill', other: 'shopping_bag', motion: 'bounceWhole' },
+  calendar: { ios: 'calendar', other: 'calendar_month', motion: 'bounceWhole' },
+  pencil: { ios: 'pencil', other: 'edit', motion: 'drawOn' },
+  pin: { ios: 'mappin.and.ellipse', other: 'location_on', motion: 'bounceWhole' },
+  cash: { ios: 'banknote.fill', other: 'payments', motion: 'bounceWhole' },
+  envelope: { ios: 'envelope.fill', other: 'mail', motion: 'bounceWhole' },
+  send: { ios: 'paperplane.fill', other: 'send', motion: 'bounceWhole' },
 } as const satisfies Record<string, { ios: SFSymbol; other: string; motion: Motion }>;
 
 /**
@@ -191,6 +210,23 @@ export const SymClock = asIcon('clock');
 export const SymRefresh = asIcon('refresh');
 export const SymBoard = asIcon('board');
 export const SymBarChart = asIcon('barChart');
+/**
+ * ⚠ **נוספו ב-26 בספטמבר 2026** · חלק מהאייקונים המצוירים הועברו
+ * לא כתגיות אלא **כערכים** (`icon: Plus`, `Icon={Calendar}`,
+ * `typeof User`), ולכן `<S>` לבדו לא מספיק להם. החוזה זהה
+ * ל-`IconProps` של הציורים, ולכן אלה מחליפים אותם אחד לאחד.
+ */
+export const SymPlus = asIcon('plus');
+export const SymCalendar = asIcon('calendar');
+export const SymUser = asIcon('user');
+export const SymUserSmall = asIcon('userSmall');
+export const SymPencil = asIcon('pencil');
+export const SymPhone = asIcon('phone');
+export const SymBag = asIcon('bag');
+export const SymDelivery = asIcon('delivery');
+export const SymCamera = asIcon('camera');
+export const SymCash = asIcon('cash');
+export const SymEnvelope = asIcon('envelope');
 
 /** קיצור · <S k="home" size={22} /> */
 export function S({ k, size, color }: { k: keyof typeof SYM; size?: number; color?: string }) {

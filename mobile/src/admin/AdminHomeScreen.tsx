@@ -17,7 +17,6 @@ import { CategoryPie, REV_CHART_H, RevenueChart, SplitColumns } from './home/Cha
 import { REV_RANGES, useAdminHome } from './home/useAdminHome';
 import { LAV, NightSky } from './home/NightSky';
 import { LTR_ROW } from './ui/ltrRow';
-import { LogOut, Plus } from '../icons';
 import { iconOrbShadow } from '../theme/glass';
 
 /** כל אריח מצביע על מסך ניהול · אותה מפה שבקנבס, בשמות של הניווט */
@@ -126,7 +125,7 @@ export function AdminHomeScreen() {
           style={s.exit}
           hitSlop={8}
         >
-          <LogOut size={17} color={LAV.dim} strokeWidth={1.9} />
+          <S k="logout" size={17} color={LAV.dim} />
         </Pressable>
         </View>
       </View>

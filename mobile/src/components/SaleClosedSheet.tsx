@@ -2,7 +2,6 @@ import React from 'react';
 import { S } from './Sym';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
-import { Bell } from '../icons';
 import { ContinueButton } from './ContinueButton';
 import { a, radius, space, surface } from '../theme/tokens';
 import { iconOrbShadow } from '../theme/glass';
@@ -76,7 +75,7 @@ export function SaleClosedSheet({
           </Pressable>
 
           <View style={[s.ring, { backgroundColor: a(accent.rgb, 0.12) }]}>
-            <Bell size={BELL} color={accent.deep} strokeWidth={1.7} />
+            <S k="bell" size={BELL} color={accent.deep} />
           </View>
 
           {/* ⚠ **אין יותר מצב ״נרשמת״** · שקד ביקשה (16.9.2026) שההרשמה

@@ -1,8 +1,8 @@
 import React from 'react';
+import { S } from './Sym';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Text } from '../ui/text';
-import { Bell } from '../icons';
 import { Confetti } from './Confetti';
 import { NO_TOUCH } from '../theme/pointerEvents';
 import { surface } from '../theme/tokens';
@@ -160,7 +160,7 @@ function CheerLayer({ label, kind, onDone }: { label: string; kind: Kind; onDone
       {cheering ? (
         <Animated.View style={[s.disc, { opacity: t, transform: [{ scale: t }] }]}>
           <Animated.View style={{ transform: [{ rotate }] }}>
-            <Bell size={BELL_SIZE} color={BELL_INK} strokeWidth={1.6} />
+            <S k="bell" size={BELL_SIZE} color={BELL_INK} />
           </Animated.View>
           <Text style={s.label}>{label}</Text>
         </Animated.View>

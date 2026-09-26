@@ -1,4 +1,5 @@
 import React from 'react';
+import { S, SymCalendar, SymPencil, SymPhone, SymUser, SymUserSmall } from '../components/Sym';
 import {
   KeyboardAvoidingView,
   Linking,
@@ -10,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import { Text, TextInput } from '../ui/text';
-import { Calendar, Close, Gift, Pencil, Phone, User, UserSmall } from '../icons';
 import { ContinueButton } from '../components/ContinueButton';
 import { INPUT_START } from '../theme/rtl';
 import { NO_TOUCH } from '../theme/pointerEvents';
@@ -64,7 +64,7 @@ type FieldProps = {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  Icon: typeof User;
+  Icon: typeof SymUser;
   keyboard?: 'phone-pad' | 'number-pad';
   multiline?: boolean;
   invalid?: boolean;
@@ -149,7 +149,7 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
         >
           <View style={s.sheet}>
             <Pressable onPress={onClose} style={s.close} hitSlop={8}>
-              <Close size={13} color="#6E6478" strokeWidth={2} />
+              <S k="close" size={13} color="#6E6478" />
             </Pressable>
 
             <ScrollView
@@ -158,7 +158,7 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
               showsVerticalScrollIndicator={false}
             >
               <View style={[s.ring, { backgroundColor: a(ACCENT.rgb, 0.12) }]}>
-                <Gift size={26} color={ACCENT.deep} strokeWidth={1.7} />
+                <S k="gift" size={26} color={ACCENT.deep} />
               </View>
 
               <Text style={s.title}>{TITLE}</Text>
@@ -169,7 +169,7 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
                 value={v.name}
                 onChange={set('name')}
                 placeholder="מה השם שלך?"
-                Icon={User}
+                Icon={SymUser}
                 invalid={tried && missing === 'name'}
               />
               <Field
@@ -177,7 +177,7 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
                 value={v.phone}
                 onChange={set('phone')}
                 placeholder="050-0000000"
-                Icon={Phone}
+                Icon={SymPhone}
                 keyboard="phone-pad"
                 invalid={tried && missing === 'phone'}
               />
@@ -208,14 +208,14 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
                 value={v.date}
                 onChange={set('date')}
                 placeholder="14.11, או ״סוף נובמבר״"
-                Icon={Calendar}
+                Icon={SymCalendar}
               />
               <Field
                 label="מספר אורחים"
                 value={v.guests}
                 onChange={set('guests')}
                 placeholder="20"
-                Icon={UserSmall}
+                Icon={SymUserSmall}
                 keyboard="number-pad"
               />
               <Field
@@ -223,7 +223,7 @@ export function EnquirySheet({ open, onClose }: { open: boolean; onClose: () => 
                 value={v.note}
                 onChange={set('note')}
                 placeholder="תפריט, אלרגיות, שעה, כל דבר.."
-                Icon={Pencil}
+                Icon={SymPencil}
                 multiline
               />
 

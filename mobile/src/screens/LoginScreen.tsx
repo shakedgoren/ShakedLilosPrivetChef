@@ -29,9 +29,8 @@ import { BlobField } from '../components/BlobField';
 import { Photo } from '../components/Photo';
 import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet, type ResetForm } from '../components/LoginSheets';
-import { GoogleG, Mail, WhatsApp } from '../components/LoginIcons';
-import { S } from '../components/Sym';
-import { User } from '../icons';
+import { GoogleG, WhatsApp } from '../components/LoginIcons';
+import { S, SymEnvelope, SymUser } from '../components/Sym';
 import {
   disarmFace,
   enrollFace,
@@ -121,7 +120,13 @@ function Field({
   value: string;
   onChange?: (v: string) => void;
   placeholder: string;
-  Icon?: typeof User;
+  /**
+   * ⚠ **טיפוס רכיב ולא `typeof`** · השדה מקבל גם סמל אמיתי
+   * (`SymUser`) וגם אייקון מותג (`Mail`, `GoogleG`), ולשני
+   * הסוגים אין חתימה זהה. `typeof SymUser` דרש `displayName`
+   * ופסל את אייקוני המותג.
+   */
+  Icon?: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
   sym?: 'phone' | 'lock';
   secure?: boolean;
   eye?: boolean;
@@ -535,7 +540,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         <Field label="טלפון" value={phone} onChange={onPhone} onBlur={onPhoneDone} placeholder="050-0000000" sym="phone" keyboard="phone-pad" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <View style={s.waRow}>
           <View style={s.waPill}>
-            <WhatsApp size={13} color="#127A3E" strokeWidth={1.8} />
+            <WhatsApp size={14} />
             <Text style={s.waText}>וואטסאפ</Text>
           </View>
         </View>
@@ -564,7 +569,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         </View>
         <View style={s.waRow}>
           <View style={s.waPill}>
-            <WhatsApp size={13} color="#127A3E" strokeWidth={1.8} />
+            <WhatsApp size={14} />
             <Text style={s.waText}>{phone || '—'}</Text>
           </View>
         </View>
@@ -578,8 +583,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
       <>
         <Dots at={2} />
         <Field label="טלפון" value={phone} placeholder="050-0000000" sym="phone" locked showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={User} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="אימייל" value={mail} onChange={setMail} placeholder="name@mail.com" Icon={Mail} keyboard="email-address" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={SymUser} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        <Field label="אימייל" value={mail} onChange={setMail} placeholder="name@mail.com" Icon={SymEnvelope} keyboard="email-address" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} sym="lock" secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" sym="lock" secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
 

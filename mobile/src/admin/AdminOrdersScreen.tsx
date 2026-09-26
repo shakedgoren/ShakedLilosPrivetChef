@@ -1,4 +1,5 @@
 import React from 'react';
+import { SymCalendar, SymClock, SymPlus } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
@@ -14,7 +15,6 @@ import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';
 import { RollSheet } from './RollSheet';
 import { useAdminOrders } from './useAdminOrders';
-import { Calendar, Clock, Plus } from '../icons';
 import { upcomingSale } from '../data/saleWeek';
 
 const ALL = 'הכל';
@@ -95,9 +95,9 @@ export function AdminOrdersScreen() {
          בלי לדרוס אותה, מה שהגלולות הרחבות לא יכלו. */
       actions={[
         /* ⚠ השער להיסטוריה · אותו דפוס של אייקון השעון במסך הקניות */
-        { label: 'היסטוריית הזמנות', onPress: () => go('adminOrderHistory'), icon: Clock },
-        { label: BOARD_LABEL, onPress: () => go('adminBoard'), icon: Calendar },
-        { label: 'הזמנה ידנית', onPress: admin.openNew, icon: Plus, primary: true },
+        { label: 'היסטוריית הזמנות', onPress: () => go('adminOrderHistory'), icon: SymClock },
+        { label: BOARD_LABEL, onPress: () => go('adminBoard'), icon: SymCalendar },
+        { label: 'הזמנה ידנית', onPress: admin.openNew, icon: SymPlus, primary: true },
       ]}
     >
       <View style={s.tabs}>

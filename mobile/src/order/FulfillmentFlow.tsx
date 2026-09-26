@@ -21,7 +21,6 @@ import { apiEnabled } from '../api/config';
 import { COPY, orderError } from '../api/copy';
 import { createOrder } from '../api/orders';
 import { ApiError, type OrderDetails } from '../api/types';
-import { Truck } from '../icons';
 import { PayLogo } from '../components/PayLogo';
 import { OptionGrid } from '../components/OptionGrid';
 import { TimeWheel } from '../components/TimeWheel';

@@ -21,7 +21,6 @@ import {
 import { Chip } from '../ui/Chip';
 import { ToggleRow } from '../ui/Toggle';
 import type { useAdminDays } from './useAdminDays';
-import { Minus, Plus } from '../../icons';
 
 /** ראשון, 8 בספטמבר */
 function dayTitle(key: string) {

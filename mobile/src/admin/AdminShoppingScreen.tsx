@@ -1,5 +1,5 @@
 import React from 'react';
-import { SymClock } from '../components/Sym';
+import { SymClock, SymPlus } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
@@ -22,7 +22,6 @@ import { ProgressBar } from './ui/ProgressBar';
 import { ShopTable } from './shopping/ShopTable';
 import { AddShopSheet } from './shopping/AddShopSheet';
 import { nf, useAdminShopping } from './shopping/useAdminShopping';
-import { Plus } from '../icons';
 
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
 
@@ -40,7 +39,7 @@ export function AdminShoppingScreen() {
       /* ⚠ אייקונים ולא מילים · שעון להיסטוריה ו-״+״ להוספה, כמו בקנבס */
       actions={[
         { label: 'היסטוריה', onPress: () => go('adminHistory'), icon: SymClock },
-        { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
+        { label: 'פריט', onPress: admin.openAdd, icon: SymPlus, primary: true },
       ]}
     >
       <ChipRail>

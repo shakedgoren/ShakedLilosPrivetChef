@@ -1,12 +1,11 @@
 import React from 'react';
-import { SymRefresh } from '../components/Sym';
+import { SymPlus, SymRefresh } from '../components/Sym';
 import { ScrollView, StyleSheet } from 'react-native';
 import { STOCK_SUB, STOCK_TITLE } from '../data/adminStock';
 import { AdminShell } from './ui/AdminShell';
 import { SupplyStock } from './stock/SupplyStock';
 import { AddItemSheet } from './stock/AddItemSheet';
 import { useAdminStock } from './stock/useAdminStock';
-import { Plus } from '../icons';
 
 /**
  * מלאי · **לוגיסטי בלבד**.
@@ -27,7 +26,7 @@ export function AdminStockScreen() {
          פריט שנמחק בטעות. בקשה של שקד (15 בספטמבר 2026). */
       actions={[
         { label: 'ביטול מחיקה', onPress: admin.undoDrop, icon: SymRefresh, off: !admin.canUndo },
-        { label: 'פריט', onPress: admin.openAdd, icon: Plus, primary: true },
+        { label: 'פריט', onPress: admin.openAdd, icon: SymPlus, primary: true },
       ]}
     >
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>

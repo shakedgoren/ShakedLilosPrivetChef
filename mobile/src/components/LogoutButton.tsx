@@ -4,6 +4,7 @@ import { useNav } from '../navigation/store';
 import { LogoutConfirm } from './LogoutConfirm';
 import { S } from './Sym';
 import { PASS_TOUCH } from '../theme/pointerEvents';
+import { LOGOUT_EDGE, LOGOUT_FILL } from '../theme/glass';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
@@ -23,9 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const SIZE = 38;
 const TOP = 22;
 const SIDE = 18;
-const GLYPH = 17;
-const STROKE = 1.9;
-const INK = '#6E6478';
+const GLYPH = 18;
 
 /**
  * דלת עם חץ יוצא · החץ מצביע שמאלה, כלומר החוצה מהדלת,
@@ -65,7 +64,7 @@ export function LogoutButton() {
   return (
     <View style={[s.slot, PASS_TOUCH]}>
       <Pressable onPress={() => setOpen(true)} style={[s.button, { top: insets.top + TOP }]} hitSlop={8}>
-        <S k="logout" size={GLYPH} />
+        <S k="logout" size={GLYPH} color="#FFFFFF" />
       </Pressable>
 
       <LogoutConfirm
@@ -91,9 +90,18 @@ const s = StyleSheet.create({
     width: SIZE,
     height: SIZE,
     borderRadius: SIZE / 2,
-    /* לבן כמעט אטום · הכפתור עובר מעל מסכים בכל גוני הקטגוריות */
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    boxShadow: '0 3px 9px -4px rgba(20,16,12,0.55)',
+    /**
+     * ⚠ **סגול מלא · 26 בספטמבר 2026** · היה לבן כמעט אטום עם
+     * סמל אפור. שקד שלחה תמונה של שני הכפתורים וביקשה ״תבנה
+     * אותם בדיוק אותו הדבר״: עיגול סגול מלא, סמל לבן, ושפה
+     * תחתונה כהה שנותנת נפח. הגוון נדגם מהתמונה עצמה.
+     *
+     * ⚠ **הוא עדיין עובר מעל מסכים בכל גוני הקטגוריות** · זו
+     * הייתה הסיבה ללבן. הסגול הזה כהה מכל חמשת הגוונים, ולכן
+     * הוא נקרא על כולם — נמדד מול `hues` ב-`tokens`.
+     */
+    backgroundColor: LOGOUT_FILL,
+    boxShadow: LOGOUT_EDGE,
     alignItems: 'center',
     justifyContent: 'center',
   },

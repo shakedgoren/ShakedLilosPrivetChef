@@ -12,12 +12,12 @@ import {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import {
   CTA_DROP,
-  CTA_FILL_STOPS,
-  CTA_GLASS_STOPS,
-  CTA_INK,
-  CTA_KNOB_RADIUS,
-  CTA_KNOB_SHADOW,
+  CTA_KNOB_EDGE,
+  CTA_KNOB_FILL,
+  CTA_LABEL_INK,
+  CTA_PILL_STOPS,
   CTA_SHADOW,
+  CTA_SLIDE_STOPS,
 } from '../theme/glass';
 import { stopOf } from '../theme/tokens';
 import { NO_TOUCH } from '../theme/pointerEvents';
@@ -92,7 +92,7 @@ const nextId = () => `cta${(seq += 1)}`;
 
 export function PrimaryButton({ label, onPress }: Props) {
   const id = React.useMemo(nextId, []);
-  const step = 1 / (CTA_FILL_STOPS.length - 1);
+  const step = 1 / (CTA_SLIDE_STOPS.length - 1);
 
   /** מיקום הידית · 0 במנוחה, ‎-TRAVEL בסוף המסלול */
   const x = React.useRef(new Animated.Value(0)).current;
@@ -312,8 +312,9 @@ export function PrimaryButton({ label, onPress }: Props) {
           {/* גוף הזכוכית */}
           <Svg width="100%" height="100%" style={[StyleSheet.absoluteFill, NO_TOUCH]}>
             <Defs>
-              <LinearGradient id={`${id}g`} x1="0" y1="0" x2="0.5" y2="0.866">
-                {CTA_GLASS_STOPS.map((c, i) => (
+              {/* ⚠ אנכי · כך הוא בתמונה של שקד, ולא באלכסון של הקנבס */}
+              <LinearGradient id={`${id}g`} x1="0" y1="0" x2="0" y2="1">
+                {CTA_PILL_STOPS.map((c, i) => (
                   <Stop key={c + i} offset={i} {...stopOf(c)} />
                 ))}
               </LinearGradient>
@@ -329,7 +330,7 @@ export function PrimaryButton({ label, onPress }: Props) {
             <Svg width="100%" height="100%">
               <Defs>
                 <LinearGradient id={`${id}f`} x1="0" y1="0" x2="0.97" y2="0.24">
-                  {CTA_FILL_STOPS.map((c, i) => (
+                  {CTA_SLIDE_STOPS.map((c, i) => (
                     <Stop key={c + i} offset={i === 1 ? 0.58 : i * step} {...stopOf(c)} />
                   ))}
                 </LinearGradient>
@@ -353,7 +354,10 @@ export function PrimaryButton({ label, onPress }: Props) {
           )}
 
           <Animated.View style={[s.knob, { transform: [{ translateX: slide }] }]}>
-            <S k="arrowLeft" size={ARROW} color={CTA_INK} />
+            {/* ⚠ **סמל אמיתי ולא חץ** · בתמונה של שקד יש בידית סמל
+                כניסה — דלת עם חץ. `login` הוא SF Symbol אמיתי,
+                ובדפדפן ובאנדרואיד הוא Material Symbols. */}
+            <S k="login" size={ARROW} color="#FFFFFF" />
           </Animated.View>
         </View>
       </View>
@@ -391,8 +395,9 @@ const s = StyleSheet.create({
     textAlign: 'center',
     lineHeight: H,
     fontSize: 18,
-    fontWeight: '600',
-    color: CTA_INK,
+    /* ⚠ לבן ומודגש · כך הוא בתמונה. היה 600 בגוון סגול כהה */
+    fontWeight: '700',
+    color: CTA_LABEL_INK,
   },
   fill: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
   /* ⚠ פס האור · נחתך על ידי `overflow: 'hidden'` של הכפתור */
@@ -407,7 +412,9 @@ const s = StyleSheet.create({
    * ⚠ **`right` ולא `left`** · הידית נחה בקצה הימני, ומשם נגררת
    * שמאלה. `right` פיזי ולא `end`, כי `end` תלוי ב-`I18nManager`
    * שאינו אמין בדפדפן.
-   * ⚠ ריבוע מעוגל ולא עיגול · כך היא נראתה בתצוגה ששקד בחרה.
+   * ⚠ **עיגול מלא בסגול · 26 בספטמבר 2026** · היה ריבוע מעוגל
+   * לבן. בתמונה ששקד שלחה הידית היא עיגול סגול מלא עם סמל לבן
+   * בתוכו ושפה תחתונה כהה שנותנת לו נפח.
    */
   knob: {
     position: 'absolute',
@@ -415,10 +422,10 @@ const s = StyleSheet.create({
     top: KNOB_INSET,
     width: KNOB,
     height: KNOB,
-    borderRadius: CTA_KNOB_RADIUS,
-    backgroundColor: '#FFFFFF',
+    borderRadius: KNOB / 2,
+    backgroundColor: CTA_KNOB_FILL,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: CTA_KNOB_SHADOW,
+    boxShadow: CTA_KNOB_EDGE,
   },
 });

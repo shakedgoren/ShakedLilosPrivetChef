@@ -25,7 +25,6 @@ import {
 } from '../data/adminCustomers';
 import { AdminShell } from './ui/AdminShell';
 import { Chip } from './ui/Chip';
-import { PhoneCall, Plus } from '../icons';
 import { Sheet } from './ui/Sheet';
 import { NewOrderSheet } from './NewOrderSheet';
 import { SentNotice } from './SentNotice';

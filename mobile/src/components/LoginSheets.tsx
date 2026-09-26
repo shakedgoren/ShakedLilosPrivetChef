@@ -5,7 +5,6 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View
 import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
 import { LEGAL_DOCS, LOGIN_COPY as T } from '../screens/loginCopy';
-import { Mail, Send } from './LoginIcons';
 import { NO_TOUCH } from '../theme/pointerEvents';
 
 /**
@@ -263,7 +262,7 @@ export function ForgotSheet({
           style={s.input}
         />
         <View style={[s.fieldIcon, NO_TOUCH]}>
-          <Mail size={18} color="#9A93A6" />
+          <S k="envelope" size={18} color="#9A93A6" />
         </View>
       </View>
 
@@ -271,7 +270,7 @@ export function ForgotSheet({
 
       {/* ⚠ ברוחב מינימלי · ראו `ctaSlim` */}
       <Pressable onPress={onSend} disabled={busy} style={[s.cta, s.ctaSlim, busy && s.ctaOff]}>
-        <Send size={18} color="#FFFFFF" />
+        <S k="send" size={18} color="#FFFFFF" />
         <Text style={s.ctaText}>{T.forgotCta}</Text>
       </Pressable>
 

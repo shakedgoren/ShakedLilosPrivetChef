@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { S, SymBoard, SymFileText, SymPackage } from '../components/Sym';
+import { S, SymBag, SymBoard, SymCamera, SymCash, SymDelivery, SymFileText, SymPackage } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
@@ -17,7 +17,7 @@ import {
 } from '../data/adminMoney';
 import { AdminShell } from './ui/AdminShell';
 import { MoneyWave, type WavePoint } from './money/MoneyWave';
-import { Bag, Bowl, BoxMeal, Camera, Cart, ChefHat, PayCash, SchnitzelDish, Truck } from '../icons';
+import { Bowl, BoxMeal, ChefHat, SchnitzelDish } from '../icons';
 import { Chip } from './ui/Chip';
 import { apiEnabled } from '../api/config';
 import { adminMoney } from '../api/admin';
@@ -52,11 +52,11 @@ const CAT_ICON: Record<string, typeof Bowl> = {
  * חבילה לאריזות, משאית למשלוחים, קרש למטבח ומצלמה לאינסטגרם.
  */
 const EXP_LOOK: Record<string, { Icon: typeof Bowl; hue: string; deep: string }> = {
-  'חומרי גלם': { Icon: Bag, hue: '#C98A5B', deep: '#A65E2A' },
+  'חומרי גלם': { Icon: SymBag, hue: '#C98A5B', deep: '#A65E2A' },
   'אריזות וכלים': { Icon: SymPackage, hue: '#8E6FD0', deep: '#43307A' },
-  'דלק ומשלוחים': { Icon: Truck, hue: '#8FBFD8', deep: '#2B4A6E' },
+  'דלק ומשלוחים': { Icon: SymDelivery, hue: '#8FBFD8', deep: '#2B4A6E' },
   'ציוד ותחזוקה': { Icon: SymBoard, hue: '#9FC9AE', deep: '#2C5A3E' },
-  'שיווק': { Icon: Camera, hue: '#E8B48F', deep: '#7A3D18' },
+  'שיווק': { Icon: SymCamera, hue: '#E8B48F', deep: '#7A3D18' },
 };
 
 /** ‎#7B5CBC → ‎123,92,188 · לשקיפויות, כי אין rgba על hex ב-RN */
@@ -166,7 +166,7 @@ export function AdminMoneyScreen() {
       sub={view ? view.label : MONEY_FAIL_SUB}
       actions={[
         { label: 'ניהול הוצאות', onPress: () => go('adminExpenses'), icon: SymFileText },
-        { label: 'פנקס ההכנסות', onPress: () => go('adminIncome'), icon: PayCash },
+        { label: 'פנקס ההכנסות', onPress: () => go('adminIncome'), icon: SymCash },
       ]}
     >
       <View style={s.tabs}>
@@ -201,14 +201,14 @@ export function AdminMoneyScreen() {
         <View style={s.row}>
           <Pressable onPress={() => go('adminIncome')} style={s.tile}>
             <View style={s.tileHead}>
-              <PayCash size={13} color={PLUM.deep} strokeWidth={1.9} />
+              <S k="cash" size={13} color={PLUM.deep} />
               <Text style={s.tileK}>{TILE_REV}</Text>
             </View>
             <Text style={[s.tileV, { color: PLUM.deep }]}>{nf(view.revenue)}</Text>
           </Pressable>
           <Pressable onPress={() => go('adminExpenses')} style={s.tile}>
             <View style={s.tileHead}>
-              <Cart size={13} color="#A65E2A" strokeWidth={1.9} />
+              <S k="cart" size={13} color="#A65E2A" />
               <Text style={s.tileK}>{TILE_EXP}</Text>
             </View>
             <Text style={[s.tileV, { color: '#A65E2A' }]}>{nf(view.expenses)}</Text>
@@ -253,7 +253,7 @@ export function AdminMoneyScreen() {
         <View style={s.card}>
           <Text style={s.cardTitle}>{EXP_TITLE}</Text>
           {view.expenseRows.map((e, i) => {
-            const look = EXP_LOOK[e.k] ?? { Icon: Bag, hue: '#8A8194', deep: '#4A4254' };
+            const look = EXP_LOOK[e.k] ?? { Icon: SymBag, hue: '#8A8194', deep: '#4A4254' };
             return (
               <View key={e.k} style={[s.line, i > 0 && s.lineTop]}>
                 <View style={[s.lineIcon, { backgroundColor: `rgba(${hexRgb(look.hue)},0.16)` }]}>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { S } from '../../components/Sym';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
@@ -40,7 +41,7 @@ import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import { SCHN_BOX_IDS, SCHN_UNIT_IDS, SOLD_OUT, useSoldOut, syncStock } from '../../order/stock';
 import { ToppingsSheet } from './ToppingsSheet';
-import { Gift, PlatterFamily, PlatterSingles } from '../../icons';
+import { PlatterFamily, PlatterSingles } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
 
@@ -107,7 +108,7 @@ export function SchnitzelScreen() {
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         {/* כרטיס המתנה · האייקון היה בקנבס ולא הועבר */}
         <View style={s.gift}>
-          <Gift size={GIFT_GLYPH} color={ACCENT.hue} strokeWidth={1.6} />
+          <S k="gift" size={GIFT_GLYPH} color={ACCENT.hue} />
           <Text style={s.giftText}>{GIFT_NOTE}</Text>
         </View>
 

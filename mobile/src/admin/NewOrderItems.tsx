@@ -9,7 +9,6 @@ import { surface } from '../theme/tokens';
 import { HUES, MENU, ROLL, SCH_ROLLS } from '../data/adminOrders';
 import { FieldLabel } from './ui/Field';
 import type { NewOrderDraft } from './orderMath';
-import { Minus, Plus } from '../icons';
 
 const SCHN = HUES.schn;
 

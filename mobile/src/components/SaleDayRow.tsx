@@ -1,7 +1,7 @@
 import React from 'react';
+import { S } from './Sym';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
-import { Bell } from '../icons';
 import { useCheer } from './Cheer';
 import { GlassFill } from './Glass';
 import { CATEGORIES } from '../data/categories';
@@ -144,7 +144,7 @@ export function SaleDayRow({ onOpen }: Props) {
             accessibilityLabel={on ? 'ביטול התזכורת' : 'תזכירו לי כשהמכירה תתחיל'}
             style={[s.bell, { backgroundColor: a(STATE_RGB.pending, on ? 0.3 : 0.16) }]}
           >
-            <Bell size={BELL} color={STATE_INK.pending} strokeWidth={1.8} />
+            <S k="bell" size={BELL} color={STATE_INK.pending} />
             {/* ⚠ הקו האלכסוני · ״סימון של קו כזה על הפעמון״ */}
             {on ? <View style={[s.slash, { backgroundColor: STATE_INK.pending }]} /> : null}
           </Pressable>

@@ -24,7 +24,6 @@ import { usePrefill, qtyFrom } from '../../navigation/usePrefill';
 import { CategoryHeader } from '../../components/CategoryHeader';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
-import { Phone } from '../../icons';
 import { a, hues, radius, space, surface } from '../../theme/tokens';
 import { headRoom } from '../../theme/fontScale';
 import type { OrderLine } from '../../order/types';

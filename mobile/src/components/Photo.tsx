@@ -1,7 +1,7 @@
 import React from 'react';
+import { S } from './Sym';
 import { Image, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
 import { photo } from '../data/photos';
-import { Image as ImageIcon } from '../icons';
 import { useLightbox } from './lightboxContext';
 import { photoTitle } from '../data/photoTitles';
 import { a, deepRgbOf } from '../theme/tokens';
@@ -57,7 +57,7 @@ export function Photo({
   if (!src) {
     return (
       <View style={[s.placeholder, { borderColor: a(rgb, EDGE_ALPHA) }, style as ViewStyle]}>
-        <ImageIcon size={MARK} color={a(deepRgbOf(rgb), MARK_ALPHA)} strokeWidth={MARK_STROKE} />
+        <S k="image" size={MARK} color={a(deepRgbOf(rgb), MARK_ALPHA)} />
       </View>
     );
   }

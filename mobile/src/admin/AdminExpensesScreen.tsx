@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { S } from '../components/Sym';
+import { S, SymPlus } from '../components/Sym';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../ui/text';
 import { surface } from '../theme/tokens';
@@ -13,7 +13,6 @@ import { Chip, ChipRow } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
 import { Field } from './ui/Field';
 import { Sheet } from './ui/Sheet';
-import { Cart, Plus } from '../icons';
 import { apiEnabled } from '../api/config';
 import {
   adminAddExpense,
@@ -196,7 +195,7 @@ export function AdminExpensesScreen() {
     <AdminShell
       title="הוצאות"
       sub="הזנה ידנית וסגירות קניות"
-      actions={[{ label: 'הוצאה חדשה', onPress: openAdd, icon: Plus, primary: true }]}
+      actions={[{ label: 'הוצאה חדשה', onPress: openAdd, icon: SymPlus, primary: true }]}
     >
       <ScrollView style={s.body} contentContainerStyle={s.pad} showsVerticalScrollIndicator={false}>
         {!live ? <Text style={s.empty}>ההוצאות נטענות מהשרת · אין חיבור כרגע</Text> : null}
@@ -253,7 +252,7 @@ export function AdminExpensesScreen() {
                     <Text style={s.rowCat}>{r.category}</Text>
                     {r.fromShop ? (
                       <View style={s.tag}>
-                        <Cart size={10} color={PLUM.deep} strokeWidth={2} />
+                        <S k="cart" size={10} color={PLUM.deep} />
                         <Text style={s.tagText}>מקנייה</Text>
                       </View>
                     ) : null}
