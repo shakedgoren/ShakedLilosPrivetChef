@@ -21,7 +21,6 @@ import {
   isCancelled,
   isLive,
   itemsLine,
-  shortRef,
   whenLine,
 } from './format';
 import {
@@ -242,7 +241,9 @@ function OrderCard({
     { k: 'הפריטים', v: itemsLine(order) || '—' },
     { k: 'מועד', v: whenLine(order) },
     { k: 'תשלום', v: order.pay },
-    { k: 'מספר הזמנה', v: shortRef(order.id) },
+    /* ⚠ **מספר ההזמנה ירד · בקשת שקד, 26 בספטמבר 2026** · ״לא צריך
+       להציג ללקוח מספר הזמנה — אין צורך בזה״. `shortRef` נשאר
+       בקובץ כי מסכי הניהול עדיין מציגים אותו. */
   ];
   if (cancelled) rows.push({ k: 'דמי ביטול', v: 'ללא חיוב' });
 

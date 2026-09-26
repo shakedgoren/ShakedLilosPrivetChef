@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+/* ⚠ כלל הסיסמה ממקום אחד · ראו `auth/passwordRule` */
+import { PASS_MIN, PASS_RULE_TEXT, isStrongPassword } from '../../auth/passwordRule';
 import { INPUT_START } from '../../theme/rtl';
 import { SCROLL_PAD_NAV } from '../../components/BottomNav';
 import { Modal, Pressable, ScrollView, StyleSheet, View, Image } from 'react-native';
@@ -21,7 +23,7 @@ import { iconOrbShadow } from '../../theme/glass';
 
 const IDLE_BD = 'rgba(130,112,162,0.18)';
 const BAD_BD = 'rgba(185,83,73,0.5)';
-const PASS_MIN = 8;
+
 
 const MONTHS = [
   'ינואר',
@@ -258,12 +260,12 @@ export function ProfileScreen() {
 
   const pe = {
     cur: trim(pass.cur) === '',
-    next: trim(pass.next) !== '' && trim(pass.next).length < PASS_MIN,
+    next: trim(pass.next) !== '' && !isStrongPassword(trim(pass.next)),
     again: trim(pass.again) !== '' && pass.again !== pass.next,
   };
   const passReady =
     trim(pass.cur) !== '' &&
-    trim(pass.next).length >= PASS_MIN &&
+    isStrongPassword(trim(pass.next)) &&
     pass.again === pass.next &&
     !pe.next &&
     !pe.again;
@@ -492,7 +494,7 @@ export function ProfileScreen() {
             <View style={s.passHead}>
               <View style={s.grow}>
                 <Text style={s.passSheetTitle}>שינוי סיסמה</Text>
-                <Text style={s.passRule}>לפחות {PASS_MIN} תווים</Text>
+                <Text style={s.passRule}>{PASS_RULE_TEXT}</Text>
               </View>
               <Pressable onPress={() => setPassOpen(false)} style={s.close}>
                 <S k="close" size={13} color="#6E6478" />

@@ -27,9 +27,27 @@ export function shipWord(ship: string): string {
 }
 
 /** שורת המועד · איסוף/משלוח, תאריך ושעה */
+/**
+ * תאריך לקריאה · `2026-10-22` ⟵ `22/10/2026`.
+ *
+ * ⚠ **בקשת שקד · 26 בספטמבר 2026** · ״התאריך הפוך — הוא צריך
+ * להיות בפורמט הבא 22/10/2026״.
+ *
+ * ⚠ **לא `toLocaleDateString`** · הוא תלוי באזור ובמכשיר, ונמדד
+ * שהוא מחזיר תוצאה שונה בדפדפן ובאייפון לאותו קלט. כאן הפורמט
+ * נכתב במפורש, ולכן הוא זהה בכל מקום.
+ *
+ * ⚠ **קלט שאינו `YYYY-MM-DD` חוזר כמו שהוא** · עדיף להציג את מה
+ * שיש מאשר להחזיר ״NaN/NaN״ על שדה ריק או על פורמט שהשתנה.
+ */
+export function dateHuman(key: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key.trim());
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : key;
+}
+
 export function whenLine(order: Order): string {
   const ship = shipWord(order.ship);
-  const bits = [order.saleDate, order.time].filter(Boolean);
+  const bits = [order.saleDate ? dateHuman(order.saleDate) : '', order.time].filter(Boolean);
   return bits.length ? `${ship} · ${bits.join(', ')}` : ship;
 }
 

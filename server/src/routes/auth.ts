@@ -9,6 +9,7 @@ import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
 import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
+import { PASS_RULE_TEXT, isStrongPassword } from '../../../mobile/src/auth/passwordRule.ts';
 import { buildResetEmail } from '../mail/resetEmail.ts';
 import { checkResetCode, newResetCode, RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
 import { sendMail } from '../mail/mailer.ts';
@@ -34,9 +35,21 @@ export const authRouter = Router();
  * בלתי נראה. עכשיו הם חלק מאותה בקשה: או שהחשבון נוצר עם הכול, או
  * שהוא לא נוצר.
  */
+/**
+ * סיסמה שעומדת בכלל של שקד · ראו `mobile/src/auth/passwordRule`.
+ * ⚠ ההודעה היא אותו נוסח שהמסך מציג, כדי שהמסך לא יבטיח דבר אחד
+ * והשרת ידחה על דבר אחר.
+ */
+const strongPassword = z.string().refine(isStrongPassword, { message: PASS_RULE_TEXT });
+
 const whoBody = z.object({
   who: z.string().min(3),
-  password: z.string().min(6),
+  /**
+   * ⚠ **סיסמה חזקה · 26 בספטמבר 2026** · היה `min(6)` בלבד, בזמן
+   * שהמסך כבר דרש שמונה תווים — כלומר סיסמה בת שבעה תווים נדחתה
+   * במסך ונכתבה למסד דרך ה-API. הכלל עכשיו מיובא ממקום אחד.
+   */
+  password: strongPassword,
   name: z.string().optional(),
   email: z.union([z.string().max(80), z.null()]).optional(),
   gender: z.enum(['female', 'male', 'other', '']).optional(),
@@ -336,7 +349,7 @@ authRouter.post('/reset-password', async (req, res, next) => {
       .object({
         who: z.string().min(3),
         code: z.string().min(4).max(10),
-        password: z.string().min(6),
+        password: strongPassword,
       })
       .parse(req.body);
 

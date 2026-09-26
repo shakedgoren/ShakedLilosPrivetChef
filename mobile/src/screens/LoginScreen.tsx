@@ -31,6 +31,13 @@ import { EyeToggle } from '../components/EyeToggle';
 import { ForgotSheet, TermsSheet, type ResetForm } from '../components/LoginSheets';
 import { GoogleG, WhatsApp } from '../components/LoginIcons';
 import { S, SymEnvelope, SymUser } from '../components/Sym';
+/**
+ * ⚠ **כלל הסיסמה ממקום אחד · 26 בספטמבר 2026** · `PASS_MIN` הגיע
+ * עד היום מ-`data/login`, שנוצר אוטומטית מהקנבס — ושם יש רק אורך.
+ * הכלל של שקד דורש גם אות גדולה, אות קטנה וספרה, ולכן הוא חי
+ * עכשיו ב-`auth/passwordRule` שגם השרת מייבא.
+ */
+import { PASS_MIN, isStrongPassword, passwordProblems } from '../auth/passwordRule';
 import {
   disarmFace,
   enrollFace,
@@ -54,7 +61,6 @@ import {
   GOOGLE_LABEL,
   GUEST_LABEL,
   OR_LABEL,
-  PASS_MIN,
   TAB_IN,
   TAB_UP,
 } from '../data/login';
@@ -586,6 +592,13 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={SymUser} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="אימייל" value={mail} onChange={setMail} placeholder="name@mail.com" Icon={SymEnvelope} keyboard="email-address" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
         <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} sym="lock" secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+        {/* ⚠ **רמז חי · בקשת הסיסמה החזקה** · בלעדיו הכפתור פשוט
+            כבוי והלקוחה לא יודעת מה חסר. מופיע רק אחרי שהתחילה
+            להקליד, כדי לא לקדם אותה באזהרה על שדה ריק. */}
+        {pass !== '' && !isStrongPassword(pass) ? (
+          <Text style={s.passMissing}>חסר: {passwordProblems(pass).join(' · ')}</Text>
+        ) : null}
+
         <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" sym="lock" secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
 
         <Text style={s.label}>{T.gender}</Text>
@@ -635,7 +648,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   /* מתי מותר להמשיך · לכל שלב התנאי שלו */
   const ready =
     step === 'in'
-      ? okPhone(phone) && pass.length >= PASS_MIN
+      ? okPhone(phone) && isStrongPassword(pass)
       : step === 'up1'
         ? okPhone(phone)
         : step === 'up2'
@@ -643,7 +656,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
           : step === 'up3'
             ? name.trim() !== '' &&
               okMail(mail) &&
-              pass.length >= PASS_MIN &&
+              isStrongPassword(pass) &&
               pass2 === pass &&
               terms
             : true;
@@ -820,6 +833,8 @@ const s = StyleSheet.create({
   } as never,
 
   fieldBlock: { marginBottom: 11 },
+  /* ⚠ יושב מעל שדה האימות · ראו הרמז החי */
+  passMissing: { fontSize: 11.5, color: '#B95349', marginTop: -6, marginBottom: 9 },
   label: { fontSize: 11, fontWeight: '500', color: surface.faint, marginBottom: 4 },
   input: {
     height: 48,
