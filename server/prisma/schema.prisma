@@ -121,6 +121,13 @@ model PasswordReset {
 /// הזמנה · סכומים בשקלים שלמים, בלי מע״מ (עוסק פטור)
 model Order {
   id           String   @id @default(cuid())
+  /// מספר הזמנה רץ · מתחיל ב-1 ועולה באחד בכל הזמנה חדשה.
+  /// ⚠ **בקשת שקד · 26.9.2026** · ״בדטה בייס שמנהל את ההזמנות הוא
+  /// אמור להתחיל ממספר הזמנה 1 ולעלות ב1 בכל פעם״. `id` הוא cuid —
+  /// ייחודי אך חסר סדר ובלתי קריא. זה מספר לבני אדם.
+  /// ⚠ **לא מוצג ללקוחה** · באותה בקשה היא ביקשה להוריד את מספר
+  /// ההזמנה מ״ההזמנות שלי״. זה מספר פנימי לניהול.
+  number       Int      @unique @default(autoincrement())
   userId       String?
   user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   category     String

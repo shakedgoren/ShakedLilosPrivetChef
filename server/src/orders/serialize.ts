@@ -57,6 +57,12 @@ export function serializeAdminCard(row: Order) {
   const lines = parseLines(row.itemsJson);
   return {
     id: row.id,
+    /**
+     * ⚠ **מספר הזמנה רץ · 26 בספטמבר 2026** · שקד ביקשה שהמסד
+     * ״יתחיל ממספר הזמנה 1 ויעלה ב1 בכל פעם״, ובאותה נשימה
+     * להוריד את המספר מהתצוגה ללקוחה. כלומר זה מספר לניהול.
+     */
+    number: row.number,
     key: row.category,
     status: row.status,
     who: row.name,

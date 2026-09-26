@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 
 /**
  * התחברות עם גוגל · מחזירה `idToken` שהשרת מאמת.
@@ -56,8 +57,31 @@ const IOS = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
 const ANDROID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '';
 const WEB = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 
-/** האם הוגדרו מזהי לקוח · בלעדיהם אין טעם להציג את הכפתור כפעיל */
-export const googleConfigured = Boolean(IOS || ANDROID || WEB);
+/**
+ * המזהה של **הפלטפורמה הנוכחית**.
+ *
+ * ⚠ **תוקן ב-26 בספטמבר 2026 · מוקש שהיה מחכה** · כאן היה
+ * `Boolean(IOS || ANDROID || WEB)`, כלומר ״מוגדר״ פירושו היה
+ * ״אחד מהשלושה קיים״. אבל `expo-auth-session` דורש את המזהה של
+ * הפלטפורמה שרצה **עכשיו**, וזורק אם הוא חסר:
+ *
+ *   Client Id property `webClientId` must be defined to use
+ *   Google auth on this platform.
+ *
+ * וזה לא נתפס בשום `try` — ההוק נקרא בתוך הרינדור, והמסך כולו
+ * יוצא ריק. נמדד בדפדפן: עם `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+ * מוגדר לבדו, לחיצה על ״להתחברות״ נתנה מסך לבן.
+ *
+ * ⚠ **באתר החי זה לא קרה, ובמקרה** · `render.yaml` אינו מעביר
+ * אף מזהה גוגל לבנייה, ולכן שלושתם ריקים ו״מוגדר״ יוצא `false`.
+ * כלומר ברגע ששקד תוסיף שם את מזהה ה-iOS בלבד — כדי להדליק את
+ * גוגל באפליקציה — **מסך ההתחברות באתר ייפול**. הבדיקה לפי
+ * פלטפורמה מסירה את המוקש הזה מראש.
+ */
+const CLIENT_ID = Platform.select({ ios: IOS, android: ANDROID, default: WEB }) ?? '';
+
+/** האם יש מזהה לפלטפורמה הזו · בלעדיו אין טעם להציג את הכפתור כפעיל */
+export const googleConfigured = Boolean(CLIENT_ID);
 
 /** האם החבילה הטבעית קיימת בבילד הנוכחי */
 export const googleAvailable = idTokenHook !== null;

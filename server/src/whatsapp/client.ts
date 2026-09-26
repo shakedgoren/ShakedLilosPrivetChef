@@ -33,7 +33,7 @@ function messagesUrl(): string {
 
 async function postTemplate(payload: TemplateMessagePayload): Promise<WhatsAppSendResult> {
   const wa = env.whatsapp;
-  if (!wa.enabled) return { ok: false, skipped: 'disabled' };
+  if (!wa.enabled) return skip(payload.template.name, 'disabled');
 
   let res: Response;
   try {
@@ -76,6 +76,17 @@ async function postTemplate(payload: TemplateMessagePayload): Promise<WhatsAppSe
             '',
         )
       : '';
+  /**
+   * ⚠ **לוג גם בהצלחה · 26 בספטמבר 2026** · שקד בדקה את יומן
+   * Render וכתבה ״אין את השורה הזו שם״ — ובצדק: המסלול שתק גם
+   * בהצלחה וגם בדילוג, ורק כישלון מול Graph נרשם. כלומר יומן
+   * ריק לא הבדיל בין ״נשלח בסדר״ ל״דולג בשקט״, ואי אפשר היה
+   * לאבחן כלום מרחוק.
+   *
+   * ⚠ **בלי הקוד ובלי הטוקן** · רק שם התבנית, היעד ומזהה
+   * ההודעה של Meta — מה שצריך כדי לעקוב, ולא יותר.
+   */
+  console.info('[וואטסאפ] נשלח ·', payload.template.name, '→', payload.to, '·', id || 'ללא מזהה');
   noteWhatsAppSent();
   return { ok: true, id, to: payload.to };
 }
@@ -84,10 +95,24 @@ export async function sendTemplate(payload: TemplateMessagePayload): Promise<Wha
   return postTemplate(payload);
 }
 
+/**
+ * דילוג · נרשם ביומן ונספר, בדיוק כמו כישלון.
+ *
+ * ⚠ **למה דילוג הוא לא ״בסדר״** · שלוש הבדיקות למטה מחזירות
+ * `ok:false` ויוצאות **לפני** הפנייה ל-Graph, ולכן הן לא כתבו
+ * דבר: לא ליומן ולא למונה. מבחוץ זה נראה בדיוק כמו הצלחה
+ * שקטה. עבור הלקוחה שמחכה לקוד אין הבדל בין השניים.
+ */
+function skip(kind: string, reason: string): WhatsAppSendResult {
+  console.warn('[וואטסאפ] דולג ·', kind, '·', reason);
+  noteWhatsAppFailure(kind, `skipped:${reason}`);
+  return { ok: false, skipped: reason };
+}
+
 export async function sendAuthOtp(phone: string, code: string): Promise<WhatsAppSendResult> {
   const wa = env.whatsapp;
-  if (!wa.enabled) return { ok: false, skipped: 'disabled' };
-  if (!isWhatsAppPhone(phone)) return { ok: false, skipped: 'no_phone' };
+  if (!wa.enabled) return skip('otp', 'disabled');
+  if (!isWhatsAppPhone(phone)) return skip('otp', 'no_phone');
   return postTemplate(authOtpPayload(toWhatsAppPhone(phone), code, wa.templateOtp, wa.templateLang));
 }
 
@@ -97,9 +122,9 @@ export async function sendUtility(
   bodyParams: string[],
 ): Promise<WhatsAppSendResult> {
   const wa = env.whatsapp;
-  if (!wa.enabled) return { ok: false, skipped: 'disabled' };
-  if (!templateName) return { ok: false, skipped: 'no_template' };
-  if (!isWhatsAppPhone(phone)) return { ok: false, skipped: 'no_phone' };
+  if (!wa.enabled) return skip(templateName || 'utility', 'disabled');
+  if (!templateName) return skip('utility', 'no_template');
+  if (!isWhatsAppPhone(phone)) return skip(templateName, 'no_phone');
   return postTemplate(
     utilityTemplatePayload(toWhatsAppPhone(phone), templateName, wa.templateLang, bodyParams),
   );

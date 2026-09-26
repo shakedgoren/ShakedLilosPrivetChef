@@ -49,6 +49,8 @@ export type Order = {
 
 export type AdminCard = {
   id: string;
+  /** מספר הזמנה רץ · מתחיל ב-1. ⚠ לניהול בלבד, לא מוצג ללקוחה */
+  number: number;
   key: 'cous' | 'schn' | 'box' | 'fruit' | 'chef';
   status: string;
   who: string;
