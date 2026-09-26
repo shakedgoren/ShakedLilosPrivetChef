@@ -13,6 +13,9 @@ const openCous = {
   quotas: { veg: 5, chick: 3 },
   waste: { veg: 1 },
   sold: { veg: 3, chick: 3 },
+  /* ⚠ נוספו ב-27.9.2026 · מתג המארזים וחסימת שעות המשלוח */
+  boxOpen: false,
+  blockedHours: [],
 };
 
 test('ISO date', () => {

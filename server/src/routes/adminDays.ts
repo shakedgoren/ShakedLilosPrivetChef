@@ -13,7 +13,8 @@ import { notifySaleOpen } from '../push/saleOpen.ts';
 import { hebrewDayLabel, soldByDish } from '../admin/sold.ts';
 import { readJson } from '../json.ts';
 import { CANCELLED } from '../catalog/status.ts';
-import { notFound } from '../errors.ts';
+import { badRequest, notFound } from '../errors.ts';
+import { parseBlockedHours, validateBlockedHours } from '../orders/deliveryHours.ts';
 
 export const adminDaysRouter = Router();
 adminDaysRouter.use(requireAuth, requireAdmin);
@@ -27,7 +28,13 @@ function serialize(row: {
   quotasJson: string;
   wasteJson: string;
   soldJson?: string;
-}, sold: Record<string, number>): DayRecord & { date: string } {
+  boxOpen?: boolean;
+  blockedHoursJson?: string;
+}, sold: Record<string, number>): DayRecord & {
+  date: string;
+  boxOpen?: boolean;
+  blockedHours?: { from: string; to: string }[];
+} {
   const q = readJson<Record<string, number>>(row.quotasJson, {});
   /**
    * ⚠ **התיקון הידני גובר** · שקד יכולה להקליד כמה נמכר בפועל,
@@ -44,6 +51,11 @@ function serialize(row: {
     open: row.open || undefined,
     q: Object.keys(q).length ? q : undefined,
     sold: Object.keys(sold).length ? sold : undefined,
+    /* ⚠ שני אלה נוספו ב-27.9.2026 · ראו `deliveryHours` ו-`boxOpen` */
+    boxOpen: row.boxOpen || undefined,
+    blockedHours: row.blockedHoursJson
+      ? (parseBlockedHours(row.blockedHoursJson) as { from: string; to: string }[])
+      : undefined,
   };
 }
 
@@ -114,6 +126,17 @@ const patchBody = z.object({
   open: z.boolean().optional(),
   q: z.record(z.number()).optional(),
   waste: z.record(z.number()).optional(),
+  /**
+   * ⚠ **מתג המארזים · 27 בספטמבר 2026** · נפרד מ-`open` בבחירה
+   * מפורשת של שקד: ״פתיחת השניצל לא פותחת את המארזים ולהפך״.
+   */
+  boxOpen: z.boolean().optional(),
+  /**
+   * ⚠ **שעות משלוח חסומות** · `[{from:'18:00',to:'21:00'}]`.
+   * האימות עצמו ב-`validateBlockedHours`, כדי שקלט פגום יידחה
+   * במפורש ולא יידלג בשקט.
+   */
+  blockedHours: z.array(z.object({ from: z.string(), to: z.string() })).optional(),
 });
 
 /**
@@ -160,6 +183,15 @@ adminDaysRouter.put('/:date', async (req, res, next) => {
       body.q !== undefined ? JSON.stringify(body.q) : (existing?.quotasJson ?? '{}');
     const wasteJson =
       body.waste !== undefined ? JSON.stringify(body.waste) : (existing?.wasteJson ?? '{}');
+    const boxOpen = body.boxOpen ?? existing?.boxOpen ?? false;
+
+    /* ⚠ קלט פגום נדחה ולא מדולג · ראו `validateBlockedHours` */
+    let blockedHoursJson = existing?.blockedHoursJson ?? '[]';
+    if (body.blockedHours !== undefined) {
+      const ok = validateBlockedHours(body.blockedHours);
+      if (!ok) throw badRequest('invalid_hours', 'טווח שעות לא תקין');
+      blockedHoursJson = JSON.stringify(ok);
+    }
 
     const wasOpen = existing?.open ?? false;
     /**
@@ -173,8 +205,8 @@ adminDaysRouter.put('/:date', async (req, res, next) => {
     const openedAt = existing?.openedAt ?? (open ? new Date() : null);
     const row = await prisma.saleDay.upsert({
       where: { date },
-      create: { date, blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt },
-      update: { blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt },
+      create: { date, blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt, boxOpen, blockedHoursJson },
+      update: { blocked, sale, exceptCat, open, quotasJson, wasteJson, openedAt, boxOpen, blockedHoursJson },
     });
     const cat = row.blocked ? row.exceptCat : row.sale;
 

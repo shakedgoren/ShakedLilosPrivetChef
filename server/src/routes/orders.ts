@@ -133,6 +133,9 @@ async function placeCustomerOrder(opts: {
       requested: opts.saleDate,
       category,
       details: opts.details,
+      /* ⚠ שניהם נחוצים לחסימת שעות המשלוח · ראו `deliveryHours` */
+      ship,
+      time,
     });
     return tx.order.create({
       data: {

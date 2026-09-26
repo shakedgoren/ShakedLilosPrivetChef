@@ -7,6 +7,13 @@ import { badRequest, conflict } from '../errors.ts';
 import { readJson } from '../json.ts';
 import { isoDate, qtyOfCustomerDetails, qtyOfOrder, type QtyMap } from '../admin/sold.ts';
 import { checkOrderDate } from './dateRule.ts';
+import {
+  blockedHoursMessage,
+  isHourBlocked,
+  parseBlockedHours,
+  type BlockedRange,
+} from './deliveryHours.ts';
+import { FRIDAY_ONLY_BOXES } from '../../../mobile/src/data/boxes.ts';
 
 export type SaleDayView = {
   date: string;
@@ -19,6 +26,10 @@ export type SaleDayView = {
   quotas: Record<string, number>;
   waste: Record<string, number>;
   sold: QtyMap;
+  /** מארזי שישי פתוחים · מתג נפרד מ-`open` · בחירת שקד 27.9.2026 */
+  boxOpen: boolean;
+  /** שעות משלוח חסומות בתאריך · ראו `deliveryHours` */
+  blockedHours: BlockedRange[];
 };
 
 export const isIsoDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -244,6 +255,9 @@ export async function loadSaleDayView(db: Db, date: string, category: string): P
     quotas: row ? readJson<Record<string, number>>(row.quotasJson, {}) : { ...(implied?.q ?? {}) },
     waste: row ? readJson<Record<string, number>>(row.wasteJson, {}) : {},
     sold: {},
+    /* ⚠ בלי שורה במסד אין פתיחה ואין חסימה · ברירת המחדל היא סגור */
+    boxOpen: row ? row.boxOpen : false,
+    blockedHours: row ? parseBlockedHours(row.blockedHoursJson) : [],
   };
 
   const orders = await db.order.findMany({
@@ -259,7 +273,15 @@ export async function loadSaleDayView(db: Db, date: string, category: string): P
 
 export async function assertCustomerOrderDay(
   db: Db,
-  opts: { requested?: string; category: string; details: CustomerDetails },
+  opts: {
+    requested?: string;
+    category: string;
+    details: CustomerDetails;
+    /** ״משלוח״ או ״איסוף״ · רק משלוח נחסם לפי שעה */
+    ship?: string;
+    /** `HH:MM` · השעה שנבחרה */
+    time?: string;
+  },
 ): Promise<string> {
   const date = await resolveCustomerSaleDate(db, opts.requested, opts.category);
 
@@ -278,6 +300,43 @@ export async function assertCustomerOrderDay(
   if (dateErr) throwSaleDayError(dateErr);
 
   const rec = await loadSaleDayView(db, date, opts.category);
+
+  /**
+   * ⚠ **מארזי שישי · מתג נפרד · 27 בספטמבר 2026** · שקד ביקשה
+   * ש״פותחים שולחן / עיקרית וסלטים / הכל עליי / כמה שבא לכם״
+   * יהיו סגורים עד שהיא פותחת, ובחרה במפורש **מתג נפרד**:
+   * פתיחת יום המכירה של השניצל אינה פותחת אותם, ולהפך.
+   *
+   * ⚠ **רק ארבעת אלה** · `FRIDAY_ONLY_BOXES` מיובא מאותו קובץ
+   * שהאפליקציה משתמשת בו, כדי ששני הצדדים ידברו על אותה רשימה.
+   * שאר המארזים (חלה לכל אירוע, פרימיום) נשארים פתוחים.
+   */
+  if (opts.category === 'box') {
+    const key = (opts.details as { key?: string }).key ?? '';
+    if (FRIDAY_ONLY_BOXES.includes(key) && !rec?.boxOpen) {
+      throwSaleDayError({
+        code: 'day_closed',
+        message: 'המארז הזה עדיין לא נפתח להזמנות בתאריך הזה',
+      });
+    }
+  }
+
+  /**
+   * ⚠ **שעות משלוח חסומות · 27 בספטמבר 2026** · ״חסימה לתאריך
+   * מסוים ולשעות מסוימות״.
+   *
+   * ⚠ **משלוח בלבד** · ״שעות של **משלוחים**״. איסוף עצמי אינו
+   * נחסם, כי שם שקד ממילא קובעת מתי היא בבית.
+   */
+  if (rec && opts.ship?.includes('משלוח') && opts.time) {
+    if (isHourBlocked(opts.time, rec.blockedHours)) {
+      throwSaleDayError({
+        code: 'day_blocked',
+        message: blockedHoursMessage(rec.blockedHours),
+      });
+    }
+  }
+
   const err = evaluateCustomerSaleDay({
     rec,
     category: opts.category,
