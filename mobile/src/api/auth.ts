@@ -34,8 +34,21 @@ export const requestOtp = (who: string) =>
  * אימות טלפון **לפני** שיש חשבון · להרשמה.
  * ⚠ לא `otp/request` · הוא מחפש משתמש קיים, ובהרשמה עדיין אין כזה.
  */
+/**
+ * שליחת קוד אימות לוואטסאפ.
+ *
+ * ⚠ **`sent` חייב להיות בטיפוס · 26 בספטמבר 2026** · השרת מחזיר
+ * `sent: false` כשMeta דחתה את השליחה — הוא תוקן לכך ב-23
+ * בספטמבר במפורש, אחרי ששקד דיווחה שהקוד לא מגיע. אבל הטיפוס
+ * כאן לא הכיר את השדה, ולכן המסך **לא יכול היה לראות אותו**:
+ * הוא המשיך למסך ״הקלידי את הקוד״ בכל מקרה, והלקוחה ישבה מול
+ * בקשה לקוד שמעולם לא נשלח. השרת אמר את האמת והלקוח זרק אותה.
+ */
 export const registerPhone = (phone: string) =>
-  api<{ ok: true; code?: string }>('/auth/register/phone', { body: { phone }, auth: false });
+  api<{ ok: true; sent: boolean; code?: string }>('/auth/register/phone', {
+    body: { phone },
+    auth: false,
+  });
 
 export const registerVerify = (phone: string, code: string) =>
   api<{ ok: true }>('/auth/register/verify', { body: { phone, code }, auth: false });
