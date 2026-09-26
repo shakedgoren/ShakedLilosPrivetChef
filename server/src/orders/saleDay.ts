@@ -6,6 +6,7 @@ import { CANCELLED } from '../catalog/status.ts';
 import { badRequest, conflict } from '../errors.ts';
 import { readJson } from '../json.ts';
 import { isoDate, qtyOfCustomerDetails, qtyOfOrder, type QtyMap } from '../admin/sold.ts';
+import { checkOrderDate } from './dateRule.ts';
 
 export type SaleDayView = {
   date: string;
@@ -261,6 +262,21 @@ export async function assertCustomerOrderDay(
   opts: { requested?: string; category: string; details: CustomerDetails },
 ): Promise<string> {
   const date = await resolveCustomerSaleDate(db, opts.requested, opts.category);
+
+  /**
+   * ⚠ **חוקי הלוח נאכפים כאן · 26 בספטמבר 2026** · שקד: ״עבור כל
+   * השאר באופן כללי פתוח, לא בשבת״. הכלל היה קיים רק באפליקציה —
+   * `resolveCustomerSaleDate` מחזיר כל מחרוזת שנראית כמו תאריך,
+   * ו-`evaluateCustomerSaleDay` מאשר כל קטגוריה שאינה קוסקוס או
+   * שניצל. כלומר אפשר היה לשלוח הזמנת מגש פירות לשבת, או לתאריך
+   * שעבר, ו-ה-API היה מקבל אותה.
+   *
+   * ⚠ **לפני `loadSaleDayView`** · אין טעם לטעון יום מכירה
+   * לתאריך שממילא אסור.
+   */
+  const dateErr = checkOrderDate(date, opts.category);
+  if (dateErr) throwSaleDayError(dateErr);
+
   const rec = await loadSaleDayView(db, date, opts.category);
   const err = evaluateCustomerSaleDay({
     rec,
