@@ -21,6 +21,7 @@ import {
   toggleHourIn,
   type BlockedRange,
 } from './blockedHours';
+import { nextQuotas, nextWaste, shownQuota } from './quotaMath';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 /** מפתח היום · 2026-09-08 */
@@ -151,13 +152,19 @@ export function useAdminDays() {
     [current.except, put, selected],
   );
 
+  /**
+   * ⚠ **פונקציה ולא אובייקט · תוקן ב-29 בספטמבר 2026** · אותה
+   * תקלה שנמצאה בצ׳יפים של שעות המשלוח: החשבון נעשה מתוך הרינדור,
+   * ולכן שתי הקשות מהירות חישבו שתיהן מאותו מספר והשנייה דרסה את
+   * הראשונה — שלוש הקשות על ״+״ העלו ב-1 במקום ב-3. ראו `put`.
+   *
+   * ⚠ **החשבון עצמו ב-`quotaMath`** · שם הוא נבדק, וגם שם תוקן
+   * שההקשה הראשונה ממשיכה מהמספר **שמוצג** ולא מאפס.
+   */
   const bumpQuota = useCallback(
-    (id: string, delta: number) => {
-      const q = { ...(current.q ?? {}) };
-      q[id] = Math.max(0, (q[id] ?? 0) + delta);
-      put(selected, { q });
-    },
-    [current.q, put, selected],
+    (id: string, delta: number) =>
+      put(selected, (base) => ({ q: nextQuotas(base, id, delta) })),
+    [put, selected],
   );
 
   const toggleOpen = useCallback(
@@ -208,7 +215,8 @@ export function useAdminDays() {
   const quotas = useMemo(() => {
     if (!cat) return [];
     return cat.dishes.map((d) => {
-      const n = current.q?.[d.id] ?? d.q;
+      /* ⚠ אותו חשבון בדיוק של ההקשה · ראו `shownQuota` */
+      const n = shownQuota(current as DayPatch, d.id);
       const sold = current.sold?.[d.id];
       /* ⚠ מנות שהתקלקלו · עברו לכאן ממסך המלאי שירד */
       const waste = (current as DayPatch).waste?.[d.id] ?? 0;
@@ -218,8 +226,6 @@ export function useAdminDays() {
         name: d.n,
         n,
         waste,
-        /** כמה אפשר עוד להוריד · לא יורדים מתחת למה שנמכר */
-        room: Math.max(0, n - (sold ?? 0)),
         /** ⚠ בלי ״טרם נמכרו״ · מוצג רק כשבאמת נמכר משהו */
         sold: sold ?? 0,
         soldLabel: isOut ? `אזל · נמכרו ${sold}` : `נמכרו ${sold}`,
@@ -234,14 +240,9 @@ export function useAdminDays() {
    * היחידה שהייתה רק שם — הורדת מנות — חיה עכשיו כאן.
    */
   const bumpWaste = useCallback(
-    (id: string, delta: number) => {
-      const row = quotas.find((q) => q.id === id);
-      if (!row) return;
-      const next = Math.min(row.room, Math.max(0, row.waste + delta));
-      const waste = { ...((current as DayPatch).waste ?? {}), [id]: next };
-      void put(selected, { waste });
-    },
-    [quotas, current, put, selected],
+    (id: string, delta: number) =>
+      put(selected, (base) => ({ waste: nextWaste(base, id, delta) })),
+    [put, selected],
   );
 
   return {
