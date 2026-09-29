@@ -75,7 +75,7 @@ export function BoxesScreen() {
    * ⚠ **לא נובע מהמעבר לניווט נייטיבי** · הבדיקה הישנה
    * (`if (!o.current) return false`) נשאה בדיוק את אותה תקלה.
    */
-  useScreenBack(o.current !== null, o.backToList);
+  useScreenBack(o.current !== null, o.back);
   /**
    * ⚠ **לוח שישי בלבד · בקשה של שקד (17 בספטמבר 2026)** · ארבעה
    * מארזים נמסרים בימי שישי בלבד, ולכן הלוח שלהם אינו הלוח הכללי.
@@ -109,7 +109,7 @@ export function BoxesScreen() {
         <>
           {/* ⚠ היה תו טקסט ״›״ ולא אייקון · המסמך סימן את זה כפגם
               ידוע, והמעבר לרכיב המשותף מיישר אותו לשאר המסכים. */}
-          <BackButton onPress={o.backToList} tint="#F0F6F2" ink="#4E6B58" />
+          <BackButton onPress={o.back} tint="#F0F6F2" ink="#4E6B58" />
           <View style={s.head}>
             <Text style={s.title}>{o.box.title}</Text>
             <Text style={s.date}>{o.box.price}</Text>
@@ -133,6 +133,27 @@ export function BoxesScreen() {
                 );
               })}
             </View>
+
+            {/**
+              * ⚠ **מארז שיושב בתוך מארז · בקשה של שקד (26 בספטמבר
+              * 2026)** · ״יש צורך את ׳טעם של שנה טובה׳ להעביר לתוך
+              * ׳חלה לכל אירוע׳״. ראו `NESTED` ב-`useBoxesOrder`.
+              *
+              * ⚠ **אותו כרטיס בדיוק של הרשימה** · תמונה, שם, תיאור,
+              * מחיר וחץ. כך הוא נקרא כמוצר נוסף ולא כשדה בטופס
+              * שמתחתיו.
+              */}
+            {o.nested.map((b) => (
+              <Pressable key={b.key} onPress={() => o.openKey(b.key)} style={[s.card, s.nestedCard]}>
+                <Photo name={BOX_PHOTOS[b.key]?.[0]} rgb={ACCENT.rgb} style={s.shot} zoom={false} />
+                <View style={s.cardText}>
+                  <Text style={s.name}>{b.name}</Text>
+                  <Text style={s.desc}>{b.desc}</Text>
+                  <Text style={s.price}>{b.price}</Text>
+                </View>
+                <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
+              </Pressable>
+            ))}
 
             {o.box.sections.map((sec, i) => (
               <SectionRenderer
@@ -327,6 +348,9 @@ const s = StyleSheet.create({
     borderColor: TILE_EDGE,
     boxShadow: TILE_SHADOW,
   },
+  /* ⚠ הכרטיס יושב בין המבוא לסעיפים · `body` נותן gap 6 בלבד,
+     ומוצר שלם צריך יותר אוויר מסעיף בטופס */
+  nestedCard: { marginTop: 8, marginBottom: 4 },
   shot: { width: 60, height: 60, borderRadius: radius.field, overflow: 'hidden' },
   cardText: { flex: 1, minWidth: 0, gap: 4 },
   name: { fontSize: 14.5, fontWeight: '600', lineHeight: 18, color: surface.ink },

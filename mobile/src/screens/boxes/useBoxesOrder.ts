@@ -9,15 +9,9 @@ import {
   type Section,
 } from '../../data/boxes';
 import type { OrderLine } from '../../order/types';
+import { LISTED_BOXES, NESTED, canReopen, childrenOf } from './catalog';
 
 export type Picks = Record<string, any>;
-
-/**
- * מארזים שלא מוצגים באתר · שקד ביקשה להוריד את מארז הפרימיום.
- * הנתונים נשארים ב-boxes.ts כדי שאפשר יהיה להחזיר אותו בשורה אחת.
- */
-const HIDDEN = ['premium'];
-const VISIBLE_BOXES: Box[] = BOXES.filter((b) => !HIDDEN.includes(b.key));
 
 /** סכום הכמויות בסעיף מרובה־כמות (row / count) */
 export const sumOf = (v: unknown): number =>
@@ -36,18 +30,36 @@ const sectionReady = (s: Section, picks: Picks): boolean => {
 };
 
 export function useBoxesOrder() {
-  /* null = מסך רשימת המארזים · אחרת האינדקס של המארז שנפתח */
-  const [current, setCurrent] = useState<number | null>(null);
+  /**
+   * null = מסך רשימת המארזים · אחרת **מפתח** המארז שנפתח.
+   *
+   * ⚠ **מפתח ולא אינדקס · 26 בספטמבר 2026** · קודם זה היה אינדקס
+   * של הרשימה המוצגת. שני באגים כבר נולדו מזה ותוקנו בנפרד — פתיחת
+   * המארז המוסתר, וחזרה מהמארז הראשון שקפצה לדף הבית כי אינדקס 0
+   * נראה כמו ״סגור״. עכשיו מארז יכול להיפתח גם מתוך מארז אחר,
+   * ואינדקס של רשימה כבר אינו זהות בכלל. המפתח הוא.
+   */
+  const [current, setCurrent] = useState<string | null>(null);
   const [picks, setPicks] = useState<Picks>({});
 
-  /* ⚠ האינדקס חייב להיות של הרשימה המוצגת · הסינון מזיז את המפתחות,
-     ובלי זה ״טעם של שנה טובה״ היה פותח את המארז שהוסתר */
-  const box: Box | null = current === null ? null : VISIBLE_BOXES[current];
+  const box: Box | null = useMemo(
+    () => (current === null ? null : BOXES.find((b) => b.key === current) ?? null),
+    [current],
+  );
 
-  const openBox = useCallback((i: number) => {
-    setCurrent(i);
+  /** המארזים שנפתחים מתוך המארז הפתוח · ריק בדרך כלל */
+  const nested: Box[] = useMemo(() => (box ? childrenOf(box.key) : []), [box]);
+
+  const openKey = useCallback((key: string) => {
+    setCurrent(key);
     setPicks({});
   }, []);
+
+  /** פתיחה מרשימת הספיישלים · אינדקס של `LISTED_BOXES` */
+  const openBox = useCallback((i: number) => {
+    const b = LISTED_BOXES[i];
+    if (b) openKey(b.key);
+  }, [openKey]);
 
   const backToList = useCallback(() => {
     setCurrent(null);
@@ -55,14 +67,26 @@ export function useBoxesOrder() {
   }, []);
 
   /**
+   * חזרה אחת אחורה · מתוך מארז מקונן חוזרים **להורה** ולא לרשימה.
+   * ⚠ שקד על אותה שפה בקטגוריה הזו: ״נכנסתי לתוך קטגוריה, חזרה
+   * אחורה צריכה להחזיר אותי לספיישלים ולא לעמוד הבית״.
+   */
+  const back = useCallback(() => {
+    const parent = current ? NESTED[current] : undefined;
+    if (parent) openKey(parent);
+    else backToList();
+  }, [current, openKey, backToList]);
+
+  /**
    * ⚠ ״להזמין שוב״ · פותח את אותו מארז עם אותן בחירות.
    * מארז שכבר לא קיים (או שהוסתר) פשוט לא נפתח, ואז המסך נשאר
    * ברשימה — עדיף מלפתוח מארז שגוי.
+   * ⚠ מארז מקונן **כן** נפתח · הוא לא הוסתר, רק עבר מקום.
    */
   const loadDetails = useCallback((d: Record<string, unknown>) => {
-    const i = VISIBLE_BOXES.findIndex((b) => b.key === d.key);
-    if (i < 0) return;
-    setCurrent(i);
+    const key = String(d.key ?? '');
+    if (!canReopen(key)) return;
+    setCurrent(key);
     setPicks(d.picks && typeof d.picks === 'object' ? { ...(d.picks as Picks) } : {});
   }, []);
 
@@ -183,8 +207,8 @@ const saladLine = (name: string, ml: number) => `${name} · ${ml} גרם`;
   }, [box, picks, total]);
 
   return {
-    boxes: VISIBLE_BOXES,
-    current, box, openBox, backToList, loadDetails,
+    boxes: LISTED_BOXES,
+    current, box, nested, openBox, openKey, back, backToList, loadDetails,
     picks, select, setText, setNumber, setQty,
     total, ready, lines,
   };

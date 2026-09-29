@@ -32,6 +32,7 @@ import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
 import { ContinueButton } from '../../components/ContinueButton';
 import { BackButton } from '../../components/BackButton';
 import { CapNotice } from './CapNotice';
+import { SOON_TABS } from './soon';
 import { PastaPopup } from './PastaPopup';
 
 const ACCENT = hues.chef;
@@ -52,6 +53,9 @@ const INTRO_GAP = 2;
 const CTA_GAP = 12;
 /* המרווח בין פס ההתקדמות לסעיפים */
 const TRACK_GAP = 14;
+
+/** גובה כרטיס ״עוד לא נפתח״ · ראו `soon.ts` */
+const SOON_CARD_H = 180;
 
 /**
  * שף וטאבון · שתי חבילות, כל אחת שאלון של שישה עמודים.
@@ -188,7 +192,25 @@ export function ChefScreen() {
   };
 
   if (!o.pkg) {
+    /**
+     * ⚠ **לשונית שהוכרזה ועוד לא נפתחה · ראו `soon.ts`** · שקד
+     * ביקשה כרטיסיית ״סדנאות״ עם COMING SOON, והתוכן יגיע ממנה
+     * בהמשך. הלשוניות האלה נספרות **אחרי** החבילות האמיתיות, ולכן
+     * `tab` ממשיך להיות אינדקס חוקי ל-`openPackage` בכל מקום שבו
+     * הוא באמת נפתח.
+     */
+    const soon = tab >= o.packages.length ? SOON_TABS[tab - o.packages.length] : null;
     const chosen = o.packages[tab];
+    /**
+     * ⚠ **`short` ולא `name` · מ-26 בספטמבר 2026** · בשתי לשוניות
+     * ״ארוחת שף פרטית״ נכנס. עם השלישית כל לשונית מקבלת שליש
+     * מהרוחב, והשם המלא נחתך. `short` הוא ״ארוחת שף״ — גם הוא
+     * מהקנבס, ולא נוסח שנכתב כאן.
+     */
+    const tabs = [
+      ...o.packages.map((p) => ({ key: p.key, label: p.short })),
+      ...SOON_TABS.map((t) => ({ key: t.key, label: t.name })),
+    ];
     return (
       <View style={[s.page, s.pageMenu]}>
         <CategoryHeader title={CHEF_MENU_TITLE} />
@@ -207,61 +229,70 @@ export function ChefScreen() {
             <Text style={s.introCta}>{INTRO_CTA}</Text>
           </StepIn>
 
-          {/* שתי לשוניות · ארוחת שף מול עמדת טאבון */}
+          {/* הלשוניות · ארוחת שף, עמדת טאבון, ומה שעוד לא נפתח */}
           <StepIn index={1} style={s.modes}>
-            {o.packages.map((p, i) => (
+            {tabs.map((t, i) => (
               <Pressable
-                key={p.key}
+                key={t.key}
                 onPress={() => setTab(i)}
                 style={[s.mode, tab === i && s.modeOn]}
               >
-                <Text style={[s.modeText, tab === i && s.modeTextOn]}>{p.name}</Text>
+                <Text numberOfLines={1} style={[s.modeText, tab === i && s.modeTextOn]}>
+                  {t.label}
+                </Text>
               </Pressable>
             ))}
           </StepIn>
 
-          {/* כרטיס המסלול · הכפתור, אחריו הקרוסלה ואז שורות הפירוט */}
-          <StepIn index={2} style={s.pkgCard}>
-            {/* ⚠ הכפתור עלה מעל הקרוסלה ולבש את עיצוב ׮המשךׯ ·
-                שתי בקשות של שקד. קודם הוא היה גלולה שטוחה בתחתית. */}
-            {/* ⚠ **עיצוב ״קו תחתון״ · נבחר ב-16 בספטמבר 2026** · שקד
-                עברה כאן שלושה סבבים: קודם גלולת זכוכית, אחר כך ידית
-                עם חץ וגרירה שמאלה, ובסוף ביקשה ״שלא יהיה עם חץ
-                ותשנה לו ממש את העיצוב״ ובחרה מתוך חמישה את הכיתוב
-                עם הקו מתחתיו.
-                ⚠ **הגרירה ירדה איתו** · בלי ידית אין מה לגרור, וזה
-                סוכם איתה מראש. חזרה ללחיצה רגילה. */}
-            {/* ⚠ **יחס 300×200** · בקשה של שקד (16 בספטמבר 2026).
-                היחס נשמר בכל רוחב מסך; `CARO.height` נשאר כנפילה
-                לאחור בלבד. */}
-            <PhotoStrip
-              names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
-              height={CARO.height}
-              ratio={CARO_RATIO}
-              inset={CARO_INSET}
-            />
-            <View style={s.pkgLines}>
-              {(chosen.intro ?? []).map((line) => (
-                <Text
-                  key={line.text}
-                  style={{
-                    fontWeight: line.w as '300' | '500' | '600',
-                    fontSize: parseFloat(line.size),
-                    color: line.fg,
-                    lineHeight: parseFloat(line.size) * 1.6,
-                    textAlign: 'center',
-                  }}
-                >
-                  {line.text}
-                </Text>
-              ))}
-            </View>
+          {/* ⚠ לשונית בלי תוכן · השורה ששקד כתבה, ולא מילה מעבר לה */}
+          {soon ? (
+            <StepIn index={2} style={[s.pkgCard, s.soonCard]}>
+              <Text style={s.soonBadge}>{soon.badge}</Text>
+            </StepIn>
+          ) : (
+            /* כרטיס המסלול · הכפתור, אחריו הקרוסלה ואז שורות הפירוט */
+            <StepIn index={2} style={s.pkgCard}>
+              {/* ⚠ הכפתור עלה מעל הקרוסלה ולבש את עיצוב ׮המשךׯ ·
+                  שתי בקשות של שקד. קודם הוא היה גלולה שטוחה בתחתית. */}
+              {/* ⚠ **עיצוב ״קו תחתון״ · נבחר ב-16 בספטמבר 2026** · שקד
+                  עברה כאן שלושה סבבים: קודם גלולת זכוכית, אחר כך ידית
+                  עם חץ וגרירה שמאלה, ובסוף ביקשה ״שלא יהיה עם חץ
+                  ותשנה לו ממש את העיצוב״ ובחרה מתוך חמישה את הכיתוב
+                  עם הקו מתחתיו.
+                  ⚠ **הגרירה ירדה איתו** · בלי ידית אין מה לגרור, וזה
+                  סוכם איתה מראש. חזרה ללחיצה רגילה. */}
+              {/* ⚠ **יחס 300×200** · בקשה של שקד (16 בספטמבר 2026).
+                  היחס נשמר בכל רוחב מסך; `CARO.height` נשאר כנפילה
+                  לאחור בלבד. */}
+              <PhotoStrip
+                names={chosen.key === 'chef' ? CHEF_PHOTOS : TABON_PHOTOS}
+                height={CARO.height}
+                ratio={CARO_RATIO}
+                inset={CARO_INSET}
+              />
+              <View style={s.pkgLines}>
+                {(chosen.intro ?? []).map((line) => (
+                  <Text
+                    key={line.text}
+                    style={{
+                      fontWeight: line.w as '300' | '500' | '600',
+                      fontSize: parseFloat(line.size),
+                      color: line.fg,
+                      lineHeight: parseFloat(line.size) * 1.6,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {line.text}
+                  </Text>
+                ))}
+              </View>
 
-            {/* ⚠ **ירד מתחת לכיתוב · 17 בספטמבר 2026** · בקשה של
-                שקד. הוא ישב מעל הקרוסלה, כלומר לפני שהלקוחה בכלל
-                קראה מה המסלול כולל. */}
-            <PickCta onPress={() => o.openPackage(tab)} />
-          </StepIn>
+              {/* ⚠ **ירד מתחת לכיתוב · 17 בספטמבר 2026** · בקשה של
+                  שקד. הוא ישב מעל הקרוסלה, כלומר לפני שהלקוחה בכלל
+                  קראה מה המסלול כולל. */}
+              <PickCta onPress={() => o.openPackage(tab)} />
+            </StepIn>
+          )}
         </ScrollView>
       </View>
     );
@@ -401,6 +432,16 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.8)',
   },
   pkgLines: { gap: 3, paddingHorizontal: 4 },
+  /* ⚠ הגובה מ-`SOON_CARD_H` · בלי זה הכרטיס הריק מתכנס לגובה שורה
+     אחת, והלשונית נראית שבורה ולא ״עוד לא נפתחה״ */
+  soonCard: { minHeight: SOON_CARD_H, alignItems: 'center', justifyContent: 'center' },
+  soonBadge: {
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 2.5,
+    color: ACCENT.deep,
+    textAlign: 'center',
+  },
   /* מיקום בלבד · העיצוב, כולל הרווח מהחץ, מגיע מ-`ContinueButton` */
   /* ״בחר מסלול״ · כיתוב עם קו נמשך, בלי קופסה ובלי ידית */
   pickCta: { alignSelf: 'center', paddingTop: 6, paddingBottom: 10, paddingHorizontal: 6 },
