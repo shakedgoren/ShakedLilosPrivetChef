@@ -19,8 +19,33 @@ import {
   type DayCatKey,
 } from '../../data/adminDays';
 import { Chip } from '../ui/Chip';
+import { RED } from '../ui/tint';
 import { ToggleRow } from '../ui/Toggle';
+import { HOURS, hourLabel, hoursSummary } from './blockedHours';
+import { BOXES, FRIDAY_ONLY_BOXES } from '../../data/boxes';
+import { dowOf } from '../../data/calendar';
 import type { useAdminDays } from './useAdminDays';
+
+const FRIDAY = 5;
+
+/**
+ * שמות ארבעת מארזי שישי · **מהנתונים ולא מהקלדה**.
+ *
+ * ⚠ **למה להציג אותם** · שקד קראה להם בבקשה שלה ״פותחים שולחן,
+ * הכל עליי, כמה שבא לכם״, ובנתונים הם ״חגיגה בשולחן, הכל עלינו,
+ * קחו כמה שבא לכם״. השורה הזו מראה לה בדיוק על מה המתג עובד,
+ * ואם מארז יתווסף או ייצא מהרשימה — היא תתעדכן לבד.
+ */
+const FRIDAY_BOX_NAMES = FRIDAY_ONLY_BOXES.map(
+  (k) => BOXES.find((b) => b.key === k)?.name ?? k,
+).join(' · ');
+
+/** ⚠ הנוסחים בבלוק הזה נכתבו על ידי Claude · שקד לא כתבה אותם */
+const HOURS_TITLE = 'שעות משלוח חסומות';
+const HOURS_SUB = 'לחיצה על שעה חוסמת משלוחים בה · איסוף עצמי לא נחסם';
+const HOURS_CLEAR = 'לפתוח הכול';
+const BOX_ON = 'מארזי שישי פתוחים להזמנות';
+const BOX_OFF = 'מארזי שישי סגורים להזמנות';
 
 /** ראשון, 8 בספטמבר */
 function dayTitle(key: string) {
@@ -92,6 +117,70 @@ export function DayPanel({ admin }: Props) {
           </View>
         </View>
       )}
+
+      {/**
+        * ⚠ **מתג מארזי שישי · בקשה של שקד (26 בספטמבר 2026)** ·
+        * ״באופן קבוע כל הימי מכירה שקשורים ל… פותחים שולחן וסלטים,
+        * הכל עליי, כמה שבא לכם — סגורים להזמנות והם נפתחים עפ
+        * החלטה שלי בלבד בצד מנהל״.
+        *
+        * ⚠ **בימי שישי בלבד** · ארבעת המארזים האלה נמסרים בשישי,
+        * ולכן ביום אחר המתג לא היה משנה כלום — ומתג שלא עושה
+        * כלום גרוע ממתג שאינו קיים. מה שלא נפתח נשאר סגור.
+        *
+        * ⚠ **נפרד מ-״פתוח להזמנות״** · בבחירה מפורשת שלה.
+        */}
+      {dowOf(admin.selected) === FRIDAY ? (
+        <View style={s.block}>
+          <View style={s.rule} />
+          <ToggleRow
+            title={admin.boxOpen ? BOX_ON : BOX_OFF}
+            sub={FRIDAY_BOX_NAMES}
+            on={admin.boxOpen}
+            onToggle={admin.toggleBoxOpen}
+          />
+        </View>
+      ) : null}
+
+      {/**
+        * ⚠ **חסימת שעות משלוח · בקשה של שקד (26 בספטמבר 2026)** ·
+        * ״אופציה לחסום שעות של משלוחים לפי ימים בצד מנהל״, ובבחירה
+        * שלה: לתאריך מסוים ולשעות מסוימות.
+        *
+        * ⚠ **מוצג בכל יום** · החסימה אינה קשורה ליום מכירה ולא
+        * לקטגוריה — היא חלה על כל משלוח בתאריך הזה.
+        */}
+      <View style={s.block}>
+        <View style={s.rule} />
+        <View style={s.hoursHead}>
+          <View style={s.hoursText}>
+            <Text style={s.blockTitle}>{HOURS_TITLE}</Text>
+            <Text style={s.blockSub}>{HOURS_SUB}</Text>
+          </View>
+          {admin.blockedHours.length > 0 ? (
+            <Pressable onPress={admin.clearHours} hitSlop={8}>
+              <Text style={s.clear}>{HOURS_CLEAR}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        <View style={s.chips}>
+          {HOURS.map((h) => (
+            <Chip
+              key={h}
+              label={hourLabel(h)}
+              on={admin.blockedHours.includes(h)}
+              tint={RED}
+              fontSize={12}
+              height={32}
+              radius={11}
+              onPress={() => admin.toggleHour(h)}
+            />
+          ))}
+        </View>
+        <Text style={[s.summary, admin.blockedHours.length > 0 && s.summaryOn]}>
+          {hoursSummary(admin.blockedHours)}
+        </Text>
+      </View>
 
       {cat ? (
         <View style={s.block}>
@@ -173,6 +262,13 @@ const s = StyleSheet.create({
   blockTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },
   blockSub: { fontSize: 13, fontWeight: '300', lineHeight: 17, color: surface.muted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+
+  /* שורת הכותרת של השעות · הכותרת מימין, ״לפתוח הכול״ בקצה */
+  hoursHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  hoursText: { flex: 1 },
+  clear: { fontSize: 13, fontWeight: '600', color: RED.deep },
+  summary: { fontSize: 12.5, fontWeight: '300', color: surface.muted, marginTop: 2 },
+  summaryOn: { fontWeight: '500', color: RED.deep },
 
   quotaTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink, marginTop: 4 },
   quotaBlock: { gap: 4 },

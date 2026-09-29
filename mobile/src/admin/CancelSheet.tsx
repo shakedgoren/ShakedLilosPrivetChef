@@ -6,9 +6,9 @@ import { LATE_FEE, LATE_HOURS, REASONS, type AdminOrder } from '../data/adminOrd
 import { Sheet } from './ui/Sheet';
 import { Field } from './ui/Field';
 import { Chip } from './ui/Chip';
+import { RED } from './ui/tint';
 import type { CancelNote } from './useAdminOrders';
 
-const RED = { rgb: '185,83,73', deep: '#B95349' };
 const GREEN = '#4E8A64';
 
 /** הודעת דמי הביטול · פחות מ-12 שעות לפני האיסוף מחייבת 30% */
