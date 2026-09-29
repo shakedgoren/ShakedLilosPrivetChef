@@ -88,7 +88,7 @@ export function PhotoReel() {
           {[...SHOTS, ...SHOTS].map((sh, i) => (
             <View key={`${sh}-${i}`} style={s.tile}>
               {/* ההגדלה מגיעה מ-Photo · הרצועה כבר לא מחזיקה חלונית משלה */}
-              <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} title={photoTitle(sh)} />
+              <Photo name={sh} rgb={REEL_RGB} style={s.tileImg} title={photoTitle(sh)} tier="sm" lazy />
               {/* הצללה בתחתית · כמו הגרדיאנט שעל האריח בקנבס */}
               <Svg style={[s.fade, NO_TOUCH]} width={TILE_W} height={TILE_H}>
                 <Defs>

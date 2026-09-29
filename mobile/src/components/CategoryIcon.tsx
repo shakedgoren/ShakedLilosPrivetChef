@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image } from 'react-native';
 import type { CategoryKey } from '../theme/tokens';
+import { CATEGORY_ICON_SOURCES } from '../data/categoryIconSources';
 
 /**
  * האייקון של כל קטגוריה · חמישה איורים תלת־ממדיים ששקד שלחה
@@ -16,13 +17,7 @@ import type { CategoryKey } from '../theme/tokens';
  * השוליים השקופים נחתכו והצלע הארוכה הורדה ל-512, מה שהוריד את
  * המשקל ל-1.4 מגה־בייט. התמונה עצמה לא נגעה — רק המסגרת והגודל.
  */
-const BY_KEY: Record<CategoryKey, number> = {
-  cous: require('../../assets/Bowl.png'),
-  schn: require('../../assets/SchnitzelDish.png'),
-  box: require('../../assets/Gift.png'),
-  fruit: require('../../assets/FruitPlate.png'),
-  chef: require('../../assets/ChefHat.png'),
-};
+const BY_KEY = CATEGORY_ICON_SOURCES;
 
 /**
  * הקטגוריה הרדומה · שקופה ולא אפורה, כדי שהאיור יישאר עצמו.

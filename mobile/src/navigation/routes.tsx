@@ -1,36 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from '../ui/text';
 import { PageWash } from '../components/PageWash';
 import { useNav, SCREENS, type Screen } from './store';
 import { surface, type CategoryKey } from '../theme/tokens';
-
-import { HomeScreen } from '../screens/HomeScreen';
-import { IconSheetScreen } from '../screens/IconSheetScreen';
-import { LoginScreen } from '../screens/LoginScreen';
-import { CategoryScreen } from '../screens/CategoryScreen';
-import { CouscousScreen } from '../screens/couscous/CouscousScreen';
-import { SchnitzelScreen } from '../screens/schnitzel/SchnitzelScreen';
-import { FruitScreen } from '../screens/fruit/FruitScreen';
-import { BoxesScreen } from '../screens/boxes/BoxesScreen';
-import { ChefScreen } from '../screens/chef/ChefScreen';
-import { MyOrdersScreen } from '../screens/orders/MyOrdersScreen';
-import { ProfileScreen } from '../screens/profile/ProfileScreen';
-import { AdminHomeScreen } from '../admin/AdminHomeScreen';
-import { AdminOrdersScreen } from '../admin/AdminOrdersScreen';
-import { AdminDaysScreen } from '../admin/AdminDaysScreen';
-import { AdminStockScreen } from '../admin/AdminStockScreen';
-import { AdminShoppingScreen } from '../admin/AdminShoppingScreen';
-import { AdminMoneyScreen } from '../admin/AdminMoneyScreen';
-import { AdminCustomersScreen } from '../admin/AdminCustomersScreen';
-import { AdminMenuScreen } from '../admin/AdminMenuScreen';
-import { AdminCostsScreen } from '../admin/AdminCostsScreen';
-import { AdminHistoryScreen } from '../admin/AdminHistoryScreen';
-import { AdminOrderHistoryScreen } from '../admin/AdminOrderHistoryScreen';
-import { AdminBoardScreen } from '../admin/AdminBoardScreen';
-import { AdminExpensesScreen } from '../admin/AdminExpensesScreen';
-import { AdminIncomeScreen } from '../admin/AdminIncomeScreen';
+import { ScreenBody } from './screenBody';
 
 /**
  * המסכים · שם המסך אל הרכיב שלו.
@@ -69,40 +43,11 @@ function Router({ screen }: { screen: Screen }) {
   const gated = ADMIN_SCREENS.includes(screen) && apiEnabled && user?.role !== 'admin';
   const view = gated ? 'main' : screen;
 
-  if (view === 'icons') return <IconSheetScreen />;
-  if (view === 'guest' || view === 'main') return <HomeScreen />;
-  if (view === 'login') return <LoginScreen mode="in" />;
-  if (view === 'signup') return <LoginScreen mode="up" />;
-  if (view === 'cous') return <CouscousScreen />;
-  if (view === 'schn') return <SchnitzelScreen />;
-  if (view === 'fruit') return <FruitScreen />;
-  if (view === 'box') return <BoxesScreen />;
-  if (view === 'chef') return <ChefScreen />;
-  if (view === 'orders') return <MyOrdersScreen />;
-  if (view === 'profile') return <ProfileScreen />;
-  if (view === 'admin') return <AdminHomeScreen />;
-  if (view === 'adminOrders') return <AdminOrdersScreen />;
-  if (view === 'adminDays') return <AdminDaysScreen />;
-  if (view === 'adminStock') return <AdminStockScreen />;
-  if (view === 'adminShopping') return <AdminShoppingScreen />;
-  if (view === 'adminMoney') return <AdminMoneyScreen />;
-  if (view === 'adminCustomers') return <AdminCustomersScreen />;
-  if (view === 'adminMenu') return <AdminMenuScreen />;
-  if (view === 'adminCosts') return <AdminCostsScreen />;
-  if (view === 'adminHistory') return <AdminHistoryScreen />;
-  if (view === 'adminOrderHistory') return <AdminOrderHistoryScreen />;
-  if (view === 'adminBoard') return <AdminBoardScreen />;
-  if (view === 'adminExpenses') return <AdminExpensesScreen />;
-  if (view === 'adminIncome') return <AdminIncomeScreen />;
-  if (CATEGORY_SCREENS.includes(view as CategoryKey))
-    return <CategoryScreen categoryKey={view as CategoryKey} />;
-
-  /* כל המסכים מנותבים · הענף הזה נשאר כרשת ביטחון בלבד */
+  /* בדפדפן ScreenBody עלול להשהות בזמן טעינת מסך · השטיפה נשארת מאחור */
   return (
-    <View style={s.todo}>
-      <Text style={s.todoText}>{screen}</Text>
-      <Text style={s.todoSub}>מסך לא מוכר</Text>
-    </View>
+    <Suspense fallback={null}>
+      <ScreenBody screen={view} />
+    </Suspense>
   );
 }
 
@@ -159,7 +104,4 @@ const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: surface.ground },
   /* ⚠ שקוף · השטיפה שמתחתיו היא שנראית */
   safe: { flex: 1 },
-  todo: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  todoText: { fontSize: 20, fontWeight: '600', color: surface.ink },
-  todoSub: { fontSize: 13, color: surface.muted },
 });

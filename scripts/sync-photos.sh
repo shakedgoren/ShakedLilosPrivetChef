@@ -37,6 +37,9 @@ cat > "$DST/README.md" <<'EOF'
 
 עותק של `design/app/assets/originals/` — **לא** של המוקטנות ב-`design/app/assets/`.
 
+בדפדפן לא מגישים את הקבצים האלה. `scripts/optimize-web-photos.mjs`
+(רץ מתוך `npm run build:web`) גוזר מהם WebP בגודל תצוגה.
+
 לעדכון אחרי העלאת תמונה חדשה לקנבס:
 
 ```bash

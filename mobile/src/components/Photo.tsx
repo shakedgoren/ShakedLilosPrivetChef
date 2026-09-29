@@ -1,7 +1,7 @@
 import React from 'react';
 import { S } from './Sym';
-import { Image, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
-import { photo } from '../data/photos';
+import { Image, Platform, Pressable, StyleSheet, View, type ImageStyle, type ViewStyle } from 'react-native';
+import { photo, type PhotoTier } from '../data/photos';
 import { useLightbox } from './lightboxContext';
 import { photoTitle } from '../data/photoTitles';
 import { a, deepRgbOf } from '../theme/tokens';
@@ -26,6 +26,16 @@ type Props = {
    * ולכן כל תמונה באפליקציה מקבלת את שמה בלי שהמסך יטפל בזה.
    */
   title?: string;
+  /**
+   * גודל הקובץ בדפדפן · sm לרצועה, md לכרטיס, lg למסך מלא.
+   * במכשיר אין הבדל.
+   */
+  tier?: PhotoTier;
+  /**
+   * בדפדפן לא מורידים את הקובץ עד שהאריח מתקרב למסך.
+   * במכשיר מתעלמים · שם אין מה לחסוך בטעינה הראשונה.
+   */
+  lazy?: boolean;
 };
 
 /* מציין המקום בקנבס · אייקון בגודל 26 בגוון הכהה של הקטגוריה */
@@ -49,10 +59,13 @@ export function Photo({
   resizeMode = 'cover',
   zoom = true,
   title,
+  tier = 'md',
+  lazy = false,
 }: Props) {
-  const src = name ? photo(name) : undefined;
+  const src = name ? photo(name, tier) : undefined;
   const lightbox = useLightbox();
   const shotTitle = title ?? (name ? photoTitle(name) : undefined);
+  const hold = useNearScreen(lazy);
 
   if (!src) {
     return (
@@ -61,6 +74,9 @@ export function Photo({
       </View>
     );
   }
+
+  /* האריח שומר על המידות גם לפני שהתמונה נטענת, כדי שהרצועה לא תקפוץ */
+  if (hold) return <View ref={hold} style={style as ViewStyle} />;
 
   if (!zoom || !lightbox || !name) {
     return <Image source={src} style={style as ImageStyle} resizeMode={resizeMode} />;
@@ -79,6 +95,52 @@ export function Photo({
       <Image source={src} style={s.fill} resizeMode={resizeMode} />
     </Pressable>
   );
+}
+
+/**
+ * בדפדפן · מחזיר ref כל עוד האריח מחוץ למסך, ו-null ברגע שהוא נכנס.
+ * כך `new Image()` של ריאקט-נייטיב-ווב לא רץ על תמונות שעוד לא רואים.
+ */
+function scrollRoot(node: Element): Element | null {
+  let p = node.parentElement;
+  while (p) {
+    const oy = getComputedStyle(p).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 8) return p;
+    p = p.parentElement;
+  }
+  return null;
+}
+
+function useNearScreen(lazy: boolean) {
+  const ref = React.useRef<View>(null);
+  const [waiting, setWaiting] = React.useState(lazy && Platform.OS === 'web');
+
+  React.useEffect(() => {
+    if (!waiting) return;
+    const node = ref.current as unknown as Element | null;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setWaiting(false);
+      return;
+    }
+    /*
+     * שורש הגלילה ולא חלון הדפדפן · אחרת שוליים לא חודרים
+     * את ה-ScrollView, והרצועה שיושבת ממש מתחת לקפל נשארת ריקה.
+     */
+    const root = scrollRoot(node);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setWaiting(false);
+          io.disconnect();
+        }
+      },
+      { root, rootMargin: '220px 60px' },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [waiting]);
+
+  return waiting ? ref : null;
 }
 
 const s = StyleSheet.create({

@@ -72,7 +72,7 @@ const OPEN_FROM = 0.9;
 type AssetMeta = { width?: number; height?: number };
 
 function ratioOf(name: string): number {
-  const src = photo(name) as AssetMeta | number | string | undefined;
+  const src = photo(name, 'lg') as AssetMeta | number | string | undefined;
   if (!src) return FALLBACK_RATIO;
 
   /* ווב · ה-require כבר נושא את המידות */
@@ -146,7 +146,7 @@ export function LightboxProvider({ children }: { children: React.ReactNode }) {
                   קודם היה גובה קבוע 78% עם `contain`, והתמונה ריחפה
                   בתוך מסגרת שקופה — ולכן היא יצאה בפינות מרובעות. */}
               <Pressable onPress={close} style={[s.shotPress, { aspectRatio: ratioOf(shot.name) }]}>
-                <Photo name={shot.name} style={s.shot} zoom={false} />
+                <Photo name={shot.name} style={s.shot} zoom={false} tier="lg" />
               </Pressable>
             </Stage>
             <Pressable onPress={close} style={s.close} hitSlop={10}>

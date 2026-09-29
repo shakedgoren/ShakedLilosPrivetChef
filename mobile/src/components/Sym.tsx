@@ -1,6 +1,7 @@
 import React from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
-import { SymbolView, type SFSymbol, type SymbolViewProps } from 'expo-symbols';
+import type { SFSymbol, SymbolViewProps } from 'expo-symbols';
+import { IconGlyph } from './IconGlyph';
 
 /**
  * אייקוני אפל · SF Symbols.
@@ -94,18 +95,14 @@ function Moving({ motion, children }: { motion: OurMotion; children: React.React
 }
 
 export function Sym({ ios, other, size = 24, color = INDIGO_70, motion = 'none', fallback }: Props) {
-  const name = other ? ({ ios, android: other, web: other } as SymbolViewProps['name']) : ios;
-
   const symbol = (
-    <SymbolView
-      name={name}
+    <IconGlyph
+      ios={ios}
+      web={other ?? ios}
       size={size}
-      tintColor={color}
-      type="monochrome"
-      resizeMode="scaleAspectFit"
+      color={color}
       animationSpec={isNative(motion) ? NATIVE[motion] : undefined}
       fallback={fallback ?? <View style={{ width: size, height: size }} />}
-      style={{ width: size, height: size }}
     />
   );
 

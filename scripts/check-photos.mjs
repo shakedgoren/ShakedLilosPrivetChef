@@ -1,14 +1,16 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * מוודא שכל תמונה בתיקייה נמצאת בשימוש, ושכל שם שהקוד מבקש קיים.
- * הרשימות מגיעות מ-photos.ts עצמו · אין רשימות מוקלדות כאן.
+ * הרשימות מגיעות מ-photos.ts והקבצים מ-photoFiles.ts · אין רשימות מוקלדות כאן.
  */
-const M = '/Users/shakedgoren/Downloads/files/mobile';
+const M = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../mobile');
 const photos = fs.readFileSync(M + '/src/data/photos.ts', 'utf8');
+const photoFiles = fs.readFileSync(M + '/src/data/photoFiles.ts', 'utf8');
 
-const known = new Set([...photos.matchAll(/^  '([^']+)': require/gm)].map((h) => h[1]));
+const known = new Set([...photoFiles.matchAll(/^  '([^']+)': require/gm)].map((h) => h[1]));
 
 /* הקבוצות המיוצאות · שם הקבוצה והשמות שבתוכה */
 const groups = {};
@@ -20,7 +22,7 @@ const walk = (dir) =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) return walk(p);
-    return /\.tsx?$/.test(e.name) && !p.endsWith('data/photos.ts') ? [p] : [];
+    return /\.tsx?$/.test(e.name) && !/data\/photo(s|Files)(\.web)?\.ts$/.test(p) ? [p] : [];
   });
 const code = walk(M + '/src').map((p) => fs.readFileSync(p, 'utf8')).join('\n') +
   fs.readFileSync(M + '/App.tsx', 'utf8');
