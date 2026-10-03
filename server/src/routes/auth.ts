@@ -4,6 +4,7 @@ import { prisma } from '../db.ts';
 import { env } from '../env.ts';
 import { badGateway, badRequest, unauthorized } from '../errors.ts';
 import { parseWho, publicUser } from '../auth/identity.ts';
+import { loginBody } from '../auth/loginBody.ts';
 import { signupEmail } from '../auth/signupEmail.ts';
 import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
@@ -53,25 +54,6 @@ const whoBody = z.object({
   name: z.string().optional(),
   email: z.union([z.string().max(80), z.null()]).optional(),
   gender: z.enum(['female', 'male', 'other', '']).optional(),
-});
-
-/**
- * גוף הכניסה · **בלי בדיקת חוזק.**
- *
- * ⚠ **באג · נמצא ב-3 באוקטובר 2026** · `/login` השתמש ב-
- * `whoBody.pick({ who, password })`, ושם `password` הוא
- * `strongPassword`. כלומר השרת **פסל סיסמה חלשה בכניסה**, לפני
- * שבכלל הגיע להשוואה מול ה-hash. כל חשבון שנוצר לפני כלל הסיסמה
- * של 26 בספטמבר ננעל בחוץ — שקד דיווחה על שני החשבונות שלה.
- *
- * ⚠ **מדיניות סיסמה שייכת ליצירה, לא לאימות.** בהרשמה, בשינוי
- * סיסמה ובאיפוס — כן. בכניסה אף פעם: מי שכבר יש לו סיסמה חלשה
- * צריך להצליח להיכנס כדי שיוכל להחליף אותה. התגובה כאן היא
- * `invalid_credentials` בלבד, ולכן גם לא מדליפה אם החשבון קיים.
- */
-const loginBody = z.object({
-  who: z.string().min(3),
-  password: z.string().min(1),
 });
 
 const sessionOf = (user: { id: string; role: string }) => ({
@@ -490,8 +472,16 @@ authRouter.post('/change-password', requireAuth, async (req, res, next) => {
   try {
     const body = z
       .object({
+        /* ⚠ אימות · בלי בדיקת חוזק. ראו `auth/loginBody`. */
         current: z.string().min(1),
-        next: z.string().min(8),
+        /**
+         * ⚠ **היה `z.string().min(8)` · תוקן ב-3 באוקטובר 2026** ·
+         * כלל הסיסמה היה כתוב כאן בפעם השנייה, וחלש יותר: אורך
+         * בלבד, בלי אות גדולה, קטנה וספרה. כלומר דרך ה-API אפשר
+         * היה **לקבוע** סיסמה שהמסך עצמו פוסל — אותה כפילות
+         * בדיוק ש-`passwordRule` נולד כדי למנוע.
+         */
+        next: strongPassword,
       })
       .parse(req.body);
 
