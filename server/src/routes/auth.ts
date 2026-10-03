@@ -4,6 +4,7 @@ import { prisma } from '../db.ts';
 import { env } from '../env.ts';
 import { badGateway, badRequest, unauthorized } from '../errors.ts';
 import { parseWho, publicUser } from '../auth/identity.ts';
+import { loginBody } from '../auth/loginBody.ts';
 import { signupEmail } from '../auth/signupEmail.ts';
 import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
@@ -214,7 +215,7 @@ authRouter.post('/register/verify', async (req, res, next) => {
 
 authRouter.post('/login', async (req, res, next) => {
   try {
-    const body = whoBody.pick({ who: true, password: true }).parse(req.body);
+    const body = loginBody.parse(req.body);
     const who = parseWho(body.who);
     if (!who) throw unauthorized('invalid_credentials');
 
@@ -471,8 +472,16 @@ authRouter.post('/change-password', requireAuth, async (req, res, next) => {
   try {
     const body = z
       .object({
+        /* ⚠ אימות · בלי בדיקת חוזק. ראו `auth/loginBody`. */
         current: z.string().min(1),
-        next: z.string().min(8),
+        /**
+         * ⚠ **היה `z.string().min(8)` · תוקן ב-3 באוקטובר 2026** ·
+         * כלל הסיסמה היה כתוב כאן בפעם השנייה, וחלש יותר: אורך
+         * בלבד, בלי אות גדולה, קטנה וספרה. כלומר דרך ה-API אפשר
+         * היה **לקבוע** סיסמה שהמסך עצמו פוסל — אותה כפילות
+         * בדיוק ש-`passwordRule` נולד כדי למנוע.
+         */
+        next: strongPassword,
       })
       .parse(req.body);
 

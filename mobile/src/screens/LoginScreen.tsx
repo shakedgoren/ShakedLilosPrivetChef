@@ -664,7 +664,12 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   /* מתי מותר להמשיך · לכל שלב התנאי שלו */
   const ready =
     step === 'in'
-      ? okPhone(phone) && isStrongPassword(pass)
+      ? /* ⚠ **בכניסה לא בודקים חוזק · 3 באוקטובר 2026** · היה כאן
+           `isStrongPassword(pass)`, והוא כיבה את הכפתור לכל מי
+           שהסיסמה שלו נוצרה לפני הכלל של 26 בספטמבר. שקד נחסמה
+           כך משני החשבונות שלה. חוזק נבדק ביצירת סיסמה (`up3`,
+           ובמסך האזור האישי), לא באימות שלה. */
+        okPhone(phone) && pass.trim() !== ''
       : step === 'up1'
         ? okPhone(phone)
         : step === 'up2'

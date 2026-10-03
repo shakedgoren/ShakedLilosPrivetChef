@@ -26,6 +26,29 @@ const SUB = 'אוכל ביתי · ארוחות שף · עמדת טאבון';
  */
 const MARK_STYLE: MarkStyleKey = 'signature';
 
+/**
+ * רוחב עודף של בד ה-SVG בכל צד · במידות של מסך הייחוס.
+ *
+ * ⚠ **למה זה הוחלף · 3 באוקטובר 2026** · ב-24 בספטמבר נוסף כאן
+ * `overflow: 'visible'` בתגובה לדיווח של שקד שהאות ״l״ נחתכת
+ * באייפון. היא דיווחה שוב מהאתר בטלפון, כלומר **זה לא הספיק.**
+ *
+ * ⚠ **למה `overflow` לא אמין כאן** · על `<svg>` שורשי החיתוך נקבע
+ * מהחלון של ה-SVG ולא רק מ-CSS, ו-WebKit (ספארי והדפדפן באייפון)
+ * לא מכבד שם `overflow: visible` כמו Blink. זו בדיוק הסיבה שהבאג
+ * נראה בכרום תקין ובאייפון חתוך.
+ *
+ * ⚠ **מה שעושים במקום** · הבד עצמו רחב יותר משני הצדדים, והעודף
+ * מבוטל במרווח שלילי. הזנב מצויר בתוך הבד ולא חורג ממנו, ולכן
+ * אין על מה לוותר לאף מנוע. **המידות והמיקום לא זזו** — הטקסט
+ * ממוקם למרכז הבד החדש, שהוא בדיוק מרכז הלוח הישן.
+ *
+ * ⚠ **24 ולא יותר** · ל-`HomeScreen` יש 18 נקודות ריפוד לכל צד,
+ * כלומר לזנב יש לאן לגלוש בלי לגעת בקצה המסך. הבד גדול מהדיו —
+ * גודל הבד אינו גודל הכתב, והעודף אינו נראה.
+ */
+const TAIL_PAD = 24;
+
 export function Masthead() {
   const width = useAppWidth();
   const v = MARK_STYLES[MARK_STYLE];
@@ -33,6 +56,10 @@ export function Masthead() {
   const band = Math.max(0, width - space.lg * 2);
   /* המתיחה ביחס למסך הייחוס · ראו `fit` ב-`markStyles` */
   const k = 'fit' in v && v.fit ? band / REF_BAND : 1;
+  /* ⚠ ראו `TAIL_PAD` · נמתח עם המסך, כמו כל שאר המידות */
+  const pad = TAIL_PAD * k;
+  /* רוחב הבד · הלוח הנראה ועוד מקום לזנב משני הצדדים */
+  const canvas = band + pad * 2;
 
   return (
     <View style={s.band}>
@@ -56,7 +83,7 @@ export function Masthead() {
         * כפי ששקד אישרה. רק החיתוך יורד, ולזנב יש 18 נקודות
         * הריפוד של `HomeScreen` לגלוש לתוכן בלי לגעת בקצה המסך.
         */}
-      <Svg width={band} height={v.height * k} style={s.mark}>
+      <Svg width={canvas} height={v.height * k} style={[s.mark, { marginHorizontal: -pad }]}>
         <Defs>
           {/* ⚠ **זהב מטאלי · אנכי · 16 בספטמבר 2026** · שקד שלחה
               תמונת ייחוס וביקשה כותרת בסגנון הזה. הגרדיאנט הקודם היה
@@ -74,7 +101,7 @@ export function Masthead() {
         </Defs>
 
         <SvgText
-          x={band / 2 + ('nudge' in v ? v.nudge : 0) * k}
+          x={canvas / 2 + ('nudge' in v ? v.nudge : 0) * k}
           y={v.baseline * k}
           textAnchor="middle"
           fontFamily={v.family}
@@ -104,7 +131,10 @@ const SUB_INK = '#7A5F22';
 
 const s = StyleSheet.create({
   band: { alignItems: 'center', paddingTop: 16, paddingBottom: 14 },
-  /* ⚠ ראו ההערה ליד ה-`Svg` · הזנב של ה-l לא נחתך על ידי המסגרת */
+  /**
+   * ⚠ `overflow` נשאר · הוא עוזר במנועים שמכבדים אותו, אבל הוא
+   * **אינו** מה שפותר את החיתוך. ראו `TAIL_PAD`.
+   */
   mark: { overflow: 'visible' },
   rule: {
     height: 1,
