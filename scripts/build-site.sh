@@ -49,6 +49,7 @@ echo "· בדיקה"
 check "$OUT/index.html"
 check "$OUT/style.css"
 check "$OUT/img/logo.webp"
+check "$OUT/img/favicon.png"
 check "$OUT/robots.txt"
 check "$OUT/app/index.html"
 

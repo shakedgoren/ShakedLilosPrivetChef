@@ -68,6 +68,18 @@
 </script>
 <title>BITE &amp; TELL</title>
 <meta name="description" content="מטבח פרטי ביבנה · שלישי של קוסקוס, שישי של מטעמים, ולכל אירוע מארזים, מגשי פירות וארוחת שף.">
+<!-- ⚠ **הפאביקון · 3 באוקטובר 2026** · שקד דיווחה שהלשונית מציגה
+     סמל זר ולא את הלוגו. הסיבה: לעמוד הנחיתה לא הייתה שום הצהרת
+     אייקון, ו-`build-site.sh` מעתיק את `landing/` כמות שהיא לשורש,
+     ולכן הדפדפן ביקש `/favicon.ico` ולא מצא דבר. גרסת האפליקציה
+     תחת `/app` דווקא כן הגדירה אייקון משלה — לכן זה נראה חלקי.
+
+     ⚠ **64 פיקסלים ולא 256** · הקובץ יושב *אחרי* ההפניה לטלפון,
+     אבל סורק הטעינה המקדימה רץ לפניה ומזמין אותו בכל מקרה (ראו
+     ההערה למעלה). המקור הוא 94KB; הגרסה הזו 9.6KB. -->
+<link rel="icon" type="image/png" sizes="64x64" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/favicon.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;800&display=swap">
