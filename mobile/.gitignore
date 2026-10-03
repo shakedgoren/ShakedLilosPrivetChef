@@ -40,3 +40,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# תמונות ווב שנגזרות לפני expo export · ראו scripts/optimize-web-photos.mjs
+/assets/photos-web/
+/assets/icons-web/

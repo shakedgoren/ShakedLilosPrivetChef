@@ -19,7 +19,9 @@ const natural = (a, b) =>
   a.replace(/\d+/g, (n) => n.padStart(6, '0')).localeCompare(b.replace(/\d+/g, (n) => n.padStart(6, '0')));
 
 const key = (f) => path.basename(f, path.extname(f));
-const lines = files.sort(natural).map((f) => `  '${key(f)}': require('../../assets/photos/${f}'),`);
+files.sort(natural);
+const lines = files.map((f) => `  '${key(f)}': require('../../assets/photos/${f}'),`);
+const FILES_OUT = path.join(root, 'mobile/src/data/photoFiles.ts');
 
 /* קבוצות שמשמשות כקרוסלות · נבנות מהשמות עצמם ולא מוקלדות */
 const group = (prefix) =>
@@ -52,19 +54,22 @@ const ts = `/**
  * מפת התמונות · נוצר אוטומטית מ-mobile/assets/photos.
  * לעדכון: bash scripts/sync-photos.sh && node scripts/emit-photos.mjs
  *
- * המקור: design/app/assets/originals/ · לא המוקטנות.
+ * הקבצים עצמם יושבים ב-photoFiles.ts (מכשיר) וב-photoFiles.web.ts
+ * (דפדפן · WebP שמייצר scripts/optimize-web-photos.mjs).
+ * המקור למכשיר: design/app/assets/originals/ · לא המוקטנות.
  */
 import type { ImageSourcePropType } from 'react-native';
+import { resolvePhoto, type PhotoTier } from './photoResolve';
 
+export type { PhotoTier };
 export type PhotoKey = ${files.map((f) => `'${key(f)}'`).join(' | ')};
 
-export const PHOTOS: Record<PhotoKey, ImageSourcePropType> = {
-${lines.join('\n')}
-};
-
-/** תמונה לפי שם · undefined כשאין קובץ כזה, כדי שהמסך יוכל ליפול למציין מקום */
-export const photo = (name: string): ImageSourcePropType | undefined =>
-  (PHOTOS as Record<string, ImageSourcePropType>)[name];
+/**
+ * תמונה לפי שם · undefined כשאין קובץ כזה, כדי שהמסך יוכל ליפול למציין מקום.
+ * בדפדפן \`tier\` בוחר גודל (רצועה / כרטיס / מסך מלא). במכשיר מתעלמים ממנו.
+ */
+export const photo = (name: string, tier?: PhotoTier): ImageSourcePropType | undefined =>
+  resolvePhoto(name, tier);
 
 /* ── קרוסלות · נגזרות משמות הקבצים ── */
 export const HOME_PHOTOS = ${JSON.stringify(groups.home)} as const;
@@ -102,7 +107,19 @@ export const SCHNITZEL_BOX_PHOTOS = ['schnitzel-thin-box', 'schnitzel-tampura-bo
 export const TRAY_PHOTOS = ['tray-meruba-large', 'tray-malben-large', 'tray-agol-xl', 'tray-boat'] as const;
 `;
 
+const filesTs = `/**
+ * קבצי התמונות למכשיר · נוצר אוטומטית. אין לערוך ביד.
+ * לעדכון: bash scripts/sync-photos.sh && node scripts/emit-photos.mjs
+ */
+import type { ImageSourcePropType } from 'react-native';
+
+export const PHOTOS: Record<string, ImageSourcePropType> = {
+${lines.join('\n')}
+};
+`;
+
 fs.writeFileSync(OUT, ts);
+fs.writeFileSync(FILES_OUT, filesTs);
 console.log('נכתב', path.relative(root, OUT), '·', files.length, 'תמונות');
 console.log('מארזים:', Object.entries(boxPhotos).map(([k, v]) => k + '=' + v.length).join(' · '));
 console.log('קרוסלות:', Object.entries(groups).map(([k, v]) => k + '=' + v.length).join(' · '));
