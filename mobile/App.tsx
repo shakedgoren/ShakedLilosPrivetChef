@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal, StyleSheet, View } from 'react-native';
+import React, { Suspense } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -11,12 +11,11 @@ import { navigationRef } from './src/navigation/ref';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ADMIN_SCREENS } from './src/navigation/routes';
 import { BottomNav } from './src/components/BottomNav';
-import { PageWash } from './src/components/PageWash';
 import { LightboxProvider } from './src/components/Lightbox';
 import { LogoutButton } from './src/components/LogoutButton';
-import { LoginScreen } from './src/screens/LoginScreen';
+import { LoginOverlay } from './src/navigation/LoginOverlay';
 import { CheerProvider } from './src/components/Cheer';
-import { AdminNav } from './src/admin/AdminNav';
+import { AdminChrome } from './src/navigation/AdminChrome';
 import { ShowroomHost } from './src/showroom/ShowroomHost';
 import { registerForPush } from './src/lib/push';
 import { enableRTL } from './src/theme/rtl';
@@ -32,35 +31,23 @@ function Chrome() {
   const { screen, user, apiEnabled } = useNav();
   if (screen === 'adminBoard') return null;
   const showAdmin = ADMIN_SCREENS.includes(screen) && (!apiEnabled || user?.role === 'admin');
-  return showAdmin ? <AdminNav /> : <BottomNav />;
-}
-
-/**
- * שכבת ההתחברות · נפתחת מעל המסך הנוכחי מתוך חסם ההתחברות.
- * ⚠ חייבת להיות שכבה ולא מסך · מעבר אמיתי מפרק את מסך ההזמנה
- * ומאפס את הבחירות, בניגוד למה שהחסם מבטיח.
- * ⚠ **נשארת `Modal` ידנית בשלב הזה** · המרה להצגה נייטיבית היא
- * שלב 4 בתוכנית, יחד עם שאר 14 החלוניות.
- */
-function LoginOverlay() {
-  const { loginOverlay, closeLogin } = useNav();
-  if (!loginOverlay) return null;
+  if (!showAdmin) return <BottomNav />;
   return (
-    <Modal visible transparent={false} animationType="slide" onRequestClose={closeLogin}>
-      <PageWash />
-      <LoginScreen mode="in" />
-    </Modal>
+    <Suspense fallback={null}>
+      <AdminChrome />
+    </Suspense>
   );
 }
 
 export default function App() {
   const [fontsLoaded] = useFonts(FONTS);
   /**
-   * עד שהגופן נטען לא מרנדרים · אחרת הטקסט קופץ מגופן המערכת ל-Assistant.
-   * ⚠ הגופן עצמו מוחל ב-`src/ui/text.tsx` · היה כאן `applyFonts()` שדרס
-   * את `Text.render`, וזה **לא עבד במכשיר** (ראו את ההערה שם).
+   * במכשיר ממתינים לגופן · אחרת הטקסט קופץ מגופן המערכת ל-Assistant.
+   * בדפדפן לא · מסך ריק של כמה שניות על רשת איטית. שם הגופן
+   * מוחלף תוך כדי (font-display: swap), ראו `fonts.web.ts`.
+   * ⚠ הגופן עצמו מוחל ב-`src/ui/text.tsx`.
    */
-  if (!fontsLoaded) return null;
+  if (Platform.OS !== 'web' && !fontsLoaded) return null;
 
   return (
     /**
