@@ -55,6 +55,25 @@ const whoBody = z.object({
   gender: z.enum(['female', 'male', 'other', '']).optional(),
 });
 
+/**
+ * גוף הכניסה · **בלי בדיקת חוזק.**
+ *
+ * ⚠ **באג · נמצא ב-3 באוקטובר 2026** · `/login` השתמש ב-
+ * `whoBody.pick({ who, password })`, ושם `password` הוא
+ * `strongPassword`. כלומר השרת **פסל סיסמה חלשה בכניסה**, לפני
+ * שבכלל הגיע להשוואה מול ה-hash. כל חשבון שנוצר לפני כלל הסיסמה
+ * של 26 בספטמבר ננעל בחוץ — שקד דיווחה על שני החשבונות שלה.
+ *
+ * ⚠ **מדיניות סיסמה שייכת ליצירה, לא לאימות.** בהרשמה, בשינוי
+ * סיסמה ובאיפוס — כן. בכניסה אף פעם: מי שכבר יש לו סיסמה חלשה
+ * צריך להצליח להיכנס כדי שיוכל להחליף אותה. התגובה כאן היא
+ * `invalid_credentials` בלבד, ולכן גם לא מדליפה אם החשבון קיים.
+ */
+const loginBody = z.object({
+  who: z.string().min(3),
+  password: z.string().min(1),
+});
+
 const sessionOf = (user: { id: string; role: string }) => ({
   token: signToken({ sub: user.id, role: user.role }),
   user: publicUser(user as Parameters<typeof publicUser>[0]),
@@ -214,7 +233,7 @@ authRouter.post('/register/verify', async (req, res, next) => {
 
 authRouter.post('/login', async (req, res, next) => {
   try {
-    const body = whoBody.pick({ who: true, password: true }).parse(req.body);
+    const body = loginBody.parse(req.body);
     const who = parseWho(body.who);
     if (!who) throw unauthorized('invalid_credentials');
 
