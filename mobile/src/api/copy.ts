@@ -1,3 +1,5 @@
+import { PASS_RULE_TEXT } from '../auth/passwordRule';
+
 /**
  * טקסטים חדשים · נכתבו עבור שגיאות רשת/שרת. לא קיימים בקנבס.
  * שקד לא כתבה אותם.
@@ -68,6 +70,7 @@ export function authError(code: string, serverMessage?: string): string {
   }
   if (code === 'otp_invalid') return COPY.otpInvalid;
   if (code === 'mail_failed') return COPY.mailFailed;
+  if (code === 'weak_password') return serverMessage || PASS_RULE_TEXT;
   if (code === 'reset_wrong') return COPY.resetWrong;
   if (code === 'reset_expired') return COPY.resetExpired;
   if (code === 'reset_locked') return COPY.resetLocked;

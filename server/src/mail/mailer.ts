@@ -1,4 +1,5 @@
 import { createTransport, type Transporter } from 'nodemailer';
+import { maskWho } from '../auth/resetLog.ts';
 import { env } from '../env.ts';
 
 /**
@@ -35,26 +36,37 @@ function transport(): Transporter {
   return cached;
 }
 
+function missingSmtp(): string[] {
+  const keys = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM'] as const;
+  return keys.filter((key) => !(process.env[key] ?? '').trim());
+}
+
 export async function sendMail(mail: Mail): Promise<MailResult> {
+  const to = maskWho(mail.to);
   if (!mailConfigured()) {
-    console.warn(
-      `[מייל] לא נשלח אל ${mail.to} · חסרות הגדרות SMTP ` +
-        '(SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM)',
-    );
+    const missing = missingSmtp();
+    console.warn(`[מייל] לא נשלח · אל=${to} · חסרים=${missing.join(',') || 'SMTP'}`);
     return { sent: false, reason: 'not_configured' };
   }
+  const started = Date.now();
   try {
-    await transport().sendMail({
+    const info = await transport().sendMail({
       from: env.mailFrom,
       to: mail.to,
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
     });
+    console.info(
+      `[מייל] נשלח · אל=${to} · host=${env.smtpHost} · port=${env.smtpPort} · ms=${Date.now() - started} · id=${info.messageId ?? ''}`,
+    );
     return { sent: true };
   } catch (err) {
-    /* ⚠ השגיאה נרשמת בשרת בלבד · ללקוחה חוזרת תמיד אותה תשובה */
-    console.error(`[מייל] שליחה אל ${mail.to} נכשלה`, err);
+    /* ⚠ בלי הסיסמה ובלי גוף המייל · רק למה SMTP נכשל */
+    const message = err instanceof Error ? err.message : 'unknown';
+    console.error(
+      `[מייל] נכשל · אל=${to} · host=${env.smtpHost} · port=${env.smtpPort} · ms=${Date.now() - started} · ${message}`,
+    );
     return { sent: false, reason: 'failed' };
   }
 }

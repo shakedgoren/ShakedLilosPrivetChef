@@ -14,6 +14,8 @@ import type { GoogleAccount, GoogleDecision, GooglePatch } from '../auth/googleA
 import { PASS_RULE_TEXT, isStrongPassword } from '../../../mobile/src/auth/passwordRule.ts';
 import { buildResetEmail } from '../mail/resetEmail.ts';
 import { checkResetCode, newResetCode, RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
+import { readResetBody } from '../auth/resetBody.ts';
+import { maskWho } from '../auth/resetLog.ts';
 import { sendMail } from '../mail/mailer.ts';
 import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
 import { notifyOtp } from '../whatsapp/notify.ts';
@@ -329,13 +331,21 @@ authRouter.post('/forgot-password', async (req, res, next) => {
   try {
     const body = z.object({ who: z.string().min(3) }).parse(req.body);
     const who = parseWho(body.who);
+    const masked = maskWho(body.who);
+    const started = Date.now();
+    console.info(`[איפוס] בקשה · מזהה=${masked} · סוג=${who?.kind ?? 'לא-תקין'}`);
     const payload: { ok: true; resetToken?: string; expiresAt?: string; via?: 'otp' | 'token' } = { ok: true };
 
     if (who) {
       const user =
         who.kind === 'email'
-          ? await prisma.user.findUnique({ where: { email: who.email } })
+          ? await prisma.user.findFirst({
+              where: { email: { equals: who.email, mode: 'insensitive' } },
+            })
           : await prisma.user.findUnique({ where: { phone: who.phone } });
+      if (!user) {
+        console.info(`[איפוס] אין חשבון · מזהה=${masked} · ms=${Date.now() - started}`);
+      }
       if (user) {
         /**
          * ⚠ **קוד בן שש ספרות · 19 בספטמבר 2026** · ראו
@@ -371,7 +381,17 @@ authRouter.post('/forgot-password', async (req, res, next) => {
         if (user.email) {
           const mail = buildResetEmail({ name: user.name, code: token });
           /* ⚠ לא `res` · זה שם התשובה של אקספרס, והצללה כאן מסוכנת */
+          /**
+           * ⚠ **התשובה ממתינה ל-SMTP** · הכפתור נשאר עסוק עד שגוגל
+           * מקבלת את ההודעה. זה העיכוב שהלקוחה מרגישה, לא קריסה.
+           * הפעלה קרה של השרת (אחרי פריסה) מוסיפה זמן לפני השורה
+           * הראשונה ביומן. `smtpMs` הוא רק זמן תיבת הדואר.
+           */
+          const smtpAt = Date.now();
+          console.info(`[איפוס] שולח מייל · מזהה=${masked} · host=${env.smtpHost} · port=${env.smtpPort}`);
           const sent = await sendMail({ to: user.email, ...mail });
+          const smtpMs = Date.now() - smtpAt;
+          console.info(`[איפוס] smtp הסתיים · מזהה=${masked} · smtpMs=${smtpMs} · sent=${sent.sent}`);
           /**
            * ⚠ **כישלון שליחה נאמר בקול · 19 בספטמבר 2026** · שקד
            * דיווחה: ״באיפוס סיסמה במייל הוא לא באמת שולח שום הודעת
@@ -424,19 +444,16 @@ authRouter.post('/reset-password', async (req, res, next) => {
      * כלשהו היה מאפס את הסיסמה של **מישהו**, בלי לדעת של מי.
      * עכשיו צריך גם את החשבון, וגם חמישה ניסיונות סוגרים אותו.
      */
-    const body = z
-      .object({
-        who: z.string().min(3),
-        code: z.string().min(4).max(10),
-        password: strongPassword,
-      })
-      .parse(req.body);
+    const body = readResetBody(req.body);
 
     const who = parseWho(body.who);
     if (!who) throw badRequest('invalid_who');
+    const masked = maskWho(body.who);
     const user =
       who.kind === 'email'
-        ? await prisma.user.findUnique({ where: { email: who.email } })
+        ? await prisma.user.findFirst({
+            where: { email: { equals: who.email, mode: 'insensitive' } },
+          })
         : await prisma.user.findUnique({ where: { phone: who.phone } });
 
     const row = user
@@ -447,6 +464,7 @@ authRouter.post('/reset-password', async (req, res, next) => {
       : null;
 
     const verdict = checkResetCode(row, body.code, Date.now());
+    console.info(`[איפוס] שמירת סיסמה · מזהה=${masked} · תוצאה=${verdict}`);
     if (verdict === 'wrong') {
       /* ⚠ המונה עולה גם כשהקוד שגוי · זה מה שסוגר את הסריקה */
       await prisma.passwordReset.update({

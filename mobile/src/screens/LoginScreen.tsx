@@ -510,13 +510,16 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const onResetSave = () =>
     run(async () => {
       setResetErr('');
+      if (!isStrongPassword(resetForm.pass) || resetForm.pass2 !== resetForm.pass) return;
       if (!apiEnabled) {
         setResetDone(true);
         return;
       }
       try {
         await resetPassword(resetMail.trim(), resetForm.code.trim(), resetForm.pass);
-        setResetDone(true);
+        const session = await login(resetMail.trim(), resetForm.pass);
+        setSheet(null);
+        await afterLogin(session);
       } catch (e) {
         setResetErr(e instanceof ApiError ? authError(e.code, e.message) : COPY.net);
       }

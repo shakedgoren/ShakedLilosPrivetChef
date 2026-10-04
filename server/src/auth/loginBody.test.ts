@@ -81,10 +81,15 @@ test('יצירת סיסמה כן בודקת חוזק · בכל שלושת המק
   const src = readFileSync(ROUTES, 'utf8');
   /* הרשמה · דרך `whoBody`, שם `password: strongPassword` */
   assert.ok(/password:\s*strongPassword/.test(src), 'סכמת ההרשמה הפסיקה לדרוש סיסמה חזקה');
-  for (const path of ['/reset-password', '/change-password']) {
-    assert.ok(
-      handlerOf(src, path).includes('strongPassword'),
-      `${path} הפסיק לדרוש סיסמה חזקה`,
-    );
-  }
+  assert.ok(
+    handlerOf(src, '/change-password').includes('strongPassword'),
+    '/change-password הפסיק לדרוש סיסמה חזקה',
+  );
+  /**
+   * האיפוס עבר ל-`readResetBody` · שם הסיסמה החלשה חוזרת
+   * כ-`weak_password` עם הנוסח של ההרשמה, ולא כ-`invalid_body` שקט.
+   */
+  assert.ok(handlerOf(src, '/reset-password').includes('readResetBody'), 'האיפוס לא בודק את הסיסמה');
+  const resetSrc = readFileSync(new URL('./resetBody.ts', import.meta.url), 'utf8');
+  assert.ok(resetSrc.includes('isStrongPassword'), 'בדיקת האיפוס הפסיקה לדרוש סיסמה חזקה');
 });
