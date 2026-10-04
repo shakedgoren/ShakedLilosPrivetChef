@@ -2,6 +2,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '../db.ts';
 import { env } from '../env.ts';
 import { unauthorized } from '../errors.ts';
+import { decideGoogleAccount, type GoogleAccount, type GoogleDecision } from './googleAccount.ts';
 
 export type GoogleProfile = {
   googleId: string;
@@ -54,40 +55,41 @@ export async function verifyGoogleIdToken(idToken: string, audiences: string[]):
   };
 }
 
-export async function upsertGoogleUser(profile: GoogleProfile) {
-  const existing = await prisma.user.findUnique({ where: { googleId: profile.googleId } });
-  if (existing) {
-    const data: { name?: string; avatarUrl?: string; email?: string | null } = {};
-    if (!existing.name && profile.name) data.name = profile.name;
-    if (!existing.avatarUrl && profile.picture) data.avatarUrl = profile.picture;
-    if (!existing.email && profile.email) data.email = profile.email;
-    if (Object.keys(data).length) {
-      return prisma.user.update({ where: { id: existing.id }, data });
-    }
-    return existing;
-  }
+function asAccount(user: {
+  id: string;
+  googleId: string | null;
+  email: string | null;
+  name: string;
+  avatarUrl: string;
+  phone: string | null;
+}): GoogleAccount {
+  return {
+    id: user.id,
+    googleId: user.googleId,
+    email: user.email,
+    name: user.name,
+    avatarUrl: user.avatarUrl,
+    phone: user.phone,
+  };
+}
 
-  if (profile.email) {
-    const byEmail = await prisma.user.findUnique({ where: { email: profile.email } });
-    if (byEmail) {
-      return prisma.user.update({
-        where: { id: byEmail.id },
-        data: {
-          googleId: profile.googleId,
-          name: byEmail.name || profile.name,
-          avatarUrl: byEmail.avatarUrl || profile.picture,
-        },
-      });
-    }
-  }
-
-  return prisma.user.create({
-    data: {
-      googleId: profile.googleId,
-      email: profile.email,
-      name: profile.name,
-      avatarUrl: profile.picture,
-      role: 'customer',
-    },
-  });
+/**
+ * חיפוש בלי יצירה.
+ * ⚠ אימייל מגוגל כבר באותיות קטנות · החיפוש אדיש לאותיות
+ * כדי שחשבון שנשמר עם אות גדולה עדיין ייקשר ולא ישוכפל.
+ */
+export async function matchGoogleAccount(profile: GoogleProfile): Promise<{
+  byGoogleId: GoogleAccount | null;
+  byEmail: GoogleAccount | null;
+  decision: GoogleDecision;
+}> {
+  const byGoogleIdRow = await prisma.user.findUnique({ where: { googleId: profile.googleId } });
+  const byEmailRow = profile.email
+    ? await prisma.user.findFirst({
+        where: { email: { equals: profile.email, mode: 'insensitive' } },
+      })
+    : null;
+  const byGoogleId = byGoogleIdRow ? asAccount(byGoogleIdRow) : null;
+  const byEmail = byEmailRow ? asAccount(byEmailRow) : null;
+  return { byGoogleId, byEmail, decision: decideGoogleAccount(profile, byGoogleId, byEmail) };
 }

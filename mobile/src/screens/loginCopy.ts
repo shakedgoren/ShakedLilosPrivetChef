@@ -18,6 +18,11 @@ export const LOGIN_COPY = {
   otpCta: 'כניסה',
   otpAgain: 'לא הגיע? לשלוח שוב',
   sendCode: 'שליחת קוד',
+  googleSignIn: 'כניסה עם Google',
+  googleSignUp: 'הרשמה עם Google',
+  googleFillTitle: 'השלמת הרשמה',
+  googleFillBody: 'השם והאימייל מולאו מגוגל. נשאר להשלים את השאר ולאמת את הטלפון.',
+  googleEmailFrom: 'הגיע מגוגל',
 
   /* --- זיהוי פנים --- */
   faceAsk: 'להיכנס בפעם הבאה עם זיהוי פנים?',

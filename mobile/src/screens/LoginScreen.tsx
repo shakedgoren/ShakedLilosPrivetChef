@@ -17,6 +17,7 @@ import {
   forgotPassword,
   resetPassword,
   googleSignIn,
+  isGoogleSignup,
   login,
   me,
   register,
@@ -47,7 +48,7 @@ import {
   type EnrollWhy,
 } from '../lib/faceUnlock';
 import { maskPhone, normalizePhone } from '../lib/phone';
-import { useGoogleIdToken } from '../lib/googleAuth';
+import { profileFromTestToken, useGoogleIdToken } from '../lib/googleAuth';
 import { DISPLAY_FAMILY } from '../theme/fonts';
 import { LOGIN_COPY as T } from './loginCopy';
 import { iconOrbShadow } from '../theme/glass';
@@ -58,7 +59,6 @@ import {
   CTA_IN,
   CTA_UP,
   FORGOT_LABEL,
-  GOOGLE_LABEL,
   GUEST_LABEL,
   OR_LABEL,
   TAB_IN,
@@ -77,7 +77,7 @@ import {
  * ממלאים פרטים.
  */
 
-type Step = 'in' | 'face' | 'ask' | 'up1' | 'up2' | 'up3';
+type Step = 'in' | 'face' | 'ask' | 'up1' | 'up2' | 'up3' | 'upG';
 type Gender = '' | 'male' | 'female' | 'other';
 
 const LAV = '#BCA7E6';
@@ -219,6 +219,8 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const [mail, setMail] = useState('');
   const [code, setCode] = useState('');
   const [gender, setGender] = useState<Gender>('');
+  /** טוקן גוגל שממתין לאימות טלפון · אין עדיין חשבון */
+  const [googleDraft, setGoogleDraft] = useState<{ idToken: string; emailLocked: boolean } | null>(null);
   /* ⚠ שגיאת יריעת האיפוס · נפרדת מ-`err` של המסך שמאחוריה */
   const [resetErr, setResetErr] = useState('');
 
@@ -253,7 +255,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const onPhone = (v: string) => setPhone(maskPhone(v));
   const onPhoneDone = () => setPhone((v) => normalizePhone(v));
 
-  const isUp = step === 'up1' || step === 'up2' || step === 'up3';
+  const isUp = step === 'up1' || step === 'up2' || step === 'up3' || step === 'upG';
   const fail = (e: unknown, fallback = COPY.net) =>
     setErr(e instanceof ApiError ? authError(e.code, e.message) : fallback);
 
@@ -297,14 +299,42 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
    * ולא עבד. ראו `lib/googleAuth.ts` למזהים שצריך להגדיר.
    * ⚠ בלי מזהים הכפתור מושבת, במקום להיכשל בשקט.
    */
+  const applyGoogleSignup = (
+    idToken: string,
+    profile: { name: string; email: string | null },
+  ) => {
+    setGoogleDraft({ idToken, emailLocked: !!profile.email });
+    if (profile.name) setName(profile.name);
+    if (profile.email) setMail(profile.email);
+    setStep('upG');
+  };
+
+  /**
+   * כניסה עם גוגל, או הרשמה עם הפרטים שגוגל נתנה.
+   * ⚠ חשבון חדש לא נוצר כאן · רק אחרי אימות הטלפון ב-`/register`.
+   * חשבון קיים (מזהה גוגל או אותו אימייל) נכנס מיד.
+   */
   const onGoogle = () =>
     run(async () => {
-      if (!apiEnabled) return signIn();
       try {
         const idToken = await google.signIn();
         /* ביטול · הלקוחה סגרה את חלון גוגל */
         if (!idToken) return;
-        await afterLogin(await googleSignIn(idToken));
+        if (!apiEnabled) {
+          const preview = profileFromTestToken(idToken);
+          if (preview) {
+            applyGoogleSignup(idToken, preview);
+            return;
+          }
+          signIn();
+          return;
+        }
+        const started = await googleSignIn(idToken);
+        if (isGoogleSignup(started)) {
+          applyGoogleSignup(idToken, started.profile);
+          return;
+        }
+        await afterLogin(started);
       } catch (e) {
         fail(e, COPY.google);
       }
@@ -416,7 +446,18 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
   const onVerify = () =>
     run(async () => {
       if (apiEnabled) await registerVerify(phone.trim(), code.trim());
-      setStep('up3');
+      if (!googleDraft) {
+        setStep('up3');
+        return;
+      }
+      if (!apiEnabled) return signIn();
+      const session = await register(phone.trim(), pass, name.trim(), {
+        email: mail.trim() || null,
+        gender,
+        idToken: googleDraft.idToken,
+      });
+      setGoogleDraft(null);
+      signIn(session);
     });
 
   const onRegister = () =>
@@ -554,6 +595,90 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         ) : null}
       </View>
     );
+  }
+
+  const accountFields = (opts: { phoneLocked: boolean; emailLocked: boolean }) => (
+    <>
+      <Field
+        label="טלפון"
+        value={phone}
+        onChange={opts.phoneLocked ? undefined : onPhone}
+        onBlur={opts.phoneLocked ? undefined : onPhoneDone}
+        placeholder="050-0000000"
+        sym="phone"
+        keyboard="phone-pad"
+        locked={opts.phoneLocked}
+        showPass={showPass}
+        onEye={() => setShowPass((v) => !v)}
+      />
+      <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={SymUser} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+      <Field
+        label="אימייל"
+        value={mail}
+        onChange={opts.emailLocked ? undefined : setMail}
+        placeholder="name@mail.com"
+        Icon={SymEnvelope}
+        keyboard="email-address"
+        locked={opts.emailLocked}
+        showPass={showPass}
+        onEye={() => setShowPass((v) => !v)}
+      />
+      {opts.emailLocked ? <Text style={s.googleNote}>{T.googleEmailFrom}</Text> : null}
+      <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} sym="lock" secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+      {pass !== '' && !isStrongPassword(pass) ? (
+        <Text style={s.passMissing}>חסר: {passwordProblems(pass).join(' · ')}</Text>
+      ) : null}
+      <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" sym="lock" secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
+      <Text style={s.label}>{T.gender}</Text>
+      <View style={s.genders}>
+        {GENDERS.map((g) => {
+          const on = gender === g.key;
+          return (
+            <Pressable
+              key={g.key}
+              onPress={() => setGender(on ? '' : g.key)}
+              style={[s.gender, on && s.genderOn]}
+            >
+              <S k={g.sym} size={23} />
+              <Text style={[s.genderText, on && s.genderTextOn]}>{g.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Pressable
+        onPress={() => read && setTerms((v) => !v)}
+        disabled={!read}
+        style={[s.terms, !read && s.termsLocked]}
+      >
+        <View style={[s.box, terms && s.boxOn]}>
+          {terms ? <S k="check" size={12} color="#FFFFFF" /> : null}
+        </View>
+        <View style={s.grow}>
+          <Text style={s.termsText}>
+            קראתי ואני מאשר.ת את{' '}
+            <Text style={s.termsLink} onPress={() => { setRead(true); setSheet('doc'); }}>
+              {T.termsLink}
+            </Text>
+          </Text>
+          {!read ? (
+            <View style={s.needRow}>
+              <S k="lock" size={12} />
+              <Text style={s.needText}>{T.termsNeed}</Text>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+    </>
+  );
+
+  if (step === 'upG') {
+    body = (
+      <>
+        <Text style={s.stepTitle}>{T.googleFillTitle}</Text>
+        <Text style={s.lede}>{T.googleFillBody}</Text>
+        {accountFields({ phoneLocked: false, emailLocked: !!googleDraft?.emailLocked })}
+      </>
+    );
   } else if (step === 'up1') {
     body = (
       <>
@@ -600,63 +725,11 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         </Pressable>
       </>
     );
-  } else {
+  } else if (step === 'up3') {
     body = (
       <>
         <Dots at={2} />
-        <Field label="טלפון" value={phone} placeholder="050-0000000" sym="phone" locked showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="שם מלא" value={name} onChange={setName} placeholder="שם ושם משפחה" Icon={SymUser} showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="אימייל" value={mail} onChange={setMail} placeholder="name@mail.com" Icon={SymEnvelope} keyboard="email-address" showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        <Field label="סיסמה" value={pass} onChange={setPass} placeholder={`לפחות ${PASS_MIN} תווים`} sym="lock" secure eye showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-        {/* ⚠ **רמז חי · בקשת הסיסמה החזקה** · בלעדיו הכפתור פשוט
-            כבוי והלקוחה לא יודעת מה חסר. מופיע רק אחרי שהתחילה
-            להקליד, כדי לא לקדם אותה באזהרה על שדה ריק. */}
-        {pass !== '' && !isStrongPassword(pass) ? (
-          <Text style={s.passMissing}>חסר: {passwordProblems(pass).join(' · ')}</Text>
-        ) : null}
-
-        <Field label="אימות הסיסמה" value={pass2} onChange={setPass2} placeholder="שוב, בדיוק אותו דבר" sym="lock" secure showPass={showPass} onEye={() => setShowPass((v) => !v)} />
-
-        <Text style={s.label}>{T.gender}</Text>
-        <View style={s.genders}>
-          {GENDERS.map((g) => {
-            const on = gender === g.key;
-            return (
-              <Pressable
-                key={g.key}
-                onPress={() => setGender(on ? '' : g.key)}
-                style={[s.gender, on && s.genderOn]}
-              >
-                <S k={g.sym} size={23} />
-                <Text style={[s.genderText, on && s.genderTextOn]}>{g.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Pressable
-          onPress={() => read && setTerms((v) => !v)}
-          disabled={!read}
-          style={[s.terms, !read && s.termsLocked]}
-        >
-          <View style={[s.box, terms && s.boxOn]}>
-            {terms ? <S k="check" size={12} color="#FFFFFF" /> : null}
-          </View>
-          <View style={s.grow}>
-            <Text style={s.termsText}>
-              קראתי ואני מאשר.ת את{' '}
-              <Text style={s.termsLink} onPress={() => { setRead(true); setSheet('doc'); }}>
-                {T.termsLink}
-              </Text>
-            </Text>
-            {!read ? (
-              <View style={s.needRow}>
-                <S k="lock" size={12} />
-                <Text style={s.needText}>{T.termsNeed}</Text>
-              </View>
-            ) : null}
-          </View>
-        </Pressable>
+        {accountFields({ phoneLocked: true, emailLocked: false })}
       </>
     );
   }
@@ -674,8 +747,9 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
         ? okPhone(phone)
         : step === 'up2'
           ? code.length === OTP_LEN
-          : step === 'up3'
-            ? name.trim() !== '' &&
+          : step === 'up3' || step === 'upG'
+            ? (step === 'upG' ? okPhone(phone) : true) &&
+              name.trim() !== '' &&
               okMail(mail) &&
               isStrongPassword(pass) &&
               pass2 === pass &&
@@ -683,9 +757,9 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
             : true;
 
   const ctaLabel =
-    step === 'up1' ? T.sendCode : step === 'up2' ? T.otpCta : step === 'up3' ? CTA_UP : CTA_IN;
+    step === 'up1' || step === 'upG' ? T.sendCode : step === 'up2' ? T.otpCta : step === 'up3' ? CTA_UP : CTA_IN;
   const onCta =
-    step === 'up1' ? onSendCode : step === 'up2' ? onVerify : step === 'up3' ? onRegister : onLogin;
+    step === 'up1' || step === 'upG' ? onSendCode : step === 'up2' ? onVerify : step === 'up3' ? onRegister : onLogin;
   const showCta = step !== 'ask' && step !== 'face';
   /* ⚠ בשלב הקוד אין שורת קישורים · בקשה של שקד */
   /**
@@ -744,7 +818,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                 <Text style={s.ctaText}>{ctaLabel}</Text>
               </Pressable>
             ) : null}
-            {step === 'in' ? (
+            {step === 'in' || step === 'up1' ? (
               <>
                 <View style={s.orRow}>
                   <View style={s.orLine} />
@@ -767,7 +841,7 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                   style={[s.gbtn, apiEnabled && !google.ready && s.ghostOff]}
                 >
                   <GoogleG size={18} />
-                  <Text style={s.gbtnText}>{GOOGLE_LABEL}</Text>
+                  <Text style={s.gbtnText}>{step === 'up1' ? T.googleSignUp : T.googleSignIn}</Text>
                 </Pressable>
               </>
             ) : null}
@@ -783,7 +857,14 @@ export function LoginScreen({ mode }: { mode: 'in' | 'up' }) {
                   <Text style={s.linkStrong}>{FORGOT_LABEL}</Text>
                 </Pressable>
               ) : null}
-              <Pressable onPress={() => setStep(isUp ? 'in' : 'up1')}>
+              <Pressable onPress={() => {
+                if (isUp) {
+                  setGoogleDraft(null);
+                  setStep('in');
+                } else {
+                  setStep('up1');
+                }
+              }}>
                 <Text style={s.linkStrong}>{isUp ? TAB_IN : TAB_UP}</Text>
               </Pressable>
             </View>
@@ -856,6 +937,7 @@ const s = StyleSheet.create({
   fieldBlock: { marginBottom: 11 },
   /* ⚠ יושב מעל שדה האימות · ראו הרמז החי */
   passMissing: { fontSize: 11.5, color: '#B95349', marginTop: -6, marginBottom: 9 },
+  googleNote: { fontSize: 11.5, color: '#6E6480', marginTop: -6, marginBottom: 9 },
   label: { fontSize: 11, fontWeight: '500', color: surface.faint, marginBottom: 4 },
   input: {
     height: 48,

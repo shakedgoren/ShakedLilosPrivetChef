@@ -63,6 +63,9 @@ export function authError(code: string, serverMessage?: string): string {
   if (code === 'invalid_who') return COPY.whoInvalid;
   if (code === 'google_not_configured') return COPY.google;
   if (code === 'google_token_required' || code === 'invalid_google_token') return COPY.google;
+  if (code === 'google_email_linked') {
+    return serverMessage || 'האימייל מגוגל כבר מחובר לחשבון אחר';
+  }
   if (code === 'otp_invalid') return COPY.otpInvalid;
   if (code === 'mail_failed') return COPY.mailFailed;
   if (code === 'reset_wrong') return COPY.resetWrong;

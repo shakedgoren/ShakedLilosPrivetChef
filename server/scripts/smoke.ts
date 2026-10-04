@@ -292,12 +292,21 @@ if (copy.saleDate !== '2026-09-15') fail('reorder saleDate', again);
 process.env.GOOGLE_CLIENT_ID = 'smoke.apps.googleusercontent.com';
 const googleNoToken = await api('/auth/google', { method: 'POST', body: JSON.stringify({}) });
 if (googleNoToken.status !== 400) fail('google configured without token', googleNoToken);
-const googleOk = await api('/auth/google', {
+const googleNew = await api('/auth/google', {
   method: 'POST',
-  body: JSON.stringify({ idToken: 'test:gid-smoke:galia@example.com:גליה' }),
+  body: JSON.stringify({ idToken: 'test:gid-smoke:galia-new@example.com:גליה' }),
 });
-if (googleOk.status !== 200) fail('google test token', googleOk);
-if (!(googleOk.body as { token?: string }).token) fail('google session token', googleOk);
+if (googleNew.status !== 200) fail('google test token', googleNew);
+if ((googleNew.body as { needsSignup?: boolean }).needsSignup !== true) {
+  fail('new google user must not get a session', googleNew);
+}
+if ((googleNew.body as { token?: string }).token) fail('new google user must not be created', googleNew);
+const googleKnown = await api('/auth/google', {
+  method: 'POST',
+  body: JSON.stringify({ idToken: 'test:gid-dana:dana@example.com:דנה' }),
+});
+if (googleKnown.status !== 200) fail('google links existing email', googleKnown);
+if (!(googleKnown.body as { token?: string }).token) fail('google linked session', googleKnown);
 delete process.env.GOOGLE_CLIENT_ID;
 
 const meAfter = await api('/auth/me', {
