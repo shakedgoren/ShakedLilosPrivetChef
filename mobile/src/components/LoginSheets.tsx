@@ -65,7 +65,30 @@ function Sheet({
   return (
     <View style={[s.layer, raised && s.layerMid]}>
       <Pressable style={s.scrim} onPress={onClose} />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      {/**
+        * ⚠ **`s.kav` · תוקן ב-8 באוקטובר 2026** · ל-
+        * `KeyboardAvoidingView` לא היה כאן **שום סגנון**, והוא יושב
+        * בין ה-`layer` (גובה ודאי · `inset 0`) ל-`sheet`. לכן
+        * ה-`maxHeight: '78%'` של היריעה חושב מול הורה בגובה
+        * **אוטומטי**, ואחוזים מול גובה אוטומטי פשוט נזרקים.
+        *
+        * התוצאה: היריעה גדלה לגובה כל התוכן — 9,269 תווים של תנאי
+        * שימוש ומדיניות פרטיות — ה-`ScrollView` שבתוכה לא גלל
+        * מעולם (אין לו תקרה לגלול בתוכה), והיא חרגה מהמסך. שקד
+        * דיווחה שהלחיצה על הקישור ״תוקעת את הדף״.
+        *
+        * ⚠ **התקרה עברה לכאן** · על ה-KAV אחוזים מחושבים מול
+        * ה-`layer`, שגובהו ודאי. ראו גם `flexShrink` ב-`sheet`
+        * וב-`doc` — בלעדיהם התקרה קיימת והתוכן עדיין גולש ממנה.
+        *
+        * ⚠ **רק כשאינה `raised`** · יריעת איפוס הסיסמה קצרה,
+        * `sheetMid` מבטל אצלה את התקרה בכוונה, והיא עובדת. לא
+        * נוגעים בה.
+        */}
+      <KeyboardAvoidingView
+        style={raised ? undefined : s.kav}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View style={[s.sheet, raised && s.sheetMid]}>
           {raised ? null : <View style={s.grab} />}
           {children}
@@ -311,8 +334,11 @@ const s = StyleSheet.create({
   scrim: { ...({ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 }), backgroundColor: 'rgba(36,28,48,0.34)' },
   /* ⚠ הקוד באמצע ומרווח · ספרות נקראות כך הרבה יותר טוב */
   codeInput: { textAlign: 'center', letterSpacing: 6, fontSize: 18, fontWeight: '600' },
+  /** התקרה · ראו ההערה ליד ה-`KeyboardAvoidingView` */
+  kav: { maxHeight: '78%' },
   sheet: {
-    maxHeight: '78%',
+    /* ⚠ התקרה עברה ל-`kav`; כאן רק ההתכווצות לתוכה */
+    flexShrink: 1,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     backgroundColor: 'rgba(255,255,255,0.97)',
@@ -344,7 +370,12 @@ const s = StyleSheet.create({
   title: { fontSize: 17, fontWeight: '700', color: surface.ink },
   sub: { fontSize: 12, fontWeight: '300', color: surface.faint, marginTop: 2, marginBottom: 12 },
 
-  doc: { flexGrow: 0 },
+  /**
+   * ⚠ **`flexShrink` הוא מה שגורם לגלילה** · בלעדיו ה-`ScrollView`
+   * לוקח את גובה כל התוכן ודוחף את כפתור האישור מתחת למסך, במקום
+   * להתכווץ לתוך התקרה ולגלול בפנים.
+   */
+  doc: { flexGrow: 0, flexShrink: 1 },
   docTitle: { fontSize: 15, fontWeight: '700', color: surface.ink, marginTop: 16, marginBottom: 2 },
   docH: { fontSize: 13, fontWeight: '700', color: surface.ink, marginTop: 12 },
   docB: { fontSize: 12.5, fontWeight: '300', lineHeight: 21, color: surface.inkSoft },
