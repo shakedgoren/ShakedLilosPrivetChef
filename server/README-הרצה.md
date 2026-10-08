@@ -18,7 +18,7 @@ EXPO_PUBLIC_API_URL=http://localhost:3001
 בלי המשתנה האפליקציה נשארת על נתוני הדמה.
 **במכשיר אמיתי** צריך את כתובת הרשת של המחשב, לא `localhost`.
 
-וואטסאפ Cloud API אופציונלי · ראו [README.md](README.md#whatsapp-cloud-api-ישירות-מול-meta). בלי `WHATSAPP_TOKEN` השרת רץ והשליחות מדולגות.
+וואטסאפ דרך Green API, אופציונלי · ראו [README.md](README.md#וואטסאפ--green-api). בלי `GREENAPI_ID_INSTANCE` ו-`GREENAPI_API_TOKEN` השרת רץ והשליחות מדולגות.
 
 ## ההתחברות
 

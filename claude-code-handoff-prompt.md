@@ -260,7 +260,8 @@
 
 ### 4 · וואטסאפ אמיתי (23–26 בספטמבר)
 
-WhatsApp Cloud API מלא בשרת. ⚠ **הכישלון הפסיק להיות שקט** — `lastError.ts`
+WhatsApp Cloud API מלא בשרת (⚠ **הוחלף ב-Green API ב-8 באוקטובר** — ראו
+למטה). ⚠ **הכישלון הפסיק להיות שקט** — `lastError.ts`
 שומר אותו והלקוח כבר לא מתעלם ממנו. פרמטרי הגוף תוקנו למה ש-Meta מקבלת.
 נוסף מספר הזמנה רץ (`Order.number`), מוקש בגוגל, ויומן וואטסאפ.
 
@@ -522,9 +523,14 @@ npm test                      # 205 בדיקות ב-29 קבצים
 (מי ביקשה תזכורת כשייפתח יום מכירה) · `PhoneVerification` (אימות טלפון) ·
 `FixedExpense` (הוצאה קבועה חודשית).
 
-**וואטסאפ · WhatsApp Cloud API אמיתי.** `server/src/whatsapp/` — `client.ts`,
-`payloads.ts`, `otp.ts`, `notify.ts`, `lastError.ts`, ווב-הוק ב-
-`routes/whatsappWebhook.ts`. מכוסה בבדיקות (`client.test.ts`, `payloads.test.ts`).
+**וואטסאפ · Green API** (היה WhatsApp Cloud API עד 8.10.2026). `server/src/whatsapp/` — `client.ts`,
+`messages.ts`, `otp.ts`, `notify.ts`, `lastError.ts`, `webhook.ts`, ווב-הוק ב-
+`routes/whatsappWebhook.ts`. מכוסה בבדיקות (`client.test.ts`, `webhook.test.ts`).
+⚠ **`payloads.ts` נמחק** — הוא בנה גופי תבנית ל-Meta Graph, ואין יותר תבניות.
+⚠⚠ **נוסח ההודעות עבר לקוד** (`messages.ts`) כי Green API שולח טקסט חופשי.
+**חמשת הנוסחים שם נכתבו על ידי Claude וטעונים אישור של שקד.**
+⚠ **200 אינו הצלחה** — Green API מכניס לתור ועונה מיד; כישלון מגיע רק
+דרך הוובהוק `outgoingMessageStatus`.
 ⚠ **כישלון שליחה כבר לא שקט** — `lastError.ts` שומר אותו והלקוח מציג אותו.
 
 **התראות דחיפה · Expo.** `server/src/push/expo.ts` + `mobile/src/lib/push.ts`.

@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { META_UTILITY_TEMPLATES } from './whatsapp/vars.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 config({ path: resolve(here, '../.env') });
@@ -13,13 +12,6 @@ const required = (key: string, fallback?: string): string => {
   }
   return v;
 };
-
-/** תבנית אופציונלית · לא מוגדר = ברירת מחדל · מחרוזת ריקה = כבוי */
-function optionalTemplate(key: string, fallback: string): string {
-  const raw = process.env[key];
-  if (raw === undefined) return fallback;
-  return raw.trim();
-}
 
 const node = process.env.NODE_ENV ?? 'development';
 const isProd = node === 'production';
@@ -79,36 +71,29 @@ export const env = {
   smtpPass: process.env.SMTP_PASS ?? '',
   mailFrom: process.env.MAIL_FROM ?? '',
   uploadDir: process.env.UPLOAD_DIR || resolve(here, '../uploads'),
-  /** WhatsApp Cloud API · נקרא בזמן אמת כדי שבדיקות יוכלו לשנות env */
+  /**
+   * Green API · נקרא בזמן אמת כדי שבדיקות יוכלו לשנות env.
+   *
+   * ⚠ **החליף את WhatsApp Cloud API של Meta · 8 באוקטובר 2026** ·
+   * נעלמו `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
+   * `WHATSAPP_WABA_ID`, `WHATSAPP_GRAPH_VERSION` וכל ששת משתני
+   * התבניות — אין יותר תבניות, והנוסח יושב ב-`whatsapp/messages.ts`.
+   *
+   * ⚠ **שלושת אלה חייבים להימחק מ-Render** · טוקן של Meta שנשאר
+   * מוגדר אינו עושה נזק, אבל הוא סוד חי שאיש כבר לא משתמש בו.
+   */
   get whatsapp() {
-    const token = (process.env.WHATSAPP_TOKEN ?? '').trim();
-    const phoneNumberId = (process.env.WHATSAPP_PHONE_NUMBER_ID ?? '').trim();
-    const graphVersion = (process.env.WHATSAPP_GRAPH_VERSION ?? 'v21.0').trim() || 'v21.0';
+    const idInstance = (process.env.GREENAPI_ID_INSTANCE ?? '').trim();
+    const apiToken = (process.env.GREENAPI_API_TOKEN ?? '').trim();
+    /* ⚠ לכל אינסטנס יש כתובת משלו בקונסולה · לא תמיד api.green-api.com */
+    const apiUrl = ((process.env.GREENAPI_API_URL ?? '').trim() || 'https://api.green-api.com').replace(/\/+$/, '');
     return {
-      token,
-      phoneNumberId,
-      wabaId: (process.env.WHATSAPP_WABA_ID ?? '').trim(),
-      graphVersion,
-      templateOtp: (process.env.WHATSAPP_TEMPLATE_OTP ?? 'bite_otp').trim() || 'bite_otp',
-      templateOrderConfirmedPickup: optionalTemplate(
-        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_PICKUP',
-        META_UTILITY_TEMPLATES.confirmPickup,
-      ),
-      templateOrderConfirmedDelivery: optionalTemplate(
-        'WHATSAPP_TEMPLATE_ORDER_CONFIRMED_DELIVERY',
-        META_UTILITY_TEMPLATES.confirmDelivery,
-      ),
-      templateOrderReadyPickup: optionalTemplate(
-        'WHATSAPP_TEMPLATE_ORDER_READY_PICKUP',
-        META_UTILITY_TEMPLATES.readyPickup,
-      ),
-      templateOrderDelivered: optionalTemplate(
-        'WHATSAPP_TEMPLATE_ORDER_DELIVERED',
-        META_UTILITY_TEMPLATES.delivered,
-      ),
-      templateLang: (process.env.WHATSAPP_TEMPLATE_LANG ?? 'he').trim() || 'he',
-      webhookVerifyToken: (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ?? '').trim(),
-      enabled: Boolean(token && phoneNumberId),
+      idInstance,
+      apiToken,
+      apiUrl,
+      /** סוד משותף לאימות הוובהוק הנכנס · ריק = הוובהוק כבוי */
+      webhookToken: (process.env.GREENAPI_WEBHOOK_TOKEN ?? '').trim(),
+      enabled: Boolean(idInstance && apiToken),
     };
   },
 };

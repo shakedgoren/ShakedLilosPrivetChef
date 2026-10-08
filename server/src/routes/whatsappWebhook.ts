@@ -1,23 +1,29 @@
 import { Router } from 'express';
 import { env } from '../env.ts';
-import { verifyWebhookChallenge } from '../whatsapp/webhook.ts';
+import { authorizeWebhook, noteWebhook, readWebhook } from '../whatsapp/webhook.ts';
 
 /**
- * Webhook של Meta · אימות token ב-GET, קבלת סטטוסי מסירה ב-POST.
- * בדיקת חתימה (X-Hub-Signature-256) תתווסף בהמשך.
+ * וובהוק Green API · `POST` בלבד.
+ *
+ * ⚠ **אין יותר `GET`** · הוא שימש לאימות של Meta
+ * (`hub.challenge`), ול-Green API אין טקס כזה.
+ *
+ * ⚠ **תמיד 200 למה שאומת** · ספק שמקבל שגיאה חוזר שוב ושוב. מה
+ * שלא מעניין אותנו נבלע בשקט, וכישלון אמיתי נרשם ל-`lastError`
+ * ונקרא מ-`GET /admin/whatsapp`.
  */
 export const whatsappWebhookRouter = Router();
 
-whatsappWebhookRouter.get('/', (req, res) => {
-  const result = verifyWebhookChallenge(req.query as Record<string, unknown>, env.whatsapp.webhookVerifyToken);
-  if (result.status === 200) {
-    res.status(200).send(result.body);
+whatsappWebhookRouter.post('/', (req, res) => {
+  const auth = authorizeWebhook(
+    typeof req.headers.authorization === 'string' ? req.headers.authorization : '',
+    env.whatsapp.webhookToken,
+  );
+  if (!auth.ok) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
-  res.status(result.status).json({ error: result.error });
-});
 
-whatsappWebhookRouter.post('/', (_req, res) => {
-  /* קבלה בלבד · פיענוח סטטוסים (delivered / read / failed) יתווסף אחר כך */
+  noteWebhook(readWebhook(req.body));
   res.status(200).json({ ok: true });
 });
