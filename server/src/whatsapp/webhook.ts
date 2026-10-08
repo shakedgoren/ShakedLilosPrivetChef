@@ -4,7 +4,7 @@
  * ⚠ **מה החליף את מה · 8 באוקטובר 2026** · אצל Meta היה אימות
  * `GET` עם `hub.mode` / `hub.verify_token` / `hub.challenge`. אצל
  * Green API אין טקס כזה: הוא פשוט שולח `POST`, ואם הוגדר
- * `webhookTokenInstance` בקונסולה הוא מצרף אותו ככותרת
+ * `webhookUrlToken` בהגדרות האינסטנס הוא מצרף אותו ככותרת
  * `Authorization: Bearer …`.
  *
  * ⚠⚠ **זה לא נוחות, זו הדרך היחידה לדעת שנכשלנו** · תשובת

@@ -194,7 +194,7 @@ Authorization: Bearer <token>
 GREENAPI_ID_INSTANCE     מזהה האינסטנס מהקונסולה
 GREENAPI_API_TOKEN       הטוקן · ⚠ יושב בנתיב הבקשה, לא בכותרת
 GREENAPI_API_URL         אופציונלי · ברירת מחדל https://api.green-api.com
-GREENAPI_WEBHOOK_TOKEN   ה-webhookTokenInstance שבקונסולה
+GREENAPI_WEBHOOK_TOKEN   ה-webhookUrlToken שבהגדרות האינסטנס · אופציונלי אצל הספק
 ```
 
 **הכתובת שנשלחת**
