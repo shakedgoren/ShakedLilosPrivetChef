@@ -4,6 +4,7 @@ import { INPUT_START } from '../theme/rtl';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from '../ui/text';
 import { radius, surface } from '../theme/tokens';
+import { PASS_RULE_TEXT, isStrongPassword, passwordProblems } from '../auth/passwordRule';
 import { LEGAL_DOCS, LOGIN_COPY as T } from '../screens/loginCopy';
 import { NO_TOUCH } from '../theme/pointerEvents';
 
@@ -27,13 +28,12 @@ const DONE_AGAIN = 'לשלוח לכתובת אחרת';
  * מקלידים אותו. היא לא כתבה את הנוסחים האלה.
  */
 const CODE_PH = '6 ספרות מהמייל';
-const PASS_PH = 'סיסמה חדשה · לפחות 8 תווים';
+const PASS_PH = 'סיסמה חדשה';
 const PASS2_PH = 'שוב, כדי לוודא';
 const SAVE_CTA = 'שמירת הסיסמה';
 const SAVED_SUB = 'הסיסמה הוחלפה';
 const SAVED_NOTE = 'אפשר להיכנס עכשיו עם הסיסמה החדשה.';
-/** אורך מינימלי · זהה לשרת ולמסך ההרשמה */
-const PASS_MIN = 8;
+const MISMATCH = 'שתי הסיסמאות לא זהות';
 const DEEP = '#43307A';
 
 /**
@@ -148,10 +148,16 @@ export function ForgotSheet({
   /** הסיסמה הוחלפה בפועל */
   saved: boolean;
 }) {
-  /* ⚠ אותם תנאים שהשרת אוכף · אחרת הכפתור מבטיח ונכשל */
+  /**
+   * ⚠ **אותו כלל כמו בהרשמה** · קודם נבדק כאן רק אורך 8.
+   * סיסמה באורך הזה בלי אות גדולה וספרה הדליקה את הכפתור,
+   * והשרת דחה אותה בלי להגיד למה. נראה שהאיפוס לא עובד.
+   */
+  const problems = form.pass === '' ? [] : passwordProblems(form.pass);
+  const mismatch = form.pass2 !== '' && form.pass2 !== form.pass;
   const ready =
-    form.code.trim().length >= 4 &&
-    form.pass.length >= PASS_MIN &&
+    form.code.trim().length === 6 &&
+    isStrongPassword(form.pass) &&
     form.pass2 === form.pass;
   return (
     /* ⚠ נפתחת באמצע · ראו `raised` */
@@ -211,6 +217,9 @@ export function ForgotSheet({
               style={[s.input, s.bare, s.codeInput]}
             />
           </View>
+          {form.code.trim().length > 0 && form.code.trim().length < 6 ? (
+            <Text style={s.passMissing}>הקוד הוא 6 ספרות</Text>
+          ) : null}
           <View style={s.field}>
             <TextInput
               value={form.pass}
@@ -222,6 +231,10 @@ export function ForgotSheet({
               style={[s.input, s.bare]}
             />
           </View>
+          <Text style={s.ruleHint}>{PASS_RULE_TEXT}</Text>
+          {problems.length > 0 ? (
+            <Text style={s.passMissing}>חסר: {problems.join(' · ')}</Text>
+          ) : null}
           <View style={s.field}>
             <TextInput
               value={form.pass2}
@@ -233,6 +246,7 @@ export function ForgotSheet({
               style={[s.input, s.bare]}
             />
           </View>
+          {mismatch ? <Text style={s.passMissing}>{MISMATCH}</Text> : null}
 
           {err ? <Text style={s.sheetErr}>{err}</Text> : null}
 
@@ -339,6 +353,8 @@ const s = StyleSheet.create({
   /* ⚠ `stretch` · בתוך `done` ההורה ממרכז, ובלעדיו כל שדה
      מתכווץ לרוחב הכיתוב שלו · נמדד על המסך */
   field: { position: 'relative', marginBottom: 6, alignSelf: 'stretch' },
+  passMissing: { fontSize: 12, color: '#B95349', textAlign: 'center', marginBottom: 6, alignSelf: 'stretch' },
+  ruleHint: { fontSize: 12, color: '#6E6480', textAlign: 'center', marginBottom: 6, alignSelf: 'stretch' },
   /* ⚠ שדה בלי אייקון · בלי המקום שנשמר לו בצד */
   bare: { paddingRight: 14 },
   input: {

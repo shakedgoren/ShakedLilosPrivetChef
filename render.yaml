@@ -202,8 +202,27 @@ services:
     # `NavigationContainer` כאן בלי `linking`, ולכן היא תמיד
     # נטענת מ-`/app/` ולעולם לא מייצרת נתיב עמוק שצריך תפיסה.
     # כלל `/*` היה מסוכן: סדר הכללים לא מתועד אצל Render, והוא
-    # היה עלול לבלוע את `/app`.
+    # היה עלול לבלוע את `/app` — וגם את `/privacy` ו-`/terms`.
+    #
+    # ⚠ **מדיניות ותנאים · 3 באוקטובר 2026** · מסך ההסכמה של גוגל
+    # צריך כתובות ציבוריות בלי סיומת. הקבצים הם
+    # `privacy/index.html` ו-`terms/index.html`, ולכן הנתיב עם
+    # לוכסן (`/privacy/`) נפתר לבד — כמו `/app/`. בלי לוכסן אין
+    # קובץ בנתיב, ומכאן הכלל. הכללים האלה לפני `/app` כדי שכלל
+    # גורף שיתווסף אחר כך לא יחזיר את עמוד הנחיתה.
     routes:
+      - type: rewrite
+        source: /privacy
+        destination: /privacy/index.html
+      - type: rewrite
+        source: /privacy/
+        destination: /privacy/index.html
+      - type: rewrite
+        source: /terms
+        destination: /terms/index.html
+      - type: rewrite
+        source: /terms/
+        destination: /terms/index.html
       - type: rewrite
         source: /app
         destination: /app/index.html
@@ -246,6 +265,27 @@ services:
         name: Cache-Control
         value: public, max-age=0, must-revalidate
       - path: /app/index.html
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /privacy
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /privacy/
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /privacy/index.html
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /terms
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /terms/
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /terms/index.html
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /legal.css
         name: Cache-Control
         value: public, max-age=0, must-revalidate
 

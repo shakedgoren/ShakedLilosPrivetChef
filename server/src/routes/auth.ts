@@ -2,17 +2,20 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.ts';
 import { env } from '../env.ts';
-import { badGateway, badRequest, unauthorized } from '../errors.ts';
+import { badGateway, badRequest, conflict, unauthorized } from '../errors.ts';
 import { parseWho, publicUser } from '../auth/identity.ts';
 import { loginBody } from '../auth/loginBody.ts';
 import { signupEmail } from '../auth/signupEmail.ts';
 import { signToken } from '../auth/jwt.ts';
 import { requireAuth } from '../auth/middleware.ts';
 import { hashPassword, verifyPassword } from '../auth/passwords.ts';
-import { upsertGoogleUser, verifyGoogleIdToken } from '../auth/google.ts';
+import { matchGoogleAccount, verifyGoogleIdToken, type GoogleProfile } from '../auth/google.ts';
+import type { GoogleAccount, GoogleDecision, GooglePatch } from '../auth/googleAccount.ts';
 import { PASS_RULE_TEXT, isStrongPassword } from '../../../mobile/src/auth/passwordRule.ts';
 import { buildResetEmail } from '../mail/resetEmail.ts';
 import { checkResetCode, newResetCode, RESET_CODE_TTL_MS } from '../auth/resetCode.ts';
+import { readResetBody } from '../auth/resetBody.ts';
+import { maskWho } from '../auth/resetLog.ts';
 import { sendMail } from '../mail/mailer.ts';
 import { consumeOtp, generateOtp, issuePasswordReset, OTP_TTL_MS } from '../whatsapp/otp.ts';
 import { notifyOtp } from '../whatsapp/notify.ts';
@@ -54,6 +57,11 @@ const whoBody = z.object({
   name: z.string().optional(),
   email: z.union([z.string().max(80), z.null()]).optional(),
   gender: z.enum(['female', 'male', 'other', '']).optional(),
+  /**
+   * טוקן גוגל להשלמת הרשמה · אופציונלי.
+   * ⚠ בלי הטלפון המאומת לא נוצר חשבון. ראו `decideGoogleAccount`.
+   */
+  idToken: z.string().min(1).optional(),
 });
 
 const sessionOf = (user: { id: string; role: string }) => ({
@@ -61,15 +69,73 @@ const sessionOf = (user: { id: string; role: string }) => ({
   user: publicUser(user as Parameters<typeof publicUser>[0]),
 });
 
+/**
+ * חשבון קיים שנמצא דרך גוגל · נכנסים אליו, לא פותחים שני.
+ * טלפון מאומת נרשם רק אם לחשבון עדיין אין טלפון.
+ */
+async function loginLinkedGoogle(
+  decision: Extract<GoogleDecision, { kind: 'login' }>,
+  account: GoogleAccount,
+  who: { kind: 'email'; email: string } | { kind: 'phone'; phone: string },
+) {
+  const patch: GooglePatch = { ...decision.patch };
+  if (who.kind === 'phone' && !account.phone) {
+    const row = await prisma.phoneVerification.findUnique({ where: { phone: who.phone } });
+    if (verifiedRecently(row, Date.now())) {
+      const taken = await prisma.user.findUnique({ where: { phone: who.phone } });
+      if (taken && taken.id !== account.id) {
+        throw badRequest('phone_taken', 'כבר יש חשבון עם המספר הזה');
+      }
+      if (!taken) patch.phone = who.phone;
+    }
+  }
+  const user = Object.keys(patch).length
+    ? await prisma.user.update({ where: { id: account.id }, data: patch })
+    : await prisma.user.findUniqueOrThrow({ where: { id: account.id } });
+  if (patch.phone) {
+    await prisma.phoneVerification.update({
+      where: { phone: patch.phone },
+      data: { usedAt: new Date() },
+    });
+  }
+  return user;
+}
+
 authRouter.post('/register', async (req, res, next) => {
   try {
     const body = whoBody.parse(req.body);
     const who = parseWho(body.who);
     if (!who) throw badRequest('invalid_who');
 
+    let google: GoogleProfile | null = null;
+    if (body.idToken) {
+      const audiences = env.googleClientIds;
+      if (!audiences.length) {
+        res.status(501).json({ error: 'google_not_configured' });
+        return;
+      }
+      google = await verifyGoogleIdToken(body.idToken, audiences);
+      const matched = await matchGoogleAccount(google);
+      if (matched.decision.kind === 'conflict') {
+        throw conflict('google_email_linked', 'האימייל מגוגל כבר מחובר לחשבון אחר');
+      }
+      if (matched.decision.kind === 'login') {
+        const account =
+          matched.byGoogleId?.id === matched.decision.userId
+            ? matched.byGoogleId
+            : matched.byEmail;
+        if (!account) throw conflict('google_email_linked', 'האימייל מגוגל כבר מחובר לחשבון אחר');
+        const user = await loginLinkedGoogle(matched.decision, account, who);
+        res.json(sessionOf(user));
+        return;
+      }
+    }
+
     const existing =
       who.kind === 'email'
-        ? await prisma.user.findUnique({ where: { email: who.email } })
+        ? await prisma.user.findFirst({
+            where: { email: { equals: who.email, mode: 'insensitive' } },
+          })
         : await prisma.user.findUnique({ where: { phone: who.phone } });
     if (existing) throw badRequest(who.kind === 'email' ? 'email_taken' : 'phone_taken');
 
@@ -89,18 +155,30 @@ authRouter.post('/register', async (req, res, next) => {
       verifiedPhone = who.phone;
     }
 
-    /* ⚠ המייל שיישמר · ראו `signupEmail` */
-    const typedMail = who.kind === 'phone' ? body.email ?? null : null;
-    const taken = typedMail ? !!(await prisma.user.findUnique({ where: { email: typedMail.trim() } })) : false;
+    /**
+     * ⚠ אימייל שגוגל אימתה גובר על מה שהוקלד · אחרת אפשר היה
+     * להחליף אותו אחרי האימות לכתובת של מישהו אחר.
+     */
+    const typedMail = google?.email ?? (who.kind === 'phone' ? body.email ?? null : null);
+    const taken = typedMail
+      ? !!(await prisma.user.findFirst({
+          where: { email: { equals: typedMail.trim(), mode: 'insensitive' } },
+        }))
+      : false;
+    if (google?.email && taken) {
+      throw conflict('google_email_linked', 'האימייל מגוגל כבר מחובר לחשבון אחר');
+    }
 
     const user = await prisma.user.create({
       data: {
         email: signupEmail(who, typedMail, taken),
         phone: who.kind === 'phone' ? who.phone : null,
         passwordHash: await hashPassword(body.password),
-        name: body.name?.trim() ?? '',
+        name: body.name?.trim() || google?.name || '',
         gender: body.gender ?? '',
         role: 'customer',
+        googleId: google?.googleId,
+        avatarUrl: google?.picture || undefined,
       },
     });
     /* האימות נוצל · לא ניתן לפתוח איתו חשבון שני */
@@ -221,7 +299,9 @@ authRouter.post('/login', async (req, res, next) => {
 
     const user =
       who.kind === 'email'
-        ? await prisma.user.findUnique({ where: { email: who.email } })
+        ? await prisma.user.findFirst({
+            where: { email: { equals: who.email, mode: 'insensitive' } },
+          })
         : await prisma.user.findUnique({ where: { phone: who.phone } });
     if (!user?.passwordHash) throw unauthorized('invalid_credentials');
     const ok = await verifyPassword(body.password, user.passwordHash);
@@ -251,13 +331,21 @@ authRouter.post('/forgot-password', async (req, res, next) => {
   try {
     const body = z.object({ who: z.string().min(3) }).parse(req.body);
     const who = parseWho(body.who);
+    const masked = maskWho(body.who);
+    const started = Date.now();
+    console.info(`[איפוס] בקשה · מזהה=${masked} · סוג=${who?.kind ?? 'לא-תקין'}`);
     const payload: { ok: true; resetToken?: string; expiresAt?: string; via?: 'otp' | 'token' } = { ok: true };
 
     if (who) {
       const user =
         who.kind === 'email'
-          ? await prisma.user.findUnique({ where: { email: who.email } })
+          ? await prisma.user.findFirst({
+              where: { email: { equals: who.email, mode: 'insensitive' } },
+            })
           : await prisma.user.findUnique({ where: { phone: who.phone } });
+      if (!user) {
+        console.info(`[איפוס] אין חשבון · מזהה=${masked} · ms=${Date.now() - started}`);
+      }
       if (user) {
         /**
          * ⚠ **קוד בן שש ספרות · 19 בספטמבר 2026** · ראו
@@ -293,7 +381,17 @@ authRouter.post('/forgot-password', async (req, res, next) => {
         if (user.email) {
           const mail = buildResetEmail({ name: user.name, code: token });
           /* ⚠ לא `res` · זה שם התשובה של אקספרס, והצללה כאן מסוכנת */
+          /**
+           * ⚠ **התשובה ממתינה ל-SMTP** · הכפתור נשאר עסוק עד שגוגל
+           * מקבלת את ההודעה. זה העיכוב שהלקוחה מרגישה, לא קריסה.
+           * הפעלה קרה של השרת (אחרי פריסה) מוסיפה זמן לפני השורה
+           * הראשונה ביומן. `smtpMs` הוא רק זמן תיבת הדואר.
+           */
+          const smtpAt = Date.now();
+          console.info(`[איפוס] שולח מייל · מזהה=${masked} · host=${env.smtpHost} · port=${env.smtpPort}`);
           const sent = await sendMail({ to: user.email, ...mail });
+          const smtpMs = Date.now() - smtpAt;
+          console.info(`[איפוס] smtp הסתיים · מזהה=${masked} · smtpMs=${smtpMs} · sent=${sent.sent}`);
           /**
            * ⚠ **כישלון שליחה נאמר בקול · 19 בספטמבר 2026** · שקד
            * דיווחה: ״באיפוס סיסמה במייל הוא לא באמת שולח שום הודעת
@@ -346,19 +444,16 @@ authRouter.post('/reset-password', async (req, res, next) => {
      * כלשהו היה מאפס את הסיסמה של **מישהו**, בלי לדעת של מי.
      * עכשיו צריך גם את החשבון, וגם חמישה ניסיונות סוגרים אותו.
      */
-    const body = z
-      .object({
-        who: z.string().min(3),
-        code: z.string().min(4).max(10),
-        password: strongPassword,
-      })
-      .parse(req.body);
+    const body = readResetBody(req.body);
 
     const who = parseWho(body.who);
     if (!who) throw badRequest('invalid_who');
+    const masked = maskWho(body.who);
     const user =
       who.kind === 'email'
-        ? await prisma.user.findUnique({ where: { email: who.email } })
+        ? await prisma.user.findFirst({
+            where: { email: { equals: who.email, mode: 'insensitive' } },
+          })
         : await prisma.user.findUnique({ where: { phone: who.phone } });
 
     const row = user
@@ -369,6 +464,7 @@ authRouter.post('/reset-password', async (req, res, next) => {
       : null;
 
     const verdict = checkResetCode(row, body.code, Date.now());
+    console.info(`[איפוס] שמירת סיסמה · מזהה=${masked} · תוצאה=${verdict}`);
     if (verdict === 'wrong') {
       /* ⚠ המונה עולה גם כשהקוד שגוי · זה מה שסוגר את הסריקה */
       await prisma.passwordReset.update({
@@ -457,7 +553,29 @@ authRouter.post('/google', async (req, res, next) => {
     if (!body.success) throw badRequest('google_token_required', 'חסר idToken מגוגל');
 
     const profile = await verifyGoogleIdToken(body.data.idToken, audiences);
-    const user = await upsertGoogleUser(profile);
+    const matched = await matchGoogleAccount(profile);
+    /**
+     * ⚠ **אין יצירת משתמש כאן** · חשבון חדש נוצר רק ב-`/register`
+     * אחרי אימות הטלפון. אחרת נשארת רשומה בלי טלפון.
+     */
+    if (matched.decision.kind === 'signup') {
+      res.json({
+        needsSignup: true,
+        profile: {
+          name: profile.name,
+          email: profile.email,
+          picture: profile.picture,
+        },
+      });
+      return;
+    }
+    if (matched.decision.kind === 'conflict') {
+      throw conflict('google_email_linked', 'האימייל מגוגל כבר מחובר לחשבון אחר');
+    }
+    const patch = matched.decision.patch;
+    const user = Object.keys(patch).length
+      ? await prisma.user.update({ where: { id: matched.decision.userId }, data: patch })
+      : await prisma.user.findUniqueOrThrow({ where: { id: matched.decision.userId } });
     res.json(sessionOf(user));
   } catch (err) {
     next(err);

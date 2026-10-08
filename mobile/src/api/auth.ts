@@ -13,7 +13,7 @@ export const register = (
   who: string,
   password: string,
   name?: string,
-  extra?: { email?: string | null; gender?: PublicUser['gender'] },
+  extra?: { email?: string | null; gender?: PublicUser['gender']; idToken?: string },
 ) => api<Session>('/auth/register', { body: { who, password, name, ...extra }, auth: false });
 
 export const forgotPassword = (who: string) =>
@@ -56,8 +56,18 @@ export const registerVerify = (phone: string, code: string) =>
 export const verifyOtp = (who: string, code: string) =>
   api<Session>('/auth/otp/verify', { body: { who, code }, auth: false });
 
+export type GoogleProfilePreview = { name: string; email: string | null; picture: string };
+
+/** כניסה לחשבון קיים, או הפניה להרשמה בלי שנוצר משתמש */
+export type GoogleStart = Session | { needsSignup: true; profile: GoogleProfilePreview };
+
+export const isGoogleSignup = (
+  res: GoogleStart,
+): res is { needsSignup: true; profile: GoogleProfilePreview } =>
+  'needsSignup' in res && res.needsSignup === true;
+
 export const googleSignIn = (idToken: string) =>
-  api<Session>('/auth/google', { body: { idToken }, auth: false });
+  api<GoogleStart>('/auth/google', { body: { idToken }, auth: false });
 
 /** בלי SDK של גוגל · שולח טוקן ריק ומקבל 501 עד ש-GOOGLE_CLIENT_ID מוגדר בשרת */
 export const googleStub = () => googleSignIn('');

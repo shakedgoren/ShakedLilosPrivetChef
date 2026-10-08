@@ -58,6 +58,28 @@ const ANDROID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '';
 const WEB = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 
 /**
+ * הדגמה מקומית בלבד · `EXPO_PUBLIC_GOOGLE_MOCK=1`.
+ * השרת מקבל טוקן `test:` רק כשאינו בפרודקשן, ולכן זה לא נתיב כניסה אמיתי.
+ */
+export const GOOGLE_MOCK = process.env.EXPO_PUBLIC_GOOGLE_MOCK === '1';
+
+/** אותו פורמט כמו `parseTestGoogleToken` בשרת */
+export function profileFromTestToken(idToken: string): {
+  name: string;
+  email: string | null;
+  picture: string;
+} | null {
+  if (!idToken.startsWith('test:')) return null;
+  const parts = idToken.split(':');
+  if (!parts[1]?.trim()) return null;
+  return {
+    email: parts[2]?.trim() || null,
+    name: parts.slice(3).join(':').trim(),
+    picture: '',
+  };
+}
+
+/**
  * המזהה של **הפלטפורמה הנוכחית**.
  *
  * ⚠ **תוקן ב-26 בספטמבר 2026 · מוקש שהיה מחכה** · כאן היה
@@ -99,7 +121,7 @@ export function useGoogleIdToken(): GoogleAuth {
    * פעם אחת בטעינת המודול ואינו משתנה לעולם, ולכן סדר ההוקים זהה
    * בכל רינדור לאורך חיי התהליך — וזה מה שריאקט דורש.
    */
-  const live = idTokenHook && googleConfigured ? idTokenHook({
+  const live = !GOOGLE_MOCK && idTokenHook && googleConfigured ? idTokenHook({
     iosClientId: IOS || undefined,
     androidClientId: ANDROID || undefined,
     webClientId: WEB || undefined,
@@ -109,6 +131,7 @@ export function useGoogleIdToken(): GoogleAuth {
   const prompt = live?.[2] ?? null;
 
   const signIn = React.useCallback(async () => {
+    if (GOOGLE_MOCK) return 'test:gid-demo:noa@example.com:נועה לוי';
     if (!prompt) return null;
     const res = await prompt();
     /* ⚠ ביטול אינו שגיאה · הלקוחה סגרה את החלון */
@@ -116,5 +139,5 @@ export function useGoogleIdToken(): GoogleAuth {
     return res.params?.id_token ?? null;
   }, [prompt]);
 
-  return { ready: !!request && !!prompt, signIn };
+  return { ready: GOOGLE_MOCK || (!!request && !!prompt), signIn };
 }
