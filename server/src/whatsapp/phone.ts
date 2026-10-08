@@ -1,4 +1,10 @@
-/** ‎050-1234567 / +972… → ‎972501234567 · הפורמט ש-Graph API מצפה לו ב-`to` */
+/**
+ * ‎050-1234567 / +972… → ‎972501234567
+ *
+ * ⚠ **הפורמט השתנה עם הספק · 8 באוקטובר 2026** · Meta ציפתה למספר
+ * חשוף בשדה `to`. Green API מצפה ל-`chatId` בצורת `<מספר>@c.us`
+ * (צ׳אט פרטי; קבוצה היא `@g.us`). המרת המספר עצמה לא השתנתה.
+ */
 
 export function toWhatsAppPhone(raw: string): string {
   const digits = raw.trim().replace(/[^\d]/g, '');
@@ -11,4 +17,10 @@ export function toWhatsAppPhone(raw: string): string {
 export function isWhatsAppPhone(raw: string): boolean {
   const to = toWhatsAppPhone(raw);
   return to.length >= 11 && to.length <= 15;
+}
+
+/** ‎972501234567@c.us · מה ש-Green API מקבל ב-`chatId` */
+export function toGreenChatId(raw: string): string {
+  const digits = toWhatsAppPhone(raw);
+  return digits ? `${digits}@c.us` : '';
 }

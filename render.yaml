@@ -112,14 +112,25 @@ services:
       # לטובת קוד בן שש ספרות (ראו `mail/resetEmail.ts`). שום קוד
       # לא קורא אותו יותר, ולכן אין מה למלא בו.
 
-      # וואטסאפ · בלי TOKEN השרת רץ והשליחות מדולגות
-      - key: WHATSAPP_TOKEN
+      # ⚠ **וואטסאפ · Green API מחליף את Meta · 8 באוקטובר 2026** ·
+      # בקשה של שקד. ארבעת המשתנים הקודמים — `WHATSAPP_TOKEN`,
+      # `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_WABA_ID`,
+      # `WHATSAPP_WEBHOOK_VERIFY_TOKEN` — **אינם נקראים יותר בשום
+      # מקום בקוד, וצריך למחוק אותם ידנית מהלוח של Render.** טוקן
+      # של Meta שנשאר שם הוא סוד חי שאיש כבר לא משתמש בו.
+      #
+      # בלי שני הראשונים השרת רץ והשליחות מדולגות, בדיוק כמו קודם.
+      - key: GREENAPI_ID_INSTANCE
         sync: false
-      - key: WHATSAPP_PHONE_NUMBER_ID
+      - key: GREENAPI_API_TOKEN
         sync: false
-      - key: WHATSAPP_WABA_ID
+      # ⚠ לכל אינסטנס כתובת משלו בקונסולה · לא תמיד api.green-api.com
+      - key: GREENAPI_API_URL
         sync: false
-      - key: WHATSAPP_WEBHOOK_VERIFY_TOKEN
+      # ⚠ **הוובהוק הוא הדרך היחידה לדעת ששליחה נכשלה** · Green API
+      # עונה 200 כשההודעה נכנסת לתור, לא כשהיא נשלחה. בלי זה כישלון
+      # שקט. הערך זהה ל-`webhookTokenInstance` שבקונסולה.
+      - key: GREENAPI_WEBHOOK_TOKEN
         sync: false
 
       # ⚠ **לא להגדיר RESET_DEBUG** · הוא מחזיר את אסימון איפוס

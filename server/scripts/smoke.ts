@@ -22,9 +22,11 @@ process.env.ADMIN_PASSWORD = 'changeme';
 process.env.ADMIN_NAME = 'שקד לילוז';
 process.env.NODE_ENV = 'test';
 process.env.UPLOAD_DIR = join(dir, 'uploads');
-delete process.env.WHATSAPP_TOKEN;
-delete process.env.WHATSAPP_PHONE_NUMBER_ID;
-delete process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
+/* ⚠ וואטסאפ כבוי בבדיקת העשן · Green API מאז 8 באוקטובר 2026 */
+delete process.env.GREENAPI_ID_INSTANCE;
+delete process.env.GREENAPI_API_TOKEN;
+delete process.env.GREENAPI_API_URL;
+delete process.env.GREENAPI_WEBHOOK_TOKEN;
 
 execSync('npx prisma db push --skip-generate', {
   cwd: root,

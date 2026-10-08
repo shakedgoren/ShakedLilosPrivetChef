@@ -39,10 +39,12 @@ adminRouter.get('/whatsapp', (_req, res) => {
   const wa = env.whatsapp;
   res.json({
     enabled: wa.enabled,
-    hasToken: Boolean(wa.token),
-    phoneNumberId: wa.phoneNumberId ? 'מוגדר' : 'חסר',
-    templateOtp: wa.templateOtp,
-    templateLang: wa.templateLang,
+    /* ⚠ Green API · הטוקן והאינסטנס מדווחים כקיים/חסר ולא כערך */
+    provider: 'green-api',
+    hasToken: Boolean(wa.apiToken),
+    idInstance: wa.idInstance ? 'מוגדר' : 'חסר',
+    apiUrl: wa.apiUrl,
+    webhook: wa.webhookToken ? 'מוגדר' : 'חסר',
     ...whatsAppStats(),
   });
 });

@@ -29,7 +29,7 @@
 | `ADMIN_EMAIL` `ADMIN_PHONE` `ADMIN_PASSWORD` `ADMIN_NAME` | אין חשבון ניהול אחרי הזריעה | ⚠ הסיסמה כן |
 | `GOOGLE_CLIENT_ID` | `/auth/google` מחזיר 501 והכפתור מושבת | לא · מזהה ציבורי |
 | `SMTP_*` `MAIL_FROM` `APP_URL` | איפוס סיסמה לא נשלח כלל | ⚠ `SMTP_PASS` |
-| `WHATSAPP_TOKEN` ומזהיו | השרת רץ, השליחות מדולגות בשקט | ⚠ הטוקן כן |
+| `GREENAPI_ID_INSTANCE` ו-`GREENAPI_API_TOKEN` | השרת רץ, השליחות מדולגות בשקט | ⚠ הטוקן כן |
 
 `DATABASE_URL`, `JWT_SECRET`, `TRUST_PROXY`, `NODE_ENV`, `PORT`,
 `HOST` — מוגדרים אוטומטית ב-`render.yaml`.
