@@ -138,6 +138,14 @@ export const adminPutCost = (
 export const adminImportCosts = (listId: string) =>
   api<{ hit: number; message: string }>(`/admin/costs/import/${listId}`, { method: 'POST' });
 
+/**
+ * המצרכים שנקנו · לבחירה ידנית לתוך מנה אחת.
+ * ⚠ בקשת שקד, 11 באוקטובר 2026 · ראו `server/src/admin/pantryFromShop.ts`.
+ * ⚠ ההוספה עצמה היא `adminPutCost` · אין כאן נתיב כתיבה חדש.
+ */
+export type PantryPick = { name: string; g: string; unit: string; price: number; at: string };
+export const adminCostPantry = () => api<{ items: PantryPick[] }>('/admin/shop/pantry');
+
 export const adminSummary = () =>
   api<{
     subtitle: string;

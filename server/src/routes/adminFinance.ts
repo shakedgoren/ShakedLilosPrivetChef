@@ -529,6 +529,12 @@ adminFinanceRouter.put('/costs/:id', async (req, res, next) => {
   }
 });
 
+/**
+ * ⚠ **זה הייבוא ה״אוטומטי״** · הוא מרענן מחיר לכל מצרך ששמו תואם,
+ * בכל המנות. שקד ביקשה ב-11 באוקטובר 2026 בחירה ידנית למנה אחת,
+ * והיא יושבת ב-`GET /admin/shop/pantry`. זה נשאר כי הוא עושה
+ * דבר אחר — עדכון מחירים של מתכונים שכבר מוגדרים.
+ */
 adminFinanceRouter.post('/costs/import/:listId', async (req, res, next) => {
   try {
     const listId = String(req.params.listId ?? '');

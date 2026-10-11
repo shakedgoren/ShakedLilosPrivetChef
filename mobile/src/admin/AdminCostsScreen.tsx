@@ -39,6 +39,7 @@ import { ChipRail } from './ui/ChipRail';
 import { Sheet } from './ui/Sheet';
 import { apiEnabled } from '../api/config';
 import { adminCosts, adminImportCosts, adminPutCost, adminShopHistory } from '../api/admin';
+import { ImportPartsSheet, type ImportPart } from './costs/ImportPartsSheet';
 import { useNav } from '../navigation/store';
 
 const num = (v: string | number) => {
@@ -207,6 +208,29 @@ export function AdminCostsScreen() {
       const next = { ...d, ...p };
       void adminPutCost(id, { price: Number(next.price), yld: Number(next.yld), parts: next.parts }).catch(() => undefined);
     }
+  };
+
+  /**
+   * ⚠ **המנה שפתוחה לייבוא · 11 באוקטובר 2026** · ראו
+   * `ImportPartsSheet`. `null` = החלונית סגורה.
+   */
+  const [impInto, setImpInto] = useState<{ id: string; name: string } | null>(null);
+
+  /**
+   * הוספת מה שסומן לרשימת המצרכים של המנה.
+   * ⚠ **שם שכבר קיים מתעדכן ולא מוכפל** · מתכון עם שתי שורות
+   * ״בצל״ מחשב את הבצל פעמיים, והכמות שהיא הקלידה הייתה נמחקת.
+   */
+  const addImported = (id: string, picks: ImportPart[]) => {
+    const d = dishes.find((x) => x.id === id);
+    if (!d) return;
+    const parts = [...d.parts];
+    for (const p of picks) {
+      const at = parts.findIndex((x) => !x.ref && x.n.trim() === p.n.trim());
+      if (at >= 0) parts[at] = { ...parts[at], price: p.price };
+      else parts.push(p);
+    }
+    patch(id, { parts });
   };
 
   const importBuy = async (id: string) => {
@@ -383,14 +407,34 @@ export function AdminCostsScreen() {
                    * דרך להוסיף שורה** — כלומר אי אפשר היה להזין
                    * עלות אף פעם.
                    */}
-                  <Pressable
-                    onPress={() => patch(d.id, { parts: [...d.parts, { n: '', price: 0, qty: 1 }] })}
-                    accessibilityLabel={COSTS_PART_ADD}
-                    hitSlop={10}
-                    style={s.partAdd}
-                  >
-                    <Text style={s.partAddText}>+</Text>
-                  </Pressable>
+                  <View style={s.partTools}>
+                    <Pressable
+                      onPress={() => patch(d.id, { parts: [...d.parts, { n: '', price: 0, qty: 1 }] })}
+                      accessibilityLabel={COSTS_PART_ADD}
+                      hitSlop={10}
+                      style={s.partAdd}
+                    >
+                      <Text style={s.partAddText}>+</Text>
+                    </Pressable>
+
+                    {/**
+                      * ⚠ **ייבוא למנה אחת · בקשת שקד, 11.10.2026** ·
+                      * ״נגיד שאני עומדת על מפרום, שאני אוכל ללחוץ
+                      * על ייבוא ואז לסמן דברים מהקניות ששימשו אותי
+                      * להכנת המנה״. הכפתור שבראש המסך עושה דבר
+                      * אחר — מרענן מחירים בכל המנות — ולכן הוא
+                      * נשאר, וזה יושב **בתוך** המנה.
+                      * ⚠ הנוסח נכתב על ידי Claude.
+                      */}
+                    <Pressable
+                      onPress={() => setImpInto({ id: d.id, name: d.name })}
+                      hitSlop={10}
+                      style={s.partImport}
+                    >
+                      <S k="download" size={12} color="#43307A" />
+                      <Text style={s.partImportText}>ייבוא מהקניות</Text>
+                    </Pressable>
+                  </View>
                   {/* ⚠ **שני השדות זה לצד זה** · כך זה בקנבס, ושקד
                       שלחה בדיוק את הצילום הזה (15 בספטמבר 2026).
                       קודם הם ישבו אחד מתחת לשני ברוחב מלא. */}
@@ -436,6 +480,15 @@ export function AdminCostsScreen() {
           );
         })}
       </ScrollView>
+
+      {impInto ? (
+        <ImportPartsSheet
+          dish={impInto.name}
+          live={live}
+          onClose={() => setImpInto(null)}
+          onAdd={(picks) => addImported(impInto.id, picks)}
+        />
+      ) : null}
 
       {impOpen ? (
         <Sheet title={COSTS_IMP_TITLE} sub={COSTS_IMP_SUB} onClose={() => setImpOpen(false)}>
@@ -507,6 +560,18 @@ const s = StyleSheet.create({
   partDelText: { fontSize: 19, lineHeight: 22, color: '#B95349' },
   /* ⚠ **קומפקטי** · שקד: ״שיהיה כפתור קטן וקומפקטי ׳+׳ זה הכל
      זה מובן״. הכיתוב נשאר כתווית נגישות בלבד. */
+  /* ⚠ שורת הכלים של המצרכים · הוספה וייבוא · ראו ההערה ליד הכפתור */
+  partTools: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  partImport: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    height: 28,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(123,92,188,0.12)',
+  },
+  partImportText: { fontSize: 12.5, fontWeight: '600', color: '#43307A' },
   partAdd: {
     alignSelf: 'flex-start',
     width: 28,

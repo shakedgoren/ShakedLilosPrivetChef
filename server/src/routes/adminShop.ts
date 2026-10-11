@@ -8,6 +8,7 @@ import { notFound } from '../errors.ts';
 import { monthKey } from '../admin/sold.ts';
 import { readPage } from '../http/page.ts';
 import { readCloseMethod } from '../admin/shopMethod.ts';
+import { pantryFromShop, type ShopLine } from '../admin/pantryFromShop.ts';
 
 export const adminShopRouter = Router();
 adminShopRouter.use(requireAuth, requireAdmin);
@@ -168,6 +169,42 @@ adminShopRouter.post('/active/close', async (req, res, next) => {
     }
     const next = await prisma.shoppingList.create({ data: { area: row.area, itemsJson: '[]' } });
     res.json({ closed: serList(closed), list: serList(next), expense: amount });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * המצרכים שנקנו · לבחירה ידנית לתוך מנה אחת.
+ *
+ * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״שאני אוכל ללחוץ על ייבוא
+ * ואז לסמן דברים מהקניות ששימשו אותי להכנת המנה״. החישוב עצמו,
+ * ובפרט המחיר ליחידה, יושב ב-`admin/pantryFromShop.ts` — שם הוא
+ * נבדק.
+ *
+ * ⚠ **קריאה בלבד** · ההוספה למתכון נעשית ב-`PUT /admin/costs/:id`
+ * הקיים, עם הרשימה המלאה של המצרכים. אין כאן נתיב כתיבה חדש,
+ * ולכן גם אין דרך חדשה לשנות מתכון בטעות.
+ *
+ * ⚠ **יושב אצל הקניות ולא אצל העלויות** · שתי סיבות. הנתונים הם
+ * של רשימות הקניות, וגם: `/admin/costs/pantry` נכנס לצורה של
+ * `PUT /admin/costs/:id`, ובדיקת `apiMethods` צדקה כשצעקה על זה.
+ */
+adminShopRouter.get('/pantry', async (_req, res, next) => {
+  try {
+    /* ⚠ תקרה · ההיסטוריה גדלה בכל קנייה שנסגרת */
+    const lists = await prisma.shoppingList.findMany({
+      orderBy: { openedAt: 'desc' },
+      take: 40,
+    });
+    res.json({
+      items: pantryFromShop(
+        lists.map((l) => ({
+          closedAt: l.closedAt,
+          items: readJson<ShopLine[]>(l.itemsJson, []),
+        })),
+      ),
+    });
   } catch (err) {
     next(err);
   }
