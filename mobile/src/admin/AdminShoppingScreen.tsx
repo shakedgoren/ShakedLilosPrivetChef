@@ -14,9 +14,10 @@ import {
   EST_TAG,
   PROG_LABEL,
 } from '../data/adminShopping';
+import { EXPENSE_METHODS } from '../data/adminMoney';
 import { useNav } from '../navigation/store';
 import { AdminShell } from './ui/AdminShell';
-import { Chip } from './ui/Chip';
+import { Chip, ChipRow } from './ui/Chip';
 import { ChipRail } from './ui/ChipRail';
 import { ProgressBar } from './ui/ProgressBar';
 import { ShopTable } from './shopping/ShopTable';
@@ -24,6 +25,9 @@ import { AddShopSheet } from './shopping/AddShopSheet';
 import { nf, useAdminShopping } from './shopping/useAdminShopping';
 
 const PLUM = { rgb: '123,92,188', deep: '#43307A', hue: '#7B5CBC' };
+
+/** ⚠ אותו כיתוב של מסך ההוצאות · ראו `AdminExpensesScreen` */
+const METHOD_LABEL = 'סוג תשלום';
 
 export function AdminShoppingScreen() {
   const { go } = useNav();
@@ -87,6 +91,36 @@ export function AdminShoppingScreen() {
           נבלעה: בלי פריט מסומן `closeList` יוצא מיד, ותקלת שרת
           נבלעה ב-catch שקט. עכשיו הוא מושבת כשאי אפשר לסגור,
           והשגיאה מוצגת. */}
+      {/**
+        * ⚠ **סוג תשלום · בקשת שקד (11 באוקטובר 2026)** · ״ברשימות
+        * קנייה אין אופציה לבחור שיטת תשלום״, ו״כמו במסך ההוצאות״.
+        * מכאן אותן שלוש אפשרויות בדיוק, ולא רשימה משלה.
+        *
+        * ⚠ **מעל כפתור הסגירה ולא ביריעת ההוספה** · הסגירה היא מה
+        * שיוצר את ההוצאה, ולכן זה הרגע שבו יש לשאלה תשובה. פריט
+        * בודד אינו משולם בנפרד.
+        *
+        * ⚠ **הכיתוב `METHOD_LABEL` זהה למסך ההוצאות** · אותה שאלה,
+        * אותן מילים.
+        */}
+      <View style={s.method}>
+        <Text style={s.methodLabel}>{METHOD_LABEL}</Text>
+        <ChipRow>
+          {EXPENSE_METHODS.map((m) => (
+            <Chip
+              key={m}
+              label={m}
+              on={admin.method === m}
+              tint={PLUM}
+              fontSize={12}
+              height={32}
+              radius={11}
+              onPress={() => admin.pickMethod(m)}
+            />
+          ))}
+        </ChipRow>
+      </View>
+
       {admin.closeErr ? <Text style={s.closeErr}>{admin.closeErr}</Text> : null}
       <Pressable
         onPress={admin.closeList}
@@ -137,6 +171,9 @@ const s = StyleSheet.create({
   },
   areaChip: { paddingHorizontal: 9 },
   closeErr: { fontSize: 13, color: '#B95349', textAlign: 'center', marginBottom: 4 },
+  /* ⚠ מעל כפתור הסגירה · ראו ההערה ליד הרכיב */
+  method: { gap: 6, marginBottom: 8 },
+  methodLabel: { fontSize: 12.5, color: surface.muted },
   closeLabel: { fontSize: 17, fontWeight: '600' },
   closeSub: { fontSize: 12.5, fontWeight: '300' },
 });

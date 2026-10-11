@@ -7,6 +7,7 @@ import { splitByExpenseCat } from '../admin/expenseCats.ts';
 import { notFound } from '../errors.ts';
 import { monthKey } from '../admin/sold.ts';
 import { readPage } from '../http/page.ts';
+import { readCloseMethod } from '../admin/shopMethod.ts';
 
 export const adminShopRouter = Router();
 adminShopRouter.use(requireAuth, requireAdmin);
@@ -118,8 +119,16 @@ adminShopRouter.put('/active', async (req, res, next) => {
   }
 });
 
-adminShopRouter.post('/active/close', async (_req, res, next) => {
+/**
+ * ⚠ **אמצעי התשלום של הקנייה · בקשת שקד, 11 באוקטובר 2026** ·
+ * ״ברשימות קנייה אין אופציה לבחור שיטת תשלום״. סגירת רשימה יוצרת
+ * רשומות הוצאה אמיתיות, ולכל הוצאה שמוקלדת ביד כבר יש `method`
+ * מאז 23 בספטמבר — רק לאלה שנולדו מקנייה לא היה, ולכן הן נשארו
+ * ״לא צוין״ לנצח ולא נספרו במעקב שלה. הסכמה עצמה ב-`shopMethod.ts`.
+ */
+adminShopRouter.post('/active/close', async (req, res, next) => {
   try {
+    const method = readCloseMethod(req.body);
     const row = await prisma.shoppingList.findFirst({
       where: { closedAt: null },
       orderBy: { openedAt: 'desc' },
@@ -146,7 +155,15 @@ adminShopRouter.post('/active/close', async (_req, res, next) => {
     for (const [category, sum] of Object.entries(split)) {
       if (sum <= 0) continue;
       await prisma.expense.create({
-        data: { category, amount: sum, period, note: `קנייה · ${row.area}`, source: closed.id },
+        data: {
+          category,
+          amount: sum,
+          period,
+          note: `קנייה · ${row.area}`,
+          source: closed.id,
+          /* ⚠ אותו אמצעי תשלום לכל הקטגוריות · הקנייה שולמה פעם אחת */
+          method,
+        },
       });
     }
     const next = await prisma.shoppingList.create({ data: { area: row.area, itemsJson: '[]' } });

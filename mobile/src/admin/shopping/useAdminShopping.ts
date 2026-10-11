@@ -13,6 +13,7 @@ import {
   type PantryItem,
   type ShopItem,
 } from '../../data/adminShopping';
+import { type ExpenseMethod } from '../../data/adminMoney';
 import { apiEnabled } from '../../api/config';
 import { adminActiveShop, adminCloseShop, adminPutShop, type ShopItemDto } from '../../api/admin';
 import { useNav } from '../../navigation/store';
@@ -67,6 +68,15 @@ export function useAdminShopping() {
   const [addOpen, setAddOpen] = useState(false);
   /* למה הסגירה לא קרתה · מוצג מתחת לכפתור */
   const [closeErr, setCloseErr] = useState('');
+  /**
+   * ⚠ **אמצעי התשלום של הקנייה · בקשת שקד, 11 באוקטובר 2026** ·
+   * ״ברשימות קנייה אין אופציה לבחור שיטת תשלום״. היא ביקשה שזה
+   * יהיה ״כמו במסך ההוצאות״, ולכן אלה בדיוק אותן שלוש אפשרויות
+   * מ-`EXPENSE_METHODS` ולא רשימה חדשה.
+   *
+   * ⚠ **לא חובה** · כמו במסך ההוצאות · ריק הוא ערך תקין.
+   */
+  const [method, setMethod] = useState<ExpenseMethod>('');
   const [draft, setDraft] = useState<NewShopItem>(() => emptyItem(DEFAULT_GROUP, DEFAULT_UNIT));
 
   const persist = useCallback(
@@ -179,14 +189,20 @@ export function useAdminShopping() {
       return;
     }
     if (live) {
-      void adminCloseShop()
-        .then(reload)
+      /* ⚠ אמצעי התשלום נכנס לרשומות ההוצאה שהסגירה יוצרת */
+      void adminCloseShop({ method })
+        .then(() => {
+          /* ⚠ מתאפס לרשימה הבאה · היא קנייה אחרת */
+          setMethod('');
+          return reload();
+        })
         .catch((e: unknown) => setCloseErr(closeFail(e)));
       return;
     }
     setOpened(new Date());
     setItems([]);
-  }, [items, live, reload]);
+    setMethod('');
+  }, [items, live, reload, method]);
 
   const doneCount = items.filter((x) => x.done).length;
   const groups = useMemo(
@@ -212,6 +228,13 @@ export function useAdminShopping() {
     pct: items.length ? Math.round((doneCount / items.length) * 100) : 0,
     canClose: doneCount > 0,
     closeErr,
+    /* ⚠ אמצעי התשלום של הקנייה · ראו ההערה למעלה */
+    method,
+    /** לחיצה שנייה על אותו צ׳יפ מחזירה ל״לא צוין״ · כמו במסך ההוצאות */
+    pickMethod: useCallback(
+      (m: ExpenseMethod) => setMethod((cur) => (cur === m ? '' : m)),
+      [],
+    ),
     lineTotal: num(draft.qty) * num(draft.price),
     toggle, drop, setField, pickPantry, saveAdd, closeList,
     openAdd: useCallback(() => setAddOpen(true), []),

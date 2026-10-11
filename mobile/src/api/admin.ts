@@ -81,11 +81,15 @@ export const adminPutShop = (body: { area?: string; items?: ShopItemDto[] }) =>
  * והנתיב הזה רשום בשרת כ-POST בלבד. בלי השורה הזו הבקשה יצאה
  * כ-GET, לא התאימה לאף נתיב, ואקספרס החזיר 404 — ושקד קיבלה
  * ״אין רשימת קניות פתוחה לסגירה״ בזמן שהרשימה פתוחה מולה.
- * הסגירה עצמה לא נוגעת בגוף הבקשה, ולכן אין כאן `body`.
+ *
+ * ⚠ **`body` נוסף ב-11 באוקטובר 2026** · אמצעי התשלום של הקנייה ·
+ * ראו `closeSchema` ב-`server/src/routes/adminShop.ts`. ריק הוא
+ * ערך תקין, בדיוק כמו בהוצאה שמוקלדת ביד.
  */
-export const adminCloseShop = () =>
+export const adminCloseShop = (body: { method: string } = { method: '' }) =>
   api<{ closed: ShopListDto; list: ShopListDto; expense: number }>('/admin/shop/active/close', {
     method: 'POST',
+    body,
   });
 export const adminShopHistory = (area?: string) =>
   api<{ lists: ShopListDto[] }>(`/admin/shop/history${area && area !== 'all' ? `?area=${area}` : ''}`);
