@@ -46,6 +46,7 @@ import {
   SCHN_UNIT_IDS,
   SOLD_OUT,
   useRemaining,
+  useBlockedHours,
   useSoldOut,
   syncStock,
 } from '../../order/stock';
@@ -94,7 +95,9 @@ export function SchnitzelScreen() {
     void syncStock().catch(() => undefined);
   }, []);
   /* `meals` נדרש למינימום המשלוח · מארז נחשב חמש מנות */
-  const f = useFulfillment({ ...SCHNITZEL_FULFILLMENT, meals: o.meals });
+  /* ⚠ שעות משלוח שנחסמו בניהול · ראו `blockedHours` ב-`types` */
+  const blocked = useBlockedHours('schn');
+  const f = useFulfillment({ ...SCHNITZEL_FULFILLMENT, meals: o.meals, blockedHours: blocked });
   /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
   const saleGate = useSaleGate('schn');
   const [gate, setGate] = useState(false);

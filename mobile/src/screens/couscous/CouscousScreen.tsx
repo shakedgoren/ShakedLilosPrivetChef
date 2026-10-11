@@ -14,7 +14,15 @@ import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
-import { AT_CAP, COUS_IDS, SOLD_OUT, useRemaining, useSoldOut, syncStock } from '../../order/stock';
+import {
+  AT_CAP,
+  COUS_IDS,
+  SOLD_OUT,
+  useBlockedHours,
+  useRemaining,
+  useSoldOut,
+  syncStock,
+} from '../../order/stock';
 import { COUSCOUS_PHOTOS } from '../../data/photos';
 import {
   ADDONS_LABEL,
@@ -44,7 +52,9 @@ const ACCENT = hues.cous;
 export function CouscousScreen() {
   const { go, goLogin, loggedIn } = useNav();
   const o = useCouscousOrder();
-  const f = useFulfillment({ ...COUSCOUS_FULFILLMENT, meals: o.meals });
+  /* ⚠ שעות משלוח שנחסמו בניהול · ראו `blockedHours` ב-`types` */
+  const blocked = useBlockedHours('cous');
+  const f = useFulfillment({ ...COUSCOUS_FULFILLMENT, meals: o.meals, blockedHours: blocked });
   /* ⚠ יום מכירה סגור · מתריעים כאן ולא בשלב התשלום */
   const saleGate = useSaleGate('cous');
   const [gate, setGate] = useState(false);

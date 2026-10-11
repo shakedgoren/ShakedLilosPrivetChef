@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { CITIES } from '../data/shared';
-import { hhmm, isAddressValid, toMinutes, type FulfillmentConfig } from './types';
+import { hhmm, inAnyRange, isAddressValid, toMinutes, type FulfillmentConfig } from './types';
 
 /** שלבי ההזמנה · 0 = סגור, 6 = מסך האישור */
 export const STEP = {
@@ -45,6 +45,22 @@ export function useFulfillment(cfg: FulfillmentConfig) {
     [cfg.pickupFrom, cfg.pickupTo, fallback],
   );
 
+  /**
+   * חלונות המשלוח שנותרו אחרי חסימת הניהול.
+   * ⚠ ראו `blockedHours` ב-`FulfillmentConfig`.
+   */
+  const openSlots = useMemo(() => {
+    const ranges = cfg.blockedHours ?? [];
+    if (!ranges.length) return cfg.deliverySlots;
+    return cfg.deliverySlots.filter((t) => !inAnyRange(t, ranges));
+  }, [cfg.deliverySlots, cfg.blockedHours]);
+
+  /**
+   * ⚠ **חסימת כל החלונות היא סגירת היום למשלוחים** · אין מתג
+   * נפרד ב-`SaleDay`, ולכן זו ההגדרה.
+   */
+  const deliveryOpen = openSlots.length > 0;
+
   const flash = useCallback(() => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(true);
@@ -52,6 +68,8 @@ export function useFulfillment(cfg: FulfillmentConfig) {
   }, []);
 
   const wantDelivery = useCallback(() => {
+    /* ⚠ יום סגור למשלוחים · ראו `deliveryOpen` */
+    if (!deliveryOpen) return;
     const min = cfg.minMealsForDelivery;
     if (min !== undefined && (cfg.meals ?? 0) < min) {
       flash();
@@ -60,7 +78,7 @@ export function useFulfillment(cfg: FulfillmentConfig) {
     setShip('deliv');
     setTime(null);
     setStep(STEP.time);
-  }, [cfg.minMealsForDelivery, cfg.meals, flash]);
+  }, [cfg.minMealsForDelivery, cfg.meals, flash, deliveryOpen]);
 
   const wantPickup = useCallback(() => {
     setShip('self');
@@ -127,6 +145,8 @@ export function useFulfillment(cfg: FulfillmentConfig) {
     city, setCity, addr, setAddr, addressNext, addressOk,
     pay, pickPay,
     toast, wantDelivery, wantPickup,
+    /* ⚠ חלונות משלוח · ראו `blockedHours` */
+    openSlots, deliveryOpen,
   };
 }
 

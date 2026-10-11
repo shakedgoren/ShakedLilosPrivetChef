@@ -163,10 +163,18 @@ const titleFor = (f: Fulfillment) => {
 
 const window = (from: number, to: number) => `${hhmm(from)}–${hhmm(to)}`;
 
+/**
+ * ⚠ **הנוסח נכתב על ידי Claude · 11 באוקטובר 2026** · שקד ביקשה
+ * שהמשלוח יסומן באפור ביום סגור, ולא כתבה כיתוב.
+ */
+const NO_DELIVERY = 'אין משלוחים בתאריך הזה';
+
 function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
-  const { pickupFrom, pickupTo, deliverySlots, minMealsForDelivery } = f.cfg;
-  const first = deliverySlots[0];
-  const last = deliverySlots[deliverySlots.length - 1];
+  const { pickupFrom, pickupTo, minMealsForDelivery } = f.cfg;
+  /* ⚠ החלונות שנותרו אחרי חסימת הניהול · ראו `openSlots` */
+  const first = f.openSlots[0];
+  const last = f.openSlots[f.openSlots.length - 1];
+  const shut = !f.deliveryOpen;
 
   return (
     <View style={s.stack}>
@@ -186,14 +194,20 @@ function ShipStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
         <S k="chevronLeft" size={CHEV} color={CHEV_INK} />
       </Pressable>
 
-      <Pressable onPress={f.wantDelivery} style={[s.option, s.optionPlain]}>
+      {/* ⚠ יום סגור למשלוחים · ראו `deliveryOpen` */}
+      <Pressable
+        onPress={f.wantDelivery}
+        disabled={shut}
+        style={[s.option, s.optionPlain, shut && s.optionOff]}
+      >
         {/* ⚠ SF Symbols · paperplane למשלוח, כפי שביקשה שקד */}
         <S k="delivery" size={OPTION_ICON} color={TRUCK_INK} />
         <View style={s.optionText}>
           <Text style={s.optionTitle}>משלוח</Text>
           <Text style={s.optionSub}>
-            {minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}
-            {first}–{last}
+            {shut
+              ? NO_DELIVERY
+              : `${minMealsForDelivery !== undefined ? `מ־${minMealsForDelivery} מנות · ` : ''}${first}–${last}`}
           </Text>
           {/* ⚠ **המחירון ירד מכאן · 17 בספטמבר 2026** · בקשה של שקד:
               ״בתצוגה המקדימה של המשלוח שלא יציג את המחירים, רק לאחר
@@ -261,7 +275,8 @@ function ClockStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
 function SlotsStep({ f, accent }: { f: Fulfillment; accent: Accent }) {
   return (
     <View style={s.slots}>
-      {f.cfg.deliverySlots.map((t) => (
+      {/* ⚠ החלונות שנותרו · ראו `openSlots` */}
+      {f.openSlots.map((t) => (
         <Pressable
           key={t}
           onPress={() => f.pickSlot(t)}
@@ -565,6 +580,8 @@ const s = StyleSheet.create({
 
   hint: { fontSize: 11.5, color: surface.muted },
 
+  /* ⚠ יום סגור למשלוחים · ראו `NO_DELIVERY` */
+  optionOff: { opacity: 0.45 },
   slots: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 9 },
   slot: { width: '30%', height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   slotText: { fontSize: 14, fontWeight: '600' },

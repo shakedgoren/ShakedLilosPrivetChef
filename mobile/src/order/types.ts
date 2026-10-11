@@ -13,6 +13,21 @@ export type FulfillmentConfig = {
   deliverySlots: string[];
   /** מינימום מנות למשלוח · undefined = אין מינימום */
   minMealsForDelivery?: number;
+  /**
+   * שעות משלוח שנחסמו בניהול לתאריך הזה.
+   *
+   * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״אם היום סגור למשלוחים
+   * האופציה למשלוח צריכה להיות מסומנת באפור ושלא יתן בכלל לבחור
+   * את האופציה של המשלוח״. הכלל נאכף בשרת מאז 27 בספטמבר, אבל
+   * מסך הלקוחה לא ידע עליו דבר.
+   *
+   * ⚠ **משלוחים בלבד** · איסוף עצמי אינו נחסם — החלטה מפורשת של
+   * שקד מ-27 בספטמבר. ראו `server/src/orders/deliveryHours.ts`.
+   *
+   * ⚠ **אין מתג ״יום סגור למשלוחים״** · חסימת כל החלונות **היא**
+   * הסגירה, ומכאן נגזר `deliveryOpen`.
+   */
+  blockedHours?: readonly { from: string; to: string }[];
   /** כמה מנות יש כרגע בהזמנה · נדרש רק כשיש מינימום */
   meals?: number;
   clockFallback?: string;
@@ -55,3 +70,24 @@ export const isAddressValid = (a: string) => {
   const t = String(a || '').trim();
   return t.length >= 4 && /\d/.test(t);
 };
+
+/**
+ * האם השעה נופלת באחד הטווחים · **הקצוות כלולים.**
+ *
+ * ⚠ **זהה ל-`isHourBlocked` בשרת** · שתי הצורות חייבות להסכים,
+ * אחרת המסך יציע חלון שהשרת ידחה. ראו
+ * `server/src/orders/deliveryHours.ts` — שם ההערה המלאה על למה
+ * ״לחסום 18:00 עד 21:00״ כולל את שני הקצוות.
+ */
+export function inAnyRange(
+  time: string,
+  ranges: readonly { from: string; to: string }[],
+): boolean {
+  const t = toMinutes(time);
+  if (t === null) return false;
+  return ranges.some((r) => {
+    const a = toMinutes(r.from);
+    const b = toMinutes(r.to);
+    return a !== null && b !== null && t >= a && t <= b;
+  });
+}
