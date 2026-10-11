@@ -11,6 +11,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../../ui/text';
 import { COUSCOUS_FULFILLMENT, COUSCOUS_MENU } from '../../data/couscous';
 import { CategoryHeader } from '../../components/CategoryHeader';
+import { nextSaleDate } from '../../data/saleWeek';
+import { saleDateText } from '../../data/calendar';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
@@ -22,12 +24,12 @@ import {
   useRemaining,
   useSoldOut,
   syncStock,
+  useSaleDate,
 } from '../../order/stock';
 import { COUSCOUS_PHOTOS } from '../../data/photos';
 import {
   ADDONS_LABEL,
   ADDON_CARD,
-  COUSCOUS_DATE,
   COUSCOUS_INTRO,
   COUSCOUS_TITLE,
   DISH_ROW,
@@ -103,9 +105,22 @@ export function CouscousScreen() {
      והתמונה נמתחה לפס אנכי שמראה רק את השולחן מסביב לקערה */
   const addonShotSize = addonW ? addonW - ADDON_CARD.padding * 2 : undefined;
 
+  /**
+   * ⚠ **התאריך מגיע מהנתונים ולא מהקנבס · 11 באוקטובר 2026** · כאן
+   * ישב `COUSCOUS_DATE`, מחרוזת קבועה שחולצה מהארטבורד
+   * (״שלישי · 25 באוגוסט״), ולכן לקוחה שנכנסה באוקטובר ראתה
+   * תאריך מלפני חודשיים מעל התפריט. שקד ביקשה לתקן.
+   *
+   * ⚠ **השרת קודם** · `useSaleDate` הוא יום המכירה כפי שהשרת רואה
+   * אותו, כולל מה ששקד עשתה בלוח. `nextSaleDate` הוא הכלל הקבוע,
+   * ומוצג עד שהתשובה מגיעה ובלי חיבור.
+   */
+  const serverDate = useSaleDate('cous');
+  const saleDate = saleDateText(serverDate || nextSaleDate('cous', new Date()));
+
   return (
     <View style={s.page}>
-      <CategoryHeader title={COUSCOUS_TITLE} date={COUSCOUS_DATE} />
+      <CategoryHeader title={COUSCOUS_TITLE} date={saleDate} />
 
       <ScrollView contentContainerStyle={s.list} showsVerticalScrollIndicator={false}>
         <Text style={s.intro}>{COUSCOUS_INTRO}</Text>

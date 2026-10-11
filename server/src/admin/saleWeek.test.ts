@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { impliedWeekdayRecord, mergeWeekdayDays } from '../../../mobile/src/data/adminDays.ts';
-import { saleWindow, upcomingSale, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
+import { nextSaleDate, saleWindow, upcomingSale, weekdaySale } from '../../../mobile/src/data/saleWeek.ts';
 
 test('שלישי = קוסקוס, שישי = שניצל', () => {
   assert.equal(weekdaySale('2026-09-01'), 'cous');
@@ -63,4 +63,41 @@ test('גבולות החלון · תחילה וסוף', () => {
   assert.deepEqual(w1, { cat: 'cous', date: '2026-09-22', start: '2026-09-19', end: '2026-09-23' });
   const w2 = saleWindow(new Date(2026, 8, 24, 10, 0));
   assert.deepEqual(w2, { cat: 'schn', date: '2026-09-25', start: '2026-09-23', end: '2026-09-26' });
+});
+
+/**
+ * ⚠ **מה זה שומר · 11 באוקטובר 2026** · מסכי הקוסקוס והשניצל
+ * הציגו תאריך קבוע מהקנבס (״שלישי · 25 באוגוסט״, ״שישי · 28
+ * באוגוסט״), ולקוחה באוקטובר ראתה תאריך מלפני חודשיים. במקומו
+ * נכנס `nextSaleDate`, והמלכודת בו היא שהוא **אינו** `upcomingSale`:
+ * ביום חמישי החלון הוא של השניצל, אבל מסך הקוסקוס עדיין צריך
+ * לומר ״שלישי הבא״ ולא ״שישי״.
+ */
+test('יום המכירה הקרוב של כל קטגוריה · גם כשהחלון של השנייה', () => {
+  const at = (d: number, h: number) => new Date(2026, 8, d, h);
+
+  /* ראשון 20.9 · בתוך החלון של הקוסקוס (שלישי 22.9) */
+  assert.equal(nextSaleDate('cous', at(20, 10)), '2026-09-22');
+  /* ובאותו רגע · השניצל הקרוב הוא שישי 25.9 */
+  assert.equal(nextSaleDate('schn', at(20, 10)), '2026-09-25');
+
+  /* חמישי 24.9 · בתוך החלון של השניצל (שישי 25.9) */
+  assert.equal(nextSaleDate('schn', at(24, 10)), '2026-09-25');
+  /* ⚠ כאן נופל `upcomingSale` · הוא היה עונה ״שישי״ גם לקוסקוס */
+  assert.deepEqual(upcomingSale(at(24, 10)), { cat: 'schn', date: '2026-09-25' });
+  assert.equal(nextSaleDate('cous', at(24, 10)), '2026-09-29');
+
+  /* רביעי 23.9 ב-06:59 · עוד החלון של הקוסקוס, ובשבע כבר שניצל */
+  assert.equal(nextSaleDate('cous', new Date(2026, 8, 23, 6, 59)), '2026-09-22');
+  assert.equal(nextSaleDate('cous', new Date(2026, 8, 23, 7, 0)), '2026-09-29');
+});
+
+test('שני הצדדים תמיד ביום הנכון בשבוע', () => {
+  for (let d = 1; d <= 30; d += 1) {
+    for (const h of [0, 6, 7, 13, 23]) {
+      const now = new Date(2026, 8, d, h);
+      assert.equal(weekdaySale(nextSaleDate('cous', now)), 'cous', `cous ${d}/${h}`);
+      assert.equal(weekdaySale(nextSaleDate('schn', now)), 'schn', `schn ${d}/${h}`);
+    }
+  }
 });

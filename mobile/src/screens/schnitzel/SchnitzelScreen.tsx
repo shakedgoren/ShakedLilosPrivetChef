@@ -19,6 +19,8 @@ import {
   SCHNITZEL_TYPES,
 } from '../../data/schnitzel';
 import { CategoryHeader } from '../../components/CategoryHeader';
+import { nextSaleDate } from '../../data/saleWeek';
+import { saleDateText } from '../../data/calendar';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
@@ -29,7 +31,6 @@ import {
   COCOTTE_ROW,
   GIFT_SPACE,
   PICK_TYPE_LABEL,
-  SCHNITZEL_DATE,
   SCHNITZEL_INTRO,
   SCHNITZEL_TITLE,
   TYPE_CARD,
@@ -49,6 +50,7 @@ import {
   useBlockedHours,
   useSoldOut,
   syncStock,
+  useSaleDate,
 } from '../../order/stock';
 import { ToppingsSheet } from './ToppingsSheet';
 import { PlatterFamily, PlatterSingles } from '../../icons';
@@ -107,9 +109,22 @@ export function SchnitzelScreen() {
     else if (o.total > 0) void saleGate.guard(f.open);
   };
 
+  /**
+   * ⚠ **התאריך מגיע מהנתונים ולא מהקנבס · 11 באוקטובר 2026** · כאן
+   * ישב `SCHNITZEL_DATE`, מחרוזת קבועה שחולצה מהארטבורד
+   * (״שישי · 28 באוגוסט״), ולכן לקוחה שנכנסה באוקטובר ראתה
+   * תאריך מלפני חודשיים מעל התפריט. שקד ביקשה לתקן.
+   *
+   * ⚠ **השרת קודם** · `useSaleDate` הוא יום המכירה כפי שהשרת רואה
+   * אותו, כולל מה ששקד עשתה בלוח. `nextSaleDate` הוא הכלל הקבוע,
+   * ומוצג עד שהתשובה מגיעה ובלי חיבור.
+   */
+  const serverDate = useSaleDate('schn');
+  const saleDate = saleDateText(serverDate || nextSaleDate('schn', new Date()));
+
   return (
     <View style={s.page}>
-      <CategoryHeader title={SCHNITZEL_TITLE} date={SCHNITZEL_DATE} />
+      <CategoryHeader title={SCHNITZEL_TITLE} date={saleDate} />
 
       <Text style={s.intro}>{SCHNITZEL_INTRO}</Text>
 

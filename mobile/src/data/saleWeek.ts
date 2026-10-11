@@ -98,6 +98,27 @@ export function upcomingSale(now: Date): { cat: 'cous' | 'schn'; date: string } 
   return { cat: w.cat, date: w.date };
 }
 
+/**
+ * יום המכירה הקרוב **של קטגוריה מסוימת**.
+ *
+ * ⚠ **שונה מ-`upcomingSale`** · זה מחזיר את יום המכירה של החלון
+ * שאנחנו בתוכו, ולכן ביום חמישי הוא עונה ״שישי״ גם למי ששואל על
+ * הקוסקוס. מסך הקוסקוס צריך את שלישי הבא.
+ *
+ * ⚠ **החלון הבא מתחיל בדיוק כשהנוכחי נגמר** · ולכן יום המכירה
+ * שלו הוא `end` ועוד ה-lead של אותה קטגוריה.
+ *
+ * ⚠ **נוסף ב-11 באוקטובר 2026** · עד אז מסכי הקוסקוס והשניצל
+ * הציגו `COUSCOUS_DATE` ו-`SCHNITZEL_DATE` — מחרוזות קבועות
+ * שחולצו מהקנבס (״שלישי · 25 באוגוסט״, ״שישי · 28 באוגוסט״),
+ * כלומר לקוחה ראתה תאריך מלפני חודשיים מעל התפריט.
+ */
+export function nextSaleDate(cat: 'cous' | 'schn', now: Date): string {
+  const w = saleWindow(now);
+  if (w.cat === cat) return w.date;
+  return addDaysIso(w.end, LEAD[cat]);
+}
+
 /** האם החלון של התאריך הזה כבר נגמר · לפי השעון של עכשיו */
 export function saleWindowEnded(saleDate: string, now: Date): boolean {
   const w = saleWindow(now);

@@ -136,6 +136,44 @@ export function useRemaining(category: string): Readonly<Record<string, number>>
 }
 
 /**
+ * תאריך יום המכירה של הקטגוריה · כפי שהשרת רואה אותו.
+ *
+ * ⚠ **בקשת שקד · 11 באוקטובר 2026** · במסכי הקוסקוס והשניצל ישבו
+ * `COUSCOUS_DATE` ו-`SCHNITZEL_DATE` — מחרוזות קבועות מהקנבס
+ * (״שלישי · 25 באוגוסט״, ״שישי · 28 באוגוסט״). לקוחה שנכנסה
+ * באוקטובר ראתה תאריך מלפני חודשיים מעל התפריט.
+ *
+ * ⚠ **מהשרת ולא מחישוב מקומי** · `nextSaleDate` יודע את הכלל
+ * הקבוע (שלישי, שישי), אבל השרת יודע גם מה שקד עשתה בלוח —
+ * יום שנחסם, או חריגה ביום אחר. הוא התשובה הנכונה כשהיא קיימת,
+ * והחישוב המקומי הוא מה שמוצג עד שהיא מגיעה.
+ */
+const saleDate = new Map<string, string>();
+
+export function setSaleDate(category: string, date: string): void {
+  if (!date || saleDate.get(category) === date) return;
+  saleDate.set(category, date);
+  listeners.forEach((fn) => fn());
+}
+
+/** ריק = השרת עוד לא נשאל · הקורא נופל לחישוב המקומי */
+export const saleDateOf = (category: string): string => saleDate.get(category) ?? '';
+
+export function useSaleDate(category: string): string {
+  const subscribe = useCallback((fn: Listener) => {
+    listeners.add(fn);
+    return () => {
+      listeners.delete(fn);
+    };
+  }, []);
+  return useSyncExternalStore(
+    subscribe,
+    () => saleDate.get(category) ?? '',
+    () => saleDate.get(category) ?? '',
+  );
+}
+
+/**
  * שעות משלוח חסומות בתאריך של אותה קטגוריה.
  *
  * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״שעות איסוף חורגות
@@ -184,6 +222,8 @@ export async function syncStock(): Promise<void> {
       try {
         const day = await saleDayStatus(category);
         setSoldOut(category, day.soldOut ?? []);
+        /* ⚠ התאריך שמוצג מעל התפריט · ראו `setSaleDate` */
+        setSaleDate(category, day.date ?? '');
         /* ⚠ שרת ישן אינו מחזיר את השדות · ברירת המחדל לא נועלת כלום */
         setRemaining(category, day.remaining ?? {});
         setBlockedHours(category, day.blockedHours ?? []);
