@@ -79,6 +79,87 @@ export function useSoldOut(category: string): ReadonlySet<string> {
 }
 
 /**
+ * כמה נשאר מכל מנה · מזהה → מספר.
+ *
+ * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״אם אין כמות מספיקה ברגע
+ * ההוספה בלחיצה על הפלוס זה צריך לעצור את הלקוח מלהמשיך להוסיף
+ * מנות״. עד עכשיו החריגה נתפסה רק בשליחה, אחרי שהלקוחה כבר מילאה
+ * הזמנה שלמה.
+ *
+ * ⚠⚠ **לא להציג את המספר במסך · לעולם** · זה מרכך בכוונה את ״אין
+ * תצוגה של המלאי ללקוח!!!!!״ מ-18 בספטמבר, והוצג לשקד ואושר. הוא
+ * משמש **אך ורק** כתקרה לכפתור. `soldOut` נשאר הדרך היחידה לסמן
+ * מנה כאזלה על המסך.
+ *
+ * ⚠ **ברירת מחדל `Infinity`** · שרת ישן, או קטגוריה בלי מכסות,
+ * אינם אמורים לנעול את הכפתור.
+ */
+const remaining = new Map<string, Readonly<Record<string, number>>>();
+const EMPTY_LEFT: Readonly<Record<string, number>> = {};
+
+export function setRemaining(category: string, left: Record<string, number>): void {
+  remaining.set(category, { ...left });
+  listeners.forEach((fn) => fn());
+}
+
+/** כמה נשאר ממנה · `Infinity` כשאין נתון */
+export function remainingOf(category: string, id: string): number {
+  const v = (remaining.get(category) ?? EMPTY_LEFT)[id];
+  return v === undefined ? Infinity : v;
+}
+
+export function useRemaining(category: string): Readonly<Record<string, number>> {
+  const subscribe = useCallback((fn: Listener) => {
+    listeners.add(fn);
+    return () => {
+      listeners.delete(fn);
+    };
+  }, []);
+  return useSyncExternalStore(
+    subscribe,
+    () => remaining.get(category) ?? EMPTY_LEFT,
+    () => remaining.get(category) ?? EMPTY_LEFT,
+  );
+}
+
+/**
+ * שעות משלוח חסומות בתאריך של אותה קטגוריה.
+ *
+ * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״שעות איסוף חורגות
+ * מהמותר״, ו״אם היום סגור למשלוחים האופציה למשלוח צריכה להיות
+ * מסומנת באפור״. הכלל נאכף בשרת מאז 27 בספטמבר, אבל בוחר השעות
+ * אצל הלקוחה לא ידע עליו דבר.
+ *
+ * ⚠ **משלוחים בלבד** · איסוף עצמי אינו נחסם — שם שקד ממילא
+ * קובעת מתי היא בבית. ראו `server/src/orders/deliveryHours.ts`.
+ */
+export type BlockedRange = { from: string; to: string };
+const blocked = new Map<string, readonly BlockedRange[]>();
+const NO_RANGES: readonly BlockedRange[] = [];
+
+export function setBlockedHours(category: string, ranges: readonly BlockedRange[]): void {
+  blocked.set(category, ranges.slice());
+  listeners.forEach((fn) => fn());
+}
+
+export const blockedHoursOf = (category: string): readonly BlockedRange[] =>
+  blocked.get(category) ?? NO_RANGES;
+
+export function useBlockedHours(category: string): readonly BlockedRange[] {
+  const subscribe = useCallback((fn: Listener) => {
+    listeners.add(fn);
+    return () => {
+      listeners.delete(fn);
+    };
+  }, []);
+  return useSyncExternalStore(
+    subscribe,
+    () => blocked.get(category) ?? NO_RANGES,
+    () => blocked.get(category) ?? NO_RANGES,
+  );
+}
+
+/**
  * טעינה מהשרת · לכל קטגוריות יום המכירה יחד.
  * ⚠ **כישלון אינו חוסם כלום** · רשת שנפלה לא תסמן מנה כאזלה;
  * במקרה הגרוע ההודעה תגיע מהשרת בשליחת ההזמנה, כמו קודם.
@@ -90,6 +171,9 @@ export async function syncStock(): Promise<void> {
       try {
         const day = await saleDayStatus(category);
         setSoldOut(category, day.soldOut ?? []);
+        /* ⚠ שרת ישן אינו מחזיר את השדות · ברירת המחדל לא נועלת כלום */
+        setRemaining(category, day.remaining ?? {});
+        setBlockedHours(category, day.blockedHours ?? []);
       } catch {
         /* ראו ההערה למעלה */
       }

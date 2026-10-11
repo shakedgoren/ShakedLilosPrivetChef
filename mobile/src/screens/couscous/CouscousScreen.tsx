@@ -13,7 +13,7 @@ import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
-import { COUS_IDS, SOLD_OUT, useSoldOut, syncStock } from '../../order/stock';
+import { COUS_IDS, SOLD_OUT, useRemaining, useSoldOut, syncStock } from '../../order/stock';
 import { COUSCOUS_PHOTOS } from '../../data/photos';
 import {
   ADDONS_LABEL,
@@ -68,6 +68,12 @@ export function CouscousScreen() {
    */
   const gone = useSoldOut('cous');
   /**
+   * ⚠ **תקרה לכפתור הפלוס · בקשת שקד 11.10.2026** · ״אם אין כמות
+   * מספיקה ברגע ההוספה בלחיצה על הפלוס זה צריך לעצור את הלקוח״.
+   * ⚠⚠ **המספר עצמו לא מוצג בשום מקום** · ראו `order/stock.ts`.
+   */
+  const left = useRemaining('cous');
+  /**
    * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
    * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
    * ובדיוק בדקות האלה מנה יכולה להיגמר.
@@ -109,7 +115,12 @@ export function CouscousScreen() {
               {out ? (
                 <Text style={s.gone}>{SOLD_OUT}</Text>
               ) : (
-                <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
+                <Stepper
+                  value={o.qty[i]}
+                  onChange={(n) => o.bump(i, n - o.qty[i])}
+                  /* ⚠ ראו `left` · הכפתור נעצר במכסה, בלי להציג מספר */
+                  maxed={o.qty[i] >= (left[COUS_IDS[i]] ?? Infinity)}
+                />
               )}
             </StepIn>
           );
@@ -139,7 +150,12 @@ export function CouscousScreen() {
               {out ? (
                 <Text style={s.gone}>{SOLD_OUT}</Text>
               ) : (
-                <Stepper value={o.qty[i]} onChange={(n) => o.bump(i, n - o.qty[i])} />
+                <Stepper
+                  value={o.qty[i]}
+                  onChange={(n) => o.bump(i, n - o.qty[i])}
+                  /* ⚠ ראו `left` · הכפתור נעצר במכסה, בלי להציג מספר */
+                  maxed={o.qty[i] >= (left[COUS_IDS[i]] ?? Infinity)}
+                />
               )}
             </StepIn>
             );

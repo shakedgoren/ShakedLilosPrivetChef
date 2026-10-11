@@ -39,7 +39,14 @@ import { a, hues, radius, space, surface, type } from '../../theme/tokens';
 import { FONT_BUMP, headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
-import { SCHN_BOX_IDS, SCHN_UNIT_IDS, SOLD_OUT, useSoldOut, syncStock } from '../../order/stock';
+import {
+  SCHN_BOX_IDS,
+  SCHN_UNIT_IDS,
+  SOLD_OUT,
+  useRemaining,
+  useSoldOut,
+  syncStock,
+} from '../../order/stock';
 import { ToppingsSheet } from './ToppingsSheet';
 import { PlatterFamily, PlatterSingles } from '../../icons';
 import { TILE_EDGE, TILE_SHADOW } from '../../theme/glass';
@@ -66,6 +73,14 @@ export function SchnitzelScreen() {
   const typeCardW = gridW ? (gridW - TYPE_CARD.gridGap) / 2 : undefined;
   /* ⚠ חסימת מלאי · ראו `order/stock.ts` · ההגנה עצמה בשרת */
   const gone = useSoldOut('schn');
+  /**
+   * ⚠ **תקרה להוספה · בקשת שקד 11.10.2026** · ״אם אין כמות מספיקה
+   * ברגע ההוספה … זה צריך לעצור את הלקוח מלהמשיך להוסיף מנות״.
+   * בשניצל אין סטפר — כל הקשה על כרטיס מוסיפה פריט לסל — ולכן
+   * התקרה נאכפת על הכרטיס עצמו.
+   * ⚠⚠ **המספר עצמו לא מוצג בשום מקום** · ראו `order/stock.ts`.
+   */
+  const left = useRemaining('schn');
   /**
    * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
    * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
@@ -166,12 +181,15 @@ export function SchnitzelScreen() {
               {SCHNITZEL_TYPES.map((t, k) => {
                 /* ⚠ המנה אזלה · ראו `order/stock.ts` */
                 const out = gone.has(SCHN_UNIT_IDS[k]);
+                /* כמה מהסוג הזה כבר בסל · ראו `left` */
+                const atCap =
+                  o.basket.filter((b) => b.type === k).length >= (left[SCHN_UNIT_IDS[k]] ?? Infinity);
                 return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
                   <Pressable
                     onPress={() => o.openAdd(k)}
-                    disabled={out}
-                    style={[s.typeCard, { width: typeCardW }, out && s.cardOut]}
+                    disabled={out || atCap}
+                    style={[s.typeCard, { width: typeCardW }, (out || atCap) && s.cardOut]}
                   >
                     <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
                     <Text style={s.typeName}>{t.name}</Text>
@@ -210,12 +228,14 @@ export function SchnitzelScreen() {
             <View style={s.grid}>
               {SCHNITZEL_TYPES.map((t, k) => {
                 const out = gone.has(SCHN_BOX_IDS[k]);
+                const atCap =
+                  o.boxes.filter((b) => b.type === k).length >= (left[SCHN_BOX_IDS[k]] ?? Infinity);
                 return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
                   <Pressable
                     onPress={() => o.openBox(k)}
-                    disabled={out}
-                    style={[s.typeCard, { width: typeCardW }, out && s.cardOut]}
+                    disabled={out || atCap}
+                    style={[s.typeCard, { width: typeCardW }, (out || atCap) && s.cardOut]}
                   >
                     <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
                     <Text style={s.typeName}>{t.name}</Text>
