@@ -65,10 +65,34 @@ type Props = { admin: ReturnType<typeof useAdminDays> };
  */
 const EXCEPT_KEYS = CAT_KEYS.filter((k) => k !== 'fruit');
 
+/**
+ * ⚠ **שני הנוסחים האלה נכתבו על ידי Claude · 11.10.2026** · שקד
+ * לא כתבה אותם. הם ההודעה על יום שעבר, ונוסחו כמו זו שבלוח
+ * המכירה (״יום המכירה הזה הסתיים״) כדי ששני המסכים ידברו אותו דבר.
+ */
+const PAST_TITLE = 'היום הזה כבר עבר';
+const PAST_SUB = 'אפשר לקבוע מכסות ולפתוח מכירה רק מהיום והלאה';
+
 export function DayPanel({ admin }: Props) {
   const r = admin.current;
   const cat = admin.cat;
   const blocked = !!r.blocked;
+
+  /**
+   * ⚠ **יום שעבר · בקשת שקד, 11 באוקטובר 2026** · ראו `isPast`
+   * ב-`useAdminDays`. הכתיבה חסומה שם ממילא, והחסימה כאן היא כדי
+   * שלא יוצגו עורכים שאינם עושים דבר — כפתור שלא פועל גרוע
+   * מכפתור שאינו קיים.
+   */
+  if (admin.selectedPast) {
+    return (
+      <View style={s.card}>
+        <Text style={s.title}>{dayTitle(admin.selected)}</Text>
+        <Text style={s.pastTitle}>{PAST_TITLE}</Text>
+        <Text style={s.pastSub}>{PAST_SUB}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={s.card}>
@@ -257,6 +281,9 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.8)',
   },
   title: { fontSize: 19, fontWeight: '600', color: surface.ink },
+  /* ⚠ הודעת יום שעבר · ראו `PAST_TITLE` */
+  pastTitle: { fontSize: 15, fontWeight: '600', color: surface.muted, marginTop: 10 },
+  pastSub: { fontSize: 13, fontWeight: '300', color: surface.faint, marginTop: 3 },
   block: { gap: 8 },
   rule: { height: 1, backgroundColor: 'rgba(130,112,162,0.14)' },
   blockTitle: { fontSize: 15.5, fontWeight: '600', color: surface.ink },

@@ -112,8 +112,18 @@ export function AdminBoardScreen() {
   const [mode, setMode] = useState<'all' | 'pickup' | 'deliv'>(
     START_MODE as 'all' | 'pickup' | 'deliv',
   );
+  /**
+   * ⚠ **נתוני הדמה רק כשאין שרת · 11 באוקטובר 2026** · `BOARD_SEED`
+   * היה המצב ההתחלתי תמיד, ולכן הלוח נפתח עם הזמנות מומצאות בכל
+   * פתיחה — ונשאר איתן אם השרת לא ענה. שקד דיווחה פעמיים
+   * שהנתונים ״כאילו נטענים מתוכן דמה״, והמסך הזה היה אחד
+   * מאלה שנשארו כך גם אחרי התיקון הראשון.
+   *
+   * ⚠ **`apiEnabled` ולא `live`** · כשיש כתובת שרת אין שום מצב
+   * שבו נכון להציג הזמנות מומצאות — גם לא לרגע.
+   */
   const [orders, setOrders] = useState<Row[]>(() =>
-    BOARD_SEED.map((o) => ({ ...o, q: { ...o.q }, hrs: o.hrs })),
+    apiEnabled ? [] : BOARD_SEED.map((o) => ({ ...o, q: { ...o.q }, hrs: o.hrs })),
   );
   /* המכסות של היום · מגיעות מהשרת, ובלעדיו ממכסת ברירת המחדל */
   const [quotas, setQuotas] = useState<Record<string, number>>({});
@@ -250,8 +260,17 @@ export function AdminBoardScreen() {
     );
     /* ⚠ **אותה מכסה שבדף המלאי · 19 בספטמבר 2026** · ראו את ההסבר
        ב-`server/src/admin/dayQuotas.ts`. הלוח הראה ״0 מתוך 0״ בעוד
-       שדף המלאי הראה מספר אמיתי, ושקד דיווחה על הפער. */
-    const quota = p.of.reduce((t, id) => t + (quotas[id] ?? dishQuota(saleCat, id)), 0);
+       שדף המלאי הראה מספר אמיתי, ושקד דיווחה על הפער.
+
+       ⚠ **הנפילה-לאחור כבויה מול שרת · 11 באוקטובר 2026** · שקד:
+       ״זה מראה את זה לכל המנות הקיימות במלאי למרות שיש 0״. המקור
+       היה `dishQuota`, מכסת ברירת המחדל של הקנבס: יום בלי מכסות
+       שמורות קיבל 40+35+30, כלומר ה-105 שהיא ראתה — מספר שלא
+       הוגדר מעולם. בלי שרת הוא עדיין נכון, כי שם אין מה לשאול. */
+    const quota = p.of.reduce(
+      (t, id) => t + (quotas[id] ?? (apiEnabled ? 0 : dishQuota(saleCat, id))),
+      0,
+    );
     return {
       id: p.id,
       sub: p.name,
@@ -487,7 +506,16 @@ export function AdminBoardScreen() {
             {it.lines[1] ? (
               <Text style={[s.stockForm, { color: fg }]} numberOfLines={1}>{it.lines[1]}</Text>
             ) : null}
-            <Text style={[s.stockLeft, { color: fg }]}>{`${it.left} מתוך ${it.quota}`}</Text>
+            {/**
+              * ⚠ **נמכרו, לא נשארו · בקשת שקד, 11 באוקטובר 2026** ·
+              * ״זה מראה כאילו כל המנות מכורות… זה צריך להראות
+              * 0 מתוך 105 ומראה 105 מתוך 105״. המספר שהוצג כאן
+              * היה `left` — כמה **נשאר** — ולכן יום שלא נמכרה בו
+              * מנה אחת הראה את המכסה המלאה, וזה נקרא בדיוק הפוך.
+              * הצבע ממשיך להיגזר מ-`left`, כי אזהרת ״אוזל״ היא על
+              * מה שנשאר.
+              */}
+            <Text style={[s.stockLeft, { color: fg }]}>{`${it.used} מתוך ${it.quota}`}</Text>
           </View>
           );
         })}

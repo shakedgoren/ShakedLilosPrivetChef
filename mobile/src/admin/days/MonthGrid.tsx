@@ -17,6 +17,8 @@ type Props = {
   days: Record<string, DayRecord>;
   onStep: (dir: number) => void;
   onSelect: (k: string) => void;
+  /** ⚠ יום שעבר · ראו `isPast` ב-`useAdminDays` */
+  isPast: (k: string) => boolean;
 };
 
 /** צבעי תא היום · יום מכירה נצבע בגוון, יום חסום נשאר אפור */
@@ -47,7 +49,7 @@ function cellTone(x: DayRecord, isSelected: boolean) {
   return { bg, bd, fg, weight, dot: c && x.open ? c.hue : null };
 }
 
-export function MonthGrid({ year, month, selected, days, onStep, onSelect }: Props) {
+export function MonthGrid({ year, month, selected, days, onStep, onSelect, isPast }: Props) {
   const startDow = new Date(year, month, 1).getDay();
   const inMonth = new Date(year, month + 1, 0).getDate();
 
@@ -78,11 +80,23 @@ export function MonthGrid({ year, month, selected, days, onStep, onSelect }: Pro
         {dates.map((d) => {
           const k = dayKey(year, month, d);
           const tone = cellTone(days[k] ?? {}, selected === k);
+          /**
+           * ⚠ **יום שעבר אינו נבחר · בקשת שקד, 11 באוקטובר 2026** ·
+           * ״כל התאריכים שעברו ניתן עדיין לגשת אליהם למרות
+           * שביקשתי שלא״. התא נשאר במקומו — חודש בלי הימים
+           * שלו אינו לוח — אבל הוא דהוי ואינו נלחץ.
+           */
+          const past = isPast(k);
           return (
             <View key={k} style={s.cellBox}>
               <Pressable
                 onPress={() => onSelect(k)}
-                style={[s.cell, { backgroundColor: tone.bg, borderColor: tone.bd }]}
+                disabled={past}
+                style={[
+                  s.cell,
+                  { backgroundColor: tone.bg, borderColor: tone.bd },
+                  past && s.cellPast,
+                ]}
               >
                 <Text style={[s.num, { color: tone.fg, fontWeight: tone.weight }]}>{d}</Text>
                 {tone.dot ? <View style={[s.dot, { backgroundColor: tone.dot }]} /> : null}
@@ -123,6 +137,8 @@ const s = StyleSheet.create({
   /* שבע עמודות · המרווח נוצר מריפוד התא עצמו, לא מ-gap, כדי לא לגלוש */
   cellBox: { width: `${100 / 7}%`, paddingHorizontal: CELL_GAP / 2, paddingVertical: CELL_GAP / 2 },
   dow: { textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#A79FB2' },
+  /* ⚠ יום שעבר · דהוי ולא לחיץ. ראו ההערה ליד התא */
+  cellPast: { opacity: 0.38 },
   cell: {
     height: 42,
     borderRadius: 12,

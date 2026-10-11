@@ -81,6 +81,13 @@ export type SaleView = {
   revenue: number;
 };
 
+/** ‎2026-10-11 · היום, בצורה שבה `hebrewDay` קורא אותו */
+function isoToday(): string {
+  const d = new Date();
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+}
+
 /**
  * ״שלישי · 15 בספטמבר״ · אותה נוסחה של `hebrewDayLabel` בשרת.
  * ⚠ נחוץ גם בצד הלקוח · בלי שרת הכותרת הראתה ‎2026-09-15 גולמי.
@@ -92,7 +99,14 @@ function hebrewDay(iso: string): string {
   return `${dow} · ${d} ב${MONTHS[m - 1]}`;
 }
 
-/** נפילה לאחור בלי שרת · יום המכירה של החלון והמכסות מהתפריט */
+/**
+ * נפילה לאחור בלי שרת · יום המכירה של החלון והמכסות מהתפריט.
+ *
+ * ⚠ **המכסות כאן הן של הקנבס · 11 באוקטובר 2026** · `cat.dishes[].q`
+ * הן מכסות ברירת המחדל שחולצו מהארטבורד, ולא מה ששקד קבעה ליום.
+ * מול שרת הן אפס עד שהתשובה מגיעה — אחרת המסך מציג מספר שלא
+ * הוגדר מעולם, וזה בדיוק ה-105 שהיא דיווחה עליו בלוח המכירה.
+ */
 function offlineSale(): SaleView {
   const up = upcomingSale(new Date());
   const cat = CATS[up.cat as DayCatKey];
@@ -104,7 +118,12 @@ function offlineSale(): SaleView {
     hue: cat.hue,
     rgb: cat.rgb,
     open: false,
-    dishes: cat.dishes.map((d) => ({ id: d.id, name: d.n, sold: 0, quota: d.q })),
+    dishes: cat.dishes.map((d) => ({
+      id: d.id,
+      name: d.n,
+      sold: 0,
+      quota: apiEnabled ? 0 : d.q,
+    })),
     orders: 0,
     meals: 0,
     revenue: 0,
@@ -137,14 +156,33 @@ export function useAdminHome() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
   const [sale, setSale] = useState<SaleView>(offlineSale);
-  const [subtitle, setSubtitle] = useState('');
+  /**
+   * ⚠ **תאריך היום, לא זה של הקנבס · 11 באוקטובר 2026** · המסך
+   * נפל אחורה ל-`HOME_SUBTITLE` כשהערך ריק, וזה ״שלישי · 25
+   * באוגוסט״ — התאריך שהארטבורד צויר בו. כלומר כותרת דף הבית
+   * הראתה תאריך מומצא בכל פתיחה עד שהשרת ענה, ולנצח אם לא ענה.
+   * שקד: ״עדיין יש את הנתוני דמה, גם בבית״.
+   */
+  const [subtitle, setSubtitle] = useState(() => hebrewDay(isoToday()));
   const [badges, setBadges] = useState<Record<string, number | string | boolean>>({});
   const [month, setMonth] = useState({ revenue: 0, expenses: 0, profit: 0 });
   const [range, setRange] = useState<RevRange>('half');
+  /**
+   * ⚠ **עקומת הקנבס רק כשאין שרת · 11 באוקטובר 2026** · המצב
+   * ההתחלתי כאן היה הגרף של הארטבורד — ששה חודשים וסכום של
+   * כ-11,000 ₪ — ולכן דף הבית נפתח תמיד עם מחזור מומצא, ונשאר
+   * איתו אם השרת לא ענה. שקד: ״עדיין יש את הנתוני דמה, גם בבית״.
+   *
+   * ⚠ **החודשים נשארים** · רק הערכים מתאפסים. גרף בלי ציר הוא
+   * מסך שבור, וכאן אפסים הם גם המצב האמיתי לפני הנתונים.
+   */
   const [rev, setRev] = useState<{ label: string; total: number; points: { k: string; v: number }[] }>({
     label: REVENUE.title,
-    total: REVENUE.total,
-    points: REVENUE.months.map((m, i) => ({ k: m, v: fromCanvasDot(REVENUE.dots[i]?.cy) })),
+    total: apiEnabled ? 0 : REVENUE.total,
+    points: REVENUE.months.map((m, i) => ({
+      k: m,
+      v: apiEnabled ? 0 : fromCanvasDot(REVENUE.dots[i]?.cy),
+    })),
   });
   /* ⚠ החודש · קוסקוס ושניצל בלבד · שתי הכרטיסיות בדף הבית */
   const [saleMonth, setSaleMonth] = useState({ revenue: 0, cost: 0 });
@@ -168,7 +206,8 @@ export function useAdminHome() {
   const reload = useCallback(async () => {
     if (!live) return;
     const s = await adminSummary();
-    setSubtitle(s.subtitle);
+    /* ⚠ ריק מהשרת לא מחזיר את תאריך הקנבס · ראו המצב ההתחלתי */
+    setSubtitle(s.subtitle || hebrewDay(isoToday()));
     setSale(s.sale);
     setBadges(s.badges);
     setMonth(s.month);

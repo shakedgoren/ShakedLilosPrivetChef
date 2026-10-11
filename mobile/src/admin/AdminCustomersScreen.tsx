@@ -106,7 +106,12 @@ export function AdminCustomersScreen() {
   const [filter, setFilter] = useState<'all' | 'reg' | 'new'>('all');
   const [open, setOpen] = useState(-1);
   const [hist, setHist] = useState<Row | null>(null);
-  const [rows, setRows] = useState<Row[]>(() => PEOPLE.map(fromDemo));
+  /**
+   * ⚠ **נתוני הדמה רק כשאין שרת · 11 באוקטובר 2026** · `PEOPLE`
+   * היה המצב ההתחלתי תמיד, ולכן המסך נפתח עם לקוחות מומצאות
+   * בכל פתיחה — ונשאר איתן אם השרת לא ענה. ראו `useLiveReload`.
+   */
+  const [rows, setRows] = useState<Row[]>(() => (apiEnabled ? [] : PEOPLE.map(fromDemo)));
 
   const reload = useCallback(async () => {
     if (!live) return;

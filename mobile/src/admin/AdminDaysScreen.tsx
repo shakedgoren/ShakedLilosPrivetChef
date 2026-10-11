@@ -20,6 +20,8 @@ export function AdminDaysScreen() {
             days={admin.days}
             onStep={admin.step}
             onSelect={admin.select}
+            /* ⚠ יום שעבר · ראו `isPast` ב-`useAdminDays` */
+            isPast={admin.isPast}
           />
         </View>
         <DayPanel admin={admin} />

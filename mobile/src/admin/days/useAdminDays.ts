@@ -3,9 +3,6 @@ import { useLiveReload } from '../useLiveReload';
 import {
   CATS,
   SEED,
-  START_DAY,
-  START_MONTH,
-  START_YEAR,
   freshQuota,
   impliedWeekdayRecord,
   mergeWeekdayDays,
@@ -13,6 +10,7 @@ import {
   type DayRecord,
 } from '../../data/adminDays';
 import { weekdaySale } from '../../data/saleWeek';
+import { todayKey } from '../../data/calendar';
 import { apiEnabled } from '../../api/config';
 import { adminGetDays, adminPutDay } from '../../api/admin';
 import { useNav } from '../../navigation/store';
@@ -31,12 +29,45 @@ export const dayKey = (y: number, m: number, d: number) => `${y}-${pad2(m + 1)}-
 export function useAdminDays() {
   const { user } = useNav();
   const live = apiEnabled && user?.role === 'admin';
-  const [year, setYear] = useState(START_YEAR);
-  const [month, setMonth] = useState(START_MONTH);
-  const [selected, setSelected] = useState(dayKey(START_YEAR, START_MONTH, START_DAY));
+  /**
+   * ⚠ **החודש הנוכחי, לא זה של הקנבס · 11 באוקטובר 2026** · שקד:
+   * ״בימי מכירה זה לא מציג מהחודש הנוכחי, זה מתחיל לי מספטמבר
+   * ואנחנו בכלל באוקטובר״. `START_YEAR`/`START_MONTH`/`START_DAY`
+   * הם **תיעוד של הארטבורד** — החודש שהמסך צויר בו — והם שימשו
+   * כאן כמצב ההתחלתי. כלומר המסך נפתח בספטמבר 2026 לנצח.
+   *
+   * ⚠ **הקבועים נשארים בקובץ הנתונים** · `data/adminDays.ts` נוצר
+   * אוטומטית מהקנבס ואין לערוך אותו ביד. מה שהשתנה הוא מי משתמש
+   * בהם: כאן לא, ובדמה כן.
+   */
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth());
+  const [selected, setSelected] = useState(todayKey);
+  /**
+   * ⚠ **נתוני הדמה רק כשאין שרת · 11 באוקטובר 2026** · `SEED` היה
+   * המצב ההתחלתי תמיד, ולכן הוא מה שנראה בכל פתיחת מסך עד
+   * שהשרת עונה — ולנצח אם לא ענה. שקד דיווחה שהנתונים ״כאילו
+   * נטענים מתוכן דמה״, והמסך הזה היה אחד מאלה שנשארו כך.
+   *
+   * ⚠ **`apiEnabled` ולא `live`** · כשיש כתובת שרת אין שום מצב
+   * שבו נכון להציג ימי מכירה מומצאים — גם לא לרגע.
+   */
   const [days, setDays] = useState<Record<string, DayRecord>>(() =>
-    JSON.parse(JSON.stringify(SEED)),
+    apiEnabled ? {} : (JSON.parse(JSON.stringify(SEED)) as Record<string, DayRecord>),
   );
+
+  /**
+   * ⚠ **יום שעבר אינו נערך · בקשת שקד, 11 באוקטובר 2026** · ״כל
+   * התאריכים שעברו ניתן עדיין לגשת אליהם למרות שביקשתי שלא״.
+   * הכלל שהיא בחרה ב-11 באוקטובר: ״כל עוד התאריך לא עבר ניתן
+   * לראות ולערוך״. ב-`AdminBoardScreen` זה כבר נאכף, וכאן לא.
+   *
+   * ⚠ **הבדיקה יושבת ב-`put`** · זו נקודת הכתיבה **היחידה** של
+   * המסך: המכסות, הפחת, פתיחת היום, חסימת שעות ומתג המארזים
+   * כולם עוברים דרכה. שמירה על כל אחד מהם בנפרד הייתה שוכחת את
+   * הבא בתור.
+   */
+  const isPast = useCallback((k: string) => k < todayKey(), []);
 
   const reload = useCallback(async () => {
     if (!live) return;
@@ -86,6 +117,8 @@ export function useAdminDays() {
    * ולכן כל לחיצה רואה את מה שלפניה.
    */
   const put = useCallback((k: string, patch: DayPatch | ((prev: DayPatch) => DayPatch)) => {
+    /* ⚠ יום שעבר · לא במסך ולא במסד. ראו `isPast` */
+    if (isPast(k)) return;
     setDays((prev) => {
       const base = k in prev ? prev[k] : (impliedWeekdayRecord(k) ?? {});
       const delta = typeof patch === 'function' ? patch(base as DayPatch) : patch;
@@ -107,7 +140,7 @@ export function useAdminDays() {
       }
       return { ...prev, [k]: next };
     });
-  }, [live]);
+  }, [live, isPast]);
 
   const step = useCallback((dir: number) => {
     setMonth((m) => {
@@ -251,6 +284,9 @@ export function useAdminDays() {
   return {
     year, month, selected, days: visibleDays, current, cat, activeKey, quotas,
     totalQuota: quotas.reduce((s, q) => s + q.n, 0),
+    /** ⚠ היום שנבחר כבר עבר · המסך מציג הודעה במקום העורכים */
+    selectedPast: isPast(selected),
+    isPast,
     select: setSelected,
     step, rec, toggleAvail, setSale, setExcept, bumpQuota, bumpWaste, toggleOpen,
     boxOpen, toggleBoxOpen, blockedHours, toggleHour, clearHours,
