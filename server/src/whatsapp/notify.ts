@@ -17,6 +17,7 @@ import {
   otpText,
   readyPickupText,
 } from './messages.ts';
+import { sendPickupPlace } from './pickupPlace.ts';
 import { confirmTemplateKind, statusTemplateKind, type OrderTemplateSlots, type UtilityKind } from './vars.ts';
 
 export type OrderNotifyInput = OrderTemplateSlots & {
@@ -44,7 +45,19 @@ function textFor(kind: UtilityKind, order: OrderTemplateSlots): string {
 
 export async function notifyOrderConfirmed(order: OrderNotifyInput): Promise<WhatsAppSendResult> {
   const kind = confirmTemplateKind(order.ship);
-  return sendText(order.phone, kind, textFor(kind, order));
+  const sent = await sendText(order.phone, kind, textFor(kind, order));
+
+  /**
+   * ⚠ **מפת ההגעה · בקשת שקד, 11 באוקטובר 2026** · באיסוף עצמי
+   * בלבד, ורק אם האישור עצמו יצא — אין טעם במפה למי שלא קיבל
+   * הזמנה. ראו `pickupPlace.ts`.
+   *
+   * ⚠ **התשובה היא של האישור** · מה שקרה למפה אינו משנה את מה
+   * שמדווח למעלה; כישלון שלה נרשם ביומן ובמונה כמו כל שליחה.
+   */
+  if (kind === 'confirmPickup' && sent.ok) await sendPickupPlace(order.phone);
+
+  return sent;
 }
 
 export async function notifyOrderStatus(order: OrderNotifyInput): Promise<WhatsAppSendResult> {

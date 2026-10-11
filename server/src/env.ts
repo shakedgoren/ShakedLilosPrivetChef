@@ -96,6 +96,31 @@ export const env = {
       enabled: Boolean(idInstance && apiToken),
     };
   },
+
+  /**
+   * נקודת האיסוף · לצירוף מפת ההגעה וסיכת המיקום לאישור ההזמנה.
+   *
+   * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ראו `whatsapp/pickupPlace.ts`.
+   *
+   * ⚠ **`siteUrl` חייב להיות ציבורי** · Green API הוא שמוריד את
+   * התמונה מהכתובת הזו, ולכן כתובת פנימית או מוגנת לא תעבוד.
+   *
+   * ⚠ **הסיכה כבויה בלי קואורדינטות אמיתיות** · `Number('')` הוא
+   * אפס, ואפס-אפס הוא מקום אמיתי באוקיינוס האטלנטי. לכן נבדק
+   * שהמשתנה הוגדר, ולא רק שהמספר תקין.
+   */
+  get pickup() {
+    const rawLat = (process.env.PICKUP_LAT ?? '').trim();
+    const rawLng = (process.env.PICKUP_LNG ?? '').trim();
+    const lat = Number(rawLat);
+    const lng = Number(rawLng);
+    return {
+      siteUrl: ((process.env.SITE_URL ?? '').trim() || 'https://bite-and-tell.com').replace(/\/+$/, ''),
+      lat,
+      lng,
+      hasPin: rawLat !== '' && rawLng !== '' && Number.isFinite(lat) && Number.isFinite(lng),
+    };
+  },
 };
 
 export { isProd };

@@ -196,14 +196,33 @@ GREENAPI_ID_INSTANCE     מזהה האינסטנס מהקונסולה
 GREENAPI_API_TOKEN       הטוקן · ⚠ יושב בנתיב הבקשה, לא בכותרת
 GREENAPI_API_URL         אופציונלי · ברירת מחדל https://api.green-api.com
 GREENAPI_WEBHOOK_TOKEN   ה-webhookUrlToken שבהגדרות האינסטנס · אופציונלי אצל הספק
+SITE_URL                 ממנו נבנית כתובת מפת ההגעה · ברירת מחדל https://bite-and-tell.com
+PICKUP_LAT, PICKUP_LNG   קואורדינטות נקודת האיסוף · בלעדיהן אין סיכת מיקום
 ```
 
-**הכתובת שנשלחת**
+**הכתובות שנשלחות**
 
 ```
 POST {GREENAPI_API_URL}/waInstance{ID}/sendMessage/{TOKEN}
 { "chatId": "972501234567@c.us", "message": "…" }
+
+POST {GREENAPI_API_URL}/waInstance{ID}/sendFileByUrl/{TOKEN}
+{ "chatId": "…@c.us", "urlFile": "…", "fileName": "pickup-map.jpg", "caption": "…" }
+
+POST {GREENAPI_API_URL}/waInstance{ID}/sendLocation/{TOKEN}
+{ "chatId": "…@c.us", "nameLocation": "…", "address": "…", "latitude": 0, "longitude": 0 }
 ```
+
+**מפת ההגעה · אישור של איסוף עצמי** (בקשת שקד, 11.10.2026)
+
+אחרי `confirmPickup` — ורק אחריו, ורק אם הוא יצא — נשלחות שתי הודעות
+נוספות: מפת ההגעה המורכבת, ואז סיכת מיקום. ⚠ **הנוסח שאושר אינו משתנה**;
+אלה הודעות נפרדות אחריו, והכיתוב של התמונה הוא `PICKUP.note` שבאפליקציה.
+
+התמונה היא `landing/img/pickup-map.jpg`, שנוצרת בידי
+`scripts/build-pickup-map.py` מארבע מפות החנייה. ⚠ **לא לערוך את ה-JPEG
+ביד** — להריץ את הסקריפט. Green API מוריד אותה מהכתובת הציבורית, ולכן
+`build-site.sh` מפיל את הבנייה אם היא חסרה.
 
 ⚠⚠ **200 אינו הצלחה.** Green API מכניס את ההודעה לתור ועונה 200 מיד.
 תשובה נחשבת כאן מוצלחת **רק אם היא מכילה `idMessage`**, וכישלון אמיתי —

@@ -45,16 +45,23 @@ export function isWhatsAppEnabled(): boolean {
 /**
  * ⚠ **הטוקן יושב בנתיב, לא בכותרת** · כך Green API בנוי. לכן
  * הכתובת הזו **לעולם לא נרשמת ליומן** — ראו `safeUrl`.
+ *
+ * ⚠ **שלוש השיטות חולקות את אותה צורה** · `sendMessage`,
+ * `sendFileByUrl` ו-`sendLocation` נבדלות רק בשם בנתיב ובגוף.
+ * (`sendFileByUpload` ו-`uploadFile` הן היחידות שיושבות על
+ * `mediaUrl` ולא על `apiUrl` — אין בהן שימוש כאן.)
  */
-function sendUrl(): string {
+type GreenMethod = 'sendMessage' | 'sendFileByUrl' | 'sendLocation';
+
+function sendUrl(method: GreenMethod): string {
   const { apiUrl, idInstance, apiToken } = env.whatsapp;
-  return `${apiUrl}/waInstance${idInstance}/sendMessage/${apiToken}`;
+  return `${apiUrl}/waInstance${idInstance}/${method}/${apiToken}`;
 }
 
 /** אותה כתובת בלי הטוקן · זו שמותר לרשום ביומן */
-function safeUrl(): string {
+function safeUrl(method: GreenMethod): string {
   const { apiUrl, idInstance } = env.whatsapp;
-  return `${apiUrl}/waInstance${idInstance}/sendMessage/***`;
+  return `${apiUrl}/waInstance${idInstance}/${method}/***`;
 }
 
 /**
@@ -72,28 +79,33 @@ function skip(kind: string, reason: 'disabled' | 'no_phone' | 'no_text'): WhatsA
 }
 
 /**
- * שליחת טקסט אחד.
+ * הפנייה עצמה · זהה לשלוש השיטות.
+ *
+ * ⚠ **הופרדה ב-11 באוקטובר 2026** · עד אז כל הגוף הזה ישב בתוך
+ * `sendText`. כשנוספו קובץ וסיכת מיקום, שכפול שלו היה אומר שלושה
+ * עותקים של אותה בדיקת `idMessage`, אותו יומן ואותו מונה כשלים —
+ * והם בדיוק מה שאסור שיתפצל.
+ *
  * @param kind  לאיזה סוג הודעה זה שייך · ליומן ולמעקב הכשלים בלבד
  */
-export async function sendText(phone: string, kind: string, text: string): Promise<WhatsAppSendResult> {
-  const wa = env.whatsapp;
-  if (!wa.enabled) return skip(kind, 'disabled');
-  if (!isWhatsAppPhone(phone)) return skip(kind, 'no_phone');
-  if (!text.trim()) return skip(kind, 'no_text');
-
-  const chatId = toGreenChatId(phone);
+async function post(
+  method: GreenMethod,
+  kind: string,
+  payload: Record<string, unknown>,
+): Promise<WhatsAppSendResult> {
+  const chatId = String(payload.chatId ?? '');
 
   let res: Response;
   try {
-    res = await fetchImpl(sendUrl(), {
+    res = await fetchImpl(sendUrl(method), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ chatId, message: text }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(15_000),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'network_error';
-    console.error('[וואטסאפ] בקשה נכשלה ·', safeUrl(), '·', message);
+    console.error('[וואטסאפ] בקשה נכשלה ·', safeUrl(method), '·', message);
     noteWhatsAppFailure(kind, message);
     return { ok: false, error: message };
   }
@@ -136,4 +148,57 @@ export async function sendText(phone: string, kind: string, text: string): Promi
   console.info('[וואטסאפ] נשלח ·', kind, '→', chatId, '·', id);
   noteWhatsAppSent();
   return { ok: true, id, to: chatId };
+}
+
+/** שליחת טקסט אחד */
+export async function sendText(phone: string, kind: string, text: string): Promise<WhatsAppSendResult> {
+  if (!env.whatsapp.enabled) return skip(kind, 'disabled');
+  if (!isWhatsAppPhone(phone)) return skip(kind, 'no_phone');
+  if (!text.trim()) return skip(kind, 'no_text');
+  return post('sendMessage', kind, { chatId: toGreenChatId(phone), message: text });
+}
+
+/**
+ * שליחת קובץ לפי כתובת · **הקובץ חייב להיות נגיש בציבור**.
+ *
+ * ⚠ Green API הוא שמוריד אותו, לא אנחנו. כתובת מאחורי התחברות
+ * או כתובת פנימית פשוט לא תימשך, והכישלון יגיע — אם בכלל —
+ * דרך הוובהוק.
+ *
+ * ⚠ **`fileName` אינו קישוט** · הוא מה שקובע איך וואטסאפ מציג
+ * את הקובץ, ולכן הוא חייב לשאת את הסיומת האמיתית.
+ */
+export async function sendFileByUrl(
+  phone: string,
+  kind: string,
+  file: { urlFile: string; fileName: string; caption?: string },
+): Promise<WhatsAppSendResult> {
+  if (!env.whatsapp.enabled) return skip(kind, 'disabled');
+  if (!isWhatsAppPhone(phone)) return skip(kind, 'no_phone');
+  if (!file.urlFile.trim() || !file.fileName.trim()) return skip(kind, 'no_text');
+  return post('sendFileByUrl', kind, {
+    chatId: toGreenChatId(phone),
+    urlFile: file.urlFile,
+    fileName: file.fileName,
+    caption: file.caption ?? '',
+  });
+}
+
+/**
+ * סיכת מיקום · ההודעה שנפתחת בלחיצה אל אפליקציית הניווט.
+ *
+ * ⚠ **קואורדינטות אמיתיות בלבד** · אין כאן גיאוקודינג, ושם
+ * רחוב אינו מספיק. בלי `latitude`/`longitude` אין סיכה.
+ */
+export async function sendLocation(
+  phone: string,
+  kind: string,
+  at: { nameLocation: string; address: string; latitude: number; longitude: number },
+): Promise<WhatsAppSendResult> {
+  if (!env.whatsapp.enabled) return skip(kind, 'disabled');
+  if (!isWhatsAppPhone(phone)) return skip(kind, 'no_phone');
+  if (!Number.isFinite(at.latitude) || !Number.isFinite(at.longitude)) {
+    return skip(kind, 'no_text');
+  }
+  return post('sendLocation', kind, { chatId: toGreenChatId(phone), ...at });
 }

@@ -50,6 +50,10 @@ check "$OUT/index.html"
 check "$OUT/style.css"
 check "$OUT/img/logo.webp"
 check "$OUT/img/favicon.png"
+# ⚠ **מפת ההגעה נשלחת בוואטסאפ** · Green API מוריד אותה מהכתובת
+# הציבורית הזו · חסרה = לקוחה שמקבלת אישור בלי מפה, בשקט.
+# נוצרת בידי scripts/build-pickup-map.py · ראו whatsapp/pickupPlace.ts
+check "$OUT/img/pickup-map.jpg"
 check "$OUT/robots.txt"
 check "$OUT/app/index.html"
 
