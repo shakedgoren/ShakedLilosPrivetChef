@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCheer } from '../../components/Cheer';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
 import { categoryName } from '../orders/format';
@@ -13,7 +14,7 @@ import { CategoryHeader } from '../../components/CategoryHeader';
 import { LoginGate } from '../../components/LoginGate';
 import { Photo } from '../../components/Photo';
 import { Stepper } from '../../components/Stepper';
-import { COUS_IDS, SOLD_OUT, useRemaining, useSoldOut, syncStock } from '../../order/stock';
+import { AT_CAP, COUS_IDS, SOLD_OUT, useRemaining, useSoldOut, syncStock } from '../../order/stock';
 import { COUSCOUS_PHOTOS } from '../../data/photos';
 import {
   ADDONS_LABEL,
@@ -73,6 +74,8 @@ export function CouscousScreen() {
    * ⚠⚠ **המספר עצמו לא מוצג בשום מקום** · ראו `order/stock.ts`.
    */
   const left = useRemaining('cous');
+  /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
+  const { toast } = useCheer();
   /**
    * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
    * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
@@ -120,6 +123,7 @@ export function CouscousScreen() {
                   onChange={(n) => o.bump(i, n - o.qty[i])}
                   /* ⚠ ראו `left` · הכפתור נעצר במכסה, בלי להציג מספר */
                   maxed={o.qty[i] >= (left[COUS_IDS[i]] ?? Infinity)}
+                  onMaxed={() => toast(AT_CAP)}
                 />
               )}
             </StepIn>
@@ -155,6 +159,7 @@ export function CouscousScreen() {
                   onChange={(n) => o.bump(i, n - o.qty[i])}
                   /* ⚠ ראו `left` · הכפתור נעצר במכסה, בלי להציג מספר */
                   maxed={o.qty[i] >= (left[COUS_IDS[i]] ?? Infinity)}
+                  onMaxed={() => toast(AT_CAP)}
                 />
               )}
             </StepIn>

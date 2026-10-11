@@ -61,13 +61,24 @@ type Props = {
   /** חוסם את הפלוס · כשהמכסה של הסעיף מלאה */
   maxed?: boolean;
   /**
+   * מה לעשות כשלוחצים על הפלוס החסום.
+   *
+   * ⚠ **בקשת שקד · 11 באוקטובר 2026** · הפלוס היה מואפר ושותק,
+   * ובלי הסבר זה נקרא כתקלה ולא ככלל. כשמועבר `onMaxed` הכפתור
+   * **נשאר לחיץ** — הוא רק לא מעלה את הכמות, ובמקום זה קורא לכאן.
+   *
+   * ⚠ **`disabled` מונע גם לחיצה** · ולכן אי אפשר היה להציג כלום.
+   * זו הסיבה שהחסימה עברה מ-`disabled` לבדיקה בתוך `onPress`.
+   */
+  onMaxed?: () => void;
+  /**
    * תוכן שמחליף את מספר הכמות באמצע · שורת הסלטים בספיישל שמה
    * שם את שם הפריט והתיאור שלו, והכמות מוצגת בתוכם.
    */
   center?: React.ReactNode;
 };
 
-export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }: Props) {
+export function Stepper({ value, onChange, min = 0, wide, tone, maxed, onMaxed, center }: Props) {
   /**
    * ⚠ **גרסת הראווה · 23 בספטמבר 2026** · שקד: ״הכרטיסים של ה+
    * וה- לא יהיו״. בגרסה הזו אי אפשר להזמין, ולכן בורר כמות הוא
@@ -91,8 +102,15 @@ export function Stepper({ value, onChange, min = 0, wide, tone, maxed, center }:
   return (
     <View style={[s.row, wide && s.wide]}>
       <Pressable
-        onPress={() => onChange(value + 1)}
-        disabled={maxed}
+        onPress={() => {
+          /* ⚠ ראו `onMaxed` · חסום בלי מטפל נשאר כפתור מת */
+          if (maxed) {
+            onMaxed?.();
+            return;
+          }
+          onChange(value + 1);
+        }}
+        disabled={maxed && !onMaxed}
         style={[s.key, round, { backgroundColor: tone?.plusBg ?? KEY_BG, boxShadow: plusGlass }, maxed && s.keyOff]}
         hitSlop={8}
       >

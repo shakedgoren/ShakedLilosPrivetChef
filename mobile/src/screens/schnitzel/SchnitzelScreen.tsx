@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useCheer } from '../../components/Cheer';
 import { S } from '../../components/Sym';
 import { RollingTotal } from '../../components/RollingTotal';
 import { StepIn } from '../../components/StepIn';
@@ -40,6 +41,7 @@ import { FONT_BUMP, headRoom } from '../../theme/fontScale';
 import { useNav } from '../../navigation/store';
 import { useSchnitzelOrder } from './useSchnitzelOrder';
 import {
+  AT_CAP,
   SCHN_BOX_IDS,
   SCHN_UNIT_IDS,
   SOLD_OUT,
@@ -81,6 +83,8 @@ export function SchnitzelScreen() {
    * ⚠⚠ **המספר עצמו לא מוצג בשום מקום** · ראו `order/stock.ts`.
    */
   const left = useRemaining('schn');
+  /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
+  const { toast } = useCheer();
   /**
    * ⚠ **רענון בכניסה למסך** · דף הבית טוען את מצב המלאי, אבל בין
    * הטעינה ההיא לרגע שבו נכנסים למסך יכולות לעבור דקות ארוכות —
@@ -187,8 +191,9 @@ export function SchnitzelScreen() {
                 return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
                   <Pressable
-                    onPress={() => o.openAdd(k)}
-                    disabled={out || atCap}
+                    /* ⚠ בתקרה הכרטיס נשאר לחיץ · ראו `AT_CAP` */
+                    onPress={() => (atCap ? toast(AT_CAP) : o.openAdd(k))}
+                    disabled={out}
                     style={[s.typeCard, { width: typeCardW }, (out || atCap) && s.cardOut]}
                   >
                     <Photo name={SCHNITZEL_UNIT_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
@@ -233,8 +238,8 @@ export function SchnitzelScreen() {
                 return (
                 <StepIn key={t.name} index={k} style={{ width: typeCardW }}>
                   <Pressable
-                    onPress={() => o.openBox(k)}
-                    disabled={out || atCap}
+                    onPress={() => (atCap ? toast(AT_CAP) : o.openBox(k))}
+                    disabled={out}
                     style={[s.typeCard, { width: typeCardW }, (out || atCap) && s.cardOut]}
                   >
                     <Photo name={SCHNITZEL_BOX_PHOTOS[k]} rgb={ACCENT.rgb} style={s.typeShot} zoom={false} />
