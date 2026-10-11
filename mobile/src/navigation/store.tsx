@@ -87,8 +87,13 @@ const Ctx = createContext<Nav | null>(null);
  * פתיחה ישירה במסך מסוים · ?screen=adminOrders בדפדפן.
  * ⚠ נכתב על ידי Claude · פתח זמני לבדיקת מסכי הניהול עד שיהיה להם
  * שער כניסה אמיתי מ-Admin.dc.html. לא קיים במכשיר.
+ *
+ * ⚠ **היה מת בין 18 בספטמבר ל-11 באוקטובר 2026** · עם המעבר
+ * לנוויגטור נקבע `initialRouteName="guest"` קבוע, ולכן המצב כאן
+ * כבר לא קבע מה נפתח והפתח פשוט לא עשה כלום. הוא מיוצא עכשיו
+ * ונקרא גם ב-`RootNavigator`, ששם נקבע המסלול הראשון בפועל.
  */
-function initialScreen(): Screen {
+export function initialScreen(): Screen {
   if (typeof window === 'undefined' || !window.location) return 'guest';
   const want = new URLSearchParams(window.location.search).get('screen');
   return (SCREENS as readonly string[]).includes(want ?? '') ? (want as Screen) : 'guest';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SCREENS } from './store';
+import { SCREENS, initialScreen } from './store';
 import { SCREEN_COMPONENTS } from './routes';
 
 /**
@@ -48,7 +48,8 @@ const ROTATES: readonly string[] = ['adminBoard'];
 export function RootNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="guest"
+      /* ⚠ ?screen=… בדפדפן · ראו `initialScreen` · במכשיר תמיד guest */
+      initialRouteName={initialScreen()}
       screenOptions={{ headerShown: false, orientation: 'portrait' }}
     >
       {SCREENS.map((name) => (
