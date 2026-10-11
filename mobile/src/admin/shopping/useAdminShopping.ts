@@ -1,4 +1,5 @@
 import { ApiError } from '../../api/types';
+import { useLiveReload } from '../useLiveReload';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AREA,
@@ -49,8 +50,20 @@ export function useAdminShopping() {
   const live = apiEnabled && user?.role === 'admin';
   const [area, setAreaState] = useState(START_AREA);
   const [opened, setOpened] = useState(() => new Date());
-  const [items, setItems] = useState<ShopRow[]>(() => SEED.map((x, i) => ({ ...x, id: i })));
-  const [nextId, setNextId] = useState(SEED.length);
+  /**
+   * ⚠ **נתוני דמה רק כשאין שרת בכלל · 11 באוקטובר 2026** · הקבוע
+   * הזה היה המצב ההתחלתי תמיד, ולכן הוא מה שנראה בכל פתיחת מסך עד
+   * שהשרת עונה — ולנצח אם לא ענה. שקד דיווחה שהנתונים ״כאילו
+   * נטענים מתוכן דמה״, וזה בדיוק מה שקרה.
+   *
+   * ⚠ **`apiEnabled` ולא `live`** · הדמה נועדה לפיתוח בלי שרת.
+   * כשיש כתובת שרת אין שום מצב שבו נכון להציג הזמנות מומצאות —
+   * גם לא לרגע, וגם לא כשההרשאה עדיין נטענת.
+   */
+  const [items, setItems] = useState<ShopRow[]>(() =>
+    apiEnabled ? [] : SEED.map((x, i) => ({ ...x, id: i })),
+  );
+  const [nextId, setNextId] = useState(apiEnabled ? 0 : SEED.length);
   const [addOpen, setAddOpen] = useState(false);
   /* למה הסגירה לא קרתה · מוצג מתחת לכפתור */
   const [closeErr, setCloseErr] = useState('');
@@ -82,10 +95,12 @@ export function useAdminShopping() {
     setItems(list.items);
   }, [live]);
 
-  useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
-
+  /**
+   * ⚠ **רענון תקופתי · 11 באוקטובר 2026** · קודם הייתה כאן טעינה
+   * חד־פעמית, ולכן מסך שנשאר פתוח הציג נתונים ישנים בלי שום סימן.
+   * ראו `useLiveReload`.
+   */
+  useLiveReload(live, reload);
   const setArea = useCallback(
     (id: string) => {
       setAreaState(id);

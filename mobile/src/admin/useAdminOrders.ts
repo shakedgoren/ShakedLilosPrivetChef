@@ -1,4 +1,5 @@
 import { Linking } from 'react-native';
+import { useLiveReload } from './useLiveReload';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BOOK,
@@ -113,13 +114,16 @@ export function useAdminOrders() {
     }
   }, [live]);
 
-  useEffect(() => {
-    void reload().catch(() => setRemote([]));
-  }, [reload]);
-
+  /**
+   * ⚠ **רענון תקופתי · 11 באוקטובר 2026** · קודם הייתה כאן טעינה
+   * חד־פעמית, ולכן מסך שנשאר פתוח הציג נתונים ישנים בלי שום סימן.
+   * ראו `useLiveReload`.
+   */
+  useLiveReload(live, reload);
   /* הרשימה המלאה · מהשרת כשמחוברים כמנהלת, אחרת הדגמה */
   const allOrders = useMemo(
-    () => (live ? remote : ORDERS.concat(extra)),
+    /* ⚠ ראו ההערה למטה · `apiEnabled` ולא `live` */
+    () => (apiEnabled ? remote : ORDERS.concat(extra)),
     [live, remote, extra],
   );
 

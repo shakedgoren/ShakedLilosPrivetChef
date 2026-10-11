@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveReload } from '../useLiveReload';
 import { DONUT, QUOTA_STEP, REVENUE } from '../../data/adminHome';
 import { CATS, DAY_NAMES, MONTHS, type DayCatKey } from '../../data/adminDays';
 import { upcomingSale } from '../../data/saleWeek';
@@ -177,10 +178,12 @@ export function useAdminHome() {
     setDonut(s.donut);
   }, [live]);
 
-  useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
-
+  /**
+   * ⚠ **רענון תקופתי · 11 באוקטובר 2026** · קודם הייתה כאן טעינה
+   * חד־פעמית, ולכן מסך שנשאר פתוח הציג נתונים ישנים בלי שום סימן.
+   * ראו `useLiveReload`.
+   */
+  useLiveReload(live, reload);
   /* הגרף נטען מחדש בכל החלפת טווח · הנתונים לא יושבים בזיכרון */
   useEffect(() => {
     if (!live) return;

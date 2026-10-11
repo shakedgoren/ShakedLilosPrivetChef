@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveReload } from '../useLiveReload';
 import {
   CATS,
   SEED,
@@ -46,10 +47,12 @@ export function useAdminDays() {
     setDays(res.days as Record<string, DayRecord>);
   }, [live, year, month]);
 
-  useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
-
+  /**
+   * ⚠ **רענון תקופתי · 11 באוקטובר 2026** · קודם הייתה כאן טעינה
+   * חד־פעמית, ולכן מסך שנשאר פתוח הציג נתונים ישנים בלי שום סימן.
+   * ראו `useLiveReload`.
+   */
+  useLiveReload(live, reload);
   const visibleDays = useMemo(() => {
     const from = dayKey(year, month, 1);
     const last = new Date(year, month + 1, 0).getDate();

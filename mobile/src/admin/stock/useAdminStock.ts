@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLiveReload } from '../useLiveReload';
 import {
   LOW_LEFT,
   OPEN_DAYS,
@@ -58,8 +59,20 @@ export function useAdminStock() {
   const [tab, setTab] = useState<StockTab>('sale');
   const [waste, setWaste] = useState<Record<string, number>>({});
   const [saleDays, setSaleDays] = useState<SaleDayLive[]>(OPEN_DAYS);
-  const [supply, setSupply] = useState<SupplyRow[]>(() => SUPPLY.map((x, i) => ({ ...x, id: i })));
-  const [nextId, setNextId] = useState(SUPPLY.length);
+  /**
+   * ⚠ **נתוני דמה רק כשאין שרת בכלל · 11 באוקטובר 2026** · הקבוע
+   * הזה היה המצב ההתחלתי תמיד, ולכן הוא מה שנראה בכל פתיחת מסך עד
+   * שהשרת עונה — ולנצח אם לא ענה. שקד דיווחה שהנתונים ״כאילו
+   * נטענים מתוכן דמה״, וזה בדיוק מה שקרה.
+   *
+   * ⚠ **`apiEnabled` ולא `live`** · הדמה נועדה לפיתוח בלי שרת.
+   * כשיש כתובת שרת אין שום מצב שבו נכון להציג הזמנות מומצאות —
+   * גם לא לרגע, וגם לא כשההרשאה עדיין נטענת.
+   */
+  const [supply, setSupply] = useState<SupplyRow[]>(() =>
+    apiEnabled ? [] : SUPPLY.map((x, i) => ({ ...x, id: i })),
+  );
+  const [nextId, setNextId] = useState(apiEnabled ? 0 : SUPPLY.length);
   const [sent, setSent] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   /* הפריט האחרון שנמחק · מחכה לכפתור הביטול */
@@ -80,10 +93,12 @@ export function useAdminStock() {
     setSupply(items.items.map((x: SupplyDto) => ({ id: x.id, g: x.g, name: x.name, n: x.n, unit: x.unit, min: x.min, per: x.per })));
   }, [live]);
 
-  useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
-
+  /**
+   * ⚠ **רענון תקופתי · 11 באוקטובר 2026** · קודם הייתה כאן טעינה
+   * חד־פעמית, ולכן מסך שנשאר פתוח הציג נתונים ישנים בלי שום סימן.
+   * ראו `useLiveReload`.
+   */
+  useLiveReload(live, reload);
   const bumpWaste = useCallback(
     (key: string, room: number, delta: number) => {
       const next = Math.min(room, Math.max(0, (waste[key] ?? 0) + delta));
