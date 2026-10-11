@@ -1,33 +1,32 @@
 import { Platform } from 'react-native';
 
 /**
- * מדידת הדיו של הכותרת · **במנוע שבו היא באמת מצוירת.**
+ * מדידת הדיו של הכותרת · **באותו מסלול שבו היא באמת מצוירת.**
  *
- * ⚠⚠ **למה זה נולד · 11 באוקטובר 2026** · שקד צילמה את האתר
- * באייפון: ״הכיתוב לא על כל המסך, הוא נחתך״. זו הפעם השלישית
- * שהאות ״l״ האחרונה מדווחת כחתוכה (24.9, 3.10, והיום), ובכל פעם
- * התיקון היה מספר קבוע שנמדד על מכשיר אחד.
+ * ⚠⚠ **למה זה נולד · 11 באוקטובר 2026** · שקד דיווחה ארבע פעמים
+ * שהכותרת ״נחתכת״ (24.9, 3.10, ופעמיים ב-11.10). המידות שעל פיהן
+ * נבנה הבד — גובה 88, קו בסיס 74, `nudge` של ‎6- — כולן מספרים
+ * קבועים שנמדדו פעם אחת על iPhone 17 Pro. מספר קבוע אינו יכול
+ * לדעת מה המנוע שמולו באמת מצייר.
  *
- * מדידה מהצילום שלה: הדיו נגמר ב-97.4% מרוחב המסך. אותה בנייה
- * בדיוק בכרום, באותו רוחב: 92.3%. כלומר **WebKit מצייר את
- * ״Bite & Tell״ בערך חמישה אחוזים רחב יותר מ-Blink.** הגופן הוא
- * כתב יד מחובר עם זנב מעופף, ורוחב הדיו שלו אינו רוחב הפסיעה —
- * כמה בדיוק הוא חורג זו החלטה של מנוע העיצוב.
+ * ⚠⚠ **ו-`measureText` של הקנבס שיקר** · הניסיון הראשון כאן השתמש
+ * בו, ונמדד שהוא מחזיר `descent: 7` בזמן שה-SVG עצמו מצייר דיו
+ * שיורד **30.3** מתחת לקו הבסיס. כלומר הקנבס לא השתמש בגופן
+ * המבוקש אלא בגיבוי. גרוע מזה:
+ * `document.fonts.check('75px "NoSuchFontXYZ"')` מחזיר **true**,
+ * ולכן גם הבדיקה ״האם הגופן מוכן״ הייתה חסרת ערך.
  *
- * ⚠ **למה `TAIL_PAD` לא הספיק** · הוא הרחיב את בד ה-SVG ב-24
- * נקודות לכל צד ובלע אותן במרווח שלילי. הבד באמת גדל — אבל הוא
- * גדל **אל מחוץ למסך**: ברוחב 390 הוא מתחיל ב-‎5.2- ונגמר ב-395.2.
- * כלומר ה״מקום לזנב״ שנוצר יושב מעבר לקצה המסך, ושם הוא לא עוזר
- * לאף אחד. הדיו לא נחתך על ידי ה-SVG אלא על ידי המסך עצמו.
+ * ⚠ **מה שעושים במקום** · מודדים `<text>` אמיתי בתוך `<svg>` סמוי,
+ * עם אותה משפחה ואותו גודל, וקוראים `getBBox`. זה בדיוק מנוע
+ * הפריסה שמצייר את הכותרת — אותה התאמת גופן, אותה הרכבת אותיות —
+ * ולכן המספר שחוזר הוא מה שיהיה על המסך.
  *
- * ⚠ **מה שנעשה במקום** · לא מנחשים את המנוע, שואלים אותו.
- * `measureText` על בד דו-ממדי מחזיר את גבולות הדיו **האמיתיים**
- * של אותו דפדפן, כולל הזנבות, ומשם נגזרים שני דברים שהיו עד
- * היום מספרים קבועים: כמה להקטין כדי להיכנס, ובכמה להזיז כדי
- * שהדיו — ולא רוחב הפסיעה — יהיה במרכז.
+ * ⚠ **והאם הגופן נטען** · לא שואלים את `fonts.check`. מודדים
+ * פעמיים, פעם עם המשפחה המבוקשת ופעם עם שם שאינו קיים; אם שתי
+ * המדידות זהות — הגופן עוד לא הוחל, והמדידה חסרת משמעות.
  *
- * ⚠ **ווב בלבד** · במכשיר אין `canvas`, ושם המידות נמדדו על
- * iPhone 17 Pro ואושרו על ידי שקד. הקורא נופל לערכים שלה.
+ * ⚠ **ווב בלבד** · במכשיר אין DOM, ושם המידות נמדדו על מכשיר
+ * אמיתי ואושרו על ידי שקד. הקורא נופל לערכים שלה.
  */
 
 export type MarkInk = {
@@ -36,40 +35,95 @@ export type MarkInk = {
   /**
    * מה להוסיף ל-`x` כדי שה**דיו** יהיה במרכז ולא רוחב הפסיעה.
    *
-   * ⚠ זה בדיוק מה ש-`nudge` ניסה לתאר כמספר קבוע שנמדד על מכשיר
-   * אחד. בגופן עם זנבות הדיו אינו סימטרי סביב הפסיעה, ולכן
-   * טקסט שממורכז לפי הפסיעה **נראה** מוסט.
+   * ⚠ זה מה ש-`nudge` ניסה לתאר כמספר קבוע. בגופן עם זנבות הדיו
+   * אינו סימטרי סביב הפסיעה, ולכן טקסט שממורכז לפי הפסיעה
+   * **נראה** מוסט.
    *
-   * החשבון · ב-`textAnchor="middle"` הפסיעה ממורכזת, כלומר היא
-   * מתחילה ב-`x - advance/2`. הדיו משתרע משם מ-‎`-left` עד
-   * ‎`+right`, ולכן מרכז הדיו הוא `x - advance/2 + (right-left)/2`.
-   * כדי שמרכז הדיו יינחת על `c` צריך `x = c + advance/2 - (right-left)/2`.
+   * ⚠ **המדידה נעשית באותו עוגן של הכותרת** · `text-anchor:
+   * middle`. הניסיון הראשון מדד עם עוגן `start` וחישב דרך רוחב
+   * הפסיעה — וזה נשבר, כי המסמך הוא `dir="rtl"` ולכן ״start״ הוא
+   * הקצה **הימני**: ה-bbox חזר עם ‎x = ‎320.2-, הכותרת הוזזה
+   * בכ-315 פיקסלים ויצאה אל מחוץ למסך. נמדד.
+   *
+   * עם עוגן `middle` הכיוון כבר לא משנה: מרכז הדיו ביחס לעוגן
+   * הוא `bbox.x + width/2`, וכדי שהוא יינחת על `c` צריך
+   * `X = c - (bbox.x + width/2)`.
    */
   shift: number;
+  /**
+   * כמה הדיו יורד **מתחת לקו הבסיס**.
+   *
+   * ⚠⚠ **זה מה שחתך את הכותרת** · גובה הבד נקבע ממספר קבוע (88)
+   * עם קו בסיס ב-74, כלומר ארבע-עשרה יחידות מתחתיו. ההערה שלצידו
+   * טענה ש״הזנב הנמוך ביותר יורד שמונה פיקסלים בלבד״. נמדד
+   * ב-`getBBox`: הוא יורד **שלושים**. הזנב של ה-B, של ה-& ושל
+   * ה-l האחרונה נחתכו בקו ישר בתחתית הבד — וזה מה שנראה בצילום
+   * של שקד כשישים עמודות שנגמרות באותה שורה בדיוק.
+   */
+  descent: number;
+  /** כמה הדיו עולה מעל קו הבסיס · לשלמות המדידה */
+  ascent: number;
 };
 
-/**
- * @param text   הטקסט עצמו
- * @param family שם משפחת הגופן · חייב להיות טעון כבר
- * @param size   גודל הגופן בפיקסלים
- */
+const NS = 'http://www.w3.org/2000/svg';
+/** שם משפחה שבוודאות אינו קיים · לזיהוי ״הגופן עוד לא הוחל״ */
+const NO_FONT = '__bite_and_tell_missing__';
+
+type Measured = { x: number; y: number; width: number; height: number };
+
+function bboxOf(text: string, family: string, size: number): Measured | null {
+  const svg = document.createElementNS(NS, 'svg');
+  /* ⚠ `visibility` ולא `display: none` · אלמנט שאינו מרונדר
+     אינו מחזיר `getBBox` בכל המנועים */
+  svg.setAttribute('width', '0');
+  svg.setAttribute('height', '0');
+  svg.style.position = 'absolute';
+  svg.style.left = '-9999px';
+  svg.style.visibility = 'hidden';
+  svg.style.pointerEvents = 'none';
+
+  const node = document.createElementNS(NS, 'text');
+  node.setAttribute('x', '0');
+  node.setAttribute('y', '0');
+  /* ⚠ אותו עוגן של הכותרת האמיתית · ראו ההערה ב-`shift` */
+  node.setAttribute('text-anchor', 'middle');
+  node.setAttribute('font-family', family);
+  node.setAttribute('font-size', String(size));
+  node.textContent = text;
+  svg.appendChild(node);
+  document.body.appendChild(svg);
+  try {
+    const box = node.getBBox();
+    return {
+      x: box.x,
+      y: box.y,
+      width: box.width,
+      height: box.height,
+    };
+  } catch {
+    return null;
+  } finally {
+    document.body.removeChild(svg);
+  }
+}
+
 export function measureMarkInk(text: string, family: string, size: number): MarkInk | null {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return null;
   try {
-    const ctx = document.createElement('canvas').getContext('2d');
-    if (!ctx) return null;
-    ctx.font = `${size}px "${family}"`;
-    const m = ctx.measureText(text);
-    const left = m.actualBoundingBoxLeft;
-    const right = m.actualBoundingBoxRight;
-    /* ⚠ דפדפן ישן בלי גבולות דיו · עדיף ערכי הקנבס על ניחוש */
-    if (typeof left !== 'number' || typeof right !== 'number') return null;
-    const advance = m.width;
-    if (!(advance > 0)) return null;
+    const real = bboxOf(text, family, size);
+    if (!real || !(real.width > 0)) return null;
+
+    /* ⚠ הגופן עוד לא הוחל · ראו ההערה בראש הקובץ */
+    const plain = bboxOf(text, NO_FONT, size);
+    if (plain && Math.abs(plain.width - real.width) < 0.5) return null;
+
     return {
-      width: left + right,
+      width: real.width,
       /* ⚠ ראו את החשבון ב-`shift` */
-      shift: advance / 2 - (right - left) / 2,
+      shift: -(real.x + real.width / 2),
+      /* קו הבסיס הוא 0 · ולכן התחתית היא כמה שירדנו מתחתיו */
+      descent: real.y + real.height,
+      ascent: -real.y,
     };
   } catch {
     /* ⚠ מדידה שנכשלה אינה שוברת כותרת · נופלים לערכים הקבועים */
@@ -78,22 +132,11 @@ export function measureMarkInk(text: string, family: string, size: number): Mark
 }
 
 /**
- * האם הגופן כבר נטען · מדידה לפני כן מחזירה את מידות גופן הגיבוי.
- * ⚠ ה-SVG עצמו מצויר נכון מרגע שהגופן מגיע; המדידה חייבת להתיישר
- * איתו, אחרת נקבל קנה מידה שנגזר מגופן אחר לגמרי.
+ * ממתין לטעינת הגופנים · מחזיר מבטל.
+ * ⚠ **לא `fonts.check`** · הוא מחזיר `true` גם לשם שאינו קיים,
+ * ולכן אינו יכול לשמש כשער. `fonts.ready` הוא הבטחה אמיתית,
+ * והמדידה עצמה היא שמאמתת.
  */
-export function fontReady(family: string, size: number): boolean {
-  if (Platform.OS !== 'web' || typeof document === 'undefined') return false;
-  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-  if (!fonts || typeof fonts.check !== 'function') return false;
-  try {
-    return fonts.check(`${size}px "${family}"`);
-  } catch {
-    return false;
-  }
-}
-
-/** ממתין לטעינת כל הגופנים · מחזיר מבטל */
 export function onFontsReady(fn: () => void): () => void {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return () => undefined;
   const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;

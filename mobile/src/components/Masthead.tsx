@@ -5,7 +5,7 @@ import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { brand, space, type } from '../theme/tokens';
 import { MARK_STYLES, REF_BAND, type MarkStyleKey } from '../theme/markStyles';
-import { fontReady, measureMarkInk, onFontsReady } from '../theme/markFit';
+import { measureMarkInk, onFontsReady } from '../theme/markFit';
 
 /**
  * הכותרת · ״חתימה״.
@@ -84,8 +84,7 @@ export function Masthead() {
   const k = 'fit' in v && v.fit ? band / REF_BAND : 1;
   /* ⚠ ראו `TAIL_PAD` · נמתח עם המסך, כמו כל שאר המידות */
   const pad = TAIL_PAD * k;
-  /* ⚠ ראו `TAIL_DROP` · מקום לזנב שיורד מתחת לקו */
-  const drop = TAIL_DROP * k;
+
   /* רוחב הבד · הלוח הנראה ועוד מקום לזנב משני הצדדים */
   const canvas = band + pad * 2;
 
@@ -101,15 +100,18 @@ export function Masthead() {
    * ומקטינים רק אם צריך. בלי `canvas` (מכשיר) או בלי גבולות דיו
    * (דפדפן ישן) חוזרים בדיוק לערכים שהיא אישרה.
    */
-  const [fonts, setFonts] = React.useState(() => fontReady(v.family, v.size));
-  React.useEffect(() => {
-    if (fonts) return;
-    return onFontsReady(() => setFonts(true));
-  }, [fonts]);
+  /**
+   * ⚠ **מודדים, ומודדים שוב כשהגופן מגיע** · המדידה הראשונה רצה
+   * ברינדור הראשון; אם הגופן עוד לא הוחל היא מחזירה `null`
+   * (ראו `markFit`), ואז `fonts.ready` מפעיל מדידה נוספת.
+   */
+  const [tick, setTick] = React.useState(0);
+  React.useEffect(() => onFontsReady(() => setTick((n) => n + 1)), []);
 
   const ink = React.useMemo(
-    () => (fonts ? measureMarkInk(v.text, v.family, v.size * k) : null),
-    [fonts, v.text, v.family, v.size, k],
+    () => measureMarkInk(v.text, v.family, v.size * k),
+    /* ⚠ `tick` הוא התלות שמחדשת את המדידה אחרי טעינת הגופן */
+    [tick, v.text, v.family, v.size, k],
   );
 
   /**
@@ -121,6 +123,16 @@ export function Masthead() {
   const size = v.size * k * fitK;
   /* ⚠ מרכוז לפי הדיו · מחושב, לא מוקלד. ראו `shift` */
   const shift = ink ? ink.shift * fitK : ('nudge' in v ? v.nudge : 0) * k;
+
+  /**
+   * ⚠ **הגובה נגזר מהזנב שנמדד** · ראו `TAIL_DROP`. המספר הקבוע
+   * נשאר כנפילה לאחור למכשיר, שבו אין `canvas` למדוד איתו; בדפדפן
+   * — ששם שקד ראתה את החיתוך — הוא נמדד, ולכן הוא נכון גם למנוע
+   * שמצייר זנבות עמוקים יותר ממה שמדדנו כאן.
+   */
+  const below = ink ? Math.max(0, ink.descent * fitK - (v.height - v.baseline) * k) : TAIL_DROP * k;
+  /* ⚠ שוליים קטנים · החלקה של הקצה אינה חלק מה-bbox */
+  const drop = below > 0 ? below + 2 : 0;
 
   return (
     <View style={s.band}>
