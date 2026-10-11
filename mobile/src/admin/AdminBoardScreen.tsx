@@ -36,7 +36,7 @@ import type { CancelNote } from './useAdminOrders';
 import Svg, { Path } from 'react-native-svg';
 import { iconOrbShadow } from '../theme/glass';
 import { FONT_BUMP } from '../theme/fontScale';
-import { saleDateText } from '../data/calendar';
+import { saleDateText, todayKey } from '../data/calendar';
 import { BOARD_SUB } from '../data/adminBoard';
 
 /** ריפוד המסך */
@@ -93,6 +93,18 @@ export function AdminBoardScreen() {
   const sale = React.useMemo(() => upcomingSale(new Date()), []);
   const saleCat = sale.cat;
   const saleDate = sale.date;
+  /**
+   * ⚠ **יום שכבר עבר · 11 באוקטובר 2026** · שקד: ״הלוח מכירה צריך
+   * להתחיל להראות נתונים ולאפשר לעשות שינויים רק החל מהתאריך
+   * המקורי״, ובהבהרה: ״כל עוד התאריך לא עבר ניתן לראות ולערוך״.
+   *
+   * ⚠ **למה הלוח בכלל הראה יום שחלף** · `saleWindow` מחזיר תאריך
+   * שעבר **בכוונה** בזנב החלון — שישי בערב ושבת עד 07:00 עדיין
+   * שייכים לחלון של השניצל, ושם הלקוחה רואה ״המכירה נסגרה״. הלוח
+   * הניהולי משתמש באותה פונקציה, ולכן המשיך להציג את אותו יום
+   * ולאפשר לסמן בו סטטוסים אחרי שהוא נגמר.
+   */
+  const datePassed = saleDate < todayKey();
   /* ההודעה הצפה · שכבה גלובלית · ראו `Cheer` */
   const { toast } = useCheer();
   const BOARD_CAT = React.useMemo(() => boardCatOf(saleCat), [saleCat]);
@@ -122,6 +134,8 @@ export function AdminBoardScreen() {
    * מעצם ההגדרה.
    */
   const reload = useCallback(async () => {
+    /* ⚠ יום שעבר · אין טעם לשאול את השרת. ראו `datePassed` */
+    if (datePassed) return;
     if (!live) return;
     const day = await saleDayStatus(saleCat).catch(() => null);
     const res = await adminBoard(day?.date, saleCat);
@@ -146,7 +160,9 @@ export function AdminBoardScreen() {
     );
     /* המכסות של היום · מזינות את מוני ההכנה בראש הלוח */
     setQuotas(res.quotas ?? {});
-  }, [live, saleCat]);
+    /* ⚠ `datePassed` קבוע לכל חיי המסך (`sale` ממואזן עם `[]`),
+       אבל הוא נקרא כאן ולכן הוא בתלויות. */
+  }, [live, saleCat, datePassed]);
 
   /**
    * ⚠ **רענון חוזר · 18 בספטמבר 2026** · הלוח נטען פעם אחת בכניסה
@@ -164,7 +180,8 @@ export function AdminBoardScreen() {
     return () => clearInterval(id);
   }, [reload, live]);
 
-  const liveRows = orders.filter((o) => !o.gone);
+  /* ⚠ יום שעבר · לא מציגים נתונים כלל. ראו `datePassed` */
+  const liveRows = datePassed ? [] : orders.filter((o) => !o.gone);
   const shown = liveRows
     .map((o, i) => ({ o, i: orders.indexOf(o) }))
     .filter((x) => mode === 'all' || x.o.ship === mode)
@@ -185,6 +202,8 @@ export function AdminBoardScreen() {
   };
 
   const setStatus = (i: number, name: string) => {
+    /* ⚠ יום שעבר · ראו `datePassed` */
+    if (datePassed) return;
     /* ⚠ הודעה צפה בכל שינוי סטטוס · בקשה של שקד · ראו `statusToast` */
     toast(statusToast(name));
     setOrders((list) => list.map((o, n) => (n === i ? { ...o, status: name } : o)));
@@ -193,6 +212,7 @@ export function AdminBoardScreen() {
   };
 
   const doCancel = () => {
+    if (datePassed) return;
     if (!cx.reason) return;
     const i = cancelling;
     toast(statusToast('בוטלה'));
@@ -397,6 +417,14 @@ export function AdminBoardScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* ⚠ יום שעבר · ראו `datePassed`. הנוסח נכתב על ידי Claude */}
+      {datePassed ? (
+        <View style={s.overWrap}>
+          <Text style={s.overTitle}>יום המכירה הזה הסתיים</Text>
+          <Text style={s.overSub}>{`${saleDateText(saleDate)} · אי אפשר לשנות סטטוסים ביום שכבר עבר`}</Text>
+        </View>
+      ) : null}
 
       <View style={s.tools}>
         {/* ⚠ **בורר מפולח** · שקד שלחה צילום מסך: מיכל אפור אחד
@@ -824,6 +852,10 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(130,112,162,0.16)',
   },
+  /* ⚠ ההודעה על יום שעבר · ראו `datePassed` */
+  overWrap: { alignItems: 'center', paddingVertical: 26, paddingHorizontal: 20, gap: 6 },
+  overTitle: { fontSize: 17, fontWeight: '700', color: surface.ink, textAlign: 'center' },
+  overSub: { fontSize: 13.5, fontWeight: '300', color: surface.inkSoft, textAlign: 'center' },
   oTotalK: { flex: 1, fontSize: 15, fontWeight: '600', color: surface.inkSoft },
   oTotalV: { fontSize: 17, fontWeight: '700', color: surface.ink },
   x: { fontSize: 18.5, color: '#B95349', paddingHorizontal: 4 },
