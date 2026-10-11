@@ -42,6 +42,21 @@ echo "· מייצא את גרסת הדפדפן"
 mkdir -p "$OUT/app"
 cp -R mobile/dist/. "$OUT/app"/
 
+# ---------- 2ב · צבע הסרגלים של הדפדפן ----------------------
+# ⚠ **שקד, 11 באוקטובר 2026** · ״הלמעלה והלמטה של העמוד בלבן ולא
+# מתמזג הכל יחד״. זה לא הדף אלא הכרום של ספארי: אזור שורת המצב
+# למעלה וסרגל הכתובת למטה נצבעים לפי `theme-color`, ובהיעדרו הם
+# לבנים — ולכן הדף הלילכי ישב בין שתי רצועות לבנות.
+#
+# ⚠ **למה כאן ולא בקוד** · את ה-HTML של גרסת הדפדפן מייצר
+# `expo export`, ואין בפרויקט תבנית משלנו לערוך. הזרקה בזמן ריצה
+# הייתה נכנסת רק אחרי שה-JS נטען, כלומר אחרי הבזק לבן.
+#
+# ⚠ הערך זהה ל-`surface.ground` ולמה שבעמוד הנחיתה.
+if ! grep -q 'name="theme-color"' "$OUT/app/index.html"; then
+  sed -i 's|</head>|<meta name="theme-color" content="#F3EFFA"/></head>|' "$OUT/app/index.html"
+fi
+
 # ---------- 3 · בדיקות שחייבות לעבור ------------------------
 fail=0
 check() { if [ -e "$1" ]; then echo "  ✓ $1"; else echo "  ✗ חסר: $1"; fail=1; fi }
@@ -54,6 +69,13 @@ check "$OUT/img/favicon.png"
 # הציבורית הזו · חסרה = לקוחה שמקבלת אישור בלי מפה, בשקט.
 # נוצרת בידי scripts/build-pickup-map.py · ראו whatsapp/pickupPlace.ts
 check "$OUT/img/pickup-map.jpg"
+# ⚠ בלי זה ספארי צובע את הסרגלים בלבן · ראו מקטע 2ב
+if grep -q 'name="theme-color"' "$OUT/app/index.html" && grep -q 'name="theme-color"' "$OUT/index.html"; then
+  echo "  ✓ theme-color בשני המשטחים"
+else
+  echo "  ✗ חסר theme-color"
+  fail=1
+fi
 check "$OUT/robots.txt"
 check "$OUT/app/index.html"
 
