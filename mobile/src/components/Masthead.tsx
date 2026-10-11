@@ -5,6 +5,7 @@ import { Text } from '../ui/text';
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { brand, space, type } from '../theme/tokens';
 import { MARK_STYLES, REF_BAND, type MarkStyleKey } from '../theme/markStyles';
+import { fontReady, measureMarkInk, onFontsReady } from '../theme/markFit';
 
 /**
  * הכותרת · ״חתימה״.
@@ -61,6 +62,39 @@ export function Masthead() {
   /* רוחב הבד · הלוח הנראה ועוד מקום לזנב משני הצדדים */
   const canvas = band + pad * 2;
 
+  /**
+   * ⚠⚠ **התאמה למנוע · 11 באוקטובר 2026** · ראו `theme/markFit.ts`.
+   * שקד דיווחה בפעם השלישית שה-״l״ נחתכת, והפעם עם צילום: הדיו
+   * נגמר ב-97.4% מרוחב המסך בספארי, מול 92.3% בכרום באותה בנייה.
+   * שני המספרים הקבועים שהיו כאן — קנה המידה וה-`nudge` — נמדדו
+   * שניהם על iPhone 17 Pro אחד, ולכן הם נכונים שם ושקר בכל מקום
+   * אחר.
+   *
+   * במקום לנחש, שואלים את המנוע כמה רוחב הדיו שלו באמת תופס
+   * ומקטינים רק אם צריך. בלי `canvas` (מכשיר) או בלי גבולות דיו
+   * (דפדפן ישן) חוזרים בדיוק לערכים שהיא אישרה.
+   */
+  const [fonts, setFonts] = React.useState(() => fontReady(v.family, v.size));
+  React.useEffect(() => {
+    if (fonts) return;
+    return onFontsReady(() => setFonts(true));
+  }, [fonts]);
+
+  const ink = React.useMemo(
+    () => (fonts ? measureMarkInk(v.text, v.family, v.size * k) : null),
+    [fonts, v.text, v.family, v.size, k],
+  );
+
+  /**
+   * ⚠ **הדיו חייב להיכנס ללוח הנראה** · ולא לבד שחורג ממנו.
+   * `TAIL_PAD` הרחיב את הבד אל **מחוץ למסך**, ולכן המקום שהוא
+   * יצר מעולם לא היה זמין לזנב.
+   */
+  const fitK = ink && ink.width > band ? band / ink.width : 1;
+  const size = v.size * k * fitK;
+  /* ⚠ מרכוז לפי הדיו · מחושב, לא מוקלד. ראו `shift` */
+  const shift = ink ? ink.shift * fitK : ('nudge' in v ? v.nudge : 0) * k;
+
   return (
     <View style={s.band}>
       {/* ⚠ **שטיפת הזהב הוסרה · 16 בספטמבר 2026** · היא נוספה כשהדף
@@ -101,11 +135,11 @@ export function Masthead() {
         </Defs>
 
         <SvgText
-          x={canvas / 2 + ('nudge' in v ? v.nudge : 0) * k}
+          x={canvas / 2 + shift}
           y={v.baseline * k}
           textAnchor="middle"
           fontFamily={v.family}
-          fontSize={v.size * k}
+          fontSize={size}
           {...('letterSpacing' in v ? { letterSpacing: v.letterSpacing } : null)}
           fill="url(#gold)"
         >
