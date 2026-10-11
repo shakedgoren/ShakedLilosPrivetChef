@@ -70,6 +70,37 @@ export function soldOutDishes(rec: SaleDayView | null, category: string): string
   return out;
 }
 
+/**
+ * כמה נשאר מכל מנה · **מספרים, בניגוד ל-`soldOutDishes`.**
+ *
+ * ⚠ **בקשת שקד · 11 באוקטובר 2026** · ״מכסה של מנה נבדקת ברגע
+ * ההוספה ולא ברגע הקנייה — אם אין כמות מספיקה ברגע ההוספה בלחיצה
+ * על הפלוס זה צריך לעצור את הלקוח מלהמשיך להוסיף מנות״. כדי
+ * שכפתור הפלוס ייעצר, הדפדפן חייב לדעת כמה נשאר.
+ *
+ * ⚠⚠ **זה מרכך כלל קודם שלה** · ב-18 בספטמבר היא כתבה ״אין תצוגה
+ * של המלאי ללקוח!!!!!״, ולכן `soldOutDishes` מחזיר מזהים בלבד.
+ * הוצג לה ב-11 באוקטובר שעצירה בפלוס מחייבת לשלוח את המספר, והיא
+ * בחרה לעצור בפלוס. **המספר עדיין לא מוצג בשום מקום במסך** — הוא
+ * משמש אך ורק כתקרה לכפתור. אל תציג אותו.
+ *
+ * ⚠ **אותו חישוב בדיוק כמו `soldOutDishes`** · מכסה פחות מה שנמכר
+ * ומה שירד לפחת. שתי הפונקציות חייבות להסכים, אחרת מנה תיראה
+ * זמינה ותידחה בשליחה.
+ */
+export function remainingDishes(rec: SaleDayView | null, category: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!rec) return out;
+  const dishes = CATS[category as DayCatKey]?.dishes ?? [];
+  for (const dish of dishes) {
+    const quota = rec.quotas[dish.id] ?? dish.q;
+    if (quota === undefined) continue;
+    const used = (rec.sold[dish.id] ?? 0) + (rec.waste[dish.id] ?? 0);
+    out[dish.id] = Math.max(0, quota - used);
+  }
+  return out;
+}
+
 export function evaluateCustomerSaleDay(opts: {
   rec: SaleDayView | null;
   category: string;

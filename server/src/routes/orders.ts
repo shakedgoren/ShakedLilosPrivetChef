@@ -17,6 +17,7 @@ import {
   assertCustomerOrderDay,
   evaluateCustomerSaleDay,
   loadSaleDayView,
+  remainingDishes,
   soldOutDishes,
   saleDayState,
   resolveCustomerSaleDate,
@@ -204,6 +205,23 @@ ordersRouter.get('/sale-day', optionalAuth, async (req, res, next) => {
       state: saleDayState({ rec, category, today: isoDate(new Date()), windowDate }),
       /* ⚠ מזהים בלבד · ראו `soldOutDishes` · הלקוחה לא רואה מספרים */
       soldOut: soldOutDishes(rec, category),
+      /**
+       * ⚠ **כמה נשאר מכל מנה · 11 באוקטובר 2026** · שקד ביקשה
+       * שכפתור הפלוס ייעצר במכסה ולא רק בשליחה, וזה מחייב שהדפדפן
+       * יידע את המספר. ראו `remainingDishes` — **המספר אינו מוצג
+       * ללקוחה בשום מקום**, הוא רק תקרה לכפתור.
+       */
+      remaining: remainingDishes(rec, category),
+      /**
+       * ⚠ **שעות משלוח חסומות · 11 באוקטובר 2026** · הכלל נאכף
+       * בשרת מאז 27 בספטמבר, אבל מעולם לא הגיע למסך הלקוחה: היא
+       * בחרה שעה חסומה והמסך אישר. בדיוק כמו כלל השבת — כלל
+       * שקיים בצד אחד בלבד.
+       *
+       * ⚠ **משלוחים בלבד** · איסוף עצמי אינו נחסם. ראו
+       * `orders/deliveryHours.ts`.
+       */
+      blockedHours: rec?.blockedHours ?? [],
       reminder,
       reason: problem?.code ?? '',
       message: problem?.message ?? '',

@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { qtyOfCustomerDetails } from '../admin/sold.ts';
-import { evaluateCustomerSaleDay, isIsoDate, saleDayState, soldOutDishes } from './saleDay.ts';
+import {
+  evaluateCustomerSaleDay,
+  isIsoDate,
+  remainingDishes,
+  saleDayState,
+  soldOutDishes,
+} from './saleDay.ts';
 
 const openCous = {
   date: '2026-09-15',
@@ -228,4 +234,33 @@ test('טרם נפתחה · החלה · נסגרה', () => {
     saleDayState({ ...args, rec: { ...base, open: false, opened: false } }),
     'pending',
   );
+});
+
+/**
+ * ⚠ **`remainingDishes` · נוסף ב-11 באוקטובר 2026** · שקד ביקשה
+ * שכפתור הפלוס ייעצר במכסה ולא רק בשליחה. שתי הפונקציות חייבות
+ * להסכים: מנה ש-`remainingDishes` מחזיר עליה 0 חייבת להופיע
+ * ב-`soldOutDishes`, אחרת היא תיראה זמינה ותידחה בשליחה.
+ */
+test('כמה נשאר · מכסה פחות מה שנמכר ופחת', () => {
+  /* veg: מכסה 5, נמכרו 3 ועוד 1 פסולת = 4 · נשארה אחת */
+  const left = remainingDishes(openCous, 'cous');
+  assert.equal(left.veg, 1);
+  assert.equal(left.chick, 0);
+});
+
+test('חריגה מעבר למכסה · 0 ולא שלילי, ומוסכם עם soldOutDishes', () => {
+  const over = { ...openCous, sold: { chick: 99 } };
+  assert.equal(remainingDishes(over, 'cous').chick, 0, 'יתרה שלילית דלפה החוצה');
+  assert.ok(soldOutDishes(over, 'cous').includes('chick'), 'שתי הפונקציות חלוקות');
+});
+
+test('כל מנה עם 0 נשאר · מופיעה גם ב-soldOutDishes', () => {
+  const left = remainingDishes(openCous, 'cous');
+  const zero = Object.keys(left).filter((k) => left[k] === 0).sort();
+  assert.deepEqual(zero, [...soldOutDishes(openCous, 'cous')].sort());
+});
+
+test('בלי שורת יום מכירה · אין יתרות', () => {
+  assert.deepEqual(remainingDishes(null, 'cous'), {});
 });
